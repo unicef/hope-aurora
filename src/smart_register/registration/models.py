@@ -21,6 +21,7 @@ from smart_register.i18n.models import I18NModel
 from smart_register.registration.fields import ChoiceArrayField
 from smart_register.registration.storage import router
 from smart_register.state import state
+from smart_register.steficon.models import RuleCommit
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,9 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
         null=True,
         on_delete=models.SET_NULL,
     )
-
+    pre_save = models.ForeignKey(RuleCommit, blank=True, null=True,
+                                 on_delete=models.SET_NULL,
+                                 help_text="Custom Rule to run BEFORE record is saved")
     scripts = models.ManyToManyField(
         Validator, related_name="script_for", limit_choices_to={"target": Validator.SCRIPT}, blank=True
     )
@@ -123,6 +126,11 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
 
     def add_record(self, fields_data):
         fields, files = router.decompress(fields_data)
+        if self.pre_save:
+            from smart_register.steficon.result import DictResult
+            result: DictResult = self.pre_save.execute({"fields": fields,
+                                                        "files": files})
+            fields.update(**result.data)
 
         if self.public_key:
             kwargs = {
@@ -145,6 +153,7 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
 
         if self.unique_field and self.unique_field in fields:
             kwargs["unique_field"] = fields.get(self.unique_field, None) or None
+        # This code is only for UKR
         kwargs.update({
             "size": total_size(fields) + total_size(files),
             "counters": fields_data.get("counters", {}),

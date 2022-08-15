@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     "reversion",  # https://github.com/etianen/django-reversion
     "reversion_compare",  # https://github.com/jedie/django-reversion-compare
     # ---
+    "import_export",
+    # ---
     "smart_register.admin.apps.AuroraAdminUIConfig",
     "smart_register.admin.apps.AuroraAdminConfig",
     "smart_admin.apps.SmartLogsConfig",
@@ -79,6 +81,7 @@ INSTALLED_APPS = [
     "smart_register.core",
     "smart_register.registration",
     "smart_register.counters",
+    "smart_register.steficon",
 ]
 FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 
