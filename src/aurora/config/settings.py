@@ -49,6 +49,10 @@ INSTALLED_APPS = [
     "reversion",  # https://github.com/etianen/django-reversion
     "reversion_compare",  # https://github.com/jedie/django-reversion-compare
     # ---
+    "django_otp",
+    "django_otp.plugins.otp_email",
+    # 'django_otp.plugins.otp_hotp',
+    # 'django_otp.plugins.otp_static',
     # "aurora.admin.apps.AuroraAdminUIConfig",
     "smart_admin.apps.SmartLogsConfig",
     "smart_admin.apps.SmartTemplateConfig",
@@ -96,6 +100,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "aurora.web.middlewares.maintenance.MaintenanceMiddleware",
     "django.middleware.locale.LocaleMiddleware",
+    "django_otp.middleware.OTPMiddleware",
     "aurora.web.middlewares.i18n.I18NMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

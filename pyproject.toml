@@ -63,6 +63,7 @@ django-hijack = "^3.2.6"
 channels = {extras = ["daphne"], version = "^4.0.0"}
 channels-redis = "^4.0.0"
 django-mdeditor = "^0.1.20"
+django-otp = "^1.1.4"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"

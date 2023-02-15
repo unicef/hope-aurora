@@ -45,3 +45,8 @@ class CloneForm(forms.Form):
         help_text="Clone all forms and fields too. "
         "This will create a fully independent registration, form and components",
     )
+
+
+class RegistrationOTPForm(forms.Form):
+    emails = forms.CharField(widget=forms.Textarea, required=True)
+    validity = forms.IntegerField(default=1, help_text="Number of days the invitation will be valid.")
