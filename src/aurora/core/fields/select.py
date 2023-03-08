@@ -84,7 +84,13 @@ class AjaxSelectField(forms.Field):
 
     def __init__(self, **kwargs):
         self.parent = kwargs.pop("parent", "")
-        self.datasource = kwargs.pop("datasource", None)
+        if hasattr(self, "smart_attrs"):
+            self.datasource = self.smart_attrs.get("datasource", None)
+        elif "datasource" in kwargs:
+            self.datasource = kwargs["datasource"]
+        else:
+            self.datasource = None
+
         super().__init__(**kwargs)
 
     def widget_attrs(self, widget):

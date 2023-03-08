@@ -1,3 +1,7 @@
+if ($ === undefined){
+    $ = django.jQuery;
+}
+
 (function ($) {
     $(function () {
         $(".field-container.required span.required").each(function (i, e) {
@@ -29,11 +33,15 @@
         // display inputs with values
         $(".question-visibility").each(function (i, e) {
             var $container = $(e).parents("fieldset").find(".field-container");
-            var $input = $container.find("input,select");
-            if ($input.val().trim() !== '') {
+            var $input = $container.find("input,select, textarea");
+            if (smart.has_any_value($input)){
                 $(e).prop("checked", "checked");
                 $container.show();
             }
+            // if ($input.val().trim() !== '') {
+            //     $(e).prop("checked", "checked");
+            //     $container.show();
+            // }
         }).on("click", function () {
             smart.handleQuestion(this);
         });

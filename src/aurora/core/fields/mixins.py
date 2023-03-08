@@ -1,5 +1,6 @@
 from django.utils.translation import get_language
 
+from aurora.core.utils import oneline
 from aurora.state import state
 
 
@@ -33,6 +34,7 @@ class SmartFieldMixin:
         self.smart_attrs = kwargs.pop("smart_attrs", {})
         self.data_attrs = kwargs.pop("data", {})
         self.widget_kwargs = kwargs.pop("widget_kwargs", {})
+        self.datasource = kwargs.pop("datasource", None)
         super().__init__(*args, **kwargs)
 
     def is_stored(self):
@@ -41,9 +43,14 @@ class SmartFieldMixin:
     def widget_attrs(self, widget):
         attrs = super().widget_attrs(widget)
         attrs.update({k: v for k, v in self.widget_kwargs.items() if v is not None})
-        for k, v in self.smart_attrs.items():
-            if k.startswith("data-") or k.startswith("on"):
+        for k, v in self.widget_kwargs.items():
+            if k.startswith("data-") or k.startswith("on") and v:
                 attrs[k] = v
+
+        for k, v in self.smart_attrs.items():
+            if k.startswith("data-") or k.startswith("on") and v:
+                attrs[k] = v
+
         for k, v in self.data_attrs.items():
             attrs[f"data-{k}"] = v
 
@@ -53,6 +60,11 @@ class SmartFieldMixin:
         if not self.flex_field.required:
             attrs.pop("required", "")
         attrs["flex_field"] = self.flex_field
+        if "onchange" in attrs:
+            if attrs["onchange"]:
+                attrs["onchange"] = oneline(attrs["onchange"])
+            else:
+                attrs.pop("onchange")
         widget.smart_attrs = self.smart_attrs
         widget.flex_field = self.flex_field
         return attrs

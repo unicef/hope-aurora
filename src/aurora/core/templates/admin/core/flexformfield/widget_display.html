@@ -1,0 +1,22 @@
+{% load static aurora %}
+<style>
+    body{
+        background-color: white;
+    }
+</style>
+<link href="https://unpkg.com/tailwindcss@1.9.6/dist/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static "base.css" %}">
+<link href="{% static "staff-toolbar.css" %}" type="text/css" media="all" rel="stylesheet">
+<link rel="stylesheet" href="{% static "admin/debug.css" %}">
+<script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>
+<script src="{% static "admin/js/vendor/jquery/jquery.init.js" %}"></script>
+<script src="{% static "smart_validation.js" %}"></script>
+<script src="{% static "smart.js" %}"></script>
+
+<form method="post" id="registrationForm">
+    {% csrf_token %}
+    {% for field in form %}
+        {% include "smart/_fieldset.html" %}
+    {% endfor %}
+    <input style="background-color: cornflowerblue" type="submit" value="Submit">
+</form>

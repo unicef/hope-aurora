@@ -56,6 +56,7 @@ http {
     }
     server {
         client_max_body_size ${NGINX_MAX_BODY_SIZE};
+        large_client_header_buffers 4 16k;
         access_log /dev/stdout;
         listen 80;
         proxy_cache one;
@@ -94,8 +95,13 @@ http {
             gzip_disable "MSIE [1-6]\.";
             gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml;
          }
-
         location / {
+            root /var/nginx/;
+            try_files /system/maintenance.html
+                      @aurora;
+        }
+        location @aurora {
+            try_files $uri /images/default.gif;
             http2_push https://browser.sentry-cdn.com/5.30.0/bundle.min.js;
             http2_push https://unpkg.com/tailwindcss@1.9.6/dist/tailwind.min.css;
 

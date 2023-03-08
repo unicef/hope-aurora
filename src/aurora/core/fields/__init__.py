@@ -16,7 +16,7 @@ from .webcam import WebcamField
 
 WIDGET_FOR_FORMFIELD_DEFAULTS = {
     forms.DateField: {"widget": widgets.SmartDateWidget},
-    forms.CharField: {"widget": widgets.SmartTextWidget},
+    forms.CharField: {"widget": widgets.SmartTextWidget, "max_length": 200, "strip": True},
     forms.IntegerField: {"widget": widgets.NumberWidget},
     forms.FloatField: {"widget": widgets.NumberWidget},
     forms.ChoiceField: {"widget": SmartSelectWidget},

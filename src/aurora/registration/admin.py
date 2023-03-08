@@ -181,7 +181,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         ro = super().get_readonly_fields(request, obj)
-        if obj and obj.pk:
+        if obj and obj.pk and not is_root(request):
             ro = list(ro) + ["slug", "export_allowed"]
         return ro
 

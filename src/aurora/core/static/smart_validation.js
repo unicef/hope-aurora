@@ -51,7 +51,7 @@ smart = {
         if ($(sender).is("input[type=\"checkbox\"]")) {
             valid = $(sender).is(":checked");
         } else if ($(sender).is("input[type=\"radio\"]")) {
-            valid = $(sender).val() == "y";
+            valid = $(sender).val() === "y";
         } else {
             valid = !!$(sender).val();
         }
@@ -74,14 +74,24 @@ smart = {
             console.error(error);
         }
     },
+    setRequired: function (targets, onOff) {
+        console.log(111.2, targets, onOff);
+        $(targets).each(function (i, e) {
+            if (onOff) {
+                $(e).attr("required", true);
+                $c.find('.required-label').show();
+            } else {
+                $(e).attr("required", false);
+                $c.find('.required-label').hide();
+            }
+        });
+    },
     setRequiredOnValue: function (sender, targets, value) {
         try {
-            console.log(11111, targets)
             var cmp = value.toLowerCase();
             var $form = $(sender).parents(".form-container");
             $form.find(targets).each(function (i, e) {
                 $c = $(e).parents(".field-container");
-                console.log(11111, $c, $(sender).val(), cmp);
                 if ($(sender).val() == cmp) {
                     $(e).attr("required", true);
                     $c.find('.required-label').show();
@@ -90,26 +100,39 @@ smart = {
                     $c.find('.required-label').hide();
                 }
             })
-            // if ($(sender).val() == cmp) {
-            //     $targets.attr("required", true);
-            // } else {
-            //     $targets.attr("required", false);
-            // }
         } catch (error) {
             console.error(error);
         }
     },
+    getSiblingField: function (sender, target) {
+        var $sender = $(sender);
+        var $form = $sender.parents(".form-container");
+        return $form.find("[data-flex='" + target + "']");
+    },
+    getSibling: function (sender, target) {
+        var $form = $(sender).parents(".form-container");
+        return $form.find(target).parents(".field-container");
+    },
     showHideDependant: function (sender, target, value) {
         try {
-            var cmp = value.toLowerCase();
+            var cmp = null;
+            if (Array.isArray(value)) {
+                cmp = function (a, b) {
+                    b.includes(a);
+                }
+            } else {
+                cmp = function (a, b) {
+                    return a == b
+                };
+            }
+            var cleared = value.toLowerCase();
             var $form = $(sender).parents(".form-container");
             var $target = $form.find(target).parents(".field-container");
-            if ($(sender).val() == cmp) {
+            if (cmp($(sender).val(), cleared)) {
                 $target.show();
             } else {
                 $target.hide();
             }
-            ;
         } catch (error) {
             console.error(error);
         }
@@ -136,5 +159,45 @@ smart = {
     },
     updateDeleteLabel: function (sender, label) {
         $(sender).parents(".form-container").find(".delete-button").text(label + $(sender).val());
+    },
+    getControlledField: function (questionCheckbox) {
+        var $container = $(questionCheckbox).parents("fieldset").find(".field-container");
+        return $container.find("input,select, textarea");
+    },
+    has_any_value: function ($sender) {
+        var inputType = $sender.attr('type')
+        if ((inputType === "radio") || (inputType === "checkbox")) {
+            $sender.is(":checked");
+        } else {
+            return $sender.val().trim() !== '';
+        }
+    },
+    getField: function ($sender) {
+        var $fieldset = $($sender).parents("fieldset");
+        var $form = $($sender).parents(".form-container");
+        var $container = $fieldset.find(".field-container");
+        var $question = $fieldset.find(".question");
+        var $input = $container.find("input,select, textarea");
+        var inputType = $sender.attr('type')
+        var value = null;
+        var hasValue = null;
+        if ((inputType === "radio") || (inputType === "checkbox")) {
+            value = $sender.val();
+            hasValue = $sender.is(":checked");
+        } else {
+            value = $sender.val();
+            hasValue = (value !== '');
+        }
+        return {
+            'fieldset': $fieldset,
+            'container': $container,
+            'question': $question,
+            'input': $input,
+            'inputType': inputType,
+            'form': $form,
+            'value': value,
+            'hasValue': hasValue,
+            'checked': $sender.is(":checked"),
+        }
     }
 };

@@ -477,3 +477,7 @@ def build_dict(r):
 def get_registration_id(record):
     ts = record.timestamp.strftime("%Y%m%d")
     return f"HOPE-{ts}-{record.registration_id}/{record.id}"
+
+
+def oneline(value):
+    return value.replace("\r\n", ";").replace("\n", ";").replace("\r", ";").replace(";;", ";")

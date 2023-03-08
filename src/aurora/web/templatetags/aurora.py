@@ -12,7 +12,7 @@ from PIL import Image, UnidentifiedImageError
 from aurora.i18n.gettext import gettext as _
 
 from ...core.flags import parse_bool
-from ...core.utils import dict_get_nested, dict_setdefault
+from ...core.utils import dict_get_nested, dict_setdefault, oneline
 from ...registration.models import Registration
 
 logger = logging.getLogger(__name__)
@@ -144,3 +144,8 @@ def _md(value):
         p = md.markdown(value, extensions=["markdown.extensions.fenced_code"])
         return mark_safe(p.replace("<p>", "").replace("</p>", ""))
     return ""
+
+
+@register.filter(name="oneline")
+def _oneline(value):
+    return oneline(value)

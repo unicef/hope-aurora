@@ -16,7 +16,7 @@ from django.contrib.admin.options import IncorrectLookupParameters
 from django.core.cache import caches
 from django.core.exceptions import ValidationError
 from django.db.models import JSONField, Q
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect
 from django.urls import NoReverseMatch, reverse
 from jsoneditor.forms import JSONEditor
 from mptt.admin import MPTTModelAdmin
@@ -26,14 +26,9 @@ from smart_admin.modeladmin import SmartModelAdmin
 from ..administration.filters import BaseAutoCompleteFilter
 from ..administration.mixin import LoadDumpMixin
 from .admin_sync import SyncMixin
+from .field_editor import FieldEditor
 from .fields.widgets import PythonEditor
-from .forms import (
-    FieldAttributesForm,
-    Select2Widget,
-    SmartAttributesForm,
-    ValidatorForm,
-    WidgetAttributesForm,
-)
+from .forms import Select2Widget, ValidatorForm
 from .models import (
     FIELD_KWARGS,
     CustomFieldType,
@@ -244,7 +239,7 @@ class FormSetInline(OrderableAdmin, TabularInline):
         return super().formfield_for_dbfield(db_field, request, **kwargs)
 
 
-class FlexFormFieldForm(forms.ModelForm):
+class FlexFormFieldFormInline(forms.ModelForm):
     class Meta:
         model = FlexFormField
         exclude = ()
@@ -255,7 +250,7 @@ class FlexFormFieldForm(forms.ModelForm):
             self.fields["name"].widget.attrs = {"readonly": True, "tyle": "background-color:#f8f8f8;border:none"}
 
 
-class FlexFormFieldForm2(forms.ModelForm):
+class FlexFormFieldForm(forms.ModelForm):
     class Meta:
         model = FlexFormField
         exclude = ()
@@ -283,7 +278,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
     formfield_overrides = {
         JSONField: {"widget": JSONEditor},
     }
-    form = FlexFormFieldForm2
+    form = FlexFormFieldForm
     ordering_field = "ordering"
     order = "ordering"
 
@@ -298,6 +293,11 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
         else:
             return "[[ removed ]]"
 
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name == "advanced":
+            kwargs["widget"] = JSONEditor()
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
+
     def formfield_for_choice_field(self, db_field, request, **kwargs):
         if db_field.name == "field_type":
             kwargs["widget"] = Select2Widget()
@@ -309,48 +309,33 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
         initial.setdefault("advanced", FlexFormField.FLEX_FIELD_DEFAULT_ATTRS)
         return initial
 
-    def _attributes(self, request):
-        formAttrs = FieldAttributesForm(request.GET)
-        formWidget = WidgetAttributesForm(request.GET)
-        formSmart = SmartAttributesForm(request.GET)
-        formAttrs.is_valid()
-        formWidget.is_valid()
-        formSmart.is_valid()
-
-        data = {**formAttrs.cleaned_data, **formWidget.cleaned_data, **formSmart.cleaned_data}
-        return JsonResponse(data)
-
-    @button()
-    def attributes(self, request, pk):
-        ctx = self.get_common_context(request, pk)
+    @button(label="editor")
+    def field_editor(self, request, pk):
+        self.editor = FieldEditor(self, request, pk)
         if request.method == "POST":
-            return self._attributes(request)
+            return self.editor.post(request, pk)
         else:
-            formAttrs = FieldAttributesForm()
-            formWidget = WidgetAttributesForm()
-            formSmart = SmartAttributesForm()
-        ctx["form_attrs"] = formAttrs
-        ctx["form_widget"] = formWidget
-        ctx["form_smart"] = formSmart
-
-        return render(request, "admin/core/flexformfield/attributes.html", ctx)
+            return self.editor.get(request, pk)
 
     @view()
-    def widget(self, request, pk):
-        ctx = self.get_common_context(request, pk)
-        if request.POST:
-            pass
-        else:
-            fld: FlexFormField = ctx["original"]
-            instance = fld.get_instance()
-            form_class_attrs = {
-                "sample": instance,
-            }
-            form_class = type(forms.Form)("TestForm", (forms.Form,), form_class_attrs)
-            ctx["form"] = form_class()
-            ctx["instance"] = instance
+    def widget_attrs(self, request, pk):
+        editor = FieldEditor(self, request, pk)
+        return editor.get_configuration()
 
-        return render(request, "admin/core/flexformfield/widget.html", ctx)
+    @view()
+    def widget_refresh(self, request, pk):
+        editor = FieldEditor(self, request, pk)
+        return editor.refresh()
+
+    @view()
+    def widget_code(self, request, pk):
+        editor = FieldEditor(self, request, pk)
+        return editor.get_code()
+
+    @view()
+    def widget_display(self, request, pk):
+        editor = FieldEditor(self, request, pk)
+        return editor.render()
 
     @button()
     def test(self, request, pk):
@@ -391,8 +376,9 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
 
 
 class FlexFormFieldInline(LoadDumpMixin, OrderableAdmin, TabularInline):
+    template = "admin/core/flexformfield/tabular.html"
     model = FlexFormField
-    form = FlexFormFieldForm
+    form = FlexFormFieldFormInline
     fields = ("ordering", "label", "name", "required", "enabled", "field_type")
     show_change_link = True
     extra = 0
@@ -463,6 +449,7 @@ class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
     SYNC_COOKIE = "sync"
     inlines = [
         FlexFormFieldInline,
+        FormSetInline,
     ]
     list_display = (
         "name",
@@ -610,7 +597,7 @@ class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
 
 
 @register(OptionSet)
-class OptionSetAdmin(LoadDumpMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
+class OptionSetAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
     list_display = (
         "name",
         "id",

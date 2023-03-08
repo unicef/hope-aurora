@@ -106,5 +106,5 @@ field_registry.register(fields.HiddenField)
 field_registry.register(MathCaptchaField)
 
 form_registry = Registry(forms.BaseForm)
-# form_registry.register(forms.Form)
+
 form_registry.register(FlexFormBaseForm)

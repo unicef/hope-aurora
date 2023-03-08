@@ -74,6 +74,9 @@
                                 <div class="w-100 forms">
                                     {{ formset.management_form }}
                                     {% for form in formset %}
+                                        {% if form.advanced.smart.js_handler %}
+
+                                        {% endif %}
                                         <div class="w-full my-5 p-3 border border-gray-400 form-container {{ config.formCssClass }} {{ formset.prefix }}">
                                             <div class="fs-counter-container">
 {#                                                {% if can_translate %}#}

@@ -1,0 +1,35 @@
+#iframe-container {
+  display: block;
+  overflow: auto;
+  resize: vertical;
+  height: 200px;
+  iframe {
+    height: 100%;
+    border: 0 transparent;
+  }
+}
+.field-error{
+  color: red;
+  margin-bottom: 3px;
+}
+table{
+  width: 100%;
+  tr{
+    th{
+      min-height: 200px;
+    }
+    td{
+      width: 100%;
+      input, select, textarea{
+        width: 100%;
+      }
+    }
+  }
+}
+.toolbar{
+  margin: 10px;
+  label{
+    margin-right: 10px;
+    cursor: pointer;
+  }
+}

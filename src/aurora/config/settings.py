@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "smart_admin.apps.SmartConfig",
     "aurora.administration.apps.AuroraAdminConfig",
     "aurora.administration.apps.AuroraAuthConfig",
+    "front_door.contrib",
     "hijack",
     "rest_framework",
     "rest_framework.authtoken",
@@ -94,6 +95,7 @@ MIDDLEWARE = [
     # "django.middleware.cache.UpdateCacheMiddleware",
     "aurora.web.middlewares.thread_local.ThreadLocalMiddleware",
     "aurora.web.middlewares.sentry.SentryMiddleware",
+    "front_door.middleware.FrontDoorMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "aurora.web.middlewares.maintenance.MaintenanceMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -328,6 +330,14 @@ LOGGING = {
             "handlers": ["console"],
             "level": "ERROR",
         },
+        "front_door": {
+            "handlers": ["console"],
+            "level": "ERROR",
+        },
+        "front_door.middleware": {
+            "handlers": ["console"],
+            "level": "CRITICAL",
+        },
         "django": {
             "handlers": ["console"],
             "level": "ERROR",
@@ -496,8 +506,8 @@ FLAGS = {
 
 JSON_EDITOR_JS = "https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/8.6.4/jsoneditor.js"
 JSON_EDITOR_CSS = "https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/8.6.4/jsoneditor.css"
-JSON_EDITOR_INIT_JS = "jsoneditor/jsoneditor-init.min.js"
-JSON_EDITOR_ACE_OPTIONS_JS = "jsoneditor/ace_options.min.js"
+JSON_EDITOR_INIT_JS = "django-jsoneditor/jsoneditor-init.min.js"
+JSON_EDITOR_ACE_OPTIONS_JS = "django-jsoneditor/ace_options.min.js"
 
 # CAPTCHA_IMAGE_SIZE = 300,200
 CAPTCHA_FONT_SIZE = 40
@@ -782,3 +792,25 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.DjangoModelPermissions",
     ],
 }
+
+
+FRONT_DOOR_CONFIG = "front_door.conf.DjangoConstance"
+FRONT_DOOR_ENABLED = env("FRONT_DOOR_ENABLED")
+FRONT_DOOR_ALLOWED_PATHS = env("FRONT_DOOR_ALLOWED_PATHS")
+FRONT_DOOR_TOKEN = env("FRONT_DOOR_TOKEN")
+FRONT_DOOR_HEADER = "x-aurora"
+FRONT_DOOR_COOKIE_NAME = "x-aurora"
+FRONT_DOOR_COOKIE_PATTERN = ".*"
+# FRONT_DOOR_ERROR_CODE = 404
+# FRONT_DOOR_REDIR_URL = "https://www.sosbob.com/"
+FRONT_DOOR_LOG_LEVEL = env("FRONT_DOOR_LOG_LEVEL")  # LOG_RULE_FAIL
+FRONT_DOOR_RULES = [
+    # "front_door.rules.internal_ip",  # grant access to settings.INTERNAL_IPS
+    # "front_door.rules.forbidden_path",  # DENY access to FORBIDDEN_PATHS
+    "front_door.rules.allowed_path",  # grant access to ALLOWED_PATHS
+    "front_door.rules.allowed_ip",  # grant access to ALLOWED_IPS
+    "front_door.rules.special_header",  # grant access if request has Header[HEADER] == TOKEN
+    # "front_door.rules.has_header",  # grant access if request has HEADER
+    "front_door.rules.cookie_value",  # grant access if request.COOKIES[COOKIE_NAME]
+    # "front_door.rules.cookie_exists",  # grant access ir COOKIE_NAME in request.COOKIES
+]

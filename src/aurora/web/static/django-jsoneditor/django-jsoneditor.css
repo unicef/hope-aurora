@@ -3,7 +3,9 @@
   width: 100%;
   overflow: auto;
   max-width: 100%;
-  min-height: 200px;
+  min-height: 300px;
+  height: 300px;
+  resize: vertical;
 }
 .outer_jsoneditor .jsoneditor .jsoneditor-menu {
   background-color: var(--primary);

@@ -2,6 +2,7 @@
 set -e
 export NGINX_MAX_BODY_SIZE="${NGINX_MAX_BODY_SIZE:-30M}"
 export NGINX_CACHE_DIR="${NGINX_CACHE_DIR:-/data/nginx/cache}"
+export NGINX_APP_ROOT="/"
 export REDIS_LOGLEVEL="${REDIS_LOGLEVEL:-warning}"
 export REDIS_MAXMEMORY="${REDIS_MAXMEMORY:-100Mb}"
 export REDIS_MAXMEMORY_POLICY="${REDIS_MAXMEMORY_POLICY:-volatile-ttl}"
@@ -13,14 +14,17 @@ echo "created support dirs /var/run ${MEDIA_ROOT} ${STATIC_ROOT}"
 
 
 if [ $# -eq 0 ]; then
-    envsubst < /conf/nginx.conf.tpl > /conf/nginx.conf && nginx -tc /conf/nginx.conf
-    envsubst < /conf/redis.conf.tpl > /conf/redis.conf
-    redis-server /conf/redis.conf
-    django-admin upgrade --no-input
-
+    if [ "${MAINTENANCE_MODE}" = "on" ]; then
+      cp /var/nginx/maintainance.html /var/nginx/system/maintainance.html
+    else
+      rm -f /var/nginx/system/maintainance.html
+      envsubst < /conf/nginx.conf.tpl > /conf/nginx.conf && nginx -tc /conf/nginx.conf
+      envsubst < /conf/redis.conf.tpl > /conf/redis.conf
+      redis-server /conf/redis.conf
+      django-admin upgrade --no-input
+      exec uwsgi --ini /conf/uwsgi.ini
+    fi
     nginx -c /conf/nginx.conf
-    exec uwsgi --ini /conf/uwsgi.ini
-#   exec gunicorn aurora.config.wsgi -c /conf/gunicorn_config.py
 else
     case "$1" in
         "dev")

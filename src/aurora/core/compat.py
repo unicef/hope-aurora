@@ -24,7 +24,9 @@ class RegexField(RegexField_):
 
 
 class StrategyFormField(StrategyFormField_):
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.choices = self.registry.as_choices()
 
 
 class StrategyClassField(StrategyClassField_):

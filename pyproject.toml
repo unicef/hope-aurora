@@ -65,6 +65,7 @@ channels-redis = "^4.0.0"
 django-mdeditor = "^0.1.20"
 djangorestframework-datatables = "^0.7.0"
 django-filter = "^22.1"
+django-front-door = "^0.10.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"

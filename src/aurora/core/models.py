@@ -1,7 +1,10 @@
 import json
 import logging
+import re
 from datetime import date, datetime, time
 from json import JSONDecodeError
+
+from django.utils.deconstruct import deconstructible
 from pathlib import Path
 
 import jsonpickle
@@ -473,24 +476,40 @@ FIELD_KWARGS = {
 }
 
 
+@deconstructible
+class RegexPatternValidator:
+    def __call__(self, value):
+        try:
+            re.compile(value)
+        except Exception as e:
+            raise ValidationError(e)
+
+
 class FlexFormField(NaturalKeyModel, I18NModel, OrderableModel):
     I18N_FIELDS = [
         "label",
     ]
     I18N_ADVANCED = ["smart.hint", "smart.question", "smart.description"]
     FLEX_FIELD_DEFAULT_ATTRS = {
-        "default": None,
-        "widget_kwargs": {"pattern": None, "title": None, "placeholder": None, "class": ""},
-        "kwargs": {},
+        "widget_kwargs": {
+            "pattern": None,
+            "onchange": "",
+            "title": None,
+            "placeholder": None,
+            "extra_classes": "",
+            "css_class": "",
+            "fieldset": "",
+        },
+        "kwargs": {
+            "default_value": None,
+        },
         "smart": {
             "hint": "",
-            "extra_classes": "",
             "visible": True,
-            "onchange": "",
+            "choices": [],
             "question": "",
             "description": "",
             "index": None,
-            "fieldset": "",
         },
     }
 
@@ -499,7 +518,7 @@ class FlexFormField(NaturalKeyModel, I18NModel, OrderableModel):
 
     flex_form = models.ForeignKey(FlexForm, on_delete=models.CASCADE, related_name="fields")
     label = models.CharField(max_length=2000)
-    name = CICharField(max_length=100, blank=True)
+    name = CICharField(max_length=100, blank=True, validators=[RegexValidator("^[a-z_0-9]*$")])
     field_type = StrategyClassField(registry=field_registry, import_error=import_custom_field)
     choices = models.CharField(max_length=2000, blank=True, null=True)
     required = models.BooleanField(default=False)
@@ -507,7 +526,7 @@ class FlexFormField(NaturalKeyModel, I18NModel, OrderableModel):
     validator = models.ForeignKey(
         Validator, blank=True, null=True, limit_choices_to={"target": Validator.FIELD}, on_delete=models.PROTECT
     )
-    regex = RegexField(blank=True, null=True)
+    regex = RegexField(blank=True, null=True, validators=[RegexPatternValidator()])
     advanced = models.JSONField(default=dict, blank=True, null=True)
 
     class Meta:
@@ -528,7 +547,7 @@ class FlexFormField(NaturalKeyModel, I18NModel, OrderableModel):
         return fqn(self.field_type)
 
     def get_default_value(self):
-        return self.advanced.get("default", None)
+        return self.advanced.get("kwargs", {}).get("default_value", None)
 
     def get_field_kwargs(self):
         if issubclass(self.field_type, CustomFieldMixin):
@@ -548,15 +567,27 @@ class FlexFormField(NaturalKeyModel, I18NModel, OrderableModel):
             field_kwargs.setdefault("required", self.required)
             regex = self.regex or self.field_type.custom.regex
         else:
+            # field_kwargs
+            # widget_kwargs
+            # widget_attrs
+            # smart_attrs
+            # data_attrs
             field_type = self.field_type
             advanced = self.advanced.copy()
-            field_kwargs = self.advanced.get("kwargs", {}).copy()
+            # backward compatibility code
+            if "field" not in self.advanced:
+                field_kwargs = self.advanced.get("field", {}).copy()
+            else:
+                field_kwargs = self.advanced.get("kwargs", {}).copy()
+            if "widget" not in self.advanced:
+                widget_kwargs = self.advanced.get("widget", {}).copy()
+            else:
+                widget_kwargs = self.advanced.get("widget_kwargs", {}).copy()
+            smart_attrs = advanced.pop("smart", {}).copy()
+
             field_kwargs["required"] = False
-            widget_kwargs = self.advanced.get("widget_kwargs", {}).copy()
-            # widget_kwargs = self.advanced.get("widget_kwargs", {}).copy()
             regex = self.regex
 
-            smart_attrs = advanced.pop("smart", {}).copy()
             # data = kwargs.pop("data", {}).copy()
             smart_attrs["data-flex"] = self.name
             if self.required:
@@ -584,20 +615,26 @@ class FlexFormField(NaturalKeyModel, I18NModel, OrderableModel):
 
         if field_type in WIDGET_FOR_FORMFIELD_DEFAULTS:
             field_kwargs = {**WIDGET_FOR_FORMFIELD_DEFAULTS[field_type], **field_kwargs}
-        if "datasource" in self.advanced:
+        if "datasource" in smart_attrs:
+            field_kwargs["datasource"] = smart_attrs["datasource"]
+        elif "datasource" in self.advanced:
             field_kwargs["datasource"] = self.advanced["datasource"]
+
         if hasattr(field_type, "choices"):
-            if "choices" in self.advanced:
+            if "choices" in smart_attrs:
+                field_kwargs["choices"] = smart_attrs["choices"]
+            elif "choices" in self.advanced:  # old deprecated
                 field_kwargs["choices"] = self.advanced["choices"]
             elif self.choices:
                 field_kwargs["choices"] = clean_choices(self.choices.split(","))
         if regex:
             field_kwargs["validators"].append(RegexValidator(regex))
-        if not widget_kwargs.pop("class", ""):
-            widget_kwargs.pop("class", "")
+        if css_class := widget_kwargs.pop("class", ""):
+            widget_kwargs["class"] = css_class
         if smart_attrs.get("extra_classes"):
             widget_kwargs["extra_classes"] = smart_attrs.pop("extra_classes")
         field_kwargs["widget_kwargs"] = widget_kwargs
+        field_kwargs.pop("default_value", "")
         return field_kwargs
 
     def get_instance(self):

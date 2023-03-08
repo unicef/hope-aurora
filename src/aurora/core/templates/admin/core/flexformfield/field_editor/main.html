@@ -1,0 +1,64 @@
+{% extends "admin_extra_buttons/action_page.html" %}{% load static itrans aurora %}
+{% block action-content %}
+    <link rel="stylesheet" href="{% static "admin/field_editor/field_editor.css" %}">
+    <script src="/static/admin/js/vendor/jquery/jquery.js"></script>
+    <script src="/static/admin/js/jquery.init.js"></script>
+    <div class="toolbar">
+        <label for="radio_display"><input type="radio" id="radio_display" checked name="output">Render </label>
+        <label for="radio_code"><input type="radio" id="radio_code" name="output">Code </label>
+        <label for="radio_attrs"><input type="radio" id="radio_attrs" name="output">Advanced </label>
+    </div>
+    <div id="iframe-container">
+        <iframe id="widget_display" style="width: 100%"
+                src="{% url "admin:core_flexformfield_widget_display" original.pk %}"></iframe>
+        <iframe id="widget_code" style="display: none; width: 100%"
+                src="{% url "admin:core_flexformfield_widget_code" original.pk %}"></iframe>
+        <iframe id="widget_attrs" style="display: none; width: 100%"
+                src="{% url "admin:core_flexformfield_widget_attrs" original.pk %}"></iframe>
+    </div>
+    <div id="errors"></div>
+    <table>
+        <tr>
+            <td>
+                <form method="post" id="fieldAttrForm">
+                    {% csrf_token %}
+                    <fieldset>
+                        <h2>Flex Field attributes</h2>
+                        <table>
+                            {{ form_field }}
+                        </table>
+                    </fieldset>
+                    <fieldset>
+                        <h2>Form Field attributes</h2>
+                        <table>
+                            {{ form_kwargs }}
+                        </table>
+                    </fieldset>
+                    <fieldset>
+                        <h2>Widget attributes</h2>
+                        <table>
+                            {{ form_widget }}
+                        </table>
+                    </fieldset>
+                    <fieldset>
+                        <h2>Smart attributes</h2>
+                        <table>
+                            {{ form_smart }}
+                        </table>
+                    </fieldset>
+                    <fieldset>
+                        <h2>CSS attributes</h2>
+                        <table>
+                            {{ form_css }}
+                        </table>
+                    </fieldset>
+                    <div>
+                        <input style="background-color: cornflowerblue" type="submit" value="Submit">
+                    </div>
+                </form>
+            </td>
+        </tr>
+    </table>
+    <script id="field_editor_script" src="{% static "admin/field_editor/field_editor.js" %}" data-url="{% url "admin:core_flexformfield_widget_refresh" original.pk %}">
+
+{% endblock action-content %}
