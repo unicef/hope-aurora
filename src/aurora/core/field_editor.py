@@ -1,9 +1,9 @@
 import json
-from functools import lru_cache
 from typing import Dict
 
 from django import forms
 from django.core.cache import caches
+from django.forms import Media
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.template import Context, Template
@@ -45,12 +45,15 @@ class WidgetAttributesForm(AdvancendAttrsMixin, forms.Form):
     css_class = forms.CharField(label="Field class", required=False, help_text="Input CSS class to apply (will")
     extra_classes = forms.CharField(required=False, help_text="Input CSS classes to add input")
     fieldset = forms.CharField(label="Fieldset class", required=False, help_text="Fieldset CSS class to apply")
-    onchange = forms.CharField(widget=forms.Textarea, required=False, help_text="Javascfipt onchange event")
+    # onchange = forms.CharField(
+    #     widget=JavascriptEditor(toolbar=True), required=False, help_text="Javascript onchange event"
+    # )
+    onchange = forms.CharField(widget=forms.Textarea, required=False, help_text="Javascript onchange event")
+    onblur = forms.CharField(widget=forms.Textarea, required=False, help_text="Javascript onblur event")
 
 
-@lru_cache()
 def get_datasources():
-    v = OptionSet.objects.values_list("name", flat=True)
+    v = OptionSet.objects.order_by("name").values_list("name", flat=True)
     return [("", "")] + list(zip(v, v))
 
 
@@ -62,8 +65,12 @@ class SmartAttributesForm(AdvancendAttrsMixin, forms.Form):
     hint = forms.CharField(required=False, help_text="Text to display above the input")
     description = forms.CharField(required=False, help_text="Text to display below the input")
     datasource = forms.ChoiceField(choices=get_datasources, required=False, help_text="Datasource name for ajax field")
+    parent_datasource = forms.ChoiceField(
+        choices=get_datasources, required=False, help_text="Parent Datasource name for ajax field"
+    )
     choices = forms.JSONField(required=False)
-    onchange = forms.CharField(widget=forms.Textarea, required=False, help_text="Javascfipt onchange event")
+    # onchange = forms.CharField(widget=forms.Textarea, required=False, help_text="Javascript onchange event")
+    # onblur = forms.CharField(widget=forms.Textarea, required=False, help_text="Javascript onblur event")
     visible = forms.BooleanField(required=False, help_text="Hide/Show field")
 
 
@@ -135,7 +142,7 @@ class FieldEditor:
             "sample": instance,
         }
         form_class = type(forms.Form)("TestForm", (forms.Form,), form_class_attrs)
-        ctx = self.modeladmin.get_common_context(self.request)
+        ctx = self.get_context(self.request)
         ctx["form"] = form_class()
         ctx["instance"] = instance
         code = Template(
@@ -156,7 +163,7 @@ class FieldEditor:
             "sample": instance,
         }
         form_class = type(forms.Form)("TestForm", (forms.Form,), form_class_attrs)
-        ctx = self.modeladmin.get_common_context(self.request)
+        ctx = self.get_context(self.request)
         if self.request.method == "POST":
             form = form_class(self.request.POST)
             ctx["valid"] = form.is_valid()
@@ -194,15 +201,18 @@ class FieldEditor:
             return JsonResponse({prefix: frm.errors for prefix, frm in forms.items()}, status=400)
         return JsonResponse(data)
 
+    def get_context(self, request, pk=None, **kwargs):
+        return {
+            **self.modeladmin.get_common_context(request, pk),
+            **kwargs,
+        }
+
     def get(self, request, pk):
-        ctx = self.modeladmin.get_common_context(request, pk)
-        # formField = FlexFieldAttributesForm(prefix="field", instance=self.field, field=self.field)
-        # formAttrs = FormFieldAttributesForm(prefix="kwargs", field=self.field)
-        # formWidget = WidgetAttributesForm(prefix="widget_kwargs", field=self.field)
-        # formSmart = SmartAttributesForm(prefix="smart", field=self.field)
-        # cssFoem = SmartAttributesForm(prefix="smart", field=self.field)
+        ctx = self.get_context(request, pk)
+        ctx["forms_media"] = Media()
         for prefix, frm in self.get_forms().items():
             ctx[f"form_{prefix}"] = frm
+            ctx["forms_media"] += frm.media
         return render(request, "admin/core/flexformfield/field_editor/main.html", ctx)
 
     def post(self, request, pk):

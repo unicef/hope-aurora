@@ -1,11 +1,15 @@
 import logging
 
+from django.core.cache import caches
 from django.utils import timezone
+from django_redis import get_redis_connection
 
 from ..state import state
 from .models import Message
 
 logger = logging.getLogger(__name__)
+
+cache = caches["default"]
 
 
 class Dictionary:
@@ -27,6 +31,10 @@ class Dictionary:
         if not msgid.strip():
             return translation
         try:
+            if state.collect_messages:
+                session = state.request.headers["I18N_SESSION"]
+                con = get_redis_connection("default")
+                con.lpush(session, str(msgid).encode())
             if getattr(self, "hit_messages", False):
                 raise KeyError("--")
             translation = self.messages[msgid]

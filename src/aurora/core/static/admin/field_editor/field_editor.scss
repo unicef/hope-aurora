@@ -3,32 +3,66 @@
   overflow: auto;
   resize: vertical;
   height: 200px;
+
   iframe {
     height: 100%;
     border: 0 transparent;
   }
 }
-.field-error{
+
+.field-error {
   color: red;
   margin-bottom: 3px;
 }
-table{
+
+table#tabs {
   width: 100%;
-  tr{
-    th{
+  padding: 5px;
+  margin: 5px;
+
+  th {
+    border-top: 1px solid grey;
+    border-right: 1px solid grey;
+    cursor: pointer;
+
+    &.selected {
+      background: var(--breadcrumbs-bg);
+    }
+  }
+}
+
+table {
+  width: 100%;
+
+  &.cfg-form {
+    margin-bottom: 5px;
+  }
+
+  tr {
+    display: table-row;
+
+    th {
       min-height: 200px;
     }
-    td{
+
+    td {
       width: 100%;
-      input, select, textarea{
+
+      input, select, textarea {
         width: 100%;
       }
     }
   }
+
+  &.collapsed {
+    display: none;
+  }
 }
-.toolbar{
+
+.toolbar {
   margin: 10px;
-  label{
+
+  label {
     margin-right: 10px;
     cursor: pointer;
   }

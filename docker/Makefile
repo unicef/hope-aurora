@@ -86,13 +86,17 @@ dev:
 			-e ADMIN_PASSWORD="${ADMIN_PASSWORD}" \
 			-e DJANGO_ADMIN_URL=admin/ \
 			-e ADMINS="" \
+			-e MAINTENANCE_MODE="off" \
 			-e LANGUAGE_CODE="uk-ua" \
 			-e ALLOWED_HOSTS="*" \
 			-e DATABASE_URL="${DATABASE_URL}" \
 			-e DEBUG="0" \
 			-e DJANGO_SETTINGS_MODULE="aurora.config.settings" \
 			-e SENTRY_DSN="${SENTRY_DSN}" \
-			-e REDIS_CONNSTR="127.0.0.1" \
+			-e REDIS_CONNSTR="192.168.66.66" \
+			-v ${PWD}/conf/:/conf/ \
+			-v ${PWD}/bin/entrypoint.sh:/usr/local/bin/entrypoint.sh \
+			-v ${PWD}/conf/nginx:/var/nginx/ \
 			${RUN_OPTIONS} \
 			${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:latest \
 			${CMD}

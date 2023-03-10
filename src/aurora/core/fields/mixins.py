@@ -43,11 +43,12 @@ class SmartFieldMixin:
     def widget_attrs(self, widget):
         attrs = super().widget_attrs(widget)
         attrs.update({k: v for k, v in self.widget_kwargs.items() if v is not None})
-        for k, v in self.widget_kwargs.items():
+
+        for k, v in self.smart_attrs.items():
             if k.startswith("data-") or k.startswith("on") and v:
                 attrs[k] = v
 
-        for k, v in self.smart_attrs.items():
+        for k, v in self.widget_kwargs.items():
             if k.startswith("data-") or k.startswith("on") and v:
                 attrs[k] = v
 
@@ -65,6 +66,12 @@ class SmartFieldMixin:
                 attrs["onchange"] = oneline(attrs["onchange"])
             else:
                 attrs.pop("onchange")
+        if "onblur" in attrs:
+            if attrs["onblur"]:
+                attrs["onblur"] = oneline(attrs["onblur"])
+            else:
+                attrs.pop("onblur")
+
         widget.smart_attrs = self.smart_attrs
         widget.flex_field = self.flex_field
         return attrs

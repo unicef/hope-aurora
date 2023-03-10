@@ -1,14 +1,19 @@
+import csv
 import logging
+from hashlib import md5
+from io import TextIOWrapper
 from unittest.mock import Mock
 from urllib.parse import unquote
 
 from admin_extra_buttons.decorators import button, view
 from adminfilters.combo import ChoicesFieldComboFilter
-from adminfilters.value import ValueFilter
+from adminfilters.querystring import QueryStringFilter
 from dateutil.utils import today
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin import register
+from django.core.cache import caches
+from django.db.transaction import atomic
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.template import loader
@@ -18,13 +23,16 @@ from django.utils.translation import get_language
 from smart_admin.modeladmin import SmartModelAdmin
 
 from ..core.admin_sync import SyncMixin
+from ..core.forms import CSVOptionsForm
 from ..core.models import FlexForm
 from ..state import state
 from .engine import translator
-from .forms import TranslationForm
+from .forms import ImportLanguageForm, LanguageForm
 from .models import Message
 
 logger = logging.getLogger(__name__)
+
+cache = caches["default"]
 
 
 @register(Message)
@@ -37,14 +45,9 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
         "draft",
         "used",
         ("locale", ChoicesFieldComboFilter),
-        ("msgid", ValueFilter),
-        ("msgstr", ValueFilter),
-        ("msgcode", ValueFilter),
-        ("md5", ValueFilter),
+        QueryStringFilter,
         "last_hit",
-        ("msgstr", ValueFilter),
     )
-    date_hierarchy = "timestamp"
     fieldsets = (
         (
             None,
@@ -70,11 +73,105 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
     def approve(self, request, queryset):
         queryset.update(draft=False)
 
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .defer(
+                "msgcode",
+            )
+        )
+
+    @button()
+    def import_translations(self, request):
+        ctx = self.get_common_context(request, media=self.media, title="Import Translations File", pre={}, post={})
+        ctx["rows"] = []
+        if request.method == "POST":
+            key = f"translation_{request.user.pk}_{md5(request.session.session_key.encode()).hexdigest()}"
+            if "import" in request.POST:
+                form = ImportLanguageForm(request.POST, request.FILES)
+                opts_form = CSVOptionsForm(request.POST, prefix="csv")
+                if form.is_valid() and opts_form.is_valid():
+                    csv_file = form.cleaned_data["csv_file"]
+                    if csv_file.multiple_chunks():
+                        self.message_user(request, "Uploaded file is too big (%.2f MB)" % (csv_file.size / 1000))
+                    else:
+                        ctx["language_code"] = form.cleaned_data["locale"]
+                        ctx["language"] = dict(form.fields["locale"].choices)[ctx["language_code"]]
+                        self.message_user(
+                            request,
+                            "Uploaded file succeeded (%.2f MB)" % (csv_file.size / 1000),
+                        )
+                        rows = TextIOWrapper(csv_file, encoding="utf-8")
+                        rows.seek(0)
+                        config = {**opts_form.cleaned_data}
+                        has_header = config.pop("header", False)
+                        reader = csv.reader(rows, **config)
+                        line_count = 1
+                        for row in reader:
+                            if has_header and line_count == 1:
+                                continue
+                            found = Message.objects.filter(msgid=row[0]).first()
+                            ctx["rows"].append(
+                                [
+                                    line_count,
+                                    {
+                                        "msgid": row[0],
+                                        "msgstr": row[1],
+                                        "found": bool(found),
+                                        "match": found and found.msgstr == row[1],
+                                    },
+                                ]
+                            )
+                            line_count += 1
+                        data = {
+                            "language": ctx["language"],
+                            "language_code": ctx["language_code"],
+                            "messages": ctx["rows"],
+                        }
+                        cache.set(key, data, timeout=86400, version=1)
+            elif "save" in request.POST:
+                data = cache.get(key, version=1)
+                selection = request.POST.getlist("selection")
+                lang = data["language_code"]
+                processed = selected = updated = created = 0
+                ids = []
+                with atomic():
+                    for i, row in enumerate(data["messages"], 1):
+                        processed += 1
+                        if str(i) in selection:
+                            selected += 1
+                            info = row[1]
+                            __, c = Message.objects.update_or_create(
+                                locale=lang, msgid=info["msgid"], defaults={"msgstr": info["msgstr"]}
+                            )
+                            ids.append(str(__.pk))
+                            if c:
+                                created += 1
+                            else:
+                                updated += 1
+                    self.message_user(
+                        request,
+                        f"Messages processed: "
+                        f"Processed: {processed}, "
+                        f"Selected: {selected}, "
+                        f"Created: {created}, "
+                        f"Updated: {updated}",
+                    )
+                    base_url = reverse("admin:i18n_message_changelist")
+                    return HttpResponseRedirect(f"{base_url}?locale__exact={lang}&qs=id__in={','.join(ids)}")
+        else:
+            form = ImportLanguageForm()
+            opts_form = CSVOptionsForm(prefix="csv", initial=CSVOptionsForm.defaults)
+        ctx["form"] = form
+        ctx["opts_form"] = opts_form
+        return render(request, "admin/i18n/message/import_trans.html", ctx)
+
     @button()
     def check_orphans(self, request):
         ctx = self.get_common_context(request, media=self.media, title="Check Orphans", pre={}, post={})
         if request.method == "POST":
-            form = TranslationForm(request.POST)
+            form = LanguageForm(request.POST)
             locale = get_language()
             if form.is_valid():
                 lang = form.cleaned_data["locale"]
@@ -111,7 +208,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
                     state.hit_messages = False
                     # return render(request, "admin/i18n/message/check_orphans.html", ctx)
         else:
-            form = TranslationForm()
+            form = LanguageForm()
             ctx["form"] = form
         return render(request, "admin/i18n/message/check_orphans.html", ctx)
 
@@ -157,7 +254,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
             title="Generate Translation",
         )
         if request.method == "POST":
-            form = TranslationForm(request.POST)
+            form = LanguageForm(request.POST)
             if form.is_valid():
                 locale = form.cleaned_data["locale"]
                 original = ctx["original"]
@@ -179,7 +276,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
             else:
                 ctx["form"] = form
         else:
-            form = TranslationForm()
+            form = LanguageForm()
             ctx["form"] = form
         return render(request, "admin/i18n/message/translation.html", ctx)
 
@@ -191,7 +288,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
             title="Generate Translation",
         )
         if request.method == "POST":
-            form = TranslationForm(request.POST)
+            form = LanguageForm(request.POST)
             if form.is_valid():
                 locale = form.cleaned_data["locale"]
                 existing = Message.objects.filter(locale=locale).count()
@@ -214,7 +311,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
             else:
                 ctx["form"] = form
         else:
-            form = TranslationForm()
+            form = LanguageForm()
             ctx["form"] = form
         return render(request, "admin/i18n/message/translation.html", ctx)
 

@@ -28,6 +28,7 @@ from django.core.files.utils import FileProxyMixin
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse
 from django.template import loader
+from django.template.defaultfilters import date
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.cache import patch_cache_control
@@ -463,9 +464,12 @@ def flatten_dict(d, parent_key="", sep="_") -> Dict:
     return dict(items)
 
 
-def build_dict(r):
+def build_dict(r, **options):
     d = flatten_dict(r["fields"])
-    d["timestamp"] = str(r["timestamp"])
+    if "datetime_format" in options:
+        d["timestamp"] = date(r["timestamp"], options["datetime_format"])
+    else:
+        d["timestamp"] = str(r["timestamp"])
     d["id"] = r["id"]
     d["ignored"] = r["ignored"]
     from aurora.registration.models import Record

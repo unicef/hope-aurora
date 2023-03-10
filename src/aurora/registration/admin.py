@@ -2,13 +2,12 @@ import csv
 import io
 import json
 import logging
-import re
 from datetime import datetime, timedelta
+from hashlib import md5
 
 from admin_extra_buttons.decorators import button, choice, link, view
 from adminfilters.autocomplete import AutoCompleteFilter
 from adminfilters.numbers import NumberFilter
-from adminfilters.querystring import QueryStringFilter
 from adminfilters.value import ValueFilter
 from dateutil.utils import today
 from django import forms
@@ -16,7 +15,6 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin import SimpleListFilter, register
 from django.core.cache import cache
-from django.core.exceptions import ValidationError
 from django.db.models import JSONField
 from django.db.models.signals import post_delete, post_save
 from django.db.transaction import atomic
@@ -27,13 +25,14 @@ from django.template.loader import select_template
 from django.urls import reverse, translate_url
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
-from django_regex.utils import RegexList
+from django_redis import get_redis_connection
 from jsoneditor.forms import JSONEditor
 from smart_admin.modeladmin import SmartModelAdmin
 
 from ..administration.filters import BaseAutoCompleteFilter
 from ..core.admin import ConcurrencyVersionAdmin
 from ..core.admin_sync import SyncMixin
+from ..core.forms import CSVOptionsForm, DateFormatsForm
 from ..core.models import FormSet
 from ..core.utils import (
     build_dict,
@@ -44,7 +43,7 @@ from ..core.utils import (
     namify,
 )
 from ..i18n.forms import TemplateForm
-from .forms import CloneForm, RegistrationForm
+from .forms import CloneForm, RegistrationExportForm, RegistrationForm
 from .models import Record, Registration
 from .paginator import LargeTablePaginator
 from .protocol import AuroraSyncRegistrationProtocol
@@ -77,29 +76,6 @@ class JamesForm(forms.ModelForm):
         js = [
             "https://cdnjs.cloudflare.com/ajax/libs/jmespath/0.16.0/jmespath.min.js",
         ]
-
-
-class RegistrationExportForm(forms.Form):
-    filters = forms.CharField(
-        widget=forms.Textarea,
-        required=False,
-        help_text="filters to use to select the records (Uses Django filtering syntax)",
-    )
-    ignored = forms.CharField(
-        widget=forms.Textarea,
-        required=False,
-        help_text="list the form fields should be ignored. Regex can be used in each line.",
-    )
-
-    def clean_filters(self):
-        filter = QueryStringFilter(None, {}, Record, None)
-        return filter.get_filters(self.cleaned_data["filters"])
-
-    def clean_ignored(self):
-        try:
-            return RegexList([re.compile(rule) for rule in self.cleaned_data["ignored"].split("\n")])
-        except Exception as e:
-            raise ValidationError(e)
 
 
 class OrganizationFilter(BaseAutoCompleteFilter):
@@ -208,67 +184,77 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
         ctx = self.get_common_context(request, pk, title="Export")
         reg: Registration = ctx["original"]
         if request.method == "POST":
-            form = RegistrationExportForm(request.POST)
-            if form.is_valid():
-                filters, exclude = form.cleaned_data["filters"]
-                ignore_rules = form.cleaned_data["ignored"]
-                ctx["filters"] = filters
-                ctx["exclude"] = exclude
-                qs = (
-                    Record.objects.filter(registration__id=pk)
-                    .defer(
-                        "storage",
-                        "counters",
-                        "files",
+            form = RegistrationExportForm(request.POST, initial={"include": ".*"})
+            opts_form = CSVOptionsForm(request.POST, prefix="csv", initial=CSVOptionsForm.defaults)
+            fmt_form = DateFormatsForm(request.POST, prefix="fmt", initial=DateFormatsForm.defaults)
+            try:
+                if form.is_valid() and opts_form.is_valid() and fmt_form.is_valid():
+                    filters, exclude = form.cleaned_data["filters"]
+                    include_fields = form.cleaned_data["include"]
+                    exclude_fields = form.cleaned_data["exclude"]
+                    ctx["filters"] = filters
+                    ctx["exclude"] = exclude
+                    qs = (
+                        Record.objects.filter(registration__id=pk)
+                        .defer(
+                            "storage",
+                            "counters",
+                            "files",
+                        )
+                        .filter(**filters)
+                        .exclude(**exclude)
+                        .values("fields", "id", "ignored", "timestamp", "registration_id")
                     )
-                    .filter(**filters)
-                    .exclude(**exclude)
-                    .values("fields", "id", "ignored", "timestamp", "registration_id")
-                )
-                records = [build_dict(r) for r in qs]
-                skipped = []
-                all_fields = []
-                for r in records:
-                    for field_name in r.keys():
-                        if field_name in ignore_rules and field_name not in skipped:
-                            skipped.append(field_name)
-                        elif field_name not in all_fields:
-                            all_fields.append(field_name)
-                if "export" in request.POST:
-                    csv_options_default = {
-                        "quotechar": '"',
-                        "quoting": csv.QUOTE_ALL,
-                        "delimiter": ";",
-                        "escapechar": "\\",
-                    }
-                    out = io.StringIO()
-                    writer = csv.DictWriter(
-                        out,
-                        dialect="excel",
-                        fieldnames=all_fields,
-                        restval="-",
-                        extrasaction="ignore",
-                        **csv_options_default,
-                    )
-                    writer.writeheader()
-                    writer.writerows(records)
-                    out.seek(0)
-                    filename = f"Registration_{reg.slug}.csv"
-                    response = HttpResponse(
-                        out.read(),
-                        headers={"Content-Disposition": 'attachment;filename="%s"' % filename},
-                        content_type="text/csv",
-                    )
-                    return response
-                else:
-                    ctx["all_fields"] = sorted(set(all_fields))
-                    ctx["skipped"] = skipped
-                    ctx["qs"] = records[:10]
-
+                    if qs.count() >= 5000:
+                        raise Exception("Too many records please change your filters. (max 5000)")
+                    records = [build_dict(r, **fmt_form.cleaned_data) for r in qs]
+                    if not records:
+                        raise Exception("No records matching filtering criteria")
+                    skipped = []
+                    all_fields = []
+                    for r in records:
+                        for field_name in r.keys():
+                            if field_name not in skipped and field_name in exclude_fields:
+                                skipped.append(field_name)
+                            elif field_name not in all_fields and field_name in include_fields:
+                                all_fields.append(field_name)
+                    if "export" in request.POST:
+                        csv_options = opts_form.cleaned_data
+                        add_header = csv_options.pop("header")
+                        out = io.StringIO()
+                        writer = csv.DictWriter(
+                            out,
+                            # dialect="excel",
+                            fieldnames=all_fields,
+                            restval="-",
+                            extrasaction="ignore",
+                            **csv_options,
+                        )
+                        if add_header:
+                            writer.writeheader()
+                        writer.writerows(records)
+                        out.seek(0)
+                        filename = f"Registration_{reg.slug}.csv"
+                        response = HttpResponse(
+                            out.read(),
+                            headers={"Content-Disposition": 'attachment;filename="%s"' % filename},
+                            content_type="text/csv",
+                        )
+                        return response
+                    else:
+                        ctx["all_fields"] = sorted(set(all_fields))
+                        ctx["skipped"] = skipped
+                        ctx["qs"] = records[:10]
+            except Exception as e:
+                self.message_error_to_user(request, e)
         else:
-            form = RegistrationExportForm()
+            form = RegistrationExportForm(initial={"include": ".*"})
+            opts_form = CSVOptionsForm(prefix="csv", initial=CSVOptionsForm.defaults)
+            fmt_form = DateFormatsForm(prefix="fmt", initial=DateFormatsForm.defaults)
 
         ctx["form"] = form
+        ctx["opts_form"] = opts_form
+        ctx["fmt_form"] = fmt_form
         return render(request, "admin/registration/registration/export.html", ctx)
 
     @view(label="invalidate cache", html_attrs={"class": "aeb-warn"})
@@ -335,6 +321,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
             self.inspect,
             self.clone,
             self.create_translation,
+            self.prepare_translation,
             self.create_custom_template,
         ]
         return button
@@ -453,8 +440,60 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
         return render(request, "admin/registration/registration/create_template.html", ctx)
 
     @view()
+    def prepare_translation(self, request, pk):
+        from aurora.i18n.forms import LanguageForm
+
+        ctx = self.get_common_context(
+            request,
+            pk,
+            media=self.media,
+            title="Prepare Translation File",
+        )
+        instance: Registration = ctx["original"]
+        if request.method == "POST":
+            if "create" in request.POST:
+                form = LanguageForm(request.POST)
+                if form.is_valid():
+                    key = f"i18n_{request.user.pk}_{md5(request.session.session_key.encode()).hexdigest()}"
+                    con = get_redis_connection("default")
+                    con.delete(key)
+                    locale = form.cleaned_data["locale"]
+                    if locale not in instance.locales:
+                        self.message_user(request, "Language not enabled for this registration", messages.ERROR)
+                        return HttpResponseRedirect(".")
+                    self.create_translation(self, request, pk)
+                    stored = con.lrange(key, 0, -1)
+                    collected = sorted(set([c.decode() for c in stored]))
+                    from aurora.i18n.models import Message
+
+                    entries = list(Message.objects.filter(locale=locale).values_list("msgid", "msgstr"))
+                    data = dict(entries)
+                    ctx["collected"] = {c: data.get(c, "") for c in collected}
+                    ctx["language_code"] = locale
+            elif "export" in request.POST:
+                selection = request.POST.getlist("selection")
+                language_code = request.POST.get("language_code")
+                msgids = [request.POST.get(f"msgid_{i}") for i in selection]
+                response = HttpResponse(
+                    content_type="text/csv",
+                    headers={"Content-Disposition": f'attachment; filename="{instance.name}_{language_code}.csv"'},
+                )
+                writer = csv.writer(response, dialect="excel")
+                for i, msg in enumerate(msgids, 1):
+                    writer.writerow([str(i), msg, ""])
+                return response
+                # language_code = request.POST.get("language_code")
+                # for i, row in enumerate(data["messages"], 1):
+
+        else:
+            form = LanguageForm()
+            ctx["form"] = form
+
+        return render(request, "admin/registration/registration/translation.html", ctx)
+
+    @view()
     def create_translation(self, request, pk):
-        from aurora.i18n.forms import TranslationForm
+        from aurora.i18n.forms import LanguageForm
         from aurora.i18n.models import Message
 
         ctx = self.get_common_context(
@@ -465,7 +504,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
         )
         instance: Registration = ctx["original"]
         if request.method == "POST":
-            form = TranslationForm(request.POST)
+            form = LanguageForm(request.POST)
             if form.is_valid():
                 locale = form.cleaned_data["locale"]
                 existing = Message.objects.filter(locale=locale).count()
@@ -473,24 +512,18 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
                 uri = translate_url(uri, locale)
                 from django.test import Client
 
+                key = f"i18n_{request.user.pk}_{md5(request.session.session_key.encode()).hexdigest()}"
                 settings.ALLOWED_HOSTS.append("testserver")
-                headers = {"HTTP_ACCEPT_LANGUAGE": "locale", "HTTP_I18N": "true"}
+                headers = {"HTTP_ACCEPT_LANGUAGE": "locale", "HTTP_I18N_SESSION": key, "HTTP_I18N": "true"}
                 try:
                     client = Client(**headers)
                     r1 = client.get(uri)
-                    # uri = request.build_absolute_uri(reverse("register", args=[instance.slug]))
-                    # uri = translate_url(uri, locale)
-                    # r1 = requests.get(uri, headers={"Accept-Language": locale, "I18N": "true"})
                     if r1.status_code == 302:
-                        # return HttpResponse(r1.content, status=r1.status_code)
                         raise Exception(f"GET: {uri} - {r1.status_code}: {r1.headers['location']}")
                     if r1.status_code != 200:
-                        # return HttpResponse(r1.content, status=r1.status_code)
                         raise Exception(f"GET: {uri} - {r1.status_code}")
-                    # r2 = requests.post(uri, {}, headers={"Accept-Language": locale, "I18N": "true"})
                     r2 = client.post(uri, {}, **headers)
                     if r2.status_code != 200:
-                        # return HttpResponse(r2.content, status=r2.status_code)
                         raise Exception(f"POST: {uri} - {r2.status_code}")
                 except Exception as e:
                     logger.exception(e)
@@ -505,7 +538,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
             else:
                 ctx["form"] = form
         else:
-            form = TranslationForm()
+            form = LanguageForm()
             ctx["form"] = form
         return render(request, "admin/registration/registration/translation.html", ctx)
 

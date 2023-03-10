@@ -1,10 +1,14 @@
+import re
+
 import jmespath
+from adminfilters.querystring import QueryStringFilter
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
+from django_regex.utils import RegexList
 from mdeditor.fields import MDTextFormField
 
-from aurora.registration.models import Registration
+from aurora.registration.models import Record, Registration
 
 
 class JMESPathFormField(forms.CharField):
@@ -50,3 +54,37 @@ class CloneForm(forms.Form):
 class RegistrationOptionForm(forms.ModelForm):
     datatable = forms.BooleanField(required=False, help_text="enable datatable inspection for this data")
     export = forms.BooleanField(required=False, help_text="allows data to be exported in CSV")
+
+
+class RegistrationExportForm(forms.Form):
+    filters = forms.CharField(
+        widget=forms.Textarea({"rows": 3, "cols": 80}),
+        required=False,
+        help_text="filters to use to select the records (Uses Django filtering syntax)",
+    )
+    include = forms.CharField(
+        widget=forms.Textarea({"rows": 3, "cols": 80}),
+        required=False,
+        help_text="list the fields should be added. Regex can be used in each line.",
+    )
+    exclude = forms.CharField(
+        widget=forms.Textarea({"rows": 3, "cols": 80}),
+        required=False,
+        help_text="list the fields should be ignored. Regex can be used in each line.",
+    )
+
+    def clean_filters(self):
+        filter = QueryStringFilter(None, {}, Record, None)
+        return filter.get_filters(self.cleaned_data["filters"])
+
+    def clean_include(self):
+        try:
+            return RegexList([re.compile(rule) for rule in self.cleaned_data["include"].split("\n")])
+        except Exception as e:
+            raise ValidationError(e)
+
+    def clean_exclude(self):
+        try:
+            return RegexList([re.compile(rule) for rule in self.cleaned_data["exclude"].split("\n")])
+        except Exception as e:
+            raise ValidationError(e)

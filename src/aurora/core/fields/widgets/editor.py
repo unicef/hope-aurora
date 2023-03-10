@@ -1,15 +1,16 @@
 from django import forms
 
 
-class PythonEditor(forms.Textarea):
+class JavascriptEditor(forms.Textarea):
     template_name = "admin/core/widgets/editor.html"
 
     def __init__(self, *args, **kwargs):
         theme = kwargs.pop("theme", "midnight")
-        self.toolbar = kwargs.pop("toolbar", True)
+        toolbar = kwargs.pop("toolbar", True)
         super().__init__(*args, **kwargs)
         self.attrs["class"] = "python-editor"
         self.attrs["theme"] = theme
+        self.attrs["toolbar"] = toolbar
 
     class Media:
         css = {
@@ -21,8 +22,8 @@ class PythonEditor(forms.Textarea):
             )
         }
         js = (
-            "/static/admin/js/vendor/jquery/jquery.js",
-            "/static/admin/js/jquery.init.js",
+            # "/static/admin/js/vendor/jquery/jquery.js",
+            # "/static/admin/js/jquery.init.js",
             "codemirror/codemirror.js",
             "codemirror/javascript.js",
             "codemirror/fullscreen.js",

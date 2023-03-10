@@ -31,7 +31,6 @@ class OrganizationAuthBackend(ModelBackend):
         # user_groups_field = get_user_model()._meta.get_field('organizationrole_set')
         # user_groups_query = 'group__%s' % user_groups_field.related_query_name()
         perms = Permission.objects.filter(group__organizationrole__user=user_obj)
-        print("src/aurora/security/backend.py: 34", perms)
         return perms
 
     def has_perm(self, user_obj, perm, obj=None):

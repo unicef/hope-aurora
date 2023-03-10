@@ -14,8 +14,28 @@
   margin-bottom: 3px;
 }
 
+table#tabs {
+  width: 100%;
+  padding: 5px;
+  margin: 5px;
+}
+table#tabs th {
+  border-top: 1px solid grey;
+  border-right: 1px solid grey;
+  cursor: pointer;
+}
+table#tabs th.selected {
+  background: var(--breadcrumbs-bg);
+}
+
 table {
   width: 100%;
+}
+table.cfg-form {
+  margin-bottom: 5px;
+}
+table tr {
+  display: table-row;
 }
 table tr th {
   min-height: 200px;
@@ -25,6 +45,9 @@ table tr td {
 }
 table tr td input, table tr td select, table tr td textarea {
   width: 100%;
+}
+table.collapsed {
+  display: none;
 }
 
 .toolbar {

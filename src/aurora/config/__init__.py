@@ -34,7 +34,7 @@ MANDATORY = {
 OPTIONS = {
     "ADMINS": (parse_emails, ""),
     "ADMIN_SYNC_CONFIG": (str, "admin_sync.conf.DjangoConstance"),
-    "ALLOWED_HOSTS": (list, "*"),
+    "ALLOWED_HOSTS": (list, ["*"]),
     "AUTHENTICATION_BACKENDS": (list, []),
     "AZURE_AUTHORITY_HOST": (str, ""),
     "AZURE_CLIENT_ID": (str, ""),
@@ -85,7 +85,7 @@ OPTIONS = {
     "SESSION_COOKIE_NAME": (str, "aurora_id"),
     "SESSION_COOKIE_SECURE": (bool, "false"),
     "SMART_ADMIN_BOOKMARKS": (parse_bookmarks, ""),
-    "STATICFILES_STORAGE": (str, "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"),
+    "STATICFILES_STORAGE": (str, "aurora.web.storage.ForgivingManifestStaticFilesStorage"),
     "USE_HTTPS": (bool, False),
     "USE_X_FORWARDED_HOST": (bool, "false"),
     "SITE_ID": (int, 1),

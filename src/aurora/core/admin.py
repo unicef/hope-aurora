@@ -1,5 +1,6 @@
 import json
 import logging
+from django.contrib import messages
 
 from admin_extra_buttons.decorators import button, link, view
 from admin_ordering.admin import OrderableAdmin
@@ -27,7 +28,7 @@ from ..administration.filters import BaseAutoCompleteFilter
 from ..administration.mixin import LoadDumpMixin
 from .admin_sync import SyncMixin
 from .field_editor import FieldEditor
-from .fields.widgets import PythonEditor
+from .fields.widgets import JavascriptEditor
 from .forms import Select2Widget, ValidatorForm
 from .models import (
     FIELD_KWARGS,
@@ -82,9 +83,9 @@ class Select2RelatedFieldComboFilter(RelatedFieldComboFilter):
 
 class ValidatorTestForm(forms.Form):
     code = forms.CharField(
-        widget=PythonEditor,
+        widget=JavascriptEditor,
     )
-    input = forms.CharField(widget=PythonEditor(toolbar=False), required=False)
+    input = forms.CharField(widget=JavascriptEditor(toolbar=False), required=False)
 
 
 @register(Organization)
@@ -114,6 +115,7 @@ class ProjectAdmin(SyncMixin, MPTTModelAdmin):
     mptt_indent_field = "name"
     search_fields = ("name",)
     protocol_class = AuroraSyncProjectProtocol
+    autocomplete_fields = "parent, "
 
     def get_search_results(self, request, queryset, search_term):
         queryset, may_have_duplicates = super().get_search_results(request, queryset, search_term)
@@ -313,7 +315,9 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
     def field_editor(self, request, pk):
         self.editor = FieldEditor(self, request, pk)
         if request.method == "POST":
-            return self.editor.post(request, pk)
+            ret = self.editor.post(request, pk)
+            self.message_user(request, "Saved", messages.SUCCESS)
+            return ret
         else:
             return self.editor.get(request, pk)
 

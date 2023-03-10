@@ -20,14 +20,13 @@
             })
             .fail(function (xhr) {
                 var errors = xhr.responseJSON;
-                console.log(1111, errors)
                 var fieldErrors = errors.field;
                 var kwargsErrors = errors.kwargs;
                 var widget_kwargs = errors.widget_kwargs;
                 var smart = errors.smart;
                 for (const property in fieldErrors) {
                     $(`#id_field-${property}`).before(`<div class="field-error">${fieldErrors[property]}</div>`);
-                }
+                };
                 // for (const property in kwargsErrors) {
                 //     console.log(`${property}: ${kwargsErrors[property]}`);
                 // }
@@ -51,6 +50,12 @@
         $radioCode.is(":checked") ? $iFrame2.show() : $iFrame2.hide();
         $radioAttributes.is(":checked") ? $iFrame3.show() : $iFrame3.hide();
     })
-
+    $("#tabs th").on("click", function (){
+        const targetName = $(this).data('target');
+        $(`#tabs th`).removeClass('selected');
+        $(`table.cfg-form`).addClass('collapsed');
+        $(this).addClass('selected');
+        $(`#${targetName}`).toggleClass('collapsed');
+    });
 
 })(django.jQuery);

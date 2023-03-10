@@ -29,8 +29,7 @@
 {#            {% endif %}#}
         </label>
         {% if field.field.flex_field.advanced.smart.description %}
-        <div class="itrans text-sm" data-msgid="{{ field.field.flex_field.advanced.description }}">
-{#            {% if can_translate %}{% include "i18n/_staff_edit_i18n.html" with original=field|smart:"description,0" %}{% endif %}#}
+        <div class="itrans text-sm" data-msgid="{{ field.field.flex_field.advanced.smart.description }}">
             {% trans field.field.flex_field.advanced.smart.description %}
         </div>
         {% endif %}

@@ -29,7 +29,7 @@ FERNET_KEY = env("FERNET_KEY")
 DEBUG = env("DEBUG")
 DEBUG_PROPAGATE_EXCEPTIONS = env("DEBUG_PROPAGATE_EXCEPTIONS")
 
-ALLOWED_HOSTS = env("ALLOWED_HOSTS")
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 DJANGO_ADMIN_URL = env("DJANGO_ADMIN_URL")
 
 # Application definition
@@ -187,7 +187,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 try:
     if REDIS_CONNSTR := env("REDIS_CONNSTR"):
-        os.environ["CACHE_DEFAULT"] = f"redisraw://{REDIS_CONNSTR}"
+        os.environ["CACHE_DEFAULT"] = f"redisraw://{REDIS_CONNSTR},client_class=django_redis.client.DefaultClient"
 except Exception as e:  # pragma: no cover
     logging.exception(e)
 
@@ -590,6 +590,7 @@ SOCIAL_AUTH_PIPELINE = (
     "social_core.pipeline.social_auth.associate_user",
     "social_core.pipeline.social_auth.load_extra_data",
     "aurora.core.authentication.user_details",
+    "aurora.core.authentication.redir_to_form",
 )
 SOCIAL_AUTH_AZUREAD_B2C_OAUTH2_USER_FIELDS = [
     "email",
