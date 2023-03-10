@@ -154,7 +154,7 @@ def check_access(view_func):
             login_url = "%s?next=%s" % (settings.LOGIN_URL, request.path)
             if request.user.is_anonymous:
                 response = HttpResponseRedirect(login_url)
-                response.set_cookie("aurora_form", str(view.registration.pk))
+                response.set_cookie("aurora_form", str(view.registration.slug))
                 return response
             if not request.user.has_perm("registration.register", view.registration):
                 messages.add_message(request, messages.ERROR, _("Sorry you do not have access to requested Form"))

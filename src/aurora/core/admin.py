@@ -1,6 +1,5 @@
 import json
 import logging
-from django.contrib import messages
 
 from admin_extra_buttons.decorators import button, link, view
 from admin_ordering.admin import OrderableAdmin
@@ -12,6 +11,7 @@ from adminfilters.value import ValueFilter
 from concurrency.api import disable_concurrency
 from django import forms
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.admin import TabularInline, register
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.core.cache import caches

@@ -1,6 +1,6 @@
 import logging
-from django.conf import settings
 
+from django.conf import settings
 from django.contrib.staticfiles.storage import ManifestStaticFilesStorage
 
 logger = logging.getLogger(__name__)
