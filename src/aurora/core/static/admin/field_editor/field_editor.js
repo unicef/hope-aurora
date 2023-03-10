@@ -57,5 +57,4 @@
         $(this).addClass('selected');
         $(`#${targetName}`).toggleClass('collapsed');
     });
-
 })(django.jQuery);
