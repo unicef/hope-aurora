@@ -1,6 +1,7 @@
-{% extends "admin_extra_buttons/change_form.html" %}
+{% extends "admin_extra_buttons/change_form.html" %}{% load static %}
 {% block extrahead %}
     {{ block.super }}
+    <link rel="stylesheet" href="{% static "base.css" %}">
     <style>
         .submit-row.key {
             display: flex;

@@ -1,6 +1,9 @@
 import logging
 import posixpath
 
+from adminfilters.mixin import AdminFiltersMixin
+from adminfilters.value import ValueFilter
+
 from admin_extra_buttons.decorators import button, view
 
 # Check if django-reversion is installed and use reversions' VersionAdmin
@@ -104,7 +107,7 @@ class TemplateAdminForm(forms.ModelForm):
         fields = "__all__"
 
 
-class TemplateAdmin(SyncMixin, PublishMixin, TemplateModelAdmin):
+class TemplateAdmin(SyncMixin, AdminFiltersMixin, PublishMixin, TemplateModelAdmin):
     form = TemplateAdminForm
     fieldsets = (
         (
@@ -136,7 +139,7 @@ class TemplateAdmin(SyncMixin, PublishMixin, TemplateModelAdmin):
     )
     filter_horizontal = ("sites",)
     list_display = ("name", "creation_date", "last_changed", "site_list", "active")
-    list_filter = ("sites", "active")
+    list_filter = ("sites", "active", ("name", ValueFilter.factory(lookup_name="endswith")))
     save_as = True
     search_fields = ("name", "content")
     actions = ["invalidate_cache", "repopulate_cache", "check_syntax"]

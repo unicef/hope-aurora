@@ -4,15 +4,16 @@ $color-error: #ff9898;
 * {
 
 }
-.CodeMirror-wrapping{
-  textarea{
+
+.CodeMirror-wrapping {
+  textarea {
     background-color: white;
   }
 }
 
-.select2{
-  &.select2-container{
-    &.select2-container--default{
+.select2 {
+  &.select2-container {
+    &.select2-container--default {
       width: 100% !important;
     }
   }
@@ -77,39 +78,6 @@ $color-error: #ff9898;
   visibility: hidden;
 }
 
-.formset {
-  @mixin formset-button {
-    padding-left: 1rem;
-    padding-right: 1rem;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-    border-width: 1px;
-    border-radius: 0.25rem;
-    --border-opacity: 1;
-    font-weight: 600;
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%);
-
-  }
-
-  .formset-add-row {
-    .formset-add-button {
-      @include formset-button;
-      color: rgba(45, 55, 72, var(--text-opacity));
-      border-color: rgba(203, 213, 224, var(--border-opacity));
-    }
-  }
-
-  .formset-delete-row {
-    .formset-delete-button {
-      @include formset-button;
-      --text-opacity: 1;
-      color: rgba(252, 129, 129, var(--text-opacity));
-      border-color: rgba(252, 129, 129, var(--border-opacity));
-      background-color: rgba(255, 255, 255, var(--bg-opacity));
-    }
-  }
-}
-
 .charting {
   .button {
     color: $base-color;
@@ -146,9 +114,36 @@ $color-error: #ff9898;
   }
 }
 
-.intro {
+.intro, .editormd-preview-container, .editormd-html-preview {
   h1 {
+    font-size: 18pt;
+    font-weight: bold;
+    margin-bottom: 2px;
+    text-align: center;
+  }
+
+  h2 {
+    font-size: 16pt;
+    font-weight: bold;
+    margin-bottom: 2px;
+    text-align: center;
+  }
+
+  h3 {
+    font-size: 13pt;
+    font-weight: bold;
+    margin-bottom: 2px;
+    text-align: center;
+  }
+
+  h4 {
     font-size: larger;
+    font-weight: bold;
+    margin-bottom: 2px;
+  }
+
+  h5 {
+    font-size: 1em;
     font-weight: bold;
     margin-bottom: 2px;
   }
@@ -221,35 +216,8 @@ ul.errorlist {
   }
 }
 
-
-input[type=submit], input[type=button], {
-  color: rgba(255, 255, 255, var(--text-opacity));
-  padding-left: 1rem;
-  padding-right: 1rem;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  margin-top: 1rem;
-  font-weight: 700;
-  border-radius: 0.25rem;
-  background-color: rgba(66, 153, 225, var(--bg-opacity));
-  //color: white;
-  cursor: pointer;
-
-  &:hover, &:active {
-    box-shadow: 0 0 0 3px rgb(66 153 225 / 50%);
-    //background-color: rgba(43, 108, 176, var(--bg-opacity));
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    background-color: rgba(124, 124, 124, 0.67);
-  }
-}
-
-#registrationForm {
-  input[type=submit] {
+#formContainer {
+  input[type=submit], input[type=button], {
     color: rgba(255, 255, 255, var(--text-opacity));
     padding-left: 1rem;
     padding-right: 1rem;
@@ -259,19 +227,97 @@ input[type=submit], input[type=button], {
     font-weight: 700;
     border-radius: 0.25rem;
     background-color: rgba(66, 153, 225, var(--bg-opacity));
-    color: white;
+    //color: white;
     cursor: pointer;
 
     &:hover, &:active {
       box-shadow: 0 0 0 3px rgb(66 153 225 / 50%);
+      //box-shadow: 0 1px 3px 0 rgb(66 153 225 / 50%), 0 1px 2px 0 rgb(0 0 0 / 6%);
+
+      //background-color: rgba(43, 108, 176, var(--bg-opacity));
       outline: 2px solid transparent;
       outline-offset: 2px;
     }
 
     &:disabled {
-      background-color: rgba(124, 124, 124, 0.67);
       cursor: not-allowed;
+      background-color: rgba(124, 124, 124, 0.67);
       color: black;
+
     }
   }
+
+  #registrationForm {
+    //input[type=submit] {
+    //  color: rgba(255, 255, 255, var(--text-opacity));
+    //  padding-left: 1rem;
+    //  padding-right: 1rem;
+    //  padding-top: 0.5rem;
+    //  padding-bottom: 0.5rem;
+    //  margin-top: 1rem;
+    //  font-weight: 700;
+    //  border-radius: 0.25rem;
+    //  background-color: rgba(66, 153, 225, var(--bg-opacity));
+    //  color: white;
+    //  cursor: pointer;
+    //
+    //  &:hover, &:active {
+    //    box-shadow: 0 0 0 3px rgb(66 153 225 / 50%);
+    //    outline: 2px solid transparent;
+    //    outline-offset: 2px;
+    //  }
+    //
+    //  &:disabled {
+    //    background-color: rgba(124, 124, 124, 0.67);
+    //    cursor: not-allowed;
+    //    color: black;
+    //  }
+  }
+
+  .formset {
+    @mixin formset-button {
+      padding-left: 1rem;
+      padding-right: 1rem;
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-width: 1px;
+      border-radius: 0.25rem;
+      --border-opacity: 1;
+      font-weight: 600;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%);
+
+    }
+
+    .formset-add-row {
+      .formset-add-button {
+        @include formset-button;
+        color: rgba(45, 55, 72, var(--text-opacity));
+        border-color: rgba(203, 213, 224, var(--border-opacity));
+
+        &:hover, &:active {
+          box-shadow: 0 1px 3px 0 rgb(0 0 0 / 50%), 0 1px 2px 0 rgb(0 0 0 / 6%);
+          outline: 2px solid transparent;
+          outline-offset: 2px;
+        }
+      }
+
+      .formset-delete-row {
+        .formset-delete-button {
+          @include formset-button;
+          --text-opacity: 1;
+          color: rgba(252, 129, 129, var(--text-opacity));
+          border-color: rgba(252, 129, 129, var(--border-opacity));
+          //background-color: rgba(255, 255, 255, var(--bg-opacity));
+
+          &:hover, &:active {
+            box-shadow: 0 1px 3px 0 rgb(252 129 129 / 100%), 0 1px 2px 0 rgb(0 0 0 / 6%);
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+          }
+        }
+      }
+    }
+
+  }
+
 }

@@ -1,4 +1,5 @@
 from .api import RegistrationDataApi
+from .data import RegistrationDataView
 from .registration import (
     QRVerify,
     RegisterAuthView,

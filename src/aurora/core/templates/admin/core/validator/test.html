@@ -1,5 +1,6 @@
-{% extends "admin_extra_buttons/action_page.html" %}
+{% extends "admin_extra_buttons/action_page.html" %}{% load static %}
 {% block extrahead %}
+    <script src="{% static "smart_validation.js" %}"></script>
     {{ block.super }}
     {{ form.media }}
     <style>
@@ -34,10 +35,10 @@
 {% block action-content %}
     {% if is_validator %}
     <div class="message">
-        <div class="icon"></div>
-        <pre id="messages"></pre>
+    <div class="icon"></div>
+    <pre id="messages"></pre>
     </div>
-    {% endif%}
+{% endif %}
     <form method="post">
         {% csrf_token %}
         <table width="100%">
@@ -48,12 +49,12 @@
             </tr>
             <tr>
                 {% if is_validator %}
-                <td  style="width: 200px">
-                    {{ form.input }}
-                </td>
+                    <td style="width: 200px">
+                        {{ form.input }}
+                    </td>
                 {% endif %}
                 <td style="width: 500px">
-<pre id="log" style="width: 100%"></pre>
+                    <pre id="log" style="width: 100%"></pre>
                 </td>
             </tr>
         </table>
@@ -65,61 +66,63 @@
     <script>
         $ = django.jQuery;
     </script>
+    {% if original.target == "script" %}
     <script src="{{ original.get_script_url }}"></script>
+    {% endif %}
     {% if is_validator %}
-    <script>
-        (function ($) {
-            $(document).ready(function () {
-                {{ jslib }}
-                log = console.log = function () {
-                    $log.prepend(Array.prototype.join.call(arguments, ', ') + "\n");
-                };
-                log1 = console.log1 = function (msg) {
-                    $log.prepend(JSON.stringify(msg) + "\n");
-                }
-                var message = "{{ original.message }}"
-                var $icon = $(".message .icon");
-                var editor = $("#id_code").data("CodeMirror");
-                var input = $("#id_input").data("CodeMirror");
-                var $log = $("#log");
-                var $messages =  $('#messages');
-                var timer, delay = 500;
-                var updateSource = function () {
-                    var code = editor.getValue();
-                    var param = input.getValue();
-                    var source = "var value=" + param + ";" + code;
-                    run(source);
-                };
-                var updateHandler = function(e) {
-                    clearTimeout(timer);
-                    timer = setTimeout(function () {
-                        updateSource();
-                    }, delay);
-                };
-                var run = function (c) {
-                    try {
-                        $messages.text("");
-                        var ret = eval(c);
-                        if (ret === true){
-                            $icon.prop("class", "icon").addClass("valid");
-                        }else{
-                            $icon.prop("class", "icon").addClass("invalid");
-                            $messages.text(ret);
-                        }
-                    } catch (error) {
-                        $icon.prop("class", "icon").addClass("error");
-                        $messages.text(error)
-                        console.log(error);
+        <script>
+            (function ($) {
+                $(document).ready(function () {
+                    {{ jslib }}
+                    log = console.log = function () {
+                        $log.prepend(Array.prototype.join.call(arguments, ', ') + "\n");
+                    };
+                    log1 = console.log1 = function (msg) {
+                        $log.prepend(JSON.stringify(msg) + "\n");
                     }
-                };
+                    var message = "{{ original.message }}"
+                    var $icon = $(".message .icon");
+                    var editor = $("#id_code").data("CodeMirror");
+                    var input = $("#id_input").data("CodeMirror");
+                    var $log = $("#log");
+                    var $messages = $('#messages');
+                    var timer, delay = 500;
+                    var updateSource = function () {
+                        var code = editor.getValue();
+                        var param = input.getValue();
+                        var source = "var value=" + param + ";" + code;
+                        run(source);
+                    };
+                    var updateHandler = function (e) {
+                        clearTimeout(timer);
+                        timer = setTimeout(function () {
+                            updateSource();
+                        }, delay);
+                    };
+                    var run = function (c) {
+                        try {
+                            $messages.text("");
+                            var ret = eval(c);
+                            if (ret === true) {
+                                $icon.prop("class", "icon").addClass("valid");
+                            } else {
+                                $icon.prop("class", "icon").addClass("invalid");
+                                $messages.text(ret);
+                            }
+                        } catch (error) {
+                            $icon.prop("class", "icon").addClass("error");
+                            $messages.text(error)
+                            console.log(error);
+                        }
+                    };
 
-                editor.on("change", updateHandler);
-                input.on("change", function (e){
-                    updateHandler();
+                    editor.on("change", updateHandler);
+                    input.on("change", function (e) {
+                        updateHandler();
+                    });
+                    updateSource();
                 });
-                updateSource();
-            });
-        })(django.jQuery);
-    </script>
+            })(django.jQuery);
+        </script>
     {% endif %}
 {% endblock %}

@@ -3,7 +3,9 @@ from decimal import Decimal
 from django.template import Library, Node, TemplateSyntaxError, Variable
 from django.template.base import TokenType, render_value_in_context
 from django.template.defaulttags import token_kwargs
+from django.templatetags.static import static
 from django.utils import translation
+from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
 
 from ..engine import translator
@@ -335,3 +337,12 @@ def msgcode(value):
 @register.filter()
 def strip(value):
     return str(value).strip()
+
+
+@register.filter()
+def bool_icon(value):
+    if bool(value):
+        img = static("admin/img/icon-yes.svg")
+    else:
+        img = static("admin/img/icon-no.svg")
+    return mark_safe(f'<img src="{img}" alt="{str(bool(value))}">')

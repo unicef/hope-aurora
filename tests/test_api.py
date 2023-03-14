@@ -48,13 +48,9 @@ btcA1UFpS9TFL++uMmwbcMzykITUTxhHp0QWEg1cpj8HFakPBZ4=
 
 @pytest.fixture()
 def registration(simple_form):
-    from aurora.registration.models import Registration
+    from testutils.factories import RegistrationFactory
 
-    reg, __ = Registration.objects.get_or_create(
-        locale="en-us",
-        name="registration #1",
-        defaults={"flex_form": simple_form, "intro": "intro", "footer": "footer", "active": True},
-    )
+    reg = RegistrationFactory(name="registration #1", flex_form=simple_form, intro="intro", footer="footer")
     priv, pub = reg.setup_encryption_keys()
     reg._private_pem = priv
     return reg
@@ -110,7 +106,7 @@ def test_api(django_app, registration, monkeypatch):
 @pytest.mark.django_db
 def test_version(django_app, registration, admin_user):
     # do not use reverse because url is hardcoded in survey.js
-    api_url = "/api/registration/%s/version/" % registration.slug
+    api_url = "/api/registration/%s/version/" % registration.pk
 
     res = django_app.get(api_url)
     data = res.json

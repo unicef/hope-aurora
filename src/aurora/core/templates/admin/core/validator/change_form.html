@@ -1,1 +1,28 @@
-{% extends "admin_extra_buttons/change_form.html" %}{% load i18n admin_urls engine static %}
+{% extends "admin_extra_buttons/change_form.html" %}
+{% block submit_buttons_bottom %}
+    <fieldset class="module aligned {{ fieldset.classes }}">
+    <label>Used By {{ original.target }}</label>
+        <table>
+            {% if original.target == "form" %}
+                {% for frm in original.flexform_set.all %}
+                    <tr>
+                        <td><a href="{% url "admin:core_flexform_change" frm.pk %}">{{ frm }}</a></td>
+                    </tr>
+                {% endfor %}
+            {% elif original.target == "field" %}
+                {% for frm in original.flexformfield_set.all %}
+                    <tr>
+                        <td><a href="{% url "admin:core_flexformfield_change" frm.pk %}">{{ frm }}</a></td>
+                    </tr>
+                {% endfor %}
+            {% elif original.target == "formset" %}
+                {% for frm in original.formset_set.all %}
+                    <tr>
+                        <td><a href="{% url "admin:core_formset_change" frm.pk %}">{{ frm }}</a></td>
+                    </tr>
+                {% endfor %}
+            {% endif %}
+        </table>
+    </fieldset>
+    {{ block.super }}
+{% endblock %}

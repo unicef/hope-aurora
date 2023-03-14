@@ -2,7 +2,6 @@ import logging
 
 from django.utils import translation
 from django.utils.translation import get_language_from_request
-from flags.state import flag_enabled
 
 from aurora.state import state
 
@@ -15,7 +14,7 @@ class I18NMiddleware:
 
     def __call__(self, request):
         lang = get_language_from_request(request, check_path=True)
-        state.collect_messages = flag_enabled("I18N_COLLECT_MESSAGES", request=request)
+        state.collect_messages = "I18N_SESSION" in request.headers
 
         from aurora.i18n.engine import translator
 

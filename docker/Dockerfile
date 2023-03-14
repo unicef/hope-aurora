@@ -35,6 +35,7 @@ ENV PATH="${PATH}:/root/.local/bin" \
     DJANGO_SETTINGS_MODULE="aurora.config.settings" \
     IPSTACK_KEY="" \
     LOG_LEVEL="ERROR" \
+    MAINTENANCE_MODE="off" \
     NGINX_CACHE_DIR="/data/nginx/cache" \
     NGINX_MAX_BODY_SIZE=30M \
     REDIS_LOGLEVEL="warning" \
@@ -55,6 +56,7 @@ RUN pip install "poetry==1.2.2"
 ADD poetry.lock pyproject.toml /code/
 
 RUN poetry config virtualenvs.create false \
+    && mkdir -p /var/nginx/system \
     && poetry install --no-interaction --no-ansi --no-root \
     && pip install uwsgi
 

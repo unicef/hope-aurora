@@ -2,7 +2,7 @@ worker_processes 1;
 events {
   worker_connections 512;
 }
-daemon on;
+daemon ${NGINX_DAEMON};
 error_log /dev/stdout;
 
 http {
@@ -56,6 +56,7 @@ http {
     }
     server {
         client_max_body_size ${NGINX_MAX_BODY_SIZE};
+        large_client_header_buffers 4 16k;
         access_log /dev/stdout;
         listen 80;
         proxy_cache one;
@@ -93,7 +94,11 @@ http {
             gzip on;
             gzip_disable "MSIE [1-6]\.";
             gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml;
-         }
+        }
+#        location / {
+#            index maintenance.html
+#            try_files ${DOLLAR}uri ${DOLLAR}uri/ /maintenance.html @aurora;
+#         }
 
         location / {
             http2_push https://browser.sentry-cdn.com/5.30.0/bundle.min.js;
@@ -102,9 +107,13 @@ http {
             add_header X-Cache-Status ${DOLLAR}upstream_cache_status;
 
             proxy_pass http://127.0.0.1:8000;
+            proxy_redirect off;
             proxy_set_header Host ${DOLLAR}host;
             proxy_set_header X-Forwarded-For ${DOLLAR}proxy_add_x_forwarded_for;
             proxy_set_header X-Scheme ${DOLLAR}scheme;
+            proxy_set_header X-Real-IP ${DOLLAR}remote_addr;
+
         }
+
     }
 }

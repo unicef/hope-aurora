@@ -8,7 +8,7 @@ class ImportForm(forms.Form):
 
 
 class ExportForm(forms.Form):
-    APPS = ("core", "registration", "i18n", "constance")
+    APPS = ("core", "registration", "i18n", "constance", "counters", "flatpages", "security", "dbtemplates")
     apps = forms.MultipleChoiceField(choices=zip(APPS, APPS), widget=forms.CheckboxSelectMultiple())
 
 

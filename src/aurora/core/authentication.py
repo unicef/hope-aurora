@@ -60,3 +60,19 @@ def create_user(strategy, details, backend, user=None, *args, **kwargs):
     user.save()
 
     return {"is_new": True, "user": user}
+
+
+def redir_to_form(strategy, details, backend, user=None, *args, **kwargs):
+    if user:
+        return {"is_new": False}
+
+    user = get_user_model().objects.create(
+        email=details["email"],
+        username=details["email"],
+        first_name=details.get("first_name"),
+        last_name=details.get("last_name"),
+    )
+    user.set_unusable_password()
+    user.save()
+
+    return {"is_new": True, "user": user}

@@ -74,7 +74,7 @@ class user_grant_permissions(ContextDecorator):  # noqa
         self.user.groups.add(self.group)
         if self.registration:
             RegistrationRole.objects.get_or_create(registration=self.registration, user=self.user, role=self.group)
-            self.registration.restrict_to_groups.add(self.group)
+            # self.registration.restrict_to_groups.add(self.group)
 
     def __exit__(self, e_typ, e_val, trcbak):
         if self.group:

@@ -4,7 +4,6 @@ from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
-from testutils.perms import user_grant_permissions
 from webtest import Upload
 
 LANGUAGES = {
@@ -27,99 +26,156 @@ def mock_state():
 
 @pytest.fixture()
 def simple_registration(simple_form):
-    from aurora.registration.models import Registration
+    from testutils.factories import RegistrationFactory
 
-    reg, __ = Registration.objects.get_or_create(
-        locale="en-us",
-        name="registration #1",
-        defaults={"flex_form": simple_form, "encrypt_data": False, "active": True},
-    )
-    return reg
+    return RegistrationFactory(flex_form=simple_form, encrypt_data=False)
+    # from aurora.registration.models import Registration
+    # reg, __ = Registration.objects.get_or_create(
+    #     locale="en-us",
+    #     name="registration #1",
+    #     defaults={"flex_form": simple_form, "encrypt_data": False, "active": True},
+    #     project = Project
+    # )
+    # return reg
 
 
 @pytest.fixture()
 def unique_last_name_registration(simple_form):
-    from aurora.registration.models import Registration
+    from testutils.factories import RegistrationFactory
 
-    reg, __ = Registration.objects.get_or_create(
-        locale="en-us",
+    return RegistrationFactory(
         name="registration #3",
-        defaults={
-            "flex_form": simple_form,
-            "unique_field_path": "last_name",
-            "unique_field_error": "last_name is not unique",
-            "encrypt_data": False,
-            "active": True,
-        },
+        flex_form=simple_form,
+        encrypt_data=False,
+        unique_field_path="last_name",
+        unique_field_error="last_name is not unique",
     )
-    return reg
+    # from aurora.registration.models import Registration
+    # reg, __ = Registration.objects.get_or_create(
+    #     locale="en-us",
+    #     name="registration #3",
+    #     defaults={
+    #         "flex_form": simple_form,
+    #         "unique_field_path": "last_name",
+    #         "unique_field_error": "last_name is not unique",
+    #         "encrypt_data": False,
+    #         "active": True,
+    #     },
+    # )
+    # return reg
+
+
+#
 
 
 @pytest.fixture()
 def rsa_encrypted_registration(simple_form):
-    from aurora.registration.models import Registration
+    from testutils.factories import RegistrationFactory
 
-    reg, __ = Registration.objects.get_or_create(
-        locale="en-us",
+    reg = RegistrationFactory(
         name="registration #1",
-        defaults={"flex_form": simple_form, "encrypt_data": False, "active": True},
+        flex_form=simple_form,
+        encrypt_data=False,
     )
     priv, pub = reg.setup_encryption_keys()
     reg._private_pem = priv
     return reg
+    # from aurora.registration.models import Registration
+    #
+    # reg, __ = Registration.objects.get_or_create(
+    #     locale="en-us",
+    #     name="registration #1",
+    #     defaults={"flex_form": simple_form, "encrypt_data": False, "active": True},
+    # )
+    # priv, pub = reg.setup_encryption_keys()
+    # reg._private_pem = priv
+    # return reg
 
 
 @pytest.fixture()
 def fernet_encrypted_registration(simple_form):
-    from aurora.registration.models import Registration
+    from testutils.factories import RegistrationFactory
 
-    reg, __ = Registration.objects.get_or_create(
-        locale="en-us", name="registration #3", encrypt_data=True, flex_form=simple_form, active=True
+    return RegistrationFactory(
+        name="registration #3",
+        flex_form=simple_form,
+        encrypt_data=True,
+        unique_field_path="last_name",
+        unique_field_error="last_name is not unique",
     )
-    return reg
+
+    # from aurora.registration.models import Registration
+    # reg, __ = Registration.objects.get_or_create(
+    #     locale="en-us", name="registration #3", encrypt_data=True, flex_form=simple_form, active=True
+    # )
+    # return reg
 
 
 @pytest.fixture()
 def complex_registration(complex_form):
-    from aurora.registration.models import Registration
+    from testutils.factories import RegistrationFactory
 
-    reg, __ = Registration.objects.get_or_create(
-        locale="en-us", name="registration #2", defaults={"flex_form": complex_form, "active": True}
+    return RegistrationFactory(
+        name="registration #3",
+        flex_form=complex_form,
+        encrypt_data=False,
     )
-    return reg
+    # from aurora.registration.models import Registration
+    #
+    # reg, __ = Registration.objects.get_or_create(
+    #     locale="en-us", name="registration #2", defaults={"flex_form": complex_form, "active": True}
+    # )
+    # return reg
 
 
 @pytest.fixture()
 def james_registration(complex_form):
-    from aurora.registration.models import Registration
+    from testutils.factories import RegistrationFactory
 
-    reg, __ = Registration.objects.get_or_create(
-        locale="en-us",
-        name="registration #2",
+    return RegistrationFactory(
+        name="registration #3",
+        flex_form=complex_form,
         unique_field_path="form2s[].[first_name][0][0]",
-        unique_field_error="xxx must be unique",
-        defaults={"flex_form": complex_form, "active": True},
     )
-    return reg
+    # from aurora.registration.models import Registration
+    # reg, __ = Registration.objects.get_or_create(
+    #     locale="en-us",
+    #     name="registration #2",
+    #     unique_field_path="form2s[].[first_name][0][0]",
+    #     unique_field_error="xxx must be unique",
+    #     defaults={"flex_form": complex_form, "active": True},
+    # )
+    # return reg
 
 
 @pytest.fixture()
 def protected_registration(simple_form):
-    from aurora.registration.models import Registration
+    from testutils.factories import RegistrationFactory
 
-    reg, __ = Registration.objects.get_or_create(
-        locale="en-us",
+    return RegistrationFactory(
         name="registration #3",
-        defaults={
-            "flex_form": simple_form,
-            "unique_field_path": "last_name",
-            "unique_field_error": "last_name is not unique",
-            "encrypt_data": False,
-            "active": True,
-            "protected": True,
-        },
+        flex_form=simple_form,
+        unique_field_path="last_name",
+        unique_field_error="last_name is not unique",
+        encrypt_data=False,
+        active=True,
+        protected=True,
     )
-    return reg
+
+    # from aurora.registration.models import Registration
+    # reg, __ = Registration.objects.get_or_create(
+    #     locale="en-us",
+    #     name="registration #3",
+    #     defaults={
+    #         "flex_form": simple_form,
+    #         "unique_field_path": "last_name",
+    #         "unique_field_error": "last_name is not unique",
+    #         "encrypt_data": False,
+    #         "active": True,
+    #         "protected": True,
+    #     },
+    # )
+    # return reg
 
 
 @pytest.mark.django_db
@@ -387,6 +443,8 @@ def test_upload_image_register_fernet_encrypted(django_app, fernet_encrypted_reg
 
 @pytest.mark.django_db
 def test_register_protected_registration(django_app, user, protected_registration):
+    from testutils.perms import user_grant_permissions
+
     url = protected_registration.get_absolute_url()
     res = django_app.get(url)
     assert res.status_code == 302

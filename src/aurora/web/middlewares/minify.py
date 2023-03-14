@@ -4,7 +4,6 @@ from enum import IntFlag, unique
 
 from constance import config
 from constance.signals import config_updated
-from django.conf import settings
 from django.utils.functional import cached_property
 from htmlmin import Minifier
 
@@ -77,6 +76,4 @@ class HtmlMinMiddleware:
                     s = s.replace(b"  ", b" ")
                 response.content = s
             response.headers["Content-Length"] = str(len(response.content))
-        elif settings.DEBUG:
-            logger.warning(f'Skip minification of "{request.path_info}"')
         return response

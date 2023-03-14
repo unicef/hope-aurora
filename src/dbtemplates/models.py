@@ -6,7 +6,7 @@ from django.db.models import signals
 from django.template import TemplateDoesNotExist
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
-from natural_keys import NaturalKeyModel
+from natural_keys import NaturalKeyModel, NaturalKeyModelManager
 
 from dbtemplates.conf import settings
 from dbtemplates.utils.cache import add_template_to_cache, remove_cached_template
@@ -27,7 +27,8 @@ class Template(NaturalKeyModel, models.Model):
     creation_date = models.DateTimeField(_("creation date"), default=now)
     last_changed = models.DateTimeField(_("last changed"), default=now)
     active = models.BooleanField(default=True, blank=True)
-    objects = models.Manager()
+
+    objects = NaturalKeyModelManager()
     on_site = CurrentSiteManager("sites")
 
     class Meta:

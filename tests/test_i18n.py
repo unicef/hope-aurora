@@ -4,20 +4,27 @@ from django.urls import reverse
 
 @pytest.fixture()
 def simple_registration(simple_form):
-    from aurora.registration.models import Registration
+    from testutils.factories import RegistrationFactory
 
-    reg, __ = Registration.objects.get_or_create(
-        locale="en-us",
-        name="registration #1",
-        defaults={"flex_form": simple_form, "encrypt_data": False, "active": True},
+    return RegistrationFactory(
+        name="registration #3",
+        flex_form=simple_form,
+        encrypt_data=False,
     )
-    return reg
+    # from aurora.registration.models import Registration
+    #
+    # reg, __ = Registration.objects.get_or_create(
+    #     locale="en-us",
+    #     name="registration #1",
+    #     defaults={"flex_form": simple_form, "encrypt_data": False, "active": True},
+    # )
+    # return reg
 
 
 @pytest.mark.django_db
 def test_register_simple(django_app, simple_registration):
     url = reverse("register", args=[simple_registration.slug, simple_registration.version])
-    assert url == f"/en-us/register/registration-1/{simple_registration.version}/"
+    assert url == f"/en-us/register/{simple_registration.slug}/{simple_registration.version}/"
     res = django_app.get(url)
     res = res.form.submit()
     res.form["first_name"] = "first_name"

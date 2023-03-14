@@ -1,23 +1,30 @@
 {% extends "admin_extra_buttons/action_page.html" %}
+{% block breadcrumbs-active %}&rsaquo; <a href=".">{{ title }}</a>{% endblock %}
+{% block content_title %}<h1>{{ title }}{% if language_code %} ({{ language_code }}){% endif %}</h1>{% endblock %}
 {% block action-content %}
-    {% if form %}
-        <form method="post" id="translation-form">
-            {% csrf_token %}
+    <form method="post" id="translation-form">
+        {% csrf_token %}
+        {% if form %}
             {{ form.errors }}
             <table>
                 {{ form }}
             </table>
-            <input type="submit" value="Create">
-        </form>
-    {% else %}
-        <ul>
-            <li><a href="{{ uri }}">{{ uri }}</a></li>
-        </ul>
-
-        <a href="{% url "admin:i18n_message_changelist" %}?locale__exact={{ locale }}&amp;draft__exact=1&amp;timestamp__day={% now "d" %}&amp;timestamp__month={% now "n" %}&amp;timestamp__year={% now "Y" %}">View All Messages</a>
-        <h2>New messages</h2>
-        <table>{% for msg in added %}
-            <tr><td><a href="{% url "admin:i18n_message_change" msg.pk %}">{{ msg.msgid }}</a></td><td></td></tr>
-        {% endfor %}</table>
-    {% endif %}
+            <input type="submit" name="create" value="Create">
+        {% else %}
+            <table>{% for k, v in collected.items %}
+                <input type="hidden" name="language_code" value="{{ language_code }}">
+                <tr>
+                    <td>
+                        <input type="checkbox" {% if not v %}checked{% endif %} name="selection" value="{{ forloop.counter }}">
+                        <input type="hidden" name="msgid_{{ forloop.counter }}" value="{{ k }}">
+                    </td>
+                    <td><a target="_inspect"
+                           href="{% url "admin:i18n_message_changelist" %}?qs=msgid__startswith={{ k }}&qs__negate=false&locale__exact={{ language_code }}">{{ k }}</a>
+                    </td>
+                    <td>{{ v }}</td>
+                </tr>
+            {% endfor %}</table>
+            <input type="submit" name="export" value="Create">
+        {% endif %}
+    </form>
 {% endblock action-content %}

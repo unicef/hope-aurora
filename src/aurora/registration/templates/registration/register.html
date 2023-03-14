@@ -2,6 +2,7 @@
 {% block meta %}
     <meta name="Description" content="Module: '{{ registration.title}}' Version: {{ registration.version }} - Form version: {{ form.flex_form.version }}">
     <meta name="Survey" content="{{ registration.slug }}">
+    <meta name="RegId" content="{{ registration.pk }}">
     <meta name="Version" content="{{ registration.version }}">
     <meta name="User" content="{% if user.is_authenticated %}{{ session_id }}{% endif %}">
 {% endblock meta %}
@@ -29,147 +30,15 @@
         {% include "i18n/_select_language.html" with languages=registration.languages %}
     </div>
     {% endif %}
-    {% if user.is_authenticated and registration.protected %}<div class="flex-shrink">
-        <a href="{% url "logout" %}">logout</a>
-    </div>{% endif %}
+    {% if user.is_authenticated and registration.protected %}
+    <div class="flex-shrink"><a href="{% url "logout" %}">logout</a></div>
+    {% endif %}
     </div>
 {#    {% endif %}#}
 {% endblock %}
 
 {% block body %}
     {% include "smart/_form.html" %}
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/forge/1.3.1/forge.min.js" integrity="sha512-95iy0RZIbw3H/FgfAj2wnCQJlzFQ+eaSfUeV/l8WVyGHKSRMzm3M/O+85j9ba/HFphkijrCTDjcuDX0BL2lthA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-
-<script type="text/javascript">
-
-function initDB() {
-    let request = indexedDB.open('forms', 1);
-
-    request.onerror = function(e) {
-      console.error('Unable to open database.');
-    }
-
-    request.onsuccess = function(e) {
-      db = e.target.result;
-      console.log('DB opened');
-    }
-
-    request.onupgradeneeded = function(e) {
-      db = e.target.result;
-      db.createObjectStore('cachedForms', {keyPath:'id', autoIncrement: true});
-    }
-}
-
-initDB();
-
-
-const generateRandomString = () => {
-    let result = '';
-    let characters = '0123456789';
-    let charactersLength = characters.length;
-
-    for (let i = 0; i < 16; i++) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
-}
-
-const createObjectData = formElement => {
-    let formData = {};
-
-    for (let i = 0; i < formElement.elements.length; i++) {
-        let el = formElement.elements[i];
-        if (el.name && el.value) {
-            if (el.name === "csrfmiddlewaretoken") {
-                continue;
-            }
-            if (el.type === "checkbox") {
-                if (el.checked) {
-                    formData[el.name] = el.value;
-                }
-            } else {
-                formData[el.name] =  el.value;
-            }
-        }
-    }
-
-    return formData;
-}
-
-const button = document.querySelector('input[type=submit]');
-
-let dataFiles = {};
-const fileInputs = document.querySelectorAll('input[type=file]');
-fileInputs.forEach(fileInput => {
-    fileInput.addEventListener("change", e => {
-        const file = fileInput.files[0];
-        const reader = new FileReader();
-
-        reader.addEventListener("load", () => {
-            dataFiles[fileInput.name] = reader.result;
-        });
-
-        reader.readAsDataURL(file);
-    });
-});
-
-if (button && !navigator.onLine) {
-  button.addEventListener("click", event => {
-      console.log("Transferring to db");
-      event.preventDefault();
-
-      const formElement = document.forms.registrationForm;
-      if (formElement) {
-        let dataFields = createObjectData(formElement);
-        let dataForm = Object.assign({}, dataFields, dataFiles);
-
-        const publicKey = localStorage.getItem("publicKey");
-
-        if (publicKey) {
-            const pubKey = forge.pki.publicKeyFromPem(publicKey);
-            const randomString = generateRandomString();
-
-            const encryptedSymmetricKey = pubKey.encrypt(JSON.stringify(randomString), "RSA-OAEP", {
-                md: forge.md.sha256.create(),
-                mgf1: forge.mgf1.create()
-            });
-
-            const encryptedBase64 = forge.util.encode64(encryptedSymmetricKey);
-
-            let derivedKey = CryptoJS.enc.Base64.parse("LefjQ2pEXmiy/nNZvEJ43i8hJuaAnzbA1Cbn1hOuAgA=")
-            let encryptedData = CryptoJS.AES.encrypt(
-                JSON.stringify(dataForm),
-                derivedKey,
-                {iv: CryptoJS.enc.Utf8.parse(randomString), mode: CryptoJS.mode.CBC}
-            ).toString();
-
-            dataForm = {"formDict": encryptedBase64 + encryptedData};
-        }
-
-        dataForm["url"] = window.location.pathname;
-
-        let transaction = db.transaction(['cachedForms'], 'readwrite');
-        let addReq = transaction.objectStore('cachedForms').add(dataForm);
-
-        addReq.onerror = event => {
-            console.log(`error storing data: ${event}`);
-        };
-
-        transaction.oncomplete = event => {
-           console.log('Data stored');
-
-           setTimeout(() => {
-              alert("Form loaded");
-              location.reload();
-           }, 1000);
-
-        };
-      }
-  });
-}
-
 </script>
 
 {% endblock body %}

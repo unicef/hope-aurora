@@ -29,14 +29,13 @@ class Message(NaturalKeyModel):
         unique_together = ("msgid", "locale")
 
     def __str__(self):
-        return f"{self.locale} {truncatechars(self.msgid, 40)}"
+        return f"{truncatechars(self.msgid, 60)}"
 
     @staticmethod
     def get_md5(msgid, locale=""):
         return hashlib.md5((msgid + "|" + locale).encode()).hexdigest()
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        # self.md5 = hashlib.md5((self.locale + "__" + self.msgid).encode()).hexdigest()
         self.md5 = self.get_md5(self.msgid, self.locale)
         self.msgcode = self.get_md5(self.msgid)
         obj: Message = super().save()

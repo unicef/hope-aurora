@@ -7,7 +7,6 @@ from concurrency.fields import AutoIncVersionField
 from Crypto.PublicKey import RSA
 from django import forms
 from django.conf import settings
-from django.contrib.auth.models import Group
 from django.contrib.flatpages.models import FlatPage
 from django.contrib.postgres.fields import CICharField
 from django.db import models
@@ -16,14 +15,16 @@ from django.utils.functional import cached_property
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
 from natural_keys import NaturalKeyModel
+from strategy_field.utils import fqn
 
 from aurora.core.crypto import Crypto, crypt, decrypt, decrypt_offline
-from aurora.core.fields import AjaxSelectField
-from aurora.core.models import FlexForm, Project, Validator
+from aurora.core.fields import AjaxSelectField, LabelOnlyField
+from aurora.core.models import FlexForm, FlexFormField, Project, Validator
 from aurora.core.utils import (
     cache_aware_reverse,
     dict_setdefault,
     get_client_ip,
+    get_registration_id,
     jsonfy,
     safe_json,
     total_size,
@@ -103,7 +104,6 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
         default=False,
         help_text="If true, limit access to users with 'registration.register' permission",
     )
-    restrict_to_groups = models.ManyToManyField(Group, blank=True, help_text="Restrict access to the following groups")
     is_pwa_enabled = models.BooleanField(default=False)
     export_allowed = models.BooleanField(default=False)
     project = models.ForeignKey(Project, null=True, on_delete=models.SET_NULL)
@@ -111,10 +111,11 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
     class Meta:
         get_latest_by = "start"
         permissions = (
-            ("manage", _("Can manage Registration")),
+            ("can_manage_registration", _("Can manage Registration")),
             ("register", _("Can use Registration")),
             ("create_translation", _("Can Create Translation")),
             ("export_data", _("Can Export Data")),
+            ("can_view_data", _("Can View Collected data")),
         )
         ordering = ("name", "title")
 
@@ -141,9 +142,6 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
             self.title = self.name
         dict_setdefault(self.advanced, self.ADVANCED_DEFAULT_ATTRS)
         super().save(force_insert, force_update, using, update_fields)
-
-    def translations(self):
-        return Registration.objects.filter(slug=self.slug, active=True)
 
     def setup_encryption_keys(self):
         key = RSA.generate(2048)
@@ -223,6 +221,36 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
                 links.append(f"/en-us/options/{field.choices}/")  # TODO: is en-us always valid?
         return links
 
+    @cached_property
+    def metadata(self):
+        def _get_field_details(flex_field: FlexFormField):
+            kwargs = flex_field.get_field_kwargs()
+            return {
+                "type": fqn(flex_field.field_type),
+                "label": flex_field.label,
+                "name": flex_field.name,
+                "smart_attrs": kwargs["smart_attrs"],
+                "widget_kwargs": kwargs["widget_kwargs"],
+                "choices": kwargs.get("choices"),
+            }
+
+        def _process_form(frm):
+            return {
+                field.name: _get_field_details(field)
+                for field in frm.fields.all()
+                if field.field_type not in [LabelOnlyField]
+            }
+
+        metadata = {"base": {"fields": _process_form(self.flex_form)}}
+        for name, fs in self.flex_form.get_formsets({}).items():
+            metadata[name] = {
+                "fields": _process_form(fs.form.flex_form),
+                "min_num": fs.min_num,
+                "max_num": fs.max_num,
+            }
+
+        return metadata
+
 
 class RemoteIp(models.GenericIPAddressField):
     def pre_save(self, model_instance, add):
@@ -241,7 +269,8 @@ class Record(models.Model):
     ignored = models.BooleanField(default=False, blank=True, null=True)
     size = models.IntegerField(blank=True, null=True)
     counters = models.JSONField(blank=True, null=True)
-
+    # cleared = models.BooleanField(default=True, blank=True,
+    #                               help_text="Not cleared Records will not be fetched by HOPE")
     fields = models.JSONField(null=True, blank=True)
     files = models.BinaryField(null=True, blank=True)
 
@@ -277,8 +306,7 @@ class Record(models.Model):
 
     @property
     def unicef_id(self):
-        ts = self.timestamp.strftime("%Y%m%d")
-        return f"HOPE-{ts}-{self.registration.id}/{self.id}"
+        return get_registration_id(self)
 
     @property
     def data(self):

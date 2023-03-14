@@ -18,6 +18,7 @@ def parse_emails(value):
 
 MANDATORY = {
     "CACHE_DEFAULT": (str, "locmemcache://"),
+    "CHANNEL_LAYER": (str, "locmemcache://"),
     "DATABASE_URL": (str, "psql://postgres:@postgres:5432/aurora"),
     "DJANGO_ADMIN_URL": (str, f"{uuid.uuid4().hex}/"),
     "EMAIL_FROM_EMAIL": (str, ""),
@@ -33,7 +34,7 @@ MANDATORY = {
 OPTIONS = {
     "ADMINS": (parse_emails, ""),
     "ADMIN_SYNC_CONFIG": (str, "admin_sync.conf.DjangoConstance"),
-    "ALLOWED_HOSTS": (list, []),
+    "ALLOWED_HOSTS": (list, ["*"]),
     "AUTHENTICATION_BACKENDS": (list, []),
     "AZURE_AUTHORITY_HOST": (str, ""),
     "AZURE_CLIENT_ID": (str, ""),
@@ -61,6 +62,10 @@ OPTIONS = {
     "EMAIL_USE_LOCALTIME": (bool, False),
     "EMAIL_USE_SSL": (bool, False),
     "EMAIL_USE_TLS": (bool, True),
+    "FRONT_DOOR_ENABLED": (bool, False),
+    "FRONT_DOOR_ALLOWED_PATHS": (str, ".*"),
+    "FRONT_DOOR_TOKEN": (str, uuid.uuid4()),
+    "FRONT_DOOR_LOG_LEVEL": (str, "ERROR"),
     # "FERNET_KEY": (str, "2jQklRvSAZUdsVOKH-521Wbf_p5t2nTDA0LgD9sgim4="),
     "INTERNAL_IPS": (list, ["127.0.0.1", "localhost"]),
     "LANGUAGE_CODE": (str, "en-us"),
@@ -80,7 +85,7 @@ OPTIONS = {
     "SESSION_COOKIE_NAME": (str, "aurora_id"),
     "SESSION_COOKIE_SECURE": (bool, "false"),
     "SMART_ADMIN_BOOKMARKS": (parse_bookmarks, ""),
-    "STATICFILES_STORAGE": (str, "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"),
+    "STATICFILES_STORAGE": (str, "aurora.web.storage.ForgivingManifestStaticFilesStorage"),
     "USE_HTTPS": (bool, False),
     "USE_X_FORWARDED_HOST": (bool, "false"),
     "SITE_ID": (int, 1),

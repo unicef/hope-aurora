@@ -19,6 +19,7 @@ class RegistrationRoleAdmin(SyncMixin, SmartModelAdmin):
         ("user", AutoCompleteFilter),
         ("role", AutoCompleteFilter),
     )
+    autocomplete_fields = ("registration", "user", "role")
 
 
 @register(OrganizationRole)

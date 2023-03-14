@@ -1,0 +1,150 @@
+body {
+  height: 100px;
+}
+
+#fieldEditor {
+  height: 100%;
+  position: relative;
+  top: 0;
+  background-color: var(--body-bg);
+  z-index: 10;
+}
+#fieldEditor .submit-row {
+  width: 100%;
+}
+#fieldEditor .submit-row div:first-child {
+  float: left;
+}
+#fieldEditor .submit-row input {
+  background-color: cornflowerblue;
+}
+#fieldEditor #mainPanel {
+  top: 0;
+  display: inline-flex;
+  width: 100%;
+  height: 100%;
+}
+#fieldEditor #mainPanel .panel {
+  display: inline-block;
+  height: 500px;
+}
+#fieldEditor #mainPanel .panel:first-child {
+  margin-right: 10px;
+}
+#fieldEditor #mainPanel .output {
+  position: sticky;
+  top: 40px;
+  width: 40%;
+}
+#fieldEditor #mainPanel .output iframe {
+  width: 100%;
+  height: 100%;
+  border: 0 transparent;
+  display: none;
+}
+#fieldEditor #mainPanel .settings {
+  overflow-y: scroll;
+  width: 60%;
+}
+#fieldEditor #mainPanel .settings table:first-child {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border-collapse: separate;
+  /* Don't collapse */
+  border-spacing: 0;
+  border: 1px solid grey;
+}
+#fieldEditor #mainPanel .settings table:first-child thead {
+  background-color: var(--body-bg);
+}
+#fieldEditor #mainPanel .settings table:first-child thead tr.tabs {
+  width: 100%;
+  padding: 0;
+  margin-top: 5px;
+  margin-bottom: 0;
+}
+#fieldEditor #mainPanel .settings table:first-child thead tr.tabs th {
+  text-transform: capitalize;
+  font-weight: normal;
+  font-size: 90%;
+  text-align: center;
+  border: 1px solid grey;
+  cursor: pointer;
+  background-color: var(--body-bg);
+  position: sticky;
+  z-index: 6;
+  top: 0;
+}
+#fieldEditor #mainPanel .settings table:first-child thead tr.tabs th.selected {
+  background: var(--breadcrumbs-bg);
+  border-bottom: none;
+}
+#fieldEditor #mainPanel .settings table:first-child .cfg-form {
+  width: 100%;
+}
+#fieldEditor #mainPanel .settings table:first-child .cfg-form td {
+  text-align: left;
+  align-content: flex-start;
+  padding-right: 5px;
+}
+#fieldEditor #mainPanel .settings table:first-child .cfg-form td input:not([type=checkbox]), #fieldEditor #mainPanel .settings table:first-child .cfg-form td textarea {
+  width: 97%;
+}
+#fieldEditor #mainPanel .settings table:first-child .cfg-form td select {
+  width: 100%;
+}
+#fieldEditor #mainPanel .settings table:first-child .cfg-form.collapsed {
+  display: none;
+}
+
+.field-error {
+  color: red;
+  margin-bottom: 3px;
+}
+
+table2 {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+table2.cfg-form {
+  margin-bottom: 5px;
+  border-left: 1px solid grey;
+  padding: 0;
+  margin: 0;
+}
+table2 tr {
+  display: table-row;
+}
+table2 tr th {
+  min-height: 200px;
+}
+table2 tr td {
+  width: 100%;
+  padding-left: 0;
+}
+table2 tr td input, table2 tr td select, table2 tr td textarea {
+  width: 100%;
+}
+
+.toolbar {
+  margin: 10px;
+}
+.toolbar label {
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.cm-container {
+  margin: 10px;
+  background-color: var(--body-bg);
+  width: 100%;
+}
+.cm-container .cm-toolbar a.toolbutton {
+  margin: 0 3px 0 0;
+  padding: 5px;
+  font-variant: none;
+}
+
+/*# sourceMappingURL=field_editor.css.map */

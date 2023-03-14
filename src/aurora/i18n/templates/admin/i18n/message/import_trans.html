@@ -1,0 +1,62 @@
+{% extends "admin_extra_buttons/action_page.html" %}{% load itrans %}
+{% block breadcrumbs-active %}&rsaquo; <a href=".">{{ title }}</a>{% endblock %}
+
+{% block content_title %}<h1>Import Translations File for {{ language }} ({{ language_code }})</h1>{% endblock %}
+{% block action-content %}
+    <style>
+        table {
+            width: 100%;
+        }
+
+        table th {
+            width: 200px;
+        }
+    </style>
+    <form method="post" action="." enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if rows %}
+            <table>
+                <caption>Translations</caption>
+                <tr>
+                    <th><input type="checkbox" id="selectAll" checked value="{{ line.0 }}"> #</th>
+                    <th>Msg ID</th>
+                    <th>{{ language }} ({{ language_code }})</th>
+                    <th>Found</th>
+                    <th>Match</th>
+                </tr>
+
+                {% for line in rows %}
+                    <tr>
+                        <td><input type="checkbox" name="selection" checked value="{{ line.0 }}"> {{ line.0 }}</td>
+                        <td>{{ line.1.msgid }}</td>
+                        <td>{{ line.1.msgstr }}</td>
+                        <td>{{ line.1.found|bool_icon }}</td>
+                        <td>{{ line.1.match|bool_icon }}</td>
+                    </tr>
+                {% endfor %}</table>
+            <input type="submit" name="save" id="save" value="Save">
+        {% else %}
+            {{ form.errors }}
+            {{ opts_form.errors }}
+            <table>
+                {{ form }}
+            </table>
+            <table>
+                <caption>CSV Options</caption>
+                {{ opts_form }}
+            </table>
+            <input type="submit" name="import" id="import" value="Import">
+        {% endif %}
+    </form>
+    <script>
+        (function ($) {
+            $("#selectAll").on("click", function () {
+                if ($(this).is(":checked")) {
+                    $("input[name=selection]").attr("checked", "checked");
+                } else {
+                    $("input[name=selection]").removeAttr("checked");
+                }
+            })
+        })(django.jQuery)
+    </script>
+{% endblock action-content %}

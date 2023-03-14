@@ -22,18 +22,18 @@ class AuroraSyncProjectProtocol(LoadDumpProtocol):
         return return_value
 
 
+class OrgForeignKeysCollector(ForeignKeysCollector):
+    def collect(self, objs, collect_related=None):
+        return super().collect(objs, collect_related)
+
+    def get_related_for_field(self, obj, field):
+        if field.name == "parent":
+            if obj not in self._visited:
+                return [obj.parent]
+            return []
+        else:
+            return super().get_related_for_field(obj, field)
+
+
 class AuroraSyncOrganizationProtocol(LoadDumpProtocol):
-    def collect(self, data: Iterable, collect_related=True):
-        from aurora.core.models import Organization
-
-        if len(data) == 0:
-            raise SyncError("Empty queryset")  # pragma: no cover
-
-        if not isinstance(data[0], Organization):  # pragma: no cover
-            raise ValueError("AuroraSyncOrganizationProtocol can be used only for Organization")
-        return_value = []
-        for o in list(data):
-            c = ForeignKeysCollector(False)
-            c.collect([o])
-            return_value.extend(c.data)
-        return return_value
+    collector_class = OrgForeignKeysCollector

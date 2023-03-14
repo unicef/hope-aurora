@@ -29,7 +29,7 @@ FERNET_KEY = env("FERNET_KEY")
 DEBUG = env("DEBUG")
 DEBUG_PROPAGATE_EXCEPTIONS = env("DEBUG_PROPAGATE_EXCEPTIONS")
 
-ALLOWED_HOSTS = env("ALLOWED_HOSTS")
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 DJANGO_ADMIN_URL = env("DJANGO_ADMIN_URL")
 
 # Application definition
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     # ---
     "reversion",  # https://github.com/etianen/django-reversion
     "reversion_compare",  # https://github.com/jedie/django-reversion-compare
+    "django_filters",
     # ---
     # "aurora.admin.apps.AuroraAdminUIConfig",
     "smart_admin.apps.SmartLogsConfig",
@@ -56,6 +57,7 @@ INSTALLED_APPS = [
     "smart_admin.apps.SmartConfig",
     "aurora.administration.apps.AuroraAdminConfig",
     "aurora.administration.apps.AuroraAuthConfig",
+    "front_door.contrib",
     "hijack",
     "rest_framework",
     "rest_framework.authtoken",
@@ -67,6 +69,7 @@ INSTALLED_APPS = [
     "adminactions",
     "mptt",
     "tinymce",
+    "mdeditor",
     "constance",
     "constance.backends.database",
     "flags",
@@ -92,6 +95,7 @@ MIDDLEWARE = [
     # "django.middleware.cache.UpdateCacheMiddleware",
     "aurora.web.middlewares.thread_local.ThreadLocalMiddleware",
     "aurora.web.middlewares.sentry.SentryMiddleware",
+    "front_door.middleware.FrontDoorMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "aurora.web.middlewares.maintenance.MaintenanceMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -103,6 +107,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "aurora.web.middlewares.admin.AdminSiteMiddleware",
     # "aurora.web.middlewares.http2.HTTP2Middleware",
     "aurora.web.middlewares.minify.HtmlMinMiddleware",
     "django.middleware.gzip.GZipMiddleware",
@@ -118,6 +123,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
+            PACKAGE_DIR / "administration/templates",
             PACKAGE_DIR / "admin/ui/templates",
             PACKAGE_DIR / "api/templates",
             PACKAGE_DIR / "registration/templates",
@@ -181,7 +187,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 try:
     if REDIS_CONNSTR := env("REDIS_CONNSTR"):
-        os.environ["CACHE_DEFAULT"] = f"redisraw://{REDIS_CONNSTR}"
+        os.environ["CACHE_DEFAULT"] = f"redisraw://{REDIS_CONNSTR},client_class=django_redis.client.DefaultClient"
 except Exception as e:  # pragma: no cover
     logging.exception(e)
 
@@ -218,19 +224,19 @@ LANGUAGES = (
     ("en-us", "English | English"),
     ("ar-ae", " | عربي" + "Arabic"),
     ("cs-cz", "čeština | Czech"),
-    ("de-de", "Deutsch"),
+    ("de-de", "Deutsch | German"),
     ("es-es", "Español | Spanish"),
     ("fr-fr", "Français | French"),
     ("hu-hu", "Magyar | Hungarian"),
-    ("it-it", "Italiano"),
+    ("it-it", "Italiano | Italian"),
     ("pl-pl", "Polskie | Polish"),
-    ("pt-pt", "Português"),
-    ("ro-ro", "Română"),
+    ("pt-pt", "Português | Portuguese"),
+    ("ro-ro", "Română | Romanian"),
     ("ru-ru", "Русский | Russian"),
     ("si-si", "සිංහල | Sinhala"),
     ("ta-ta", "தமிழ் | Tamil"),
     ("uk-ua", "український | Ukrainian"),
-    ("hi-hi", "हिंदी"),  # Hindi
+    ("hi-hi", "हिंदी | Hindi"),  # Hindi
 )
 LOCALE_PATHS = (str(PACKAGE_DIR / "LOCALE"),)
 
@@ -272,10 +278,10 @@ STATICFILES_DIRS = [
 # -------- Added Settings
 ADMINS = env("ADMINS")
 AUTHENTICATION_BACKENDS = [
-    "aurora.security.backend.SmartBackend",
-    "aurora.security.backend.OrganizationBackend",
+    "aurora.security.backend.RegistrationAuthBackend",
+    "aurora.security.backend.OrganizationAuthBackend",
     # "django.contrib.auth.backends.ModelBackend",
-    "social_core.backends.azuread_b2c.AzureADB2COAuth2",
+    "social_core.backends.azuread_tenant.AzureADTenantOAuth2",
 ] + env("AUTHENTICATION_BACKENDS")
 
 CSRF_COOKIE_NAME = env("CSRF_COOKIE_NAME")
@@ -297,8 +303,8 @@ EMAIL_USE_TLS = env("EMAIL_USE_TLS")
 # FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 LOGIN_REDIRECT_URL = "index"
 LOGOUT_REDIRECT_URL = "index"
-LOGIN_URL = "/login"
-USER_LOGIN_URL = "/login"
+# LOGIN_URL = "/login"
+# USER_LOGIN_URL = "/login"
 
 LOGGING = {
     "version": 1,
@@ -311,10 +317,26 @@ LOGGING = {
             "class": "logging.NullHandler",
         },
     },
+    "root": {
+        "handlers": ["console"],
+        "level": "ERROR",
+    },
     "loggers": {
+        "selector_events": {
+            "handlers": ["console"],
+            "level": "ERROR",
+        },
         "flags": {
             "handlers": ["console"],
             "level": "ERROR",
+        },
+        "front_door": {
+            "handlers": ["console"],
+            "level": "ERROR",
+        },
+        "front_door.middleware": {
+            "handlers": ["console"],
+            "level": "CRITICAL",
         },
         "django": {
             "handlers": ["console"],
@@ -372,6 +394,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "https://browser.sentry-cdn.com",
     "https://cdnjs.cloudflare.com",
+    "https://login.microsoftonline.com",
 ] + env("CORS_ALLOWED_ORIGINS")
 
 CONSTANCE_ADDITIONAL_FIELDS = {
@@ -392,6 +415,8 @@ CONSTANCE_CONFIG = OrderedDict(
             "",
             str,
         ),
+        "LOGIN_LOCAL": (True, "Enable local accounts login", bool),
+        "LOGIN_SSO": (True, "Enable SSO logon", bool),
         "ADMIN_SYNC_REMOTE_SERVER": ("", "production server url", str),
         "ADMIN_SYNC_REMOTE_ADMIN_URL": ("/admin/", "", str),
         "ADMIN_SYNC_LOCAL_ADMIN_URL": ("/admin/", "", str),
@@ -404,6 +429,8 @@ CONSTANCE_CONFIG = OrderedDict(
         "QRCODE": (True, "Enable QRCode generation", bool),
         "SHOW_REGISTER_ANOTHER": (True, "Enable QRCode generation", bool),
         "MAINTENANCE_MODE": (False, "set maintenance mode On/Off", bool),
+        "WAF_REGISTRATION_ALLOWED_HOSTNAMES": (".*", "public website hostname (regex)", str),
+        "WAF_ADMIN_ALLOWED_HOSTNAMES": ("", "admin website hostname (regex)", str),
     }
 )
 
@@ -439,11 +466,24 @@ RATELIMIT = {
 
 AA_PERMISSION_HANDLER = 3  # AA_PERMISSION_CREATE_USE_APPCONFIG
 
+
+def masker(key, value, config, request):
+    from django_sysinfo.utils import cleanse_setting
+
+    from aurora.core.utils import is_root
+
+    if is_root(request):
+        return value
+    return cleanse_setting(key, value, config, request)
+
+
 SYSINFO = {
     "host": True,
     "os": True,
     "python": True,
     "modules": True,
+    "masker": "aurora.config.settings.masker",
+    "masked_environment": "API|TOKEN|KEY|SECRET|PASS|SIGNATURE|AUTH|_ID|SID|DATABASE_URL",
     # "project": {
     #     "mail": False,
     #     "installed_apps": False,
@@ -466,8 +506,8 @@ FLAGS = {
 
 JSON_EDITOR_JS = "https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/8.6.4/jsoneditor.js"
 JSON_EDITOR_CSS = "https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/8.6.4/jsoneditor.css"
-JSON_EDITOR_INIT_JS = "jsoneditor/jsoneditor-init.min.js"
-JSON_EDITOR_ACE_OPTIONS_JS = "jsoneditor/ace_options.min.js"
+JSON_EDITOR_INIT_JS = "django-jsoneditor/jsoneditor-init.min.js"
+JSON_EDITOR_ACE_OPTIONS_JS = "django-jsoneditor/ace_options.min.js"
 
 # CAPTCHA_IMAGE_SIZE = 300,200
 CAPTCHA_FONT_SIZE = 40
@@ -518,19 +558,24 @@ DEBUG_TOOLBAR_PANELS = [
 
 ROOT_TOKEN = env("ROOT_TOKEN")
 CSRF_FAILURE_VIEW = "aurora.web.views.site.error_csrf"
-# Azure login
 
+# WARNING: Do NOT touch this line before it will reach out production
 AUTH_USER_MODEL = "auth.User"
+# AUTH_USER_MODEL = "security.AuroraUser"
 
 # Social Auth settings.
-SOCIAL_AUTH_KEY = env.str("AZURE_CLIENT_KEY")
-SOCIAL_AUTH_SECRET = env.str("AZURE_CLIENT_SECRET")
-SOCIAL_AUTH_TENANT_ID = env("AZURE_TENANT_ID")
+SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_SECRET = env.str("AZURE_CLIENT_SECRET")
+SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_TENANT_ID = env("AZURE_TENANT_ID")
+SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_KEY = env.str("AZURE_CLIENT_KEY")
 SOCIAL_AUTH_RESOURCE = "https://graph.microsoft.com/"
-SOCIAL_AUTH_POLICY = env("AZURE_POLICY_NAME")
-SOCIAL_AUTH_AUTHORITY_HOST = env("AZURE_AUTHORITY_HOST")
-SOCIAL_AUTH_AZUREAD_B2C_OAUTH2_POLICY = ""
-
+# SOCIAL_AUTH_POLICY = env("AZURE_POLICY_NAME")
+# SOCIAL_AUTH_AUTHORITY_HOST = env("AZURE_AUTHORITY_HOST")
+SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = [
+    "username",
+    "first_name",
+    "last_name",
+    "email",
+]
 
 SOCIAL_AUTH_JSONFIELD_ENABLED = True
 SOCIAL_AUTH_PIPELINE = (
@@ -545,24 +590,26 @@ SOCIAL_AUTH_PIPELINE = (
     "social_core.pipeline.social_auth.associate_user",
     "social_core.pipeline.social_auth.load_extra_data",
     "aurora.core.authentication.user_details",
+    "aurora.core.authentication.redir_to_form",
 )
-SOCIAL_AUTH_USER_FIELDS = [
+SOCIAL_AUTH_AZUREAD_B2C_OAUTH2_USER_FIELDS = [
     "email",
     "fullname",
 ]
 
-SOCIAL_AUTH_OAUTH2_SCOPE = [
+SOCIAL_AUTH_AZUREAD_B2C_OAUTH2_SCOPE = [
     "openid",
     "email",
     "profile",
 ]
 
+
 SOCIAL_AUTH_SANITIZE_REDIRECTS = True
 SOCIAL_AUTH_JWT_LEEWAY = env.int("JWT_LEEWAY", 0)
 
 # fix admin name
-LOGIN_URL = "/login/azuread-b2c-oauth2"
-LOGIN_REDIRECT_URL = f"/{DJANGO_ADMIN_URL}"
+LOGIN_URL = "/login"
+LOGIN_REDIRECT_URL = "/logged-in/"
 
 # allow upload big file
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 2  # 2M
@@ -652,3 +699,119 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 10
 SESSION_COOKIE_HTTPONLY = False
 
 HIJACK_PERMISSION_CHECK = "aurora.administration.hijack.can_impersonate"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [env("CHANNEL_LAYER")],
+        },
+    },
+}
+
+MDEDITOR_CONFIGS = {
+    "default": {
+        "width": "100% ",  # Custom edit box width
+        "height": 200,  # Custom edit box height
+        "toolbar": [
+            "undo",
+            "redo",
+            "|",
+            "bold",
+            "del",
+            "italic",
+            "quote",
+            "ucwords",
+            "uppercase",
+            "lowercase",
+            "|",
+            "h1",
+            "h2",
+            "h3",
+            "h5",
+            "h6",
+            "|",
+            "list-ul",
+            "list-ol",
+            "hr",
+            "|",
+            "link",
+            "reference-link",
+            "image",
+            "code",
+            "preformatted-text",
+            "code-block",
+            "table",
+            "datetime",
+            "emoji",
+            "html-entities",
+            "pagebreak",
+            "goto-line",
+            "|",
+            "help",
+            "info",
+            "||",
+            "preview",
+            "watch",
+            "fullscreen",
+        ],  # custom edit box toolbar
+        # image upload format type
+        # 'upload_image_formats': ["jpg", "jpeg", "gif", "png", "bmp", "webp", "svg"],
+        # 'image_folder': 'editor',  # image save the folder name
+        "theme": "default",  # edit box theme, dark / default
+        "preview_theme": "default",  # Preview area theme, dark / default
+        "editor_theme": "default",  # edit area theme, pastel-on-dark / default
+        "toolbar_autofixed": False,  # Whether the toolbar capitals
+        "search_replace": True,  # Whether to open the search for replacement
+        "emoji": True,  # whether to open the expression function
+        "tex": True,  # whether to open the tex chart function
+        "flow_chart": True,  # whether to open the flow chart function
+        "sequence": True,  # Whether to open the sequence diagram function
+        "watch": True,  # Live preview
+        "lineWrapping": True,  # lineWrapping
+        "lineNumbers": True,  # lineNumbers
+        "language": "en",  # zh / en / es
+    }
+}
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning",
+    "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
+    "DEFAULT_RENDERER_CLASSES": (
+        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
+        "rest_framework_datatables.renderers.DatatablesRenderer",
+    ),
+    "PAGE_SIZE": 30,
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.BasicAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.DjangoModelPermissions",
+    ],
+}
+
+
+FRONT_DOOR_CONFIG = "front_door.conf.DjangoConstance"
+FRONT_DOOR_ENABLED = env("FRONT_DOOR_ENABLED")
+FRONT_DOOR_ALLOWED_PATHS = env("FRONT_DOOR_ALLOWED_PATHS")
+FRONT_DOOR_TOKEN = env("FRONT_DOOR_TOKEN")
+FRONT_DOOR_HEADER = "x-aurora"
+FRONT_DOOR_COOKIE_NAME = "x-aurora"
+FRONT_DOOR_COOKIE_PATTERN = ".*"
+# FRONT_DOOR_ERROR_CODE = 404
+# FRONT_DOOR_REDIR_URL = "https://www.sosbob.com/"
+FRONT_DOOR_LOG_LEVEL = env("FRONT_DOOR_LOG_LEVEL")  # LOG_RULE_FAIL
+FRONT_DOOR_RULES = [
+    # "front_door.rules.internal_ip",  # grant access to settings.INTERNAL_IPS
+    # "front_door.rules.forbidden_path",  # DENY access to FORBIDDEN_PATHS
+    "front_door.rules.allowed_path",  # grant access to ALLOWED_PATHS
+    "front_door.rules.allowed_ip",  # grant access to ALLOWED_IPS
+    "front_door.rules.special_header",  # grant access if request has Header[HEADER] == TOKEN
+    # "front_door.rules.has_header",  # grant access if request has HEADER
+    "front_door.rules.cookie_value",  # grant access if request.COOKIES[COOKIE_NAME]
+    # "front_door.rules.cookie_exists",  # grant access ir COOKIE_NAME in request.COOKIES
+]

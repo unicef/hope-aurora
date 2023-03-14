@@ -35,7 +35,7 @@ QUICK_SQL = {
 }
 
 
-def loaddata(self, request):
+def panel_loaddata(self, request):
     context = self.each_context(request)
     context["title"] = "Loaddata"
     if request.method == "POST":
@@ -78,7 +78,10 @@ def loaddata(self, request):
     return render(request, "admin/panels/loaddata.html", context)
 
 
-def dumpdata(self, request):
+panel_loaddata.verbose_name = "Load Data"
+
+
+def panel_dumpdata(self, request):
     stdout = io.StringIO()
     context = self.each_context(request)
     context["title"] = "Export Configuration"
@@ -103,6 +106,9 @@ def dumpdata(self, request):
         frm = ExportForm()
     context["form"] = frm
     return render(request, "admin/panels/dumpdata.html", context)
+
+
+panel_dumpdata.verbose_name = "Dump Data"
 
 
 def sql(self, request, extra_context=None):

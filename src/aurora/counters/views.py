@@ -22,7 +22,7 @@ def index(request):
 
 class ChartView(UserPassesTestMixin, View):
     permission_denied_message = "----"
-    login_url = "/"
+    login_url = "/login/"
 
     def test_func(self):
         return self.request.user.is_authenticated

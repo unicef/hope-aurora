@@ -16,6 +16,7 @@ from hashlib import md5
 from itertools import chain
 from pathlib import Path
 from sys import getsizeof, stderr
+from typing import Dict
 
 import faker
 import qrcode
@@ -27,6 +28,7 @@ from django.core.files.utils import FileProxyMixin
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse
 from django.template import loader
+from django.template.defaultfilters import date
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.cache import patch_cache_control
@@ -447,7 +449,7 @@ def get_session_id(request=None):
     return ""
 
 
-def flatten_dict(d, parent_key="", sep="_"):
+def flatten_dict(d, parent_key="", sep="_") -> Dict:
     items = []
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
@@ -460,3 +462,26 @@ def flatten_dict(d, parent_key="", sep="_"):
         else:
             items.append((new_key, v))
     return dict(items)
+
+
+def build_dict(r, **options):
+    d = flatten_dict(r["fields"])
+    if "datetime_format" in options:
+        d["timestamp"] = date(r["timestamp"], options["datetime_format"])
+    else:
+        d["timestamp"] = str(r["timestamp"])
+    d["id"] = r["id"]
+    d["ignored"] = r["ignored"]
+    from aurora.registration.models import Record
+
+    d["code"] = get_registration_id(Record(**r))
+    return d
+
+
+def get_registration_id(record):
+    ts = record.timestamp.strftime("%Y%m%d")
+    return f"HOPE-{ts}-{record.registration_id}/{record.id}"
+
+
+def oneline(value):
+    return value.replace("\r\n", ";").replace("\n", ";").replace("\r", ";").replace(";;", ";")

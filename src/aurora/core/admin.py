@@ -1,14 +1,8 @@
-import io
 import json
 import logging
-import tempfile
-from json import JSONDecodeError
-from pathlib import Path
 
-import requests
 from admin_extra_buttons.decorators import button, link, view
 from admin_ordering.admin import OrderableAdmin
-from admin_sync.mixin import SyncMixin
 from admin_sync.utils import is_local
 from adminfilters.autocomplete import AutoCompleteFilter
 from adminfilters.combo import ChoicesFieldComboFilter, RelatedFieldComboFilter
@@ -17,31 +11,25 @@ from adminfilters.value import ValueFilter
 from concurrency.api import disable_concurrency
 from django import forms
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.admin import TabularInline, register
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.core.cache import caches
 from django.core.exceptions import ValidationError
-from django.core.management import call_command
-from django.core.signing import BadSignature, Signer
 from django.db.models import JSONField, Q
-from django.http import JsonResponse
+from django.http import HttpResponseRedirect
 from django.urls import NoReverseMatch, reverse
 from jsoneditor.forms import JSONEditor
 from mptt.admin import MPTTModelAdmin
-from requests.auth import HTTPBasicAuth
 from reversion_compare.admin import CompareVersionAdmin
 from smart_admin.modeladmin import SmartModelAdmin
 
 from ..administration.filters import BaseAutoCompleteFilter
 from ..administration.mixin import LoadDumpMixin
-from .fields.widgets import PythonEditor
-from .forms import (
-    FieldAttributesForm,
-    Select2Widget,
-    SmartAttributesForm,
-    ValidatorForm,
-    WidgetAttributesForm,
-)
+from .admin_sync import SyncMixin
+from .field_editor import FieldEditor
+from .fields.widgets import JavascriptEditor
+from .forms import Select2Widget, ValidatorForm
 from .models import (
     FIELD_KWARGS,
     CustomFieldType,
@@ -95,9 +83,9 @@ class Select2RelatedFieldComboFilter(RelatedFieldComboFilter):
 
 class ValidatorTestForm(forms.Form):
     code = forms.CharField(
-        widget=PythonEditor,
+        widget=JavascriptEditor,
     )
-    input = forms.CharField(widget=PythonEditor(toolbar=False), required=False)
+    input = forms.CharField(widget=JavascriptEditor(toolbar=False), required=False)
 
 
 @register(Organization)
@@ -107,6 +95,16 @@ class OrganizationAdmin(SyncMixin, MPTTModelAdmin):
     mptt_indent_field = "name"
     search_fields = ("name",)
     protocol_class = AuroraSyncOrganizationProtocol
+    change_list_template = "admin/core/organization/change_list.html"
+
+    def admin_sync_show_inspect(self):
+        return True
+
+    def get_readonly_fields(self, request, obj=None):
+        ro = super().get_readonly_fields(request, obj)
+        if obj and obj.pk:
+            ro = list(ro) + ["slug"]
+        return ro
 
 
 @register(Project)
@@ -117,12 +115,19 @@ class ProjectAdmin(SyncMixin, MPTTModelAdmin):
     mptt_indent_field = "name"
     search_fields = ("name",)
     protocol_class = AuroraSyncProjectProtocol
+    autocomplete_fields = "parent, "
 
     def get_search_results(self, request, queryset, search_term):
         queryset, may_have_duplicates = super().get_search_results(request, queryset, search_term)
         if "oid" in request.GET:
             queryset = queryset.filter(organization__id=request.GET["oid"])
         return queryset, may_have_duplicates
+
+    def get_readonly_fields(self, request, obj=None):
+        ro = super().get_readonly_fields(request, obj)
+        if obj and obj.pk:
+            ro = list(ro) + ["slug"]
+        return ro
 
 
 @register(Validator)
@@ -142,6 +147,8 @@ class ValidatorAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartMod
     }
     # change_list_template = "reversion/change_list.html"
     object_history_template = "reversion-compare/object_history.html"
+    change_form_template = None
+    inlines = []
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
@@ -234,7 +241,7 @@ class FormSetInline(OrderableAdmin, TabularInline):
         return super().formfield_for_dbfield(db_field, request, **kwargs)
 
 
-class FlexFormFieldForm(forms.ModelForm):
+class FlexFormFieldFormInline(forms.ModelForm):
     class Meta:
         model = FlexFormField
         exclude = ()
@@ -245,7 +252,7 @@ class FlexFormFieldForm(forms.ModelForm):
             self.fields["name"].widget.attrs = {"readonly": True, "tyle": "background-color:#f8f8f8;border:none"}
 
 
-class FlexFormFieldForm2(forms.ModelForm):
+class FlexFormFieldForm(forms.ModelForm):
     class Meta:
         model = FlexFormField
         exclude = ()
@@ -260,7 +267,7 @@ class FlexFormFieldForm2(forms.ModelForm):
 @register(FlexFormField)
 class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, OrderableAdmin, SmartModelAdmin):
     search_fields = ("name", "label")
-    list_display = ("label", "name", "flex_form", "form_type", "required", "enabled")
+    list_display = ("label", "name", "flex_form", "field_type", "required", "enabled")
     list_editable = ["required", "enabled"]
     list_filter = (
         ("flex_form", AutoCompleteFilter),
@@ -273,20 +280,25 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
     formfield_overrides = {
         JSONField: {"widget": JSONEditor},
     }
-    form = FlexFormFieldForm2
+    form = FlexFormFieldForm
     ordering_field = "ordering"
     order = "ordering"
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related()
+        return super().get_queryset(request).select_related("flex_form")
 
     # change_list_template = "reversion/change_list.html"
 
-    def form_type(self, obj):
+    def field_type(self, obj):
         if obj.field_type:
             return obj.field_type.__name__
         else:
             return "[[ removed ]]"
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name == "advanced":
+            kwargs["widget"] = JSONEditor()
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
 
     def formfield_for_choice_field(self, db_field, request, **kwargs):
         if db_field.name == "field_type":
@@ -299,48 +311,35 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
         initial.setdefault("advanced", FlexFormField.FLEX_FIELD_DEFAULT_ATTRS)
         return initial
 
-    def _attributes(self, request):
-        formAttrs = FieldAttributesForm(request.GET)
-        formWidget = WidgetAttributesForm(request.GET)
-        formSmart = SmartAttributesForm(request.GET)
-        formAttrs.is_valid()
-        formWidget.is_valid()
-        formSmart.is_valid()
-
-        data = {**formAttrs.cleaned_data, **formWidget.cleaned_data, **formSmart.cleaned_data}
-        return JsonResponse(data)
-
-    @button()
-    def attributes(self, request, pk):
-        ctx = self.get_common_context(request, pk)
+    @button(label="editor")
+    def field_editor(self, request, pk):
+        self.editor = FieldEditor(self, request, pk)
         if request.method == "POST":
-            return self._attributes(request)
+            ret = self.editor.post(request, pk)
+            self.message_user(request, "Saved", messages.SUCCESS)
+            return ret
         else:
-            formAttrs = FieldAttributesForm()
-            formWidget = WidgetAttributesForm()
-            formSmart = SmartAttributesForm()
-        ctx["form_attrs"] = formAttrs
-        ctx["form_widget"] = formWidget
-        ctx["form_smart"] = formSmart
-
-        return render(request, "admin/core/flexformfield/attributes.html", ctx)
+            return self.editor.get(request, pk)
 
     @view()
-    def widget(self, request, pk):
-        ctx = self.get_common_context(request, pk)
-        if request.POST:
-            pass
-        else:
-            fld: FlexFormField = ctx["original"]
-            instance = fld.get_instance()
-            form_class_attrs = {
-                "sample": instance,
-            }
-            form_class = type(forms.Form)("TestForm", (forms.Form,), form_class_attrs)
-            ctx["form"] = form_class()
-            ctx["instance"] = instance
+    def widget_attrs(self, request, pk):
+        editor = FieldEditor(self, request, pk)
+        return editor.get_configuration()
 
-        return render(request, "admin/core/flexformfield/widget.html", ctx)
+    @view()
+    def widget_refresh(self, request, pk):
+        editor = FieldEditor(self, request, pk)
+        return editor.refresh()
+
+    @view()
+    def widget_code(self, request, pk):
+        editor = FieldEditor(self, request, pk)
+        return editor.get_code()
+
+    @view()
+    def widget_display(self, request, pk):
+        editor = FieldEditor(self, request, pk)
+        return editor.render()
 
     @button()
     def test(self, request, pk):
@@ -381,8 +380,9 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
 
 
 class FlexFormFieldInline(LoadDumpMixin, OrderableAdmin, TabularInline):
+    template = "admin/core/flexformfield/tabular.html"
     model = FlexFormField
-    form = FlexFormFieldForm
+    form = FlexFormFieldFormInline
     fields = ("ordering", "label", "name", "required", "enabled", "field_type")
     show_change_link = True
     extra = 0
@@ -432,6 +432,8 @@ class UsedByRegistration(BaseAutoCompleteFilter):
 
     def queryset(self, request, queryset):
         # {'registration__exact': '30'}
+        if not self.used_parameters:
+            return queryset
         try:
             value = self.used_parameters["registration__exact"]
             return queryset.filter(Q(registration__exact=value) | Q(formset__parent__registration=value))
@@ -449,10 +451,14 @@ class UsedInRFormset(BaseAutoCompleteFilter):
 @register(FlexForm)
 class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
     SYNC_COOKIE = "sync"
-    # inlines = [FlexFormFieldInline, FormSetInline]
+    inlines = [
+        FlexFormFieldInline,
+        FormSetInline,
+    ]
     list_display = (
         "name",
-        "validator",
+        # "validator",
+        "project",
         "is_main",
     )
     list_filter = (
@@ -495,6 +501,12 @@ class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
         obj = self.get_object(request, pk)
         obj.save()
 
+    @button(label="Fields")
+    def _fields(self, request, pk):
+        url = reverse("admin:core_flexformfield_changelist")
+        url = f"{url}?flex_form__exact={pk}"
+        return HttpResponseRedirect(url)
+
     @button()
     def test(self, request, pk):
         ctx = self.get_common_context(request, pk)
@@ -509,87 +521,87 @@ class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
         ctx["form"] = form
         return render(request, "admin/core/flexform/test.html", ctx)
 
-    @view(http_basic_auth=True, permission=lambda request, obj: request.user.is_superuser)
-    def export(self, request):
-        try:
-            frm = SyncConfigForm(request.GET)
-            if frm.is_valid():
-                apps = frm.cleaned_data["apps"]
-                buf = io.StringIO()
-                call_command(
-                    "dumpdata",
-                    *apps,
-                    stdout=buf,
-                    exclude=["registration.Record"],
-                    use_natural_foreign_keys=True,
-                    use_natural_primary_keys=True,
-                )
-                return JsonResponse(json.loads(buf.getvalue()), safe=False)
-            else:
-                return JsonResponse(frm.errors, status=400)
-        except Exception as e:
-            logger.exception(e)
-            return JsonResponse({}, status=400)
+    # @view(http_basic_auth=True, permission=lambda request, obj: request.user.is_superuser)
+    # def export(self, request):
+    #     try:
+    #         frm = SyncConfigForm(request.GET)
+    #         if frm.is_valid():
+    #             apps = frm.cleaned_data["apps"]
+    #             buf = io.StringIO()
+    #             call_command(
+    #                 "dumpdata",
+    #                 *apps,
+    #                 stdout=buf,
+    #                 exclude=["registration.Record"],
+    #                 use_natural_foreign_keys=True,
+    #                 use_natural_primary_keys=True,
+    #             )
+    #             return JsonResponse(json.loads(buf.getvalue()), safe=False)
+    #         else:
+    #             return JsonResponse(frm.errors, status=400)
+    #     except Exception as e:
+    #         logger.exception(e)
+    #         return JsonResponse({}, status=400)
 
-    def _get_signed_cookie(self, request, form):
-        signer = Signer(request.user.password)
-        return signer.sign_object(form.cleaned_data)
+    # def _get_signed_cookie(self, request, form):
+    #     signer = Signer(request.user.password)
+    #     return signer.sign_object(form.cleaned_data)
+    #
+    # def _get_saved_credentials(self, request):
+    #     try:
+    #         signer = Signer(request.user.password)
+    #         obj: dict = signer.unsign_object(request.COOKIES.get(self.SYNC_COOKIE, {}))
+    #         return obj
+    #     except BadSignature:
+    #         return {}
 
-    def _get_saved_credentials(self, request):
-        try:
-            signer = Signer(request.user.password)
-            obj: dict = signer.unsign_object(request.COOKIES.get(self.SYNC_COOKIE, {}))
-            return obj
-        except BadSignature:
-            return {}
-
-    @button(label="Import")
-    def _import(self, request):
-        ctx = self.get_common_context(request, title="Import")
-        cookies = {}
-        if request.method == "POST":
-            form = SyncForm(request.POST)
-            if form.is_valid():
-                try:
-                    auth = HTTPBasicAuth(form.cleaned_data["username"], form.cleaned_data["password"])
-                    if form.cleaned_data["remember"]:
-                        cookies = {self.SYNC_COOKIE: self._get_signed_cookie(request, form)}
-                    else:
-                        cookies = {self.SYNC_COOKIE: ""}
-                    url = f"{form.cleaned_data['host']}core/flexform/export/?"
-                    for app in form.cleaned_data["apps"]:
-                        url += f"apps={app}&"
-                    if not url.startswith("http"):
-                        url = f"https://{url}"
-
-                    workdir = Path(".").absolute()
-                    out = io.StringIO()
-                    with requests.get(url, stream=True, auth=auth) as res:
-                        if res.status_code != 200:
-                            raise Exception(str(res))
-                        ctx["url"] = url
-                        with tempfile.NamedTemporaryFile(
-                            dir=workdir, prefix="~SYNC", suffix=".json", delete=not settings.DEBUG
-                        ) as fdst:
-                            fdst.write(res.content)
-                            with disable_concurrency():
-                                fixture = (workdir / fdst.name).absolute()
-                                call_command("loaddata", fixture, stdout=out, verbosity=3)
-
-                            message = out.getvalue()
-                            self.message_user(request, message)
-                    ctx["res"] = res
-                except (Exception, JSONDecodeError) as e:
-                    logger.exception(e)
-                    self.message_error_to_user(request, e)
-        else:
-            form = SyncForm(initial=self._get_saved_credentials(request))
-        ctx["form"] = form
-        return render(request, "admin/core/flexform/import.html", ctx, cookies=cookies)
+    # @button(label="Import")
+    # def _import(self, request):
+    #     ctx = self.get_common_context(request, title="Import")
+    #     cookies = {}
+    #     if request.method == "POST":
+    #         form = SyncForm(request.POST)
+    #         if form.is_valid():
+    #             try:
+    #                 auth = HTTPBasicAuth(form.cleaned_data["username"], form.cleaned_data["password"])
+    #                 if form.cleaned_data["remember"]:
+    #                     cookies = {self.SYNC_COOKIE: self._get_signed_cookie(request, form)}
+    #                 else:
+    #                     cookies = {self.SYNC_COOKIE: ""}
+    #                 url = f"{form.cleaned_data['host']}core/flexform/export/?"
+    #                 for app in form.cleaned_data["apps"]:
+    #                     url += f"apps={app}&"
+    #                 if not url.startswith("http"):
+    #                     url = f"https://{url}"
+    #
+    #                 workdir = Path(".").absolute()
+    #                 out = io.StringIO()
+    #                 with requests.get(url, stream=True, auth=auth) as res:
+    #                     if res.status_code != 200:
+    #                         raise Exception(str(res))
+    #                     ctx["url"] = url
+    #                     with tempfile.NamedTemporaryFile(
+    #                         dir=workdir, prefix="~SYNC", suffix=".json", delete=not settings.DEBUG
+    #                     ) as fdst:
+    #                         fdst.write(res.content)
+    #                         with disable_concurrency():
+    #                             fixture = (workdir / fdst.name).absolute()
+    #                             call_command("loaddata", fixture, stdout=out, verbosity=3)
+    #
+    #                         message = out.getvalue()
+    #                         self.message_user(request, message)
+    #                 ctx["res"] = res
+    #             except (Exception, JSONDecodeError) as e:
+    #                 logger.exception(e)
+    #                 self.message_error_to_user(request, e)
+    #     else:
+    #         form = SyncForm(initial=self._get_saved_credentials(request))
+    #     ctx["form"] = form
+    #     return render(request, "admin/core/flexform/import.html", ctx, cookies=cookies)
 
 
 @register(OptionSet)
-class OptionSetAdmin(LoadDumpMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
+class OptionSetAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
     list_display = (
         "name",
         "id",

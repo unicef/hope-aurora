@@ -43,6 +43,8 @@ def import_custom_field(value, exc):
     value = clean_classname(value)
     try:
         return import_by_name(value)
+    except ModuleNotFoundError:
+        return None
     except StrategyAttributeError:
         try:
             return get_custom_field(value).get_class()
@@ -93,7 +95,6 @@ field_registry.register(fields.MultiCheckboxField)
 field_registry.register(fields.WebcamField)
 field_registry.register(fields.RadioField)
 field_registry.register(fields.SelectField)
-field_registry.register(fields.SmartCaptchaField)
 field_registry.register(fields.SmartFileField)
 field_registry.register(fields.YesNoChoice)
 field_registry.register(fields.YesNoRadio)
@@ -105,5 +106,5 @@ field_registry.register(fields.HiddenField)
 field_registry.register(MathCaptchaField)
 
 form_registry = Registry(forms.BaseForm)
-# form_registry.register(forms.Form)
+
 form_registry.register(FlexFormBaseForm)

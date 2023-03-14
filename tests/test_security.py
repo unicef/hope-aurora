@@ -1,6 +1,6 @@
 import pytest
 
-from aurora.security.backend import SmartBackend
+from aurora.security.backend import RegistrationAuthBackend
 
 
 @pytest.fixture()
@@ -16,10 +16,10 @@ def simple_registration(simple_form):
 
 
 def test_smartbackend_allow(db, user):
-    s = SmartBackend()
+    s = RegistrationAuthBackend()
     assert not s.has_perm(user, "registration_registration.create_translation")
 
 
 def test_smartbackend_reg(db, user, simple_registration):
-    s = SmartBackend()
+    s = RegistrationAuthBackend()
     assert not s.has_perm(user, "registration_registration.create_translation", simple_registration)

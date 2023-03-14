@@ -1,5 +1,5 @@
 from .datetime import SmartDateWidget
-from .editor import PythonEditor
+from .editor import JavascriptEditor
 from .image import ImageWidget
 
 # from .multi_checkbox import MultiCheckboxWidget

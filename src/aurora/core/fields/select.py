@@ -50,7 +50,7 @@ class SelectField(forms.ChoiceField):
     def __init__(self, **kwargs):
         self._choices = ()
         self.language = kwargs.pop("language", get_language())
-        self.parent = kwargs.pop("parent", None)
+        self.parent = kwargs.pop("parent_datasource", None)
         options = kwargs.pop("datasource", "")
         super().__init__(**kwargs)
         self.choices = options
@@ -83,16 +83,24 @@ class AjaxSelectField(forms.Field):
     widget = AjaxSelectWidget
 
     def __init__(self, **kwargs):
-        self.parent = kwargs.pop("parent", "")
-        self.datasource = kwargs.pop("datasource", None)
+        if hasattr(self, "smart_attrs"):
+            self.parent = self.smart_attrs.get("parent_datasource", None)
+            self.datasource = self.smart_attrs.get("datasource", None)
+        elif "datasource" in kwargs:
+            self.datasource = kwargs["datasource"]
+        else:
+            self.datasource = None
+            self.parent = None
+
         super().__init__(**kwargs)
 
     def widget_attrs(self, widget):
         from aurora.core.models import OptionSet
 
         attrs = super().widget_attrs(widget)
-        # attrs["data-parent"] = self.parent
         try:
+            if self.parent:
+                attrs["data-parent"] = self.parent
             attrs["data-source"] = self.datasource
             attrs["data-ajax--url"] = reverse("optionset", args=[self.datasource])
         except (OptionSet.DoesNotExist, NoReverseMatch, TypeError) as e:

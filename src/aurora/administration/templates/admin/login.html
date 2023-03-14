@@ -35,7 +35,6 @@
     {% endif %}
 
     <div id="content-main">
-
         {% if user.is_authenticated %}
             <p class="errornote">
                 {% blocktranslate trimmed %}
@@ -44,31 +43,42 @@
                 {% endblocktranslate %}
             </p>
         {% endif %}
-
-        <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
-            <div class="form-row">
-                {{ form.username.errors }}
-                {{ form.username.label_tag }} {{ form.username }}
-            </div>
-            <div class="form-row">
-                {{ form.password.errors }}
-                {{ form.password.label_tag }} {{ form.password }}
-                <input type="hidden" name="next" value="{{ next }}">
-            </div>
-            {% url 'admin_password_reset' as password_reset_url %}
-            {% if password_reset_url %}
-                <div class="password-reset-link">
-                    <a href="{{ password_reset_url }}">{% translate 'Forgotten your password or username?' %}</a>
+        {% if user_has_token or config.LOGIN_SSO %}
+            <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
+                <div class="form-row">
+                    {{ form.username.errors }}
+                    {{ form.username.label_tag }} {{ form.username }}
                 </div>
-            {% endif %}
-            <div class="submit-row">
-                <input type="submit" value="{% translate 'Log in' %}">
+                <div class="form-row">
+                    {{ form.password.errors }}
+                    {{ form.password.label_tag }} {{ form.password }}
+                    <input type="hidden" name="next" value="{{ next }}">
+                </div>
+                {% url 'admin_password_reset' as password_reset_url %}
+                {% if password_reset_url %}
+                    <div class="password-reset-link">
+                        <a href="{{ password_reset_url }}">{% translate 'Forgotten your password or username?' %}</a>
+                    </div>
+                {% endif %}
+                <div class="submit-row">
+                    <input type="submit" value="{% translate 'Log in' %}">
+                </div>
+            </form>
+        {% endif %}
+        <div class="module">
+            <hr>
+            <div class="container">
+                <div class="submit-row" style="margin-top: 10px">
+                    <a href="{% url 'social:begin' 'azuread-tenant-oauth2' %}" style="padding: 10px" class="button">
+                        Sign In With Azure
+                    </a>
+                </div>
             </div>
-        </form>
-        <div>
-            <a href="{% url 'social:begin' 'azuread-b2c-oauth2' %}" class="button">
-                Sign In With Azure
-            </a>
         </div>
     </div>
+{% endblock %}
+{% block footer %}
+<div style="text-align: center;border-top: 1px solid grey;margin: 10px 10px 20px; padding-top: 10px">
+{{ project.build_date }} - {{ project.version }}
+</div>
 {% endblock %}

@@ -1,58 +1,61 @@
-from rest_framework import serializers
-from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from strategy_field.utils import fqn
+import os
+from collections import OrderedDict
 
-from ...core.models import FlexFormField
-from ...core.utils import get_session_id
-from ...registration.models import Registration
+from django.utils.cache import get_conditional_response
+from django_filters import rest_framework as filters
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import AllowAny
+from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
+
+from ...core.utils import get_etag, get_session_id
+from ...registration.models import Record, Registration
+from ..serializers import RegistrationDetailSerializer, RegistrationListSerializer
+from ..serializers.record import DataTableRecordSerializer
 from .base import SmartViewSet
 
 
-class RegistrationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Registration
-        exclude = ()
-        lookup_field = "slug"
+class RecordPageNumberPagination(PageNumberPagination):
+    def get_paginated_response(self, data):
+        return Response(
+            OrderedDict(
+                [
+                    ("page", self.request.GET.get("page", 1)),
+                    ("count", self.page.paginator.count),
+                    ("next", self.get_next_link()),
+                    ("previous", self.get_previous_link()),
+                    ("results", data),
+                ]
+            )
+        )
+
+
+class RecordFilter(filters.FilterSet):
+    start_date = filters.DateFilter(field_name="timestamp", lookup_expr="gte")
 
 
 class RegistrationViewSet(SmartViewSet):
     queryset = Registration.objects.all()
-    serializer_class = RegistrationSerializer
-    lookup_field = "slug"
+
+    def get_serializer_class(self):
+        if self.detail:
+            return RegistrationDetailSerializer
+        return RegistrationListSerializer
 
     def get_permissions(self):
         return [permission() for permission in self.permission_classes]
 
     @action(detail=True, permission_classes=[AllowAny])
-    def metadata(self, request, slug=None):
-        def _get_field_details(flex_field: FlexFormField):
-            kwargs = flex_field.get_field_kwargs()
-            return {
-                "type": fqn(flex_field.field_type),
-                "smart_attrs": kwargs["smart_attrs"],
-                "widget_kwargs": kwargs["widget_kwargs"],
-                "choices": kwargs.get("choices"),
-            }
-
+    def metadata(self, request, pk=None):
         reg: Registration = self.get_object()
-        metadata = {"base": {"fields": []}}
-        for field in reg.flex_form.fields.all():
-            metadata["base"]["fields"].append({field.name: _get_field_details(field)})
-        for name, fs in reg.flex_form.get_formsets({}).items():
-            metadata[name] = {
-                "fields": [],
-                "min_num": fs.min_num,
-                "max_num": fs.max_num,
-            }
-            for field in fs.form.flex_form.fields.all():
-                metadata[name]["fields"].append({field.name: _get_field_details(field)})
-
-        return Response(metadata)
+        return Response(reg.metadata)
 
     @action(detail=True, permission_classes=[AllowAny])
-    def version(self, request, slug=None):
+    def version(self, request, pk=None):
         reg: Registration = self.get_object()
         return Response(
             {
@@ -64,3 +67,49 @@ class RegistrationViewSet(SmartViewSet):
                 "protected": reg.protected,
             }
         )
+
+    @action(
+        detail=True,
+        methods=["GET"],
+        renderer_classes=[JSONRenderer],
+        pagination_class=RecordPageNumberPagination,
+        filter_backends=[DjangoFilterBackend],
+    )
+    def records(self, request, pk=None):
+        obj: Registration = self.get_object()
+        if not request.user.has_perm("registration.view_data", obj):
+            raise PermissionDenied()
+        self.res_etag = get_etag(
+            request,
+            str(obj.active),
+            str(obj.version),
+            os.environ.get("BUILD_DATE", ""),
+        )
+        response = get_conditional_response(request, str(self.res_etag))
+        if response is None:
+            queryset = (
+                Record.objects.defer(
+                    "files",
+                    "storage",
+                )
+                .filter(registration__id=pk)
+                .values()
+            )
+            flt = RecordFilter(request.GET, queryset=queryset)
+            if flt.form.is_valid():
+                queryset = flt.filter_queryset(queryset)
+            page = self.paginate_queryset(queryset)
+
+            if page is None:
+                serializer = DataTableRecordSerializer(
+                    queryset, many=True, context={"request": request}, metadata=obj.metadata
+                )
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                serializer = DataTableRecordSerializer(
+                    page, many=True, context={"request": request}, metadata=obj.metadata
+                )
+                response = self.get_paginated_response(serializer.data)
+        response.headers.setdefault("ETag", self.res_etag)
+        response.headers.setdefault("Cache-Control", "private, max-age=120")
+        return response

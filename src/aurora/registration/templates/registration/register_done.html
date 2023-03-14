@@ -15,7 +15,7 @@
             {% endwith %}
             <pre class="text-2xl p-5 registration-id">{{ record.unicef_id }}</pre>
         </div>
-        {% if config.QRCODE %}
+        {% if record.registration.advanced.qrcode %}
             <div class="flex flex-row justify-center items-center">
                 <img width="300" height="300" src="data:image/png;base64,{{ qrcode }}" alt="Red dot"/>
             </div>
@@ -32,7 +32,7 @@
         {% endwith %}
         {% if config.SHOW_REGISTER_ANOTHER %}
             <div class="text-center mt-10 pt-10">
-                <a href="{% url "index" %}" data-msgid="register another household"
+                <a href="{{ registration_url }}" data-msgid="register another household"
                    class="itrans w-full text-white capitalize bg-indigo-500 border-0 py-4 px-8 focus:outline-none hover:bg-indigo-600 rounded text-center text-xl">
                     {% trans "register another household" %}
                 </a>

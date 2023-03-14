@@ -16,21 +16,8 @@
             "<div class=\"ml-2 mr-5\"><input id=\"staff-editor\" type=\"checkbox\" class=\" mt-1 cursor-pointer\"></div>" +
             "</div>";
 
-        var TOOLTIP_MODULE = "<script type=“text/template” id=\"tooltip-template\">" +
-            "<span class=\"staff-editor staff-tooltip\">" +
-            "    <span class=\"tooltiptext text-lower\">" +
-            "        <p><span class=\"label\">Module</span>{{REGISTRATION}}</p>" +
-            "        <p><span class=\"label\">Locale</span>{{REGISTRATION.LOCALE}}</p>" +
-            "        <p><span class=\"label\">Version</span>{{REGISTRATION.VERSION}}</p>" +
-            "        <p><span class=\"label\">Validator</span>{{REGISTRATION.VALIDATOR}}</p>" +
-            "    </span>" +
-            "    <a target=\"_edit\" class=\"module\"" +
-            "       href=\"{% url \"admin:registration_registration_change\" registration.pk %}\">" +
-            "    </a>" +
-            "</span>" +
-            "</script>";
         var seed = Date.now() + Math.random();
-
+        $(".staff-editor").hide();
         $.get("/api/user/me/?" + seed).done(function (resp) {
             if (resp.canTranslate) {
                 $.get("/api/project/?" + seed).done(function (resp1) {
@@ -55,17 +42,9 @@
                     var pref = Cookies.get("staff-editor") === "true";
                     $editCheckBox.prop("checked", pref);
                     setEditorIcons(pref);
-
                 });
-                // $(TOOLTIP_MODULE).appendTo("body");
-                // $("[data-module]").each(function (i, e) {
-                //     var module = $(e).data("module");
-                //     var html = $("#tooltip-template").html()
-                //                                   .replaceAll("{{ORIGINAL}}", module)
-                //                                   .replaceAll("{{ENCODED}}", encodeURIComponent(module))
-                //                                   .replaceAll("{{LANGUAGE_CODE}}", LANGUAGE_CODE);
-                //     $(e).html(html);
-                // });
+            }else{
+                $(".staff-editor").html("").hide();
             }
         });
     });

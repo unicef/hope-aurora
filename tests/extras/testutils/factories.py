@@ -62,6 +62,7 @@ class OrganizationFactory(AutoRegisterModelFactory):
 class ProjectFactory(AutoRegisterModelFactory):
     organization = factory.SubFactory(OrganizationFactory)
     name = factory.Sequence(lambda n: "Project%03d" % n)
+    parent = None
 
     class Meta:
         model = Project
@@ -137,10 +138,12 @@ class RegistrationFactory(AutoRegisterModelFactory):
     title = factory.Sequence(lambda d: "Registration-%s" % d)
     slug = factory.Sequence(lambda d: "registration-%s" % d)
     flex_form = factory.SubFactory(FormFactory)
+    project = factory.SubFactory(ProjectFactory)
+    active = True
 
     class Meta:
         model = Registration
-        django_get_or_create = ("slug",)
+        django_get_or_create = ("name",)
 
 
 class RecordFactory(AutoRegisterModelFactory):

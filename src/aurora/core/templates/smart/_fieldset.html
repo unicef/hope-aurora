@@ -1,16 +1,14 @@
-{% load itrans aurora %}<fieldset data-fid="{{ field.field.flex_field.pk }}" class="{{ field.name }} {{ field|smart:"fieldset" }}">
-
-    {% if can_edit_inpage %}
-        {% include "registration/_staff_edit_field.html" %}
+{% load itrans aurora %}{% with field.field.flex_field.advanced as ADV %}<fieldset data-fpk="{{ field.field.flex_field.pk }}" data-fname="{{ field.name }}" data-fid="{{ field.auto_id }}"  class="{{ field.name }} {{ field.field.flex_field.advanced.widget_kwargs.fieldset }}">
+    {% if can_edit_inpage %}{% include "registration/_staff_edit_field.html" %}{% endif %}
+    {% if field.field.flex_field.validator %}
+        <script src="/api/validator/{{ field.field.flex_field.validator.pk }}/script/"></script>
     {% endif %}
-{#    {% if field.field.flex_field.validator %}#}
-{#        <script src="/api/validator/{{ field.field.flex_field.validator.pk }}/script/"></script>#}
-{#    {% endif %}#}
+    <a id="anchor_{{ field.name }}" class="float-left">{% if field.field.flex_field.advanced.smart.marker %}&gt;{% endif %}</a>
     {% if field.field.flex_field.advanced.smart.question %}
             <label for="question_{{ field.auto_id }}" class="cursor-pointer">
                 <input id="question_{{ field.auto_id }}"
                        class="question-visibility {% if field.errors %}error{% endif %}"
-                       onchange="{{ field|smart:"question-onchange" }}"
+                       onchange="{{ field|smart:"question_onchange"|safe|oneline }}"
                        data-target="field-container-{{ field.name }}"
                        {% if field.errors %} checked {% endif %}
                        type="checkbox">
@@ -20,7 +18,7 @@
     {% endif %}
     <div class="mb-4 field-container field-container-{{ field.name }} mb-5{% if field.field.required or field.field.smart_attrs.required_by_question %} required{% endif %}">
         <label data-msgid="{{ field.label }}" data-i18n-Type="FieldLabel"
-                class="itrans block uppercase tracking-wide text-gray-700 font-bold mb-2" for="{{ field.auto_id }}">
+                class="itrans  {{ ADV.css.label|default:"block uppercase tracking-wide text-gray-700 font-bold mb-2" }}" for="{{ field.auto_id }}">
 {#            {% if can_translate %}{% include "i18n/_staff_edit_i18n.html" with original=field.label %}{% endif %}#}
             {% trans field.label|md %}
 {#            {% if field.field.required  or field.field.smart_attrs.required_by_question %}#}
@@ -28,17 +26,16 @@
                       class="required-label hidden itrans lowercase font-thin required text-xs">({% trans "required" %})</span>
 {#            {% endif %}#}
         </label>
-        {% if field.field.flex_field.advanced.description %}
-        <div class="itrans text-sm" data-msgid="{{ field.field.flex_field.advanced.description }}">
-{#            {% if can_translate %}{% include "i18n/_staff_edit_i18n.html" with original=field|smart:"description,0" %}{% endif %}#}
-            {% trans field.field.flex_field.advanced.description %}
+        {% if field.field.flex_field.advanced.smart.description %}
+        <div class="itrans text-sm description" data-msgid="{{ field.field.flex_field.advanced.smart.description }}">
+            {% trans field.field.flex_field.advanced.smart.description %}
         </div>
         {% endif %}
         <span class="errors">{{ field.errors }}</span>
         {{ field }}
-        <div class="text-xs	italic" data-msgid="{{ field.field.flex_field.advanced.smart.hint }}">
+        <div class="text-xs	italic hint" data-msgid="{{ field.field.flex_field.advanced.smart.hint }}">
 {#            {% if user.is_staff %}{% include "i18n/_staff_edit_i18n.html" with original=field|smart:"hint,0" %}{% endif %}#}
             {% trans field.field.flex_field.advanced.smart.hint %}
         </div>
     </div>
-</fieldset>
+</fieldset>{% endwith %}

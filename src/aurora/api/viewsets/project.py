@@ -1,20 +1,21 @@
-import os
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
-from constance import config
-from django.conf import settings
-from django.http import JsonResponse
+from ...core.models import Project
+from ...registration.models import Registration
+from ..serializers import ProjectSerializer, RegistrationListSerializer
+from .base import SmartViewSet
 
-from aurora.core.utils import has_token
 
+class ProjectViewSet(SmartViewSet):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    # lookup_field = "slug"
 
-def project_info(request):
-    data = {
-        "build_date": os.environ.get("BUILD_DATE", ""),
-        "version": os.environ.get("VERSION", ""),
-        "debug": settings.DEBUG,
-        "env": settings.SMART_ADMIN_HEADER,
-        "sentry_dsn": settings.SENTRY_DSN,
-        "cache": config.CACHE_VERSION,
-        "has_token": has_token(request),
-    }
-    return JsonResponse(data)
+    @action(detail=True, methods=["GET"])
+    def registrations(self, request, pk=None):
+        # item = Organization.objects.get(slug=slug)
+        queryset = Registration.objects.filter(project__id=pk)
+        serializer = RegistrationListSerializer(queryset, many=True, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
