@@ -279,6 +279,7 @@ class Record(models.Model):
     index3 = models.CharField(null=True, blank=True, max_length=255)
 
     is_offline = models.BooleanField(default=False)
+    registrar = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.SET_NULL)
 
     @property
     def fields_data(self):

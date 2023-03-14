@@ -7,6 +7,7 @@
     {% for page in  extra_pages %}
         / <a href="{{ page.1 }}">{{ page.0 }}</a>
     {% endfor %}
+    {% if user_is_root %}*{% endif %}
 {% endblock %}
 
 {% block branding %}

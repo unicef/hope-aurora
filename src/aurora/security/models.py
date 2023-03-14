@@ -1,52 +1,24 @@
 from concurrency.fields import AutoIncVersionField
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.contrib.auth.models import Group
 from django.db import models
+from django.db.models import JSONField
 from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
 from natural_keys import NaturalKeyModel
 
 from aurora.core.models import Organization
 from aurora.registration.models import Registration
 
 
-class AuroraUser(AbstractUser):
+class UserProfile(models.Model):
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
-    groups = models.ManyToManyField(
-        Group,
-        verbose_name=_("groups"),
-        blank=True,
-        help_text=_(
-            "The groups this user belongs to. A user will get all permissions " "granted to each of their groups."
-        ),
-        related_name="+",
-        related_query_name="+",
-    )
-    user_permissions = models.ManyToManyField(
-        Permission,
-        verbose_name=_("user permissions"),
-        blank=True,
-        help_text=_("Specific permissions for this user."),
-        related_name="+",
-        related_query_name="+",
-    )
+    ad_uuid = models.CharField(max_length=64, unique=True, null=True, blank=True, editable=False)
+    custom_fields = JSONField(default=dict, blank=True)
+    job_title = models.CharField(max_length=255, blank=True)
 
     def save(self, *args, **kwargs):
-        if settings.AUTH_USER_MODEL != "security.AuroraUser":
-            for attr in [
-                "id",
-                "username",
-                "email",
-                "password",
-                "first_name",
-                "last_name",
-                "is_staff",
-                "is_active",
-                "is_superuser",
-            ]:
-                setattr(self, attr, getattr(self.user, attr))
         super().save(*args, **kwargs)
 
 

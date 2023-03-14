@@ -9,7 +9,6 @@ def is_hijacked():
 
 
 def can_impersonate(hijacker, hijacked):
-    print("src/aurora/administration/hijack.py: 12", hijacker, hijacked)
     return not hijacker.is_hijacked
 
 

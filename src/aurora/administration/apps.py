@@ -1,5 +1,4 @@
 from django.apps import AppConfig
-from django.contrib.auth import get_user_model
 from smart_admin.apps import SmartAuthConfig
 
 
@@ -7,18 +6,11 @@ class AuroraAuthConfig(SmartAuthConfig):
     name = "smart_admin.smart_auth"
 
     def ready(self):
-        from django.contrib.auth.models import Group, Permission
+        from django.contrib.auth.models import Permission
         from django.contrib.contenttypes.models import ContentType
         from smart_admin.decorators import smart_register
         from smart_admin.smart_auth.admin import ContentTypeAdmin, PermissionAdmin
 
-        from .admin import AuroraGroupAdmin, AuroraUserAdmin, AuroraUserAdminTemp
-
-        smart_register(Group)(AuroraGroupAdmin)
-        smart_register(get_user_model())(AuroraUserAdmin)
-        from aurora.security.models import AuroraUser
-
-        smart_register(AuroraUser)(AuroraUserAdminTemp)
         smart_register(Permission)(PermissionAdmin)
         smart_register(ContentType)(ContentTypeAdmin)
 
