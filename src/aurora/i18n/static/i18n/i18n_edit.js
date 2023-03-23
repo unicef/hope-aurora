@@ -2,7 +2,7 @@ const i18n = {
     displayIcons: function (resp) {
         const msgIfMissing = "[Err: missing 'data-msgid']";
         $("<script type=“text/template” id=\"i18n-template\">\n" +
-            "        <span class=\"inline-flex staff-editor staff-i18n staff-tooltip align-left \">\n" +
+            "        <span class=\"inline-flex staff-i18n staff-i18n staff-tooltip align-left \">\n" +
             "            <span class=\"tooltiptext\">\n" +
             "                <p><span class=\"label\">Lang</span>{{LANGUAGE_CODE}}</p>\n" +
             "                <p><span class=\"label\">Message</span>{{ORIGINAL}}</p>\n" +

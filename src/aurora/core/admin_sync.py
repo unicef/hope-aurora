@@ -1,12 +1,62 @@
-from admin_extra_buttons.decorators import button
+import json
+from datetime import datetime
+from typing import Dict
+
+from admin_extra_buttons.decorators import button, view
 from admin_sync.mixin import SyncMixin as SyncMixin_
-from admin_sync.utils import wraps
+from admin_sync.perms import check_publish_permission, check_sync_permission
+from admin_sync.utils import SyncResponse, is_local, is_remote, wraps
+from django.contrib import messages
 from django.contrib.admin import action
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 
 
 class SyncMixin(SyncMixin_):
     actions = ["publish_action"]
+    UPDATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+    @view(
+        decorators=[csrf_exempt],
+        http_basic_auth=True,
+        enabled=is_remote,
+        permission=check_sync_permission,
+    )
+    def get_version(self, request, key):
+        obj = self.model.objects.get_by_natural_key(*key.split("|"))
+        return SyncResponse(
+            {"version": obj.version, "last_update_date": obj.last_update_date.strftime(self.UPDATE_FORMAT)}
+        )
+
+    def get_remote_version(self, request, pk):
+        obj = self.get_object(request, pk)
+        payload = self.get_remote_data(request, "get_version", obj)
+        return json.loads(payload)
+
+    @button(visible=is_local, order=999, permission=check_sync_permission)
+    def check_remote_version(self, request, pk):
+        obj = self.get_object(request, pk)
+        v = self.get_remote_version(request, pk)
+        remote_date = datetime.strptime(v["last_update_date"], self.UPDATE_FORMAT)
+        local_date = datetime.strptime(obj.last_update_date.strftime(self.UPDATE_FORMAT), self.UPDATE_FORMAT)
+        if remote_date > local_date:
+            self.message_user(
+                request, f"Remote Record is most recent than the local one: {remote_date}", messages.WARNING
+            )
+        else:
+            self.message_user(
+                request,
+                f"Remote last update {remote_date} ({v['version']})",
+            )
+
+    @button(visible=is_local, order=999, permission=check_publish_permission)
+    def publish(self, request, pk):
+        obj = self.get_object(request, pk)
+        i: Dict = self.get_remote_version(request, obj)
+        if i["version"] == obj.version:
+            return super().publish.func(self, request, pk)
+        else:
+            self.message_user(request, "Version mismatch. Fetch before publish", messages.ERROR)
 
     @button(
         visible=lambda b: b.model_admin.admin_sync_show_inspect(),
@@ -26,30 +76,3 @@ class SyncMixin(SyncMixin_):
             data = self.get_sync_data(request, [self.get_object(request, r.pk)])
             ret = self.post_data_to_remote(request, wraps(data))
             self.message_user(request, f"{ret}")
-
-    # @choice(order=900, change_list=False)
-    # def admin_sync(self, button):
-    #     button.choices = [
-    #         self._admin_sync_inspect,
-    #         self._sync,
-    #         self._publish,
-    #     ]
-    #     return button
-    #
-    # @view(change_form=True)
-    # def _admin_sync_inspect(self, request, pk):
-    #     return self.admin_sync_inspect.func(self, request, pk)
-    #
-    # @view(change_form=True)
-    # def _sync(self, request, pk):
-    #     return self.sync.func(self, request, pk)
-    #
-    # @view(change_form=True)
-    # def _publish(self, request, pk):
-    #     return self.publish.func(self, request, pk)
-    #
-    # def get_changeform_buttons(self, context):
-    #     ignored = ["admin_sync_inspect", "sync", "publish"]
-    #     return [
-    #         h for h in self.extra_button_handlers.values() if h.change_form in [True, None] and h.name not in ignored
-    #     ]

@@ -1,61 +1,104 @@
-{% extends "admin_extra_buttons/action_page.html" %}
+{% extends "admin_extra_buttons/action_page.html" %}{% load static %}
+{% block extrahead %}
+    {{ block.super }}
+    {#    <script type="text/javascript" src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>#}
+    {#    <script type="text/javascript" src="{% static "admin/js/jquery.init.js" %}"></script>#}
+    <script type="text/javascript" src="{% static "admin/filter_table.js" %}"></script>
+{% endblock %}
 {% block action-content %}
-    {% if form %}
-        <form method="post">
-            {% csrf_token %}
-            {{ form.errors }}
-            <table>
-                {{ form }}
-            </table>
-            <input type="submit" value="Create">
-        </form>
-    {% else %}
-        <table width="100%">
+    <input type="text" style="width: 578px;padding:10px;margin-bottom:10px" id="filterInput"
+           placeholder="Search for names..">
+    <table width="100%" id="inspect">
+        <thead>
+        <tr>
+            <th>Type</th>
+            <th>Name</th>
+            <th>Details</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Registration</td>
+            <td><a target="_inspect"
+                   href="{% url "admin:registration_registration_change" original.pk %}">{{ original }}</a></td>
+            <td>Form: <a target="_inspect"
+                         href="{% url "admin:core_flexform_change" original.flex_form.pk %}">{{ original.flex_form }}</a>
+            </td>
+        </tr>
+
+        <tr>
+            <td>Form</td>
+            <td><a target="_inspect"
+                         href="{% url "admin:core_flexform_change" original.flex_form.pk %}">{{ original.flex_form }}</a>
+            </td>
+            <td></td>
+        </tr>
+        {% for c in original.flex_form.formsets.all %}
             <tr>
-                <td>Registration</td>
-                <td><a href="{% url "admin:registration_registration_change" original.pk %}">{{ original }}</a></td>
+                <td>Form</td>
+                <td><a target="_inspect"
+                             href="{% url "admin:core_flexform_change" c.flex_form.pk %}">{{ c.flex_form }}</a></td>
+                <td>
+                    Parent: <a target="_inspect"
+                               href="{% url "admin:core_flexform_change" c.parent.pk %}">{{ c.parent }}</a>
+                    Formset:
+                <a target="_inspect" href="{% url "admin:core_formset_change" c.pk %}">{{ c }}</a>
+                </td>
             </tr>
+        {% endfor %}
+
+        {% for c in original.flex_form.formsets.all %}
             <tr>
-                <td>MainForm</td>
-                <td><a href="{% url "admin:core_flexform_change" original.flex_form.pk %}">{{ original.flex_form }}</a></td>
+                <td>Formset</td>
+                <td><a target="_inspect" href="{% url "admin:core_formset_change" c.pk %}">{{ c }}</a></td>
+                <td>Form: <a target="_inspect"
+                             href="{% url "admin:core_flexform_change" c.flex_form.pk %}">{{ c.flex_form }}</a>
+                    Parent: <a target="_inspect"
+                               href="{% url "admin:core_flexform_change" c.parent.pk %}">{{ c.parent }}</a>
+                </td>
             </tr>
+        {% endfor %}
+        {% for flex_field in original.flex_form.fields.all %}
             <tr>
-                <th>Formsets</th>
+                <td>Field</td>
+                <td>
+                    <a target="_inspect"
+                       href="{% url "admin:core_flexformfield_field_editor" flex_field.pk %}"><img src="/static/admin/img/icon-changelink.svg" alt="Change"></a>
+
+
+                    <a target="_inspect"
+                       href="{% url "admin:core_flexformfield_change" flex_field.pk %}">{{ flex_field.name }}</a>
+
+                    <div><small>{{ flex_field.fqn }}</small></div>
+                </td>
+                <td>
+                    Form: <a target="_inspect"
+                             href="{% url "admin:core_flexform_change" flex_field.flex_form.pk %}">{{ flex_field.flex_form.name }}</a>
+                </td>
             </tr>
-            <tr>
-                <th>Name</th>
-                <th>Form</th>
-                <th>Parent</th>
-            </tr>
-            {% for c in original.flex_form.formsets.all %}
+        {% endfor %}
+        {% for fs in original.flex_form.formsets.all %}
+            {% for flex_field in fs.flex_form.fields.all %}
                 <tr>
-                    <td><a href="{% url "admin:core_formset_change" c.pk %}">{{ c }}</a></td>
-                    <td><a href="{% url "admin:core_flexform_change" c.flex_form.pk %}">{{ c.flex_form }}</a></td>
-                    <td><a href="{% url "admin:core_flexform_change" c.parent.pk %}">{{ c.parent }}</a></td>
+                    <td>Field</td>
+                    <td><a target="_inspect"
+                           href="{% url "admin:core_flexformfield_change" flex_field.pk %}">{{ flex_field.name }}</a>
+                        <div><small>{{ flex_field.fqn }}</small></div>
+                    </td>
+                    <td>
+                        Form: <a target="_inspect"
+                                 href="{% url "admin:core_flexform_change" flex_field.flex_form.pk %}">{{ flex_field.flex_form.name }}</a>
+                        <div>Fieldset:
+                            <a target="_inspect"
+                               href="{% url "admin:core_formset_change" fs.pk %}">{{ fs.name }}</a>
+                        </div>
+                    </td>
                 </tr>
             {% endfor %}
-
-            <tr>
-                <th>Fields</th>
-            </tr>
-            <tr>
-                <th>Name</th>
-                <th>Form</th>
-                <th>Type</th>
-            </tr>
-            {% for fs in original.flex_form.formsets.all %}
-                {% for flex_field in fs.flex_form.fields.all %}
-                    <tr>
-                        <td><a href="{% url "admin:core_flexformfield_change" flex_field.pk %}">{{ flex_field.name }}</a></td>
-                        <td><a href="{% url "admin:core_flexform_change" flex_field.flex_form.pk %}">{{ flex_field.flex_form.name }}</a>
-                        </td>
-                        <td>{{ flex_field.type_name }}
-                            <div><small>({{ flex_field.fqn }})</small></div>
-                        </td>
-                    </tr>
-                {% endfor %}
-            {% endfor %}
-        </table>
-
-    {% endif %}
+        {% endfor %}
+        </tbody>
+    </table>
+    <script>
+        django.jQuery('#filterInput').tableFilter(django.jQuery('#inspect'));
+    </script>
 {% endblock action-content %}

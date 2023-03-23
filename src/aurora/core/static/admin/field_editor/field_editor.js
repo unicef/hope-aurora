@@ -68,10 +68,14 @@
                 })
             }
         });
-        // editor.on('change', function () {
-        //     html = editor.getValue();
-        //     alert(html);
-        // });
+        $("#event_selector").on("change", function (){
+            let sel = $(this).val();
+            $('#events .code').removeClass('selected');
+            $(`#event_${sel}`).addClass('selected').find('textarea.js-editor').each(function (i, e) {
+                var editor = $(e).data("CodeMirror");
+                if (editor) editor.refresh();
+            });
+        });
         $("#radio_display, #radio_code, #radio_attrs").on("click", function () {
             $radioRender.is(":checked") ? $iFrame1.show() : $iFrame1.hide();
             $radioCode.is(":checked") ? $iFrame2.show() : $iFrame2.hide();

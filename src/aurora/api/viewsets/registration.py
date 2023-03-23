@@ -49,6 +49,19 @@ class RegistrationViewSet(SmartViewSet):
     def get_permissions(self):
         return [permission() for permission in self.permission_classes]
 
+    # def get_object(self):
+    #     queryset = self.filter_queryset(self.get_queryset())
+    #     if self.kwargs["attr"].isnumeric():
+    #         filter_field = "pk"
+    #     else:
+    #         filter_field = "slug"
+    #     obj = get_object_or_404(queryset, **{filter_field: self.kwargs["attr"]})
+    #
+    #     # May raise a permission denied
+    #     self.check_object_permissions(self.request, obj)
+    #
+    #     return obj
+
     @action(detail=True, permission_classes=[AllowAny])
     def metadata(self, request, pk=None):
         reg: Registration = self.get_object()
@@ -92,7 +105,7 @@ class RegistrationViewSet(SmartViewSet):
                     "files",
                     "storage",
                 )
-                .filter(registration__id=pk)
+                .filter(registration=obj)
                 .values()
             )
             flt = RecordFilter(request.GET, queryset=queryset)

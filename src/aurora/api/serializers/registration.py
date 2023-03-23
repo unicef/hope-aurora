@@ -4,9 +4,12 @@ from rest_framework.reverse import reverse
 from ...registration.models import Registration
 
 
-class RegistrationDetailSerializer(serializers.ModelSerializer):
+class RegistrationDetailSerializer(serializers.HyperlinkedModelSerializer):
+    # # id = serializers.IntegerField()
+    # url = serializers.HyperlinkedRelatedField(many=False, read_only=True, view_name="registration-detail")
     project = serializers.HyperlinkedRelatedField(many=False, read_only=True, view_name="project-detail")
     records = serializers.SerializerMethodField()
+    metadata = serializers.SerializerMethodField()
 
     class Meta:
         model = Registration
@@ -21,10 +24,16 @@ class RegistrationDetailSerializer(serializers.ModelSerializer):
         req = self.context["request"]
         return req.build_absolute_uri(reverse("api:registration-records", kwargs={"pk": obj.pk}))
 
+    def get_metadata(self, obj):
+        req = self.context["request"]
+        return req.build_absolute_uri(reverse("api:registration-metadata", kwargs={"pk": obj.pk}))
+
 
 class RegistrationListSerializer(RegistrationDetailSerializer):
-    id = serializers.HyperlinkedRelatedField(many=False, read_only=True, view_name="registration-detail")
-
-    class Meta:
-        model = Registration
-        exclude = ("public_key",)
+    pass
+    # id = serializers.HyperlinkedRelatedField(many=False, read_only=True, view_name="registration-detail",
+    #                                          lookup_url_kwarg="attr")
+    #
+    # class Meta:
+    #     model = Registration
+    #     exclude = ("public_key",)

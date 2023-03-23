@@ -10,9 +10,10 @@
                     </tr>
                 {% endfor %}
             {% elif original.target == "field" %}
-                {% for frm in original.flexformfield_set.all %}
+                {% for fld in original.flexformfield_set.all %}
                     <tr>
-                        <td><a href="{% url "admin:core_flexformfield_change" frm.pk %}">{{ frm }}</a></td>
+                        <td><a href="{% url "admin:core_flexformfield_change" fld.pk %}">{{ fld }}</a></td>
+                    <td>{{ fld.flex_form }}</td>
                     </tr>
                 {% endfor %}
             {% elif original.target == "formset" %}

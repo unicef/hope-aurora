@@ -14,9 +14,10 @@ from django.http import Http404, HttpRequest
 from django.template.response import TemplateResponse
 from requests import HTTPError
 
-from aurora.core.models import Organization
+from aurora.core.models import Organization, Project
+from aurora.registration.models import Registration
 from aurora.security.microsoft_graph import MicrosoftGraphAPI
-from aurora.security.models import OrganizationRole, User
+from aurora.security.models import AuroraRole
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +33,9 @@ DJANGO_USER_MAP = {
 class LoadUsersForm(forms.Form):
     emails = forms.CharField(widget=forms.Textarea, help_text="Emails must be space separated")
     role = forms.ModelChoiceField(queryset=Group.objects.all())
-    organization = forms.ModelChoiceField(queryset=Organization.objects.all())
-    enable_kobo = forms.BooleanField(required=False)
+    organization = forms.ModelChoiceField(queryset=Organization.objects.all(), required=False)
+    project = forms.ModelChoiceField(queryset=Project.objects.all(), required=False)
+    registration = forms.ModelChoiceField(queryset=Registration.objects.all(), required=False)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.request = kwargs.pop("request", None)
@@ -50,6 +52,15 @@ class LoadUsersForm(forms.Form):
             raise ValidationError("Invalid emails {}".format(", ".join(errors)))
         return self.cleaned_data["emails"]
 
+    def clean(self):
+        found = [
+            self.cleaned_data.get(x) for x in ["organization", "project", "registration"] if self.cleaned_data.get(x)
+        ]
+        if not found:
+            raise ValidationError("You must set one scope")
+        if len(found) > 1:
+            raise ValidationError("You must set only one scope")
+
 
 def build_arg_dict_from_dict(data_dict: Dict, mapping_dict: Dict) -> Dict:
     return {key: data_dict.get(value) for key, value in mapping_dict.items()}
@@ -65,7 +76,7 @@ class ADUSerMixin:
         else:
             return self.ad_form_class(request=request)
 
-    def _sync_ad_data(self, user: User) -> None:
+    def _sync_ad_data(self, user) -> None:
         ms_graph = MicrosoftGraphAPI()
         if user.ad_uuid:
             filters = [{"uuid": user.ad_uuid}, {"email": user.email}]
@@ -139,7 +150,9 @@ class ADUSerMixin:
             if form.is_valid():
                 emails = set(form.cleaned_data["emails"].split())
                 role = form.cleaned_data["role"]
-                organization = form.cleaned_data["organization"]
+                organization = form.cleaned_data.get("organization", None)
+                project = form.cleaned_data.get("project", None)
+                registration = form.cleaned_data.get("registration", None)
                 users_to_bulk_create = []
                 users_role_to_bulk_create = []
                 existing = set(User.objects.filter(email__in=emails).values_list("email", flat=True))
@@ -168,7 +181,13 @@ class ADUSerMixin:
                                 results.created.append(user)
 
                             users_role_to_bulk_create.append(
-                                OrganizationRole(role=role, organization=organization, user=user)
+                                AuroraRole(
+                                    role=role,
+                                    organization=organization,
+                                    registration=registration,
+                                    project=project,
+                                    user=user,
+                                )
                             )
                         except HTTPError as e:
                             if e.response.status_code != 404:
@@ -177,7 +196,7 @@ class ADUSerMixin:
                         except Http404:
                             results.missing.append(email)
                     User.objects.bulk_create(users_to_bulk_create)
-                    OrganizationRole.objects.bulk_create(users_role_to_bulk_create, ignore_conflicts=True)
+                    AuroraRole.objects.bulk_create(users_role_to_bulk_create, ignore_conflicts=True)
                     ctx["results"] = results
                     return TemplateResponse(request, "admin/aurorauser/load_users.html", ctx)
                 except Exception as e:

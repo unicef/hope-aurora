@@ -2,7 +2,7 @@ body {
   height: 100px;
 }
 
-#fieldEditor {
+#fieldEditor, #formEditor {
   height: 100%;
   position: relative;
   top: 0;
@@ -12,6 +12,7 @@ body {
 
   .submit-row {
     width: 100%;
+    z-index: 999;
 
     div:first-child {
       float: left;
@@ -53,8 +54,10 @@ body {
     .settings {
       overflow-y: scroll;
       width: 60%;
+      background: var(--breadcrumbs-bg);
 
       table:first-child {
+        background: var(--breadcrumbs-bg);
         width: 100%;
         margin: 0;
         padding: 0;
@@ -91,11 +94,24 @@ body {
           }
         }
 
+        tbody {
+          background: var(--breadcrumbs-bg);
+
+          td {
+            background: var(--breadcrumbs-bg);
+          }
+        }
+
         .cfg-form {
           width: 100%;
+          background: var(--breadcrumbs-bg);
+
+          tr {
+            background: var(--breadcrumbs-bg);
+          }
 
           th {
-
+            width: 10%;
           }
 
           td {
@@ -105,6 +121,10 @@ body {
 
             input:not([type=checkbox]), textarea {
               width: 97%;
+            }
+
+            textarea {
+              height: 50px;
             }
 
             select {
@@ -200,14 +220,23 @@ table2 {
   }
 }
 
+#events {
+  .code {
+    display: none;
+  }
+  .code.selected {
+    display: block;
+  }
+}
+
 .cm-container {
-  margin: 10px;
+  margin: 0;
   background-color: var(--body-bg);
   width: 100%;
 
   .cm-toolbar {
     a.toolbutton {
-      margin: 0 3px 0 0;
+      margin: 0 3px 5px 0;
       padding: 5px;
       font-variant: none;
     }

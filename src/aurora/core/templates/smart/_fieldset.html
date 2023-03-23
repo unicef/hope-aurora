@@ -1,10 +1,11 @@
-{% load itrans aurora %}{% with field.field.flex_field.advanced as ADV %}<fieldset data-fpk="{{ field.field.flex_field.pk }}" data-fname="{{ field.name }}" data-fid="{{ field.auto_id }}"  class="{{ field.name }} {{ field.field.flex_field.advanced.widget_kwargs.fieldset }}">
+{% load itrans aurora %}{% with field.field.flex_field.advanced as ADV %}
     {% if can_edit_inpage %}{% include "registration/_staff_edit_field.html" %}{% endif %}
-    {% if field.field.flex_field.validator %}
+    <fieldset data-fpk="{{ field.field.flex_field.pk }}" data-fname="{{ field.name }}" data-fid="{{ field.auto_id }}"  class="{{ field.name }} {{ field.field.flex_field.advanced.widget_kwargs.fieldset }}">
+    {% if field.field.flex_field.validator and registration.client_validation %}
         <script src="/api/validator/{{ field.field.flex_field.validator.pk }}/script/"></script>
     {% endif %}
-    <a id="anchor_{{ field.name }}" class="float-left">{% if field.field.flex_field.advanced.smart.marker %}&gt;{% endif %}</a>
-    {% if field.field.flex_field.advanced.smart.question %}
+    <a id="anchor_{{ field.name }}" class="float-left">{% if ADV.smart.marker %}&gt;{% endif %}</a>
+    {% if ADV.smart.question %}
             <label for="question_{{ field.auto_id }}" class="cursor-pointer">
                 <input id="question_{{ field.auto_id }}"
                        class="question-visibility {% if field.errors %}error{% endif %}"
@@ -26,16 +27,25 @@
                       class="required-label hidden itrans lowercase font-thin required text-xs">({% trans "required" %})</span>
 {#            {% endif %}#}
         </label>
-        {% if field.field.flex_field.advanced.smart.description %}
-        <div class="itrans text-sm description" data-msgid="{{ field.field.flex_field.advanced.smart.description }}">
-            {% trans field.field.flex_field.advanced.smart.description %}
+        {% if ADV.smart.description %}
+        <div class="itrans text-sm description" data-msgid="{{ ADV.smart.description }}">
+            {% trans ADV.smart.description %}
         </div>
         {% endif %}
+{#        -- {{ field.field.flex_field.advanced.events.validation }} --#}
+
         <span class="errors">{{ field.errors }}</span>
         {{ field }}
-        <div class="text-xs	italic hint" data-msgid="{{ field.field.flex_field.advanced.smart.hint }}">
+        <div class="text-xs	italic hint" data-msgid="{{ ADV.smart.hint }}">
 {#            {% if user.is_staff %}{% include "i18n/_staff_edit_i18n.html" with original=field|smart:"hint,0" %}{% endif %}#}
-            {% trans field.field.flex_field.advanced.smart.hint %}
+            {% trans ADV.smart.hint %}
         </div>
     </div>
+    {% if ADV.events.init %}
+    <pre>function(){
+        {{ ADV.events.init }}
+    }
+    </pre>
+    <script>{{ ADV.events.init }}</script>
+    {% endif %}
 </fieldset>{% endwith %}

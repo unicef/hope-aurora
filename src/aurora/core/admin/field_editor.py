@@ -27,6 +27,8 @@ class AdvancendAttrsMixin:
 
 class FlexFieldAttributesForm(AdvancendAttrsMixin, forms.ModelForm):
     required = forms.BooleanField(widget=forms.CheckboxInput, required=False)
+    enabled = forms.BooleanField(widget=forms.CheckboxInput, required=False)
+    # onchange = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
 
     def __init__(self, *args, **kwargs):
         kwargs["instance"] = kwargs["field"]
@@ -34,7 +36,7 @@ class FlexFieldAttributesForm(AdvancendAttrsMixin, forms.ModelForm):
 
     class Meta:
         model = FlexFormField
-        fields = ("field_type", "label", "name", "required", "validator", "regex")
+        fields = ("field_type", "label", "required", "enabled", "validator", "regex", "validation")
 
 
 class FormFieldAttributesForm(AdvancendAttrsMixin, forms.Form):
@@ -46,9 +48,9 @@ class WidgetAttributesForm(AdvancendAttrsMixin, forms.Form):
     css_class = forms.CharField(label="Field class", required=False, help_text="Input CSS class to apply (will")
     extra_classes = forms.CharField(required=False, help_text="Input CSS classes to add input")
     fieldset = forms.CharField(label="Fieldset class", required=False, help_text="Fieldset CSS class to apply")
-    onchange = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
-    onblur = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
-    onkeyup = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
+    # onchange = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
+    # onblur = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
+    # onkeyup = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
 
 
 def get_datasources():
@@ -80,6 +82,17 @@ class CssForm(AdvancendAttrsMixin, forms.Form):
     question = forms.CharField(required=False, help_text="")
 
 
+class EventForm(AdvancendAttrsMixin, forms.Form):
+    onchange = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
+    onblur = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
+    onkeyup = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
+    onload = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
+    onfocus = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
+
+    validation = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
+    init = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
+
+
 DEFAULTS = {
     "css": {"question": "cursor-pointer", "label": "block uppercase tracking-wide text-gray-700 font-bold mb-2"},
 }
@@ -100,6 +113,7 @@ class FieldEditor:
         "widget": WidgetAttributesForm,
         "smart": SmartAttributesForm,
         "css": CssForm,
+        "events": EventForm,
     }
 
     def __init__(self, modeladmin, request, pk):
@@ -144,7 +158,7 @@ class FieldEditor:
 
         instance = self.patched_field.get_instance()
         form_class_attrs = {
-            "sample": instance,
+            self.field.name: instance,
         }
         form_class = type(forms.Form)("TestForm", (forms.Form,), form_class_attrs)
         ctx = self.get_context(self.request)
@@ -165,7 +179,7 @@ class FieldEditor:
     def render(self):
         instance = self.patched_field.get_instance()
         form_class_attrs = {
-            "sample": instance,
+            self.field.name: instance,
         }
         form_class = type(forms.Form)("TestForm", (forms.Form,), form_class_attrs)
         ctx = self.get_context(self.request)
@@ -173,7 +187,7 @@ class FieldEditor:
             form = form_class(self.request.POST)
             ctx["valid"] = form.is_valid()
         else:
-            form = form_class(initial={"sample": self.patched_field.get_default_value()})
+            form = form_class(initial={self.field.name: self.patched_field.get_default_value()})
             ctx["valid"] = None
 
         ctx["form"] = form

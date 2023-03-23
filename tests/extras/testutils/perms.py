@@ -4,7 +4,7 @@ from random import choice
 from django.contrib.auth.models import Permission
 from faker import Faker
 
-from aurora.security.models import RegistrationRole
+from aurora.security.models import AuroraRole
 
 from .factories import GroupFactory
 
@@ -73,7 +73,7 @@ class user_grant_permissions(ContextDecorator):  # noqa
         self.group = get_group(permissions=self.permissions or [])
         self.user.groups.add(self.group)
         if self.registration:
-            RegistrationRole.objects.get_or_create(registration=self.registration, user=self.user, role=self.group)
+            AuroraRole.objects.get_or_create(registration=self.registration, user=self.user, role=self.group)
             # self.registration.restrict_to_groups.add(self.group)
 
     def __exit__(self, e_typ, e_val, trcbak):

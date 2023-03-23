@@ -4,7 +4,8 @@ from strategy_field.utils import fqn
 from aurora.core.models import FlexForm
 
 
-class FormSerializer(serializers.ModelSerializer):
+class FormSerializer(serializers.HyperlinkedModelSerializer):
+    id = serializers.IntegerField(read_only=True, default=None)
     base_type = serializers.CharField()
     fields = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name="flexformfield-detail")
 

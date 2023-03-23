@@ -27,11 +27,12 @@
             var url = $target.data("ajax-url");
             var selected = $target.data("selected");
             var parentName = $target.data("parent");
+            var placeholder = $target.data("placeholder") ;
             var label = $target.data("label");
             var $parent = $target.data("parent");
 
             $target.select2({
-                placeholder: "Select " + label,
+                placeholder: placeholder,
                 ajax: {
                     minimumInputLength: 2,
                     url: url,

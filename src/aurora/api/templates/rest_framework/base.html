@@ -12,7 +12,7 @@
         <meta name="robots" content="NONE,NOARCHIVE" />
       {% endblock %}
 
-      <title>{% block title %}{% if name %}{{ name }} – {% endif %}API{% endblock %}</title>
+      <title>{% block title %}Aurora API{% endblock %}</title>
 
       {% block style %}
         {% block bootstrap_theme %}
@@ -22,6 +22,7 @@
 
         <link rel="stylesheet" type="text/css" href="{% static "rest_framework/css/prettify.css" %}"/>
         <link rel="stylesheet" type="text/css" href="{% static "rest_framework/css/default.css" %}"/>
+          <link rel="stylesheet" type="text/css" href="{% static "api/style.css" %}"/>
         {% if code_style %}<style>{{ code_style }}</style>{% endif %}
       {% endblock %}
 
@@ -39,7 +40,7 @@
             <span>
               {% block branding %}
                 <a class='navbar-brand' rel="nofollow" href='/api/'>
-                    API
+                    Aurora API
                 </a>
               {% endblock %}
             </span>

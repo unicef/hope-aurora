@@ -31,7 +31,7 @@ def test_sync(db):
 
 
 def test_protocol_registration(db, registration):
-    from aurora.registration.protocol import AuroraSyncRegistrationProtocol
+    from aurora.registration.admin.protocol import AuroraSyncRegistrationProtocol
 
     c = AuroraSyncRegistrationProtocol()
     data = c.collect([registration])
@@ -40,15 +40,16 @@ def test_protocol_registration(db, registration):
 
 
 def test_protocol_registration_marhalling(db, registration):
-    from aurora.registration.protocol import AuroraSyncRegistrationProtocol
+    from aurora.registration.admin.protocol import AuroraSyncRegistrationProtocol
 
     c = AuroraSyncRegistrationProtocol()
     assert c.deserialize(c.serialize([registration]))
 
 
 def test_protocol_organization(db):
-    from aurora.core.protocols import AuroraSyncOrganizationProtocol
     from testutils.factories import OrganizationFactory
+
+    from aurora.core.admin.protocols import AuroraSyncOrganizationProtocol
 
     organization = OrganizationFactory()
 
@@ -58,8 +59,9 @@ def test_protocol_organization(db):
 
 
 def test_protocol_organization_marhalling(db):
-    from aurora.core.protocols import AuroraSyncOrganizationProtocol
     from testutils.factories import OrganizationFactory
+
+    from aurora.core.admin.protocols import AuroraSyncOrganizationProtocol
 
     organization = OrganizationFactory()
     c = AuroraSyncOrganizationProtocol()
@@ -67,8 +69,9 @@ def test_protocol_organization_marhalling(db):
 
 
 def test_protocol_project(db):
-    from aurora.core.protocols import AuroraSyncProjectProtocol
     from testutils.factories import ProjectFactory
+
+    from aurora.core.admin.protocols import AuroraSyncProjectProtocol
 
     organization = ProjectFactory()
 
@@ -78,8 +81,9 @@ def test_protocol_project(db):
 
 
 def test_protocol_project_marhalling(db):
-    from aurora.core.protocols import AuroraSyncProjectProtocol
     from testutils.factories import ProjectFactory
+
+    from aurora.core.admin.protocols import AuroraSyncProjectProtocol
 
     organization = ProjectFactory()
     c = AuroraSyncProjectProtocol()

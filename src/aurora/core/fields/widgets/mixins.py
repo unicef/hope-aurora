@@ -33,6 +33,7 @@ class TailWindMixin:
             else:
                 base_attrs.pop("required", None)
                 extra_attrs.pop("required", None)
+
         return {**base_attrs, **(extra_attrs or {})}
 
 

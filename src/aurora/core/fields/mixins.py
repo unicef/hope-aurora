@@ -35,6 +35,7 @@ class SmartFieldMixin:
         self.field_attrs = kwargs.pop("field_attrs", {})
         self.data_attrs = kwargs.pop("data", {})
         self.widget_kwargs = kwargs.pop("widget_kwargs", {})
+        self.smart_events = kwargs.pop("smart_events", {})
         self.datasource = kwargs.pop("datasource", None)
         super().__init__(*args, **kwargs)
 
@@ -61,18 +62,26 @@ class SmartFieldMixin:
 
         if not self.flex_field.required:
             attrs.pop("required", "")
-        attrs["flex_field"] = self.flex_field
-        if "onchange" in attrs:
-            if attrs["onchange"]:
-                attrs["onchange"] = oneline(attrs["onchange"])
-            else:
-                attrs.pop("onchange")
-        if "onblur" in attrs:
-            if attrs["onblur"]:
-                attrs["onblur"] = oneline(attrs["onblur"])
-            else:
-                attrs.pop("onblur")
+        # attrs["flex_field"] = self.flex_field
+        attrs["data-flex-name"] = self.flex_field.name
+        for attr in [
+            "onblur",
+            "onchange",
+            "onkeyup",
+        ]:
+            if attr in self.smart_events:
+                if self.smart_events[attr]:
+                    attrs[attr] = oneline(self.smart_events[attr])
 
+        for attr in [
+            "onload",
+        ]:
+            if attr in self.smart_events:
+                if self.smart_events[attr]:
+                    attrs[f"data-{attr}"] = oneline(self.smart_events[attr])
+
+        if validation := self.smart_events.get("validation", None):
+            attrs["data-validation"] = oneline(validation)
         widget.smart_attrs = self.smart_attrs
         widget.flex_field = self.flex_field
         return attrs

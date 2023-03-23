@@ -8,7 +8,7 @@ var configureFormsets = function (configs) {
                 updateCounter($$, null);
             }
             var $btn = $$.parent().find('div.formset-add-row a');
-            if ($btn.is(":visible")){
+            if ($btn.is(":visible")) {
                 $btn.parent().attr('data-msgid', config.original.addText)
             }
         };
@@ -28,12 +28,12 @@ var updateCounter = function ($$, $row) {
             var remove = "<a class=\"" + $$.options.deleteCssClass + "\" href=\"javascript:void(0)\"><span class='remove'></span></a>";
 
             if (idx > 1) {
-                prev = "<a class='prev' href=\"#" + $$.options.prefix + "_member_" + (idx-1) + "\"></a>";
+                prev = "<a class='prev' href=\"#" + $$.options.prefix + "_member_" + (idx - 1) + "\"></a>";
             }
             if (idx < forms) {
-                next = "<a class='next' href=\"#" + $$.options.prefix + "_member_" + (idx+1) + "\"></a>";
+                next = "<a class='next' href=\"#" + $$.options.prefix + "_member_" + (idx + 1) + "\"></a>";
             }
-            alink += '<div class="pages mt-1">'+ pages + '</div>';
+            alink += '<div class="pages mt-1">' + pages + '</div>';
             alink += '<div class="nav mt-1">' + prev + next + '</div>'
             // alink += '<div class="nav mt-1">' + remove + '</div>'
 
@@ -57,13 +57,18 @@ var DEFAULT = {
             $(row).removeClass(highlight);
         }, 400);
 
-        if ($$.options.onAdd && window[$$.options.onAdd]){
+        if ($$.options.onAdd && window[$$.options.onAdd]) {
             window[$$.options.onAdd]($$, row);
         }
         $(row).find(".vDateField").each(function (i) {
         });
-        $(row).find(".vPictureField").each(function () {
-            initWebCamField(this);
+        $(row).find(".vPictureField").each(function (i, obj) {
+            initWebCamField(obj);
+        });
+        $(row).find(".ajaxSelect").each(function (i, obj) {
+            if (!$(obj).data('select2')){
+                $(obj).select2();
+            }
         });
         $(row).find(".question-visibility").each(function (i, e) {
             $(e).on("click", function () {

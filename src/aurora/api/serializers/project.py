@@ -5,6 +5,7 @@ from ...core.models import Project
 
 
 class ProjectSerializer(serializers.HyperlinkedModelSerializer):
+    id = serializers.IntegerField()
     registrations = serializers.SerializerMethodField()
 
     class Meta:

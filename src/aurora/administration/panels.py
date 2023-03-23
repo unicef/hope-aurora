@@ -1,9 +1,7 @@
-import base64
 import io
 import json
 import logging
 import tempfile
-import urllib
 from pathlib import Path
 
 import sqlparse
@@ -17,6 +15,7 @@ from django.shortcuts import render
 
 from .. import VERSION
 from ..core.utils import is_root
+from ..security.models import UserProfile
 from .forms import ExportForm, ImportForm, SQLForm
 
 logger = logging.getLogger(__name__)
@@ -111,25 +110,46 @@ def panel_dumpdata(self, request):
 panel_dumpdata.verbose_name = "Dump Data"
 
 
-def sql(self, request, extra_context=None):
-    if not is_root(request):
+def save_expression(request):
+    response = {}
+    form = SQLForm(request.POST)
+    if form.is_valid():
+        name = request.POST["name"]
+        profile: UserProfile = request.user.profile
+        sql_stms = profile.custom_fields.get("sql_stm", {})
+        if len(sql_stms) < 5:
+            sql_stms[name] = form.cleaned_data["command"]
+            profile.custom_fields["sql_stm"] = sql_stms
+            profile.save()
+
+        response = {"message": "Saved"}
+    else:
+        response = {"error": form.errors}
+    return JsonResponse(response)
+
+
+def panel_sql(self, request, extra_context=None):
+    if not request.user.is_superuser:
         raise PermissionDenied
     context = self.each_context(request)
     context["buttons"] = QUICK_SQL
     if request.method == "POST":
+        if request.GET.get("op", "") == "save":
+            return save_expression(request)
+
         form = SQLForm(request.POST)
         response = {"result": [], "error": None, "stm": ""}
         if form.is_valid():
             try:
                 cmd = form.cleaned_data["command"]
-                stm = urllib.parse.unquote(base64.b64decode(cmd).decode())
-                response["stm"] = sqlparse.format(stm)
+                # stm = urllib.parse.unquote(base64.b64decode(cmd).decode())
+                response["stm"] = sqlparse.format(cmd)
                 if is_root(request):
                     conn = connections[DEFAULT_DB_ALIAS]
                 else:
                     conn = connections["read_only"]
                 cursor = conn.cursor()
-                cursor.execute(stm)
+                cursor.execute(cmd)
                 if cursor.pgresult_ptr is not None:
                     response["result"] = cursor.fetchall()
                 else:

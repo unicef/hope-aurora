@@ -1,3 +1,4 @@
+import logging
 import re
 
 import jmespath
@@ -8,7 +9,11 @@ from django.utils.safestring import mark_safe
 from django_regex.utils import RegexList
 from mdeditor.fields import MDTextFormField
 
-from aurora.registration.models import Record, Registration
+from aurora.registration.models import Record
+
+from .models import Registration
+
+logger = logging.getLogger(__name__)
 
 
 class JMESPathFormField(forms.CharField):
@@ -88,3 +93,24 @@ class RegistrationExportForm(forms.Form):
             return RegexList([re.compile(rule) for rule in self.cleaned_data["exclude"].split("\n")])
         except Exception as e:
             raise ValidationError(e)
+
+
+class JamesForm(forms.ModelForm):
+    # unique_field = forms.CharField(widget=forms.HiddenInput)
+    unique_field_path = forms.CharField(
+        label="JMESPath expression", widget=forms.TextInput(attrs={"style": "width:90%"})
+    )
+    data = forms.CharField(widget=forms.Textarea, required=False)
+
+    class Meta:
+        model = Registration
+        fields = ("unique_field_path", "data")
+
+    class Media:
+        js = [
+            "https://cdnjs.cloudflare.com/ajax/libs/jmespath/0.16.0/jmespath.min.js",
+        ]
+
+
+class DecryptForm(forms.Form):
+    key = forms.CharField(widget=forms.Textarea)

@@ -1,20 +1,13 @@
-from rest_framework import serializers
-from strategy_field.utils import fqn
-
 from aurora.core.models import FlexFormField
 
-from .base import SmartViewSet
+from ..serializers.field import FlexFormFieldSerializer
+from .base import LastModifiedFilter, SmartViewSet
 
 
-class FlexFormFieldSerializer(serializers.ModelSerializer):
+class FlexFormFieldFilter(LastModifiedFilter):
     class Meta:
         model = FlexFormField
-        exclude = ()
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data["field_type"] = fqn(instance.field_type)
-        return data
+        fields = ("modified_after", "flex_form")
 
 
 class FlexFormFieldViewSet(SmartViewSet):
@@ -24,3 +17,4 @@ class FlexFormFieldViewSet(SmartViewSet):
 
     queryset = FlexFormField.objects.all()
     serializer_class = FlexFormFieldSerializer
+    filterset_class = FlexFormFieldFilter

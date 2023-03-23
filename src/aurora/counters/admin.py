@@ -10,7 +10,7 @@ from django.urls import reverse
 from smart_admin.modeladmin import SmartModelAdmin
 
 from ..core.utils import is_root
-from ..registration.paginator import LargeTablePaginator
+from ..registration.admin.paginator import LargeTablePaginator
 from .forms import ChartForm
 from .models import Counter
 

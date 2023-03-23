@@ -1,18 +1,4 @@
 from django.apps import AppConfig
-from smart_admin.apps import SmartAuthConfig
-
-
-class AuroraAuthConfig(SmartAuthConfig):
-    name = "smart_admin.smart_auth"
-
-    def ready(self):
-        from django.contrib.auth.models import Permission
-        from django.contrib.contenttypes.models import ContentType
-        from smart_admin.decorators import smart_register
-        from smart_admin.smart_auth.admin import ContentTypeAdmin, PermissionAdmin
-
-        smart_register(Permission)(PermissionAdmin)
-        smart_register(ContentType)(ContentTypeAdmin)
 
 
 class AuroraAdminConfig(AppConfig):
@@ -31,7 +17,7 @@ class AuroraAdminConfig(AppConfig):
             panel_sysinfo,
         )
 
-        from .panels import panel_dumpdata, panel_loaddata
+        from .panels import panel_dumpdata, panel_loaddata, panel_sql
 
         site.register_panel(panel_loaddata)
         site.register_panel(panel_dumpdata)
@@ -41,3 +27,4 @@ class AuroraAdminConfig(AppConfig):
         site.register_panel(panel_sentry)
         site.register_panel(panel_error_page)
         site.register_panel(panel_redis)
+        site.register_panel(panel_sql)

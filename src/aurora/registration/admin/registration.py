@@ -2,18 +2,14 @@ import csv
 import io
 import json
 import logging
-from datetime import datetime, timedelta
 from hashlib import md5
 
-from admin_extra_buttons.decorators import button, choice, link, view
-from adminfilters.autocomplete import AutoCompleteFilter
-from adminfilters.numbers import NumberFilter
-from adminfilters.value import ValueFilter
+from admin_extra_buttons.decorators import button, choice, view
+from admin_sync.mixin import SyncMixin
 from dateutil.utils import today
 from django import forms
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.admin import SimpleListFilter, register
 from django.core.cache import cache
 from django.db.models import JSONField
 from django.db.models.signals import post_delete, post_save
@@ -24,17 +20,14 @@ from django.template import Template
 from django.template.loader import select_template
 from django.urls import reverse, translate_url
 from django.utils.text import slugify
-from django.utils.translation import gettext as _
 from django_redis import get_redis_connection
 from jsoneditor.forms import JSONEditor
 from smart_admin.modeladmin import SmartModelAdmin
 
-from ..administration.filters import BaseAutoCompleteFilter
-from ..core.admin import ConcurrencyVersionAdmin
-from ..core.admin_sync import SyncMixin
-from ..core.forms import CSVOptionsForm, DateFormatsForm
-from ..core.models import FormSet
-from ..core.utils import (
+from aurora.core.admin.base import ConcurrencyVersionAdmin
+from aurora.core.forms import CSVOptionsForm, DateFormatsForm
+from aurora.core.models import FormSet
+from aurora.core.utils import (
     build_dict,
     build_form_fake_data,
     clone_model,
@@ -42,65 +35,27 @@ from ..core.utils import (
     is_root,
     namify,
 )
-from ..i18n.forms import TemplateForm
-from .forms import CloneForm, RegistrationExportForm, RegistrationForm
-from .models import Record, Registration
-from .paginator import LargeTablePaginator
-from .protocol import AuroraSyncRegistrationProtocol
+from aurora.i18n.forms import TemplateForm
+from aurora.registration.admin.filters import (
+    OrganizationFilter,
+    RegistrationProjectFilter,
+)
+from aurora.registration.admin.protocol import AuroraSyncRegistrationProtocol
+from aurora.registration.forms import (
+    CloneForm,
+    JamesForm,
+    RegistrationExportForm,
+    RegistrationForm,
+)
+from aurora.registration.models import Record, Registration
 
 logger = logging.getLogger(__name__)
-
-DATA = {
-    "registration.Registration": [],
-    "core.FlexForm": [],
-    "core.FormSet": [],
-    "core.Validator": [],
-    "core.OptionSet": [],
-    "core.FlexFormField": [],
-    "i18n.Message": [],
-}
-
-
-class JamesForm(forms.ModelForm):
-    # unique_field = forms.CharField(widget=forms.HiddenInput)
-    unique_field_path = forms.CharField(
-        label="JMESPath expression", widget=forms.TextInput(attrs={"style": "width:90%"})
-    )
-    data = forms.CharField(widget=forms.Textarea, required=False)
-
-    class Meta:
-        model = Registration
-        fields = ("unique_field_path", "data")
-
-    class Media:
-        js = [
-            "https://cdnjs.cloudflare.com/ajax/libs/jmespath/0.16.0/jmespath.min.js",
-        ]
-
-
-class OrganizationFilter(BaseAutoCompleteFilter):
-    pass
-
-
-class RegistrationProjectFilter(BaseAutoCompleteFilter):
-    fk_name = "flex_form__project__organization__exact"
-
-    def has_output(self):
-        return "flex_form__project__organization__exact" in self.request.GET
-
-    def get_url(self):
-        url = reverse("%s:autocomplete" % self.admin_site.name)
-        if self.fk_name in self.request.GET:
-            oid = self.request.GET[self.fk_name]
-            return f"{url}?oid={oid}"
-        return url
 
 
 def can_export_data(request, obj, handler=None):
     return (obj.export_allowed and request.user.has_perm("registration.export_data", obj)) or is_root(request)
 
 
-@register(Registration)
 class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
     search_fields = ("name", "title", "slug")
     date_hierarchy = "start"
@@ -618,125 +573,3 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
 
 class DecryptForm(forms.Form):
     key = forms.CharField(widget=forms.Textarea)
-
-
-class HourFilter(SimpleListFilter):
-    parameter_name = "hours"
-    title = "Latest [n] hours"
-    slots = (
-        (30, _("30 min")),
-        (60, _("1 hour")),
-        (60 * 4, _("4 hour")),
-        (60 * 6, _("6 hour")),
-        (60 * 8, _("8 hour")),
-        (60 * 12, _("12 hour")),
-        (60 * 24, _("24 hour")),
-    )
-
-    def lookups(self, request, model_admin):
-        return self.slots
-
-    def queryset(self, request, queryset):
-        if self.value():
-            offset = datetime.now() - timedelta(minutes=int(self.value()))
-            queryset = queryset.filter(timestamp__gte=offset)
-
-        return queryset
-
-
-@register(Record)
-class RecordAdmin(SmartModelAdmin):
-    date_hierarchy = "timestamp"
-    search_fields = ("registration__name",)
-    list_display = ("timestamp", "remote_ip", "id", "registration", "ignored", "unique_field")
-    readonly_fields = ("registration", "timestamp", "remote_ip", "id", "fields", "counters")
-    autocomplete_fields = ("registration",)
-    list_filter = (
-        ("registration", AutoCompleteFilter),
-        ("id", NumberFilter),
-        HourFilter,
-        ("unique_field", ValueFilter),
-        "ignored",
-    )
-    change_form_template = None
-    change_list_template = None
-    paginator = LargeTablePaginator
-    show_full_result_count = False
-
-    def get_actions(self, request):
-        return {}
-        # {name: (func, name, desc) for func, name, desc in actions}
-        # actions = super().get_actions(request)
-        # for name, __ in actions.items():
-        #     print("src/aurora/registration/admin.py: 485", name)
-        # return {"export_as_csv": self.get_action(self.export_as_csv)}
-
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        qs = qs.select_related("registration")
-        return qs
-
-    def get_common_context(self, request, pk=None, **kwargs):
-        return super().get_common_context(request, pk, is_root=is_root(request), **kwargs)
-
-    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
-        extra_context = {"is_root": is_root(request)}
-        return super().changeform_view(request, object_id, form_url, extra_context)
-
-    @link(html_attrs={"class": "aeb-warn "}, change_form=True)
-    def receipt(self, button):
-        try:
-            if button.original:
-                base = reverse("register-done", args=[button.original.registration.pk, button.original.pk])
-                button.href = base
-                button.html_attrs["target"] = f"_{button.original.pk}"
-        except Exception as e:
-            logger.exception(e)
-
-    @button(label="Preview", permission=is_root)
-    def preview(self, request, pk):
-        ctx = self.get_common_context(request, pk, title="Preview")
-
-        return render(request, "admin/registration/record/preview.html", ctx)
-
-    @button(label="inspect", permission=is_root)
-    def inspect(self, request, pk):
-        ctx = self.get_common_context(request, pk, title="Inspect")
-        ctx["files_as_dict"] = json.loads(self.object.files.tobytes().decode())
-        return render(request, "admin/registration/record/inspect.html", ctx)
-
-    @button(permission=is_root)
-    def decrypt(self, request, pk):
-        ctx = self.get_common_context(request, pk, title="To decrypt you need to provide Registration Private Key")
-        if request.method == "POST":
-            form = DecryptForm(request.POST)
-            ctx["title"] = "Data have been decrypted only to be showed on this page. Still encrypted on the DB"
-            if form.is_valid():
-                key = form.cleaned_data["key"]
-                try:
-                    ctx["decrypted"] = self.object.decrypt(key)
-                except Exception as e:
-                    ctx["title"] = "Error decrypting data"
-                    self.message_error_to_user(request, e)
-        else:
-            form = DecryptForm()
-
-        ctx["form"] = form
-        return render(request, "admin/registration/record/decrypt.html", ctx)
-
-    def get_readonly_fields(self, request, obj=None):
-        if is_root(request) or settings.DEBUG:
-            return []
-        return self.readonly_fields
-
-    def has_view_permission(self, request, obj=None):
-        return is_root(request) or settings.DEBUG
-
-    def has_add_permission(self, request):
-        return is_root(request) or settings.DEBUG
-
-    def has_delete_permission(self, request, obj=None):
-        return settings.DEBUG
-
-    def has_change_permission(self, request, obj=None):
-        return is_root(request) or settings.DEBUG

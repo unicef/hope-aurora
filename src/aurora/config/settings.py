@@ -56,7 +56,6 @@ INSTALLED_APPS = [
     # "smart_admin.apps.SmartAuthConfig",
     "smart_admin.apps.SmartConfig",
     "aurora.administration.apps.AuroraAdminConfig",
-    "aurora.administration.apps.AuroraAuthConfig",
     "front_door.contrib",
     "hijack",
     "rest_framework",
@@ -278,8 +277,9 @@ STATICFILES_DIRS = [
 # -------- Added Settings
 ADMINS = env("ADMINS")
 AUTHENTICATION_BACKENDS = [
-    "aurora.security.backend.RegistrationAuthBackend",
-    "aurora.security.backend.OrganizationAuthBackend",
+    "aurora.security.backend.AuroraAuthBackend",
+    # "aurora.security.backend.RegistrationAuthBackend",
+    # "aurora.security.backend.OrganizationAuthBackend",
     # "django.contrib.auth.backends.ModelBackend",
     "social_core.backends.azuread_tenant.AzureADTenantOAuth2",
 ] + env("AUTHENTICATION_BACKENDS")
@@ -435,11 +435,14 @@ CONSTANCE_CONFIG = OrderedDict(
 )
 
 SMART_ADMIN_SECTIONS = {
-    "Organization": ["core.Organization", "core.Project"],
     "Registration": ["registration", "dbtemplates", "flatpages"],
+    "Security": ["social_auth", "security"],
     "Form Builder": ["core"],
+    "Organization": ["core.Organization", "core.Project"],
     "Configuration": ["constance", "flags"],
-    "Security": ["auth", "social_auth", "security"],
+    "i18N": [
+        "i18n",
+    ],
     "Other": [],
     "_hidden_": [],
 }

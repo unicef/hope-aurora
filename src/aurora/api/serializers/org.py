@@ -7,6 +7,7 @@ from ...core.models import Organization
 class OrganizationSerializer(serializers.HyperlinkedModelSerializer):
     projects = serializers.SerializerMethodField()
     parent = serializers.CharField(source="parent.slug", read_only=True, default=None)
+    id = serializers.IntegerField(read_only=True, default=None)
 
     class Meta:
         model = Organization

@@ -1,9 +1,10 @@
-from rest_framework import serializers
-
+from aurora.api.serializers.base import AuroraHyperlinkedModelSerializer
 from aurora.core.models import Validator
 
 
-class ValidatorSerializer(serializers.HyperlinkedModelSerializer):
+class ValidatorSerializer(AuroraHyperlinkedModelSerializer):
     class Meta:
         model = Validator
         exclude = ()
+        # lookup_field = "name"
+        # extra_kwargs = {"url": {"lookup_field": "name"}}

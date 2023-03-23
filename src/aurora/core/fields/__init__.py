@@ -1,6 +1,7 @@
 from django import forms
 
 from . import widgets
+from .captcha import CaptchaField
 from .compilation_time import CompilationTimeField
 from .document import DocumentField
 from .file import SmartFileField

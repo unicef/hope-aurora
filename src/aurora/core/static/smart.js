@@ -1,4 +1,4 @@
-if ($ === undefined){
+if ($ === undefined) {
     $ = django.jQuery;
 }
 
@@ -15,11 +15,11 @@ if ($ === undefined){
                 $input.attr("required", $(this).is(":checked"));
             });
         });
-
-        $("#registrationForm").on("submit", function (e) {
-            $(this).find("input[type=submit]").prop("disabled", "disabled").val(gettext("Please wait..."));
-        });
-
+        //
+        // $("#registrationForm").on("submit", function (e) {
+        //     $(this).find("input[type=submit]").prop("disabled", "disabled").val(gettext("Please wait..."));
+        // });
+        //
         $("[data-visibility=hidden]").parents(".field-container").hide();
 
         $("[data-trigger=change]").each(function (i, e) {
@@ -34,17 +34,16 @@ if ($ === undefined){
         $(".question-visibility").each(function (i, e) {
             var $container = $(e).parents("fieldset").find(".field-container");
             var $input = $container.find("input,select, textarea");
-            if (smart.has_any_value($input)){
+            if (smart.has_any_value($input)) {
                 $(e).prop("checked", "checked");
                 $container.show();
             }
-            // if ($input.val().trim() !== '') {
-            //     $(e).prop("checked", "checked");
-            //     $container.show();
-            // }
         }).on("click", function () {
             smart.handleQuestion(this);
         });
-
+        // trigger onload events
+        $('[data-onload]').each(function () {
+            eval($(this).data('onload'));
+        });
     });
 })($);

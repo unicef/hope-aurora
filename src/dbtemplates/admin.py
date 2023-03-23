@@ -1,14 +1,13 @@
 import logging
 import posixpath
 
-from adminfilters.mixin import AdminFiltersMixin
-from adminfilters.value import ValueFilter
-
 from admin_extra_buttons.decorators import button, view
 
 # Check if django-reversion is installed and use reversions' VersionAdmin
 # as the base admin class if yes
 from admin_sync.mixin import PublishMixin, SyncMixin
+from adminfilters.mixin import AdminFiltersMixin
+from adminfilters.value import ValueFilter
 from django import forms
 from django.contrib import admin
 from django.core.exceptions import ImproperlyConfigured

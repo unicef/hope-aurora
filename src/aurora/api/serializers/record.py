@@ -11,13 +11,14 @@ from ...registration.models import Record
 
 
 class RecordSerializer(serializers.ModelSerializer):
-    registration = serializers.SerializerMethodField()
+    registration_url = serializers.SerializerMethodField()
+    registrar = serializers.CharField()
 
     class Meta:
         model = Record
         exclude = ("storage", "files")
 
-    def get_registration(self, obj):
+    def get_registration_url(self, obj):
         req = self.context["request"]
         return req.build_absolute_uri(reverse("api:registration-detail", kwargs={"pk": obj.registration_id}))
 

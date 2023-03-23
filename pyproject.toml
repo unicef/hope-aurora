@@ -89,6 +89,7 @@ pytest-pythonpath = "^0.7.3"
 pytest-selenium = "^2.0"
 tox = "*"
 watchdog = "^2.1.6"
+django-stubs = {extras = ["compatible-mypy"], version = "^1.16.0"}
 
 [build-system]
 requires = ["poetry-core>=1.1.4"]

@@ -104,6 +104,7 @@ field_registry.register(fields.RemoteIpField)
 field_registry.register(fields.CompilationTimeField)
 field_registry.register(fields.HiddenField)
 field_registry.register(MathCaptchaField)
+field_registry.register(fields.CaptchaField)
 
 form_registry = Registry(forms.BaseForm)
 

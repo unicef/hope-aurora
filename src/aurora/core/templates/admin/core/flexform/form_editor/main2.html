@@ -1,0 +1,70 @@
+{% extends "admin_extra_buttons/action_page.html" %}{% load static itrans aurora %}
+{% block extrahead %}
+    <link rel="stylesheet" href="{% static "admin/field_editor/field_editor.css" %}">
+    <script src="/static/admin/js/vendor/jquery/jquery.js"></script>
+    <script src="/static/admin/js/jquery.init.js"></script>
+    <script src="{% static "smart_field.js" %}"></script>
+    {{ forms_media }}
+{% endblock %}
+
+{% block action-content %}
+    <form method="post" id="fieldAttrForm">
+
+        <div class="sticky" style="width: 100%">
+            <div class="submit-row" style="width: 100%">
+                <div style="float:left">
+                    <label for="radio_display"><input type="radio" id="radio_display" checked name="output">Render
+                    </label>
+                    <label for="radio_code"><input type="radio" id="radio_code" name="output">Code </label>
+                    <label for="radio_attrs"><input type="radio" id="radio_attrs" name="output">Advanced </label>
+                </div>
+                <input style="background-color: cornflowerblue" type="submit" value="Submit">
+            </div>
+            <div id="iframe-container">
+                <iframe id="widget_display" style="width: 100%"
+                        src="{% url "admin:core_flexformfield_widget_display" original.pk %}"></iframe>
+                <iframe id="widget_code" style="display: none; width: 100%"
+                        src="{% url "admin:core_flexformfield_widget_code" original.pk %}"></iframe>
+                <iframe id="widget_attrs" style="display: none; width: 100%"
+                        src="{% url "admin:core_flexformfield_widget_attrs" original.pk %}"></iframe>
+            </div>
+
+        <table id="tabs">
+            <tr>
+                <th data-target="field" class="selected"><a>Flex Field attributes</a></th>
+                <th data-target="form"><a>Form Field attributes</a></th>
+                <th data-target="widget"><a>Widget Field attributes</a></th>
+                <th data-target="smart"><a>Smart Field attributes</a></th>
+                <th data-target="css"><a>CSS Field attributes</a></th>
+            </tr>
+        </table>
+        </div>
+{#        <div id="errors"></div>#}
+        <table>
+            <tr>
+                <td>
+                    {% csrf_token %}
+                    <table id="field" class="cfg-form collapse">
+                        {{ form_field }}
+                    </table>
+                    <table id="form" class="cfg-form collapse collapsed">
+                        {{ form_kwargs }}
+                    </table>
+                    <table id="widget" class="cfg-form collapse collapsed">
+                        {{ form_widget }}
+                    </table>
+                    <table id="smart" class="cfg-form collapse collapsed">
+                        {{ form_smart }}
+                    </table>
+                    <table id="css" class="cfg-form collapse collapsed">
+                        {{ form_css }}
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </form>
+    <script id="field_editor_script" src="{% static "admin/field_editor/field_editor.min.js" %}"
+            data-url="{% url "admin:core_flexformfield_widget_refresh" original.pk %}">
+
+
+{% endblock action-content %}

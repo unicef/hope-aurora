@@ -26,6 +26,7 @@ from mptt.managers import TreeManager
 from mptt.models import MPTTModel
 from natural_keys import NaturalKeyModel, NaturalKeyModelManager
 from py_mini_racer.py_mini_racer import MiniRacerBaseException
+from sentry_sdk import set_tag
 from strategy_field.utils import fqn
 
 from ..i18n.gettext import gettext as _
@@ -49,6 +50,9 @@ class OrganizationManager(TreeManager):
 
 
 class Organization(MPTTModel):
+    version = AutoIncVersionField()
+    last_update_date = models.DateTimeField(auto_now=True)
+
     name = CICharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=100, unique=True, blank=True, null=True)
     parent = TreeForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="children")
@@ -76,6 +80,9 @@ class ProjectManager(TreeManager):
 
 
 class Project(MPTTModel):
+    version = AutoIncVersionField()
+    last_update_date = models.DateTimeField(auto_now=True)
+
     name = CICharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=100, blank=True, null=True)
     organization = models.ForeignKey(Organization, null=True, related_name="projects", on_delete=models.CASCADE)
@@ -202,6 +209,8 @@ _.is_adult = function(d) { return !_.is_child(d)};
     def validate(self, value, registration=None):
         from py_mini_racer import MiniRacer
 
+        set_tag("Validator", self.name)
+
         if self.active:
             self.monitor(self.STATUS_UNKNOWN, value)
         else:
@@ -289,6 +298,7 @@ class FlexForm(I18NModel, NaturalKeyModel):
     validator = models.ForeignKey(
         Validator, limit_choices_to={"target": Validator.FORM}, blank=True, null=True, on_delete=models.PROTECT
     )
+    advanced = models.JSONField(default=dict, blank=True)
 
     class Meta:
         verbose_name = "Flex Form"
@@ -377,6 +387,38 @@ class FlexForm(I18NModel, NaturalKeyModel):
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         super().save(force_insert, force_update, using, update_fields)
+
+    def get_usage(self):
+        ret = []
+
+        for reg in self.registration_set.all():
+            ret.append(
+                {
+                    "type": "Registration",
+                    "obj": reg,
+                    "editor_url": reverse("admin:registration_registration_change", args=[reg.pk]),
+                    "change_url": reverse("admin:registration_registration_change", args=[reg.pk]),
+                }
+            )
+        for fs in self.formsets.all():
+            ret.append(
+                {
+                    "type": "Parend Of",
+                    "obj": fs.flex_form,
+                    "editor_url": reverse("admin:core_flexform_form_editor", args=[fs.flex_form.pk]),
+                    "change_url": reverse("admin:core_flexform_change", args=[fs.flex_form.pk]),
+                }
+            )
+        for fs in self.formset_set.all():
+            ret.append(
+                {
+                    "type": "Child Of",
+                    "obj": fs.parent,
+                    "editor_url": reverse("admin:core_flexform_form_editor", args=[fs.parent.pk]),
+                    "change_url": reverse("admin:core_flexform_change", args=[fs.parent.pk]),
+                }
+            )
+        return ret
 
 
 class FormSet(NaturalKeyModel, OrderableModel):
@@ -523,6 +565,7 @@ class FlexFormField(NaturalKeyModel, I18NModel, OrderableModel):
     validator = models.ForeignKey(
         Validator, blank=True, null=True, limit_choices_to={"target": Validator.FIELD}, on_delete=models.PROTECT
     )
+    validation = models.TextField(blank=True, null=True)
     regex = RegexField(blank=True, null=True, validators=[RegexPatternValidator()])
     advanced = models.JSONField(default=dict, blank=True, null=True)
 
@@ -551,6 +594,7 @@ class FlexFormField(NaturalKeyModel, I18NModel, OrderableModel):
             advanced = self.advanced.copy()
             smart_attrs = advanced.pop("smart", {}).copy()
             widget_kwargs = self.advanced.get("widget_kwargs", {}).copy()
+            events = self.advanced.get("events", {}).copy()
 
             field_type = self.field_type.custom.base_type
             field_kwargs = self.field_type.custom.attrs.copy()
@@ -581,6 +625,7 @@ class FlexFormField(NaturalKeyModel, I18NModel, OrderableModel):
             else:
                 widget_kwargs = self.advanced.get("widget_kwargs", {}).copy()
             smart_attrs = advanced.pop("smart", {}).copy()
+            events = self.advanced.get("events", {}).copy()
 
             field_kwargs["required"] = False
             regex = self.regex
@@ -634,6 +679,8 @@ class FlexFormField(NaturalKeyModel, I18NModel, OrderableModel):
         field_kwargs["widget_kwargs"] = widget_kwargs
         field_kwargs["smart_attrs"] = smart_attrs
         field_kwargs.pop("default_value", "")
+        field_kwargs["smart_events"] = events
+        # these are for django FormField and handled by SmartFieldMixin
         return field_kwargs
 
     def get_instance(self):
@@ -666,6 +713,18 @@ class FlexFormField(NaturalKeyModel, I18NModel, OrderableModel):
             self.name = namify(self.label)[:100]
 
         super().save(force_insert, force_update, using, update_fields)
+
+    def get_usage(self):
+        ret = []
+        ret.append(
+            {
+                "type": "Form",
+                "obj": self.flex_form,
+                "editor_url": reverse("admin:registration_registration_change", args=[self.flex_form.pk]),
+                "change_url": reverse("admin:registration_registration_change", args=[self.flex_form.pk]),
+            }
+        )
+        return ret
 
 
 class OptionSetManager(NaturalKeyModelManager):

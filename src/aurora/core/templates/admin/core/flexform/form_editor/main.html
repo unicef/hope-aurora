@@ -1,0 +1,129 @@
+{% extends "admin_extra_buttons/action_page.html" %}{% load static itrans aurora field_editor %}
+{% block extrahead %}
+    <link rel="stylesheet" href="{% static "admin/field_editor/field_editor.css" %}">
+    <script src="/static/admin/js/vendor/jquery/jquery.js"></script>
+    <script src="/static/admin/js/jquery.init.js"></script>
+    <script src="{% static "smart_field.js" %}"></script>
+    {{ forms_media }}
+{% endblock %}
+{% block object-tools %}{% endblock %}
+{% block content_title %}<h1>Form: {{ original.name }}</h1>{% endblock %}
+{% block action-content %}
+    <form method="post">
+        <div id="formEditor">
+            <div class="submit-row sticky">
+                <div>
+                    <label for="radio_display"><input type="radio" id="radio_display" checked name="output">Render
+                    </label>
+                    <label for="radio_code"><input type="radio" id="radio_code" name="output">Code </label>
+                    <label for="radio_attrs"><input type="radio" id="radio_attrs" name="output">Advanced </label>
+                </div>
+                <input type="submit" value="Save">
+            </div>
+            <div id="mainPanel">
+                <div class="panel output sticky">
+                    <iframe id="widget_display"
+                            src="{% url "admin:core_flexform_widget_display" original.pk %}"></iframe>
+                    <iframe id="widget_code"
+                            src="{% url "admin:core_flexform_widget_code" original.pk %}"></iframe>
+                    <iframe id="widget_attrs"
+                            src="{% url "admin:core_flexform_widget_attrs" original.pk %}"></iframe>
+                </div>
+                <div class="panel settings">
+                    <table>
+                        <thead>
+                        <tr class="tabs">
+                            <th data-target="frm" class="selected"><a>Form attributes</a></th>
+                            <th data-target="fields"><a>Fields</a></th>
+                            <th data-target="struct"><a>Structure</a></th>
+                            <th data-target="events"><a>Events</a></th>
+                            <th data-target="usage"><a>Usage</a></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td colspan="5">
+                                {% csrf_token %}
+                                <table id="frm" class="cfg-form collapse">
+                                    {{ form_frm }}
+                                </table>
+                                <table id="fields" class="cfg-form collapse collapsed">
+                                    {% for fld in original.fields.all %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url "admin:core_flexformfield_field_editor" fld.pk %}">{{ fld.label }}</a>
+                                            </td>
+                                            <td>{{ fld.type_name }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </table>
+                                <table id="struct" class="cfg-form collapse collapsed">
+                                    <tr>
+                                        <td>Parents</td>
+                                    </tr>
+                                    {% for fs in original.formset_set.all %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url "admin:core_flexform_form_editor" fs.parent.pk %}">{{ fs.parent }}</a>
+                                            </td>
+                                            <td><a href="{% url "admin:core_formset_change" fs.pk %}">{{ fs }}</a></td>
+                                        </tr>
+                                    {% endfor %}
+                                    <tr>
+                                        <td>Children</td>
+                                    </tr>
+                                    {% for fs in original.formsets.all %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url "admin:core_flexform_form_editor" fs.flex_form.pk %}">{{ fs.flex_form }}</a>
+                                            </td>
+                                            <td><a href="{% url "admin:core_formset_change" fs.pk %}">{{ fs }}</a></td>
+                                        </tr>
+                                    {% endfor %}
+                                </table>
+                                <table id="usage" class="cfg-form collapse collapsed">
+                                    {% for usage in original.get_usage %}
+                                        <tr>
+                                            <td>{{ usage.type }}</td>
+                                            <td>
+                                                <a target="_inspect" href="{{ usage.editor_url }}">{{ usage.obj }}</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </table>
+                                <table id="events" class="cfg-form collapse collapsed">
+                                    <tr>
+                                        <td>
+                                            <select id="event_selector">
+                                                {% for n,f in form_events.fields.items %}
+                                                    {% with form_events|get:n as ff %}
+                                                        <option value="{{ n }}">{{ n }} {% if ff.value %}
+                                                            *{% endif %}</option>
+                                                    {% endwith %}
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {% for n,f in form_events.fields.items %}
+                                                {% with form_events|get:n as ff %}
+                                                    <div id="event_{{ n }}"
+                                                         class="code {% if forloop.counter == 1 %} selected{% endif %}">{{ ff }}</div>
+                                                {% endwith %}
+                                            {% endfor %}
+                                        </td>
+                                    </tr>
+                                </table>
+
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </form>
+    <script id="field_editor_script" src="{% static "admin/field_editor/field_editor.min.js" %}"
+            data-url="{% url "admin:core_flexformfield_widget_refresh" original.pk %}">
+{% endblock action-content %}

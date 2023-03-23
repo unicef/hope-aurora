@@ -1,0 +1,81 @@
+{% extends "admin_extra_buttons/action_page.html" %}{% load static %}
+{% block extrahead %}
+    {{ block.super }}
+    {#    <script type="text/javascript" src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>#}
+    {#    <script type="text/javascript" src="{% static "admin/js/jquery.init.js" %}"></script>#}
+    <script type="text/javascript" src="{% static "admin/filter_table.js" %}"></script>
+{% endblock %}
+{% block action-content %}
+    <input type="text" style="width: 578px;padding:10px;margin-bottom:10px" id="filterInput"
+           placeholder="Search for names..">
+    <table width="100%" id="inspect">
+        <thead>
+        <tr>
+            <th>Type</th>
+            <th>Name</th>
+            <th>Details</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for flex_field in original.fields.all %}
+            <tr>
+                <td>Field</td>
+                <td>
+                    <a target="_inspect"
+                       href="{% url "admin:core_flexformfield_field_editor" flex_field.pk %}"><img
+                            src="/static/admin/img/icon-changelink.svg" alt="Change"></a>
+
+
+                    <a target="_inspect"
+                       href="{% url "admin:core_flexformfield_change" flex_field.pk %}">{{ flex_field.name }}</a>
+
+                    <div><small>{{ flex_field.fqn }}</small></div>
+                </td>
+                <td></td>
+            </tr>
+        {% endfor %}
+        {% for fs in original.formsets.all %}
+            <tr>
+                <td>Formset (parent)</td>
+                <td><a target="_inspect"
+                       href="{% url "admin:core_formset_change" fs.pk %}">{{ fs }}</a></td>
+                <td>Main Form: <a target="_inspect"
+                       href="{% url "admin:core_flexform_change" fs.flex_form.pk %}">{{ fs.flex_form }}</a>
+                    Parent Form: <a target="_inspect"
+                       href="{% url "admin:core_flexform_change" fs.parent.pk %}">{{ fs.parent }}</a>
+
+                </td>
+            </tr>
+        {% endfor %}
+        {% for fs in original.formsets.all %}
+            <tr>
+                <td>Parend Of</td>
+                <td><a target="_inspect"
+                       href="{% url "admin:core_flexform_change" fs.flex_form.pk %}">{{ fs.flex_form }}</a></td>
+                <td></td>
+            </tr>
+        {% endfor %}
+        {% for fs in original.formset_set.all %}
+            <tr>
+                <td>Child Of</td>
+                <td><a target="_inspect"
+                       href="{% url "admin:core_flexform_change" fs.parent.pk %}">{{ fs.parent }}</a></td>
+                <td>Formset: <a target="_inspect"
+                       href="{% url "admin:core_formset_change" fs.pk %}">{{ fs }}</a></td>
+
+            </tr>
+        {% endfor %}
+        {% for reg in original.registration_set.all %}
+            <tr>
+                <td>Registration</td>
+                <td><a target="_inspect"
+                       href="{% url "admin:registration_registration_change" reg.pk %}">{{ reg }}</a></td>
+                <td></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <script>
+        django.jQuery('#filterInput').tableFilter(django.jQuery('#inspect'));
+    </script>
+{% endblock action-content %}

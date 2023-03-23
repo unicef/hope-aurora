@@ -1,5 +1,7 @@
 {% extends "admin_extra_buttons/action_page.html" %}{% load static %}
 {% block extrahead %}
+    <script src="/static/admin/js/vendor/jquery/jquery.js"></script>
+    <script src="/static/admin/js/jquery.init.js"></script>
     <script src="{% static "smart_validation.js" %}"></script>
     {{ block.super }}
     {{ form.media }}
@@ -73,7 +75,7 @@
         <script>
             (function ($) {
                 $(document).ready(function () {
-                    {{ jslib }}
+                    {{ jslib|safe }}
                     log = console.log = function () {
                         $log.prepend(Array.prototype.join.call(arguments, ', ') + "\n");
                     };

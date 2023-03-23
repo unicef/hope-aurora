@@ -1,4 +1,8 @@
 {% extends "smart_admin/console.html" %}{% load static i18n %}
+{% block extrastyle %}
+    {{ block.super }}
+    <script src="/static/admin/js/jquery.init.js"></script>
+{% endblock %}
 {% block content %}
     <div class="redis-cli" id="changelist">
         <div class="changelist-form-container">
@@ -11,7 +15,7 @@
                     <input type="submit" value="Execute">
                 </div>
             </form>
-            <div id="stm"></div>
+{#            <div id="stm"></div>#}
             <div class="error" id="errorMessage"></div>
             <pre class="code" id="output" style="padding: 10px;"></pre>
         </div>
@@ -21,66 +25,65 @@
                 {% for label,stm in buttons.items %}
                     <li><a class="button quick-sql" href="#" data-cmd="{{ stm }}">{{ label }}</a></li>
                 {% endfor %}
-                {#                <li><a class="button quick-sql" href="#" data-cmd="SELECT * FROM information_schema.tables; ">Show#}
-{#                    Tables</a></li>#}
-{#                <li>#}
-{#                    <a class="button quick-sql" href="#"#}
-{#                       data-cmd="SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=[table_name];">#}
-{#                        Describe Table#}
-{#                    </a>#}
-{#                </li>#}
-{#                <li>#}
-{#                    <a class="button quick-sql" href="#"#}
-{#                       data-cmd="SELECT tablename, indexname, indexdef FROM pg_indexes WHERE schemaname='public' ORDER BY tablename, indexname;">#}
-{#                        Show Indexes#}
-{#                    </a>#}
-{#                </li>#}
-{#                <li>#}
-{#                    <a class="button quick-sql" href="#"#}
-{#                       data-cmd="SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=[table_name];">#}
-{#                        Describe Table#}
-{#                    </a>#}
-{#                </li>#}
-{#                <li>#}
-{#                    <a class="button quick-sql" href="#"#}
-{#                       data-cmd="SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=[table_name];">#}
-{#                        Describe Table#}
-{#                    </a>#}
-{#                </li>#}
-{##}
-
             </ul>
             <ul class="submit-row">
+                <li><a class="button" href="#" id="saveExpr">Save Expression</a></li>
+            </ul>
+            <ul class="submit-row">
+                {% for label,stm in user.profile.custom_fields.sql_stm.items %}
+                    <li><a class="button quick-sql" href="#" data-cmd="{{ stm }}">{{ label }}</a></li>
+                {% endfor %}
             </ul>
         </div>
     </div>
     <script>
-        $(".quick-sql").on("click", function () {
-            $("#id_command").val($(this).data("cmd"));
-            $("#sqlForm").submit();
-        });
-        $("#sqlForm").on("submit", function (e) {
-            e.preventDefault();
-            var stmt = $("#id_command").val();
-            $('#output').html("");
-            $.post(".", {
-                command: btoa(unescape(encodeURIComponent(stmt))),
-                csrfmiddlewaretoken: document.getElementsByName("csrfmiddlewaretoken")[0].value
+        (function ($) {
+            $(".quick-sql").on("click", function () {
+                $("#id_command").val($(this).data("cmd"));
+                $("#sqlForm").submit();
+            });
+            $("#saveExpr").on("click", function (e) {
+                e.preventDefault();
+                var stmt = $("#id_command").val();
+                var name = prompt("name");
+                $('#output').html("");
+                if (name) {
+                    $.post(".?op=save", {
+                        name: name,
+                        command: btoa(unescape(encodeURIComponent(stmt))),
+                        csrfmiddlewaretoken: document.getElementsByName("csrfmiddlewaretoken")[0].value
+                    })
+                        .done(function (r) {
+                            $("#errorMessage").html(r.message);
+                        })
+                        .fail(function (e) {
+                            $("#errorMessage").html(r.error);
+                        })
+                }
+            });
+            $("#sqlForm").on("submit", function (e) {
+                e.preventDefault();
+                var stmt = $("#id_command").val();
+                $('#output').html("");
+                $.post(".", {
+                    command: btoa(unescape(encodeURIComponent(stmt))),
+                    csrfmiddlewaretoken: document.getElementsByName("csrfmiddlewaretoken")[0].value
+                })
+                    .done(function (r) {
+                        $("#stm").html(r.stm);
+                        $("#errorMessage").html(r.error);
+                        r.result.forEach((line) => {
+                            if (Array.isArray(line)) {
+                                line.forEach((col) => {
+                                    $('#output').append(col).append(" ");
+                                });
+                            } else {
+                                $('#output').append(line).append(" ");
+                            }
+                            $('#output').append("\r\n");
+                        });
+                    });
             })
-             .done(function (r) {
-                 $("#stm").html(r.stm);
-                 $("#errorMessage").html(r.error);
-                 r.result.forEach((line) => {
-                     if (Array.isArray(line)){
-                         line.forEach((col) => {
-                             $('#output').append(col).append(" ");
-                         });
-                     }else{
-                         $('#output').append(line).append(" ");
-                     }
-                     $('#output').append("\r\n");
-                 });
-             });
-        });
+        })(django.jQuery);
     </script>
 {% endblock content %}
