@@ -2,24 +2,29 @@
     window.aurora = {
         Module: function (config) {
             var self = this;
-            var errorsStack = [];
+            var errorsStack = {};
 
             $form = $("#registrationForm");
             self.config = config;
             self.name = config.name;
 
-            self.pushError = function () {
-                self.enableSubmit(False);
-                errorsStack.push(1);
+            self.pushError = function (f) {
+                self.enableSubmit(false);
+                errorsStack[f] = true;
             }
 
-            self.popError = function () {
-                errorsStack.pop();
+            self.popError = function (f) {
+                errorsStack[f] = false;
                 self.enableSubmit(self.isValid());
             }
 
             self.isValid = function () {
-                return errorsStack.length === 0;
+                for (let i = 0, keys = Object.keys(errorsStack), ii = keys.length; i < ii; i++) {
+                    if (errorsStack[i] === false){
+                        return false
+                    }
+                }
+                return true;
             }
 
             self.enableSubmit = function (onOff) {
@@ -97,8 +102,10 @@
             self.setError = function (text) {
                 if (text) {
                     $fieldset.find(".errors").html(`<ul class="errorlist"><li>${text}</li></ul>`);
+                    module.pushError(self);
                 } else {
                     $fieldset.find(".errors").html("");
+                    module.popError(self);
                 }
                 return self;
             }

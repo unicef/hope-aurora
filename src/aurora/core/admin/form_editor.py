@@ -43,11 +43,11 @@ DEFAULTS = {
 }
 
 
-def get_initial(field, prefix):
+def get_initial(form, prefix):
     base = DEFAULTS.get(prefix, {})
-    for k, v in field.advanced.get(prefix, {}).items():
-        if v:
-            base[k] = v
+    # for k, v in form.advanced.get(prefix, {}).items():
+    #     if v:
+    #         base[k] = v
     return base
 
 
@@ -146,7 +146,7 @@ class FormEditor:
         if self.request.method == "POST":
             return {
                 prefix: Form(
-                    self.request.POST, prefix=prefix, form=self.flex_form, initial=get_initial(self.field, prefix)
+                    self.request.POST, prefix=prefix, form=self.flex_form, initial=get_initial(self.flex_form, prefix)
                 )
                 for prefix, Form in self.FORMS.items()
             }
@@ -182,5 +182,5 @@ class FormEditor:
     def post(self, request, pk):
         forms = self.get_forms()
         if all(map(lambda f: f.is_valid(), forms.values())):
-            self.patched_field.save()
+            # self.patched_f.save()
             return HttpResponseRedirect(".")

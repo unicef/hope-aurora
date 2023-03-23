@@ -26,8 +26,8 @@
                             src="{% url "admin:core_flexform_widget_display" original.pk %}"></iframe>
                     <iframe id="widget_code"
                             src="{% url "admin:core_flexform_widget_code" original.pk %}"></iframe>
-                    <iframe id="widget_attrs"
-                            src="{% url "admin:core_flexform_widget_attrs" original.pk %}"></iframe>
+{#                    <iframe id="widget_attrs"#}
+{#                            src="{% url "admin:core_flexform_widget_attrs" original.pk %}"></iframe>#}
                 </div>
                 <div class="panel settings">
                     <table>
@@ -124,6 +124,6 @@
             </div>
         </div>
     </form>
-    <script id="field_editor_script" src="{% static "admin/field_editor/field_editor.min.js" %}"
-            data-url="{% url "admin:core_flexformfield_widget_refresh" original.pk %}">
+    <script id="form_editor_script" src="{% static "admin/form_editor/form_editor.min.js" %}"
+            data-url="{% url "admin:core_flexform_widget_refresh" original.pk %}">
 {% endblock action-content %}

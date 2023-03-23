@@ -2,7 +2,7 @@ worker_processes 1;
 events {
   worker_connections 512;
 }
-daemon ${NGINX_DAEMON};
+daemon on;
 error_log /dev/stdout;
 
 http {
@@ -84,7 +84,18 @@ http {
             add_header Cache-Control "public, no-transform, immutable";
             expires 1d;
          }
-         location ${STATIC_URL} {
+         location /on/ {
+            alias ${STATIC_ROOT}${STATIC_URL};
+            autoindex on;
+            etag off;
+            if_modified_since off;
+            add_header Cache-Control "public, no-transform, immutable";
+            expires 1y;
+            gzip on;
+            gzip_disable "MSIE [1-6]\.";
+            gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml;
+         }
+          location ${STATIC_URL} {
             root ${STATIC_ROOT};
             autoindex off;
             etag off;
@@ -94,11 +105,7 @@ http {
             gzip on;
             gzip_disable "MSIE [1-6]\.";
             gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml;
-        }
-#        location / {
-#            index maintenance.html
-#            try_files ${DOLLAR}uri ${DOLLAR}uri/ /maintenance.html @aurora;
-#         }
+         }
 
         location / {
             http2_push https://browser.sentry-cdn.com/5.30.0/bundle.min.js;
@@ -107,13 +114,9 @@ http {
             add_header X-Cache-Status ${DOLLAR}upstream_cache_status;
 
             proxy_pass http://127.0.0.1:8000;
-            proxy_redirect off;
             proxy_set_header Host ${DOLLAR}host;
             proxy_set_header X-Forwarded-For ${DOLLAR}proxy_add_x_forwarded_for;
             proxy_set_header X-Scheme ${DOLLAR}scheme;
-            proxy_set_header X-Real-IP ${DOLLAR}remote_addr;
-
         }
-
     }
 }
