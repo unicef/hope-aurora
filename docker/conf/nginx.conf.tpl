@@ -13,6 +13,7 @@ http {
     proxy_cache_min_uses 5;
     add_header X-Aurora-Version "${AURORA_VERSION}";
     add_header X-Aurora-Build "${AURORA_BUILD}";
+    add_header X-Aurora-Time "${DOLLAR}date_gmt";
 
     map ${DOLLAR}status ${DOLLAR}status_text {
       400 'Bad Request';
@@ -66,20 +67,33 @@ http {
         error_page 502 503 504 /50x.html;
         add_header X-Aurora-Version "${AURORA_VERSION}";
         add_header X-Aurora-Build "${AURORA_BUILD}";
+        add_header X-Aurora-Time "${DOLLAR}date_gmt";
 
         location /50x.html {
-          ssi on;
-          internal;
-          auth_basic off;
-          root /var/nginx/;
+            ssi on;
+            add_header X-Aurora-Version "${AURORA_VERSION}";
+            add_header X-Aurora-Build "${AURORA_BUILD}";
+            add_header X-Aurora-Time "${DOLLAR}date_gmt";
+            internal;
+            auth_basic off;
+            root /var/nginx/;
         }
         location /error/502  {
+            add_header X-Aurora-Version "${AURORA_VERSION}";
+            add_header X-Aurora-Build "${AURORA_BUILD}";
+            add_header X-Aurora-Time "${DOLLAR}date_gmt";
             return 502;
         }
         location /error/503  {
+            add_header X-Aurora-Version "${AURORA_VERSION}";
+            add_header X-Aurora-Build "${AURORA_BUILD}";
+            add_header X-Aurora-Time "${DOLLAR}date_gmt";
             return 503;
         }
         location /error/504  {
+            add_header X-Aurora-Version "${AURORA_VERSION}";
+            add_header X-Aurora-Build "${AURORA_BUILD}";
+            add_header X-Aurora-Time "${DOLLAR}date_gmt";
             return 504;
         }
         location /favicon.ico {
@@ -89,6 +103,7 @@ http {
             add_header Cache-Control "public, no-transform, immutable";
             add_header X-Aurora-Version "${AURORA_VERSION}";
             add_header X-Aurora-Build "${AURORA_BUILD}";
+            add_header X-Aurora-Time "${DOLLAR}date_gmt";
             expires 1d;
          }
          location /on/ {
@@ -99,6 +114,7 @@ http {
             add_header Cache-Control "public, no-transform, immutable";
             add_header X-Aurora-Version "${AURORA_VERSION}";
             add_header X-Aurora-Build "${AURORA_BUILD}";
+            add_header X-Aurora-Time "${DOLLAR}date_gmt";
             expires 1y;
             gzip on;
             gzip_disable "MSIE [1-6]\.";
@@ -112,6 +128,7 @@ http {
             add_header Cache-Control "public, no-transform, immutable";
             add_header X-Aurora-Version "${AURORA_VERSION}";
             add_header X-Aurora-Build "${AURORA_BUILD}";
+            add_header X-Aurora-Time "${DOLLAR}date_gmt";
 
             expires 1y;
             gzip on;
@@ -126,6 +143,7 @@ http {
             add_header X-Cache-Status ${DOLLAR}upstream_cache_status;
             add_header X-Aurora-Version "${AURORA_VERSION}";
             add_header X-Aurora-Build "${AURORA_BUILD}";
+            add_header X-Aurora-Time "${DOLLAR}date_gmt";
 
             proxy_pass http://127.0.0.1:8000;
             proxy_set_header Host ${DOLLAR}host;

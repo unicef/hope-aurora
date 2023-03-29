@@ -1,11 +1,11 @@
 from django.urls import include, path
-from rest_framework.routers import DefaultRouter
+from .router import AuroraRouter
 
 from . import viewsets
 
 app_name = "api"
 
-router = DefaultRouter()
+router = AuroraRouter()
 router.register(r"counter", viewsets.CounterViewSet)
 router.register(r"field", viewsets.FlexFormFieldViewSet)
 router.register(r"flatpage", viewsets.FlatPageViewSet)
