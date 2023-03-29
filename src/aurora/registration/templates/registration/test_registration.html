@@ -1,0 +1,70 @@
+{% extends "base.html" %}{% load static json dump_record %}
+{% block body %}
+    <style>
+        th {
+            padding: 5px;
+            padding-right: 15px;
+            text-align: left;
+        }
+    </style>
+    {% if exception %}
+        <div class="align-center font-bold bg-red-200 p-2%">{{ exception }}</div>
+    {% endif %}
+    <div class="container ml-5 p-10">
+        <table class="table table-auto">
+            {% if record.pk %}
+            <tr>
+                <td>ID</td>
+                <td><a target="_new" href="{{ admin_url }}">{{ record.id }}</a></td>
+            </tr>
+            {%  endif %}
+            <tr>
+                <th>project</th>
+                <td>{{ record.registration.project }}</td>
+            </tr>
+            <tr>
+                <th>registration</th>
+                <td>{{ record.registration }}</td>
+            </tr>
+            <tr>
+                <th>timestamp</th>
+                <td>{{ record.timestamp }}</td>
+            </tr>
+            <tr>
+                <th>registrar</th>
+                <td>{{ record.registrar }}</td>
+            </tr>
+            <tr>
+                <th>remote_ip</th>
+                <td>{{ record.remote_ip }}</td>
+            </tr>
+            <tr>
+                <th>size</th>
+                <td>{{ record.size }}</td>
+            </tr>
+            <tr>
+                <th>counters</th>
+                <td>{{ record.counters }}</td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    {% dump_dict record.data "" record %}
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="container">
+        <tr>
+            <th>POST data</th>
+            <th>oooo</th>
+        </tr>
+        <tr>
+            <td>{{ fields_data|pretty_json }}</td>
+            <td>{{ record.data|pretty_json }}</td>
+            <td>{{ record.fields|pretty_json }}</td>
+        </tr>
+    </table>
+
+
+
+{% endblock body %}

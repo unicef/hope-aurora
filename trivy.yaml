@@ -1,0 +1,37 @@
+# Same as '--quiet'
+# Default is false
+quiet: false
+
+# Same as '--debug'
+# Default is false
+debug: false
+
+# Same as '--insecure'
+# Default is false
+insecure: false
+
+# Same as '--timeout'
+# Default is '5m'
+timeout: 10m
+
+# Same as '--cache-dir'
+# Default is your system cache dir
+cache-dir: .cache/trivy
+
+# Same as '--format'
+# Default is 'table'
+format: table
+ignorefile: .trivyignore
+exit-code: 0
+
+scan:
+  # Same as '--skip-dirs'
+  # Default is empty
+  skip-dirs:
+    - usr/local/
+    - etc/
+
+  # Same as '--skip-files'
+  # Default is empty
+  skip-files:
+    - ~*.py

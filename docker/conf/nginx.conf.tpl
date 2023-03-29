@@ -11,6 +11,9 @@ http {
     proxy_cache_key '${DOLLAR}host${DOLLAR}request_uri${DOLLAR}cookie_user';
     proxy_cache_methods GET HEAD;
     proxy_cache_min_uses 5;
+    add_header X-Aurora-Version "${AURORA_VERSION}";
+    add_header X-Aurora-Build "${AURORA_BUILD}";
+
     map ${DOLLAR}status ${DOLLAR}status_text {
       400 'Bad Request';
       401 'Unauthorized';
@@ -61,6 +64,8 @@ http {
         listen 80;
         proxy_cache one;
         error_page 502 503 504 /50x.html;
+        add_header X-Aurora-Version "${AURORA_VERSION}";
+        add_header X-Aurora-Build "${AURORA_BUILD}";
 
         location /50x.html {
           ssi on;
@@ -82,6 +87,8 @@ http {
             etag off;
             if_modified_since off;
             add_header Cache-Control "public, no-transform, immutable";
+            add_header X-Aurora-Version "${AURORA_VERSION}";
+            add_header X-Aurora-Build "${AURORA_BUILD}";
             expires 1d;
          }
          location /on/ {
@@ -90,6 +97,8 @@ http {
             etag off;
             if_modified_since off;
             add_header Cache-Control "public, no-transform, immutable";
+            add_header X-Aurora-Version "${AURORA_VERSION}";
+            add_header X-Aurora-Build "${AURORA_BUILD}";
             expires 1y;
             gzip on;
             gzip_disable "MSIE [1-6]\.";
@@ -101,6 +110,9 @@ http {
             etag off;
             if_modified_since off;
             add_header Cache-Control "public, no-transform, immutable";
+            add_header X-Aurora-Version "${AURORA_VERSION}";
+            add_header X-Aurora-Build "${AURORA_BUILD}";
+
             expires 1y;
             gzip on;
             gzip_disable "MSIE [1-6]\.";
@@ -112,6 +124,8 @@ http {
             http2_push https://unpkg.com/tailwindcss@1.9.6/dist/tailwind.min.css;
 
             add_header X-Cache-Status ${DOLLAR}upstream_cache_status;
+            add_header X-Aurora-Version "${AURORA_VERSION}";
+            add_header X-Aurora-Build "${AURORA_BUILD}";
 
             proxy_pass http://127.0.0.1:8000;
             proxy_set_header Host ${DOLLAR}host;

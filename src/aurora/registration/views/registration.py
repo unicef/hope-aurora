@@ -33,7 +33,6 @@ from aurora.core.utils import (
     get_qrcode,
     has_token,
     never_ever_cache,
-    total_size,
 )
 from aurora.i18n.gettext import gettext as _
 from aurora.registration.models import Record, Registration
@@ -268,15 +267,15 @@ class RegisterView(RegistrationMixin, AdminAccesMixin, FormView):
         if not self.is_post_allowed():
             return HttpResponse("Not Allowed")
 
-        slug = request.resolver_match.kwargs.get("slug")
-        registration = Registration.objects.filter(slug=slug).first()
-        if registration and registration.is_pwa_enabled:
-            encrypted_data = request.POST.get("encryptedData")
-            if encrypted_data:
-                kwargs = {"fields": encrypted_data, "size": total_size(encrypted_data), "is_offline": True}
-
-                Record.objects.create(registration=registration, **kwargs)
-                return HttpResponse()
+        # slug = request.resolver_match.kwargs.get("slug")
+        # registration = Registration.objects.filter(slug=slug).first()
+        # if registration and registration.is_pwa_enabled:
+        #     encrypted_data = request.POST.get("encryptedData")
+        #     if encrypted_data:
+        #         kwargs = {"fields": encrypted_data, "size": total_size(encrypted_data), "is_offline": True}
+        #
+        #         Record.objects.create(registration=registration, **kwargs)
+        #         return HttpResponse()
 
         form = self.get_form()
         formsets = self.get_formsets()
@@ -314,8 +313,11 @@ class RegisterView(RegistrationMixin, AdminAccesMixin, FormView):
             data["index2"] = data[form.indexes["2"]]
         if form.indexes["3"]:
             data["index3"] = data[form.indexes["3"]]
+
         if not state.collect_messages:
             record = self.registration.add_record(data)
+            if isinstance(record, HttpResponse):
+                return record
         success_url = reverse("register-done", args=[self.registration.pk, record.pk])
         return HttpResponseRedirect(success_url)
 

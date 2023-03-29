@@ -5,6 +5,8 @@ export NGINX_CACHE_DIR="${NGINX_CACHE_DIR:-/data/nginx/cache}"
 export REDIS_LOGLEVEL="${REDIS_LOGLEVEL:-warning}"
 export REDIS_MAXMEMORY="${REDIS_MAXMEMORY:-100Mb}"
 export REDIS_MAXMEMORY_POLICY="${REDIS_MAXMEMORY_POLICY:-volatile-ttl}"
+export AURORA_VERSION=${VERSION}
+export AURORA_BUILD=${BUILD_DATE}
 
 export DOLLAR='$'
 

@@ -1,0 +1,36 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+
+jobs:
+  test:
+    runs-on: registry.gitlab.com/os4d/docker-builder:2.4
+    strategy:
+      fail-fast: false
+    env:
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/aurora
+      STATIC_URL: /static/
+      STATIC_ROOT:
+      PY_VER: ${{ matrix.python-version}}
+      DJ_VER: ${{ matrix.django-version}}
+      SECRET_KEY: super-secret-key
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install tools
+        run: python -m pip install --upgrade poetry
+
+      - name: Scan
+        run: |
+          trivy fs  \
+          --exit-code 0 \
+          --no-progress \
+          -o trivy.html \
+          src/
+      - uses: codecov/codecov-action@v1
+        with:
+          verbose: true # optional (default = false)

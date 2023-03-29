@@ -19,9 +19,11 @@ def clean_dict(d, filter_func):
                 continue
             elif isinstance(value, dict):
                 new_val = clean_dict(value, filter_func)
-            elif isinstance(value, list):
-                new_val = [clean_dict(e, filter_func) for e in value]
-                # new_val = [e for e in new_val if e]
+            elif isinstance(value, list) and value:
+                if isinstance(value[0], dict):
+                    new_val = [clean_dict(e, filter_func) for e in value]
+                else:
+                    new_val = [e for e in value if not filter_func(e)]
             else:
                 new_val = value
             if new_val:
@@ -35,8 +37,15 @@ class Router:
         return merge_data(fields, ff)
 
     def decompress(self, data):
-        files_exclude = lambda v, k: "::file::" if isinstance(v, FileProxyMixin) else v
-        files_keep = lambda v, k: base64.b64encode(v.read()) if isinstance(v, FileProxyMixin) else marker
+        def files_exclude(v, k):
+            if isinstance(v, FileProxyMixin):
+                return "::file::"
+            return v
+
+        def files_keep(v, k):
+            if isinstance(v, FileProxyMixin):
+                return base64.b64encode(v.read())
+            return marker
 
         fields = {field_name: apply_nested(field, files_exclude) for field_name, field in data.items()}
         files = {field_name: apply_nested(field, files_keep) for field_name, field in data.items()}

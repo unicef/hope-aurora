@@ -15,6 +15,7 @@ from django.utils.functional import cached_property
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
 from natural_keys import NaturalKeyModel
+from strategy_field.fields import StrategyField
 from strategy_field.utils import fqn
 
 from aurora.core.crypto import Crypto, crypt, decrypt, decrypt_offline
@@ -25,13 +26,12 @@ from aurora.core.utils import (
     dict_setdefault,
     get_client_ip,
     get_registration_id,
-    jsonfy,
     safe_json,
-    total_size,
 )
 from aurora.i18n.models import I18NModel
 from aurora.registration.fields import ChoiceArrayField
 from aurora.registration.storage import router
+from aurora.registration.strategies import SaveToDB, strategies
 from aurora.state import state
 
 logger = logging.getLogger(__name__)
@@ -58,6 +58,7 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
     name = CICharField(max_length=255, unique=True)
     title = models.CharField(max_length=500, blank=True, null=True)
     slug = models.SlugField(max_length=500, blank=True, null=True, unique=True)
+    project = models.ForeignKey(Project, null=True, on_delete=models.SET_NULL)
 
     flex_form = models.ForeignKey(FlexForm, on_delete=models.PROTECT)
     start = models.DateField(default=timezone.now, editable=True)
@@ -69,6 +70,8 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
     locale = models.CharField(
         verbose_name="Default locale", max_length=10, choices=settings.LANGUAGES, default=settings.LANGUAGE_CODE
     )
+    dry_run = models.BooleanField(default=False)
+    handler = StrategyField(registry=strategies, default=None, blank=True, null=True)
     show_in_homepage = models.BooleanField(default=False)
     welcome_page = models.ForeignKey(FlatPage, blank=True, null=True, on_delete=models.SET_NULL)
     locales = ChoiceArrayField(models.CharField(max_length=10, choices=settings.LANGUAGES), blank=True, null=True)
@@ -106,7 +109,6 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
     )
     is_pwa_enabled = models.BooleanField(default=False)
     export_allowed = models.BooleanField(default=False)
-    project = models.ForeignKey(Project, null=True, on_delete=models.SET_NULL)
 
     class Meta:
         get_latest_by = "start"
@@ -159,43 +161,49 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
         return crypt(value, self.public_key)
 
     def add_record(self, fields_data):
-        fields, files = router.decompress(fields_data)
-        crypter = Crypto()
-        if self.public_key:
-            kwargs = {
-                # "storage": self.encrypt(fields_data),
-                "files": self.encrypt(files),
-                "fields": base64.b64encode(self.encrypt(fields)).decode(),
-            }
-        elif self.encrypt_data:
-            kwargs = {
-                # "storage": Crypto().encrypt(fields_data).encode(),
-                "files": crypter.encrypt(files).encode(),
-                "fields": crypter.encrypt(fields),
-            }
-        else:
-            kwargs = {
-                # "storage": safe_json(fields_data).encode(),
-                "files": safe_json(files).encode(),
-                "fields": jsonfy(fields),
-            }
-        if self.unique_field_path and not kwargs.get("unique_field", None):
-            unique_value = self.get_unique_value(fields)
-            kwargs["unique_field"] = unique_value
-        if state.request and state.request.user.is_authenticated:
-            registrar = state.request.user
-        else:
-            registrar = None
-        kwargs.update(
-            {
-                "registrar": registrar,
-                "size": total_size(fields) + total_size(files),
-                "counters": fields_data.get("counters", {}),
-                "index1": fields_data.get("index1", None),
-            }
-        )
+        if not self.handler:
+            return SaveToDB(self).save(fields_data)
+        return self.handler.save(fields_data)
 
-        return Record.objects.create(registration=self, **kwargs)
+    #
+    # def _add_record(self, fields_data):
+    #     fields, files = router.decompress(fields_data)
+    #     crypter = Crypto()
+    #     if self.public_key:
+    #         kwargs = {
+    #             # "storage": self.encrypt(fields_data),
+    #             "files": self.encrypt(files),
+    #             "fields": base64.b64encode(self.encrypt(fields)).decode(),
+    #         }
+    #     elif self.encrypt_data:
+    #         kwargs = {
+    #             # "storage": Crypto().encrypt(fields_data).encode(),
+    #             "files": crypter.encrypt(files).encode(),
+    #             "fields": crypter.encrypt(fields),
+    #         }
+    #     else:
+    #         kwargs = {
+    #             # "storage": safe_json(fields_data).encode(),
+    #             "files": safe_json(files).encode(),
+    #             "fields": jsonfy(fields),
+    #         }
+    #     if self.unique_field_path and not kwargs.get("unique_field", None):
+    #         unique_value = self.get_unique_value(fields)
+    #         kwargs["unique_field"] = unique_value
+    #     if state.request and state.request.user.is_authenticated:
+    #         registrar = state.request.user
+    #     else:
+    #         registrar = None
+    #     kwargs.update(
+    #         {
+    #             "registrar": registrar,
+    #             "size": total_size(fields) + total_size(files),
+    #             "counters": fields_data.get("counters", {}),
+    #             "index1": fields_data.get("index1", None),
+    #         }
+    #     )
+    #
+    #     return Record.objects.create(registration=self, **kwargs)
 
     def get_unique_value(self, cleaned_data):
         unique_value = None
@@ -321,8 +329,11 @@ class Record(models.Model):
             return self.decrypt(secret=None)
         else:
             files = {}
-            if self.files:
-                files = json.loads(self.files.tobytes().decode())
+            f = self.files
+            if f:
+                if not isinstance(f, bytes):
+                    f = self.files.tobytes()
+                files = json.loads(f.decode())
             return merge(files, self.fields or {})
 
 

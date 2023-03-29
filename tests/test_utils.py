@@ -8,6 +8,7 @@ from aurora.core.utils import (
     merge_data,
     namify,
     underscore_to_camelcase,
+    apply_nested,
 )
 from aurora.registration.storage import Router
 
@@ -73,3 +74,10 @@ def test_merge():
     d1 = {"a": "1", "b": 2, "d": [{"bb": 3}]}
     d2 = {"c": [1], "d": [{"aa": 2}], "aa": {"vv": 1}}
     assert merge_data(d1, d2) == {"a": "1", "b": 2, "c": [1], "d": [{"aa": 2, "bb": 3}], "aa": {"vv": 1}}
+
+
+@pytest.mark.parametrize(
+    "value,expected", [({"languages": ["1"], "name": "eeeeee"}, {"languages": ["1"], "name": "eeeeee"})]
+)
+def test_apply_nested(value, expected):
+    assert apply_nested(value) == expected

@@ -3,6 +3,7 @@ import logging
 from django.contrib.admin import register
 from django.core.cache import caches
 from mptt.admin import MPTTModelAdmin
+from smart_admin.mixins import LinkedObjectsMixin
 
 from ..admin_sync import SyncMixin
 from ..models import Organization
@@ -14,7 +15,7 @@ cache = caches["default"]
 
 
 @register(Organization)
-class OrganizationAdmin(SyncMixin, MPTTModelAdmin):
+class OrganizationAdmin(SyncMixin, LinkedObjectsMixin, MPTTModelAdmin):
     list_display = ("name",)
     mptt_level_indent = 20
     mptt_indent_field = "name"
