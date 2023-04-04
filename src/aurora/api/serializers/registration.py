@@ -13,7 +13,7 @@ class RegistrationDetailSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Registration
-        exclude = ("public_key",)
+        exclude = ("public_key", "handler")
 
     def get_default_field_names(self, declared_fields, model_info):
         return (

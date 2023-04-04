@@ -109,6 +109,7 @@ stages:
                             -LANGUAGE_CODE $(LANGUAGE_CODE)
                             -USE_X_FORWARDED_HOST $(USE_X_FORWARDED_HOST)
                             -LANGUAGE_CODE $(LANGUAGE_CODE)
+                            -AZURE_CLIENT_ID $(KEY_VALUT_AZURE_CLIENT_ID)
                             -AZURE_CLIENT_KEY $(KEY_VALUT_AZURE_CLIENT_ID)
                             -AZURE_CLIENT_SECRET $(KEY_VALUT_AZURE_CLIENT_SECRET)
                             -AZURE_TENANT_ID $(KEY_VALUT_AZURE_TENANT_KEY)"

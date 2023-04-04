@@ -1,10 +1,10 @@
 {% load aurora formset l10n static itrans http2 %}
 <div id="formContainer" class="min-h-screen flex justify-center bg-gray-100 pb-10 hidden">
     <div class="w-full lg:w-1/2 mt-5">
-        {% if invalid %}
+{#        {% if invalid %}#}
             <div data-msgid="please fix the errors below"
-                    class="itrans mb-10 w-full text-capitalize m-auto text-center alert-message text-xl border rounded">
-                {% trans "please fix the errors below" %}
+                    class="itrans mb-10 w-full text-capitalize m-auto text-center alert-message text-xl">
+                {% if invalid %}{% trans "please fix the errors below" %}{% endif %}
             </div>
             <ul class="block errorlist">{% for e in errors %}
                 {% for msg in e %}
@@ -12,7 +12,7 @@
                 {% endfor %}
             {% endfor %}
             </ul>
-        {% endif %}
+{#        {% endif %}#}
         <div class="edit-module" data-module="{{ registration.pk }}" data-validator="{{ registration.validator }}"></div>
         {% if can_edit_inpage %}
             {% include "registration/_staff_edit_module.html" %}

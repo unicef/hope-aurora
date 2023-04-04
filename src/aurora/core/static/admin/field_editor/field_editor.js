@@ -1,6 +1,5 @@
 (function ($) {
     $(document).ready(function () {
-
         var $me = $("#field_editor_script");
         var refreshUrl = $me.data("url");
         var $iFrame1 = $('#widget_display');
@@ -68,7 +67,7 @@
                 })
             }
         });
-        $("#event_selector").on("change", function (){
+        $("#event_selector").on("change", function () {
             let sel = $(this).val();
             $('#events .code').removeClass('selected');
             $(`#event_${sel}`).addClass('selected').find('textarea.js-editor').each(function (i, e) {

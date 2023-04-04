@@ -1,6 +1,6 @@
-worker_processes 1;
+worker_processes auto;
 events {
-  worker_connections 512;
+  #worker_connections 512;
 }
 daemon on;
 error_log /dev/stdout;
@@ -63,20 +63,40 @@ http {
         large_client_header_buffers 4 16k;
         access_log /dev/stdout;
         listen 80;
-        proxy_cache one;
+        proxy_no_cache 1;
+        proxy_cache_bypass 1;
+        proxy_cache off;
+
         error_page 502 503 504 /50x.html;
-        add_header X-Aurora-Version "${AURORA_VERSION}";
-        add_header X-Aurora-Build "${AURORA_BUILD}";
-        add_header X-Aurora-Time "${DOLLAR}date_gmt";
+        error_page 404 /404.html;
+        add_header X-Aurora-Version "${AURORA_VERSION}" always;
+        add_header X-Aurora-Build "${AURORA_BUILD}" always;
+        add_header X-Aurora-Time "${DOLLAR}date_gmt" always;
+
+        location /404.html {
+            root /var/nginx/;
+            ssi on;
+            set ${DOLLAR}version "${AURORA_VERSION}";
+            set ${DOLLAR}build "${AURORA_BUILD}";
+
+            add_header X-Aurora-Version "${AURORA_VERSION}" always;
+            add_header X-Aurora-Build "${AURORA_BUILD}" always;
+            add_header X-Aurora-Time "${DOLLAR}date_gmt" always;
+            internal;
+            auth_basic off;
+        }
 
         location /50x.html {
+            root /var/nginx/;
             ssi on;
+            set ${DOLLAR}version "${AURORA_VERSION}";
+            set ${DOLLAR}build "${AURORA_BUILD}";
+
             add_header X-Aurora-Version "${AURORA_VERSION}";
             add_header X-Aurora-Build "${AURORA_BUILD}";
             add_header X-Aurora-Time "${DOLLAR}date_gmt";
             internal;
             auth_basic off;
-            root /var/nginx/;
         }
         location /error/502  {
             add_header X-Aurora-Version "${AURORA_VERSION}";
@@ -97,7 +117,7 @@ http {
             return 504;
         }
         location /favicon.ico {
-            alias ${STATIC_URL}favicon/favicon.ico;
+            alias ${STATIC_ROOT}/static/favicon/favicon.ico;
             etag off;
             if_modified_since off;
             add_header Cache-Control "public, no-transform, immutable";
@@ -120,20 +140,24 @@ http {
             gzip_disable "MSIE [1-6]\.";
             gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml;
          }
-          location ${STATIC_URL} {
+
+         location ${STATIC_URL} {
             root ${STATIC_ROOT};
             autoindex off;
-            etag off;
-            if_modified_since off;
-            add_header Cache-Control "public, no-transform, immutable";
             add_header X-Aurora-Version "${AURORA_VERSION}";
             add_header X-Aurora-Build "${AURORA_BUILD}";
             add_header X-Aurora-Time "${DOLLAR}date_gmt";
 
-            expires 1y;
-            gzip on;
-            gzip_disable "MSIE [1-6]\.";
-            gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml;
+            expires max;
+            gzip_static on;
+            add_header Cache-Control public;
+
+            etag on;
+            #if_modified_since off;
+            #add_header Cache-Control "public, no-transform, immutable";
+            #gzip on;
+            #gzip_disable "MSIE [1-6]\.";
+            #gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml;
          }
 
         location / {

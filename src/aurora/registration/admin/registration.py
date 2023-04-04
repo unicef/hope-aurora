@@ -2,6 +2,7 @@ import csv
 import io
 import json
 import logging
+from django.utils.module_loading import import_string
 from hashlib import md5
 
 from admin_extra_buttons.decorators import button, choice, view
@@ -25,8 +26,8 @@ from jsoneditor.forms import JSONEditor
 from smart_admin.modeladmin import SmartModelAdmin
 
 from aurora.core.admin.base import ConcurrencyVersionAdmin
-from aurora.core.forms import CSVOptionsForm, DateFormatsForm
-from aurora.core.models import FormSet
+from aurora.core.forms import CSVOptionsForm, DateFormatsForm, VersionMedia
+from aurora.core.models import FormSet, Validator, FlexForm, FlexFormField
 from aurora.core.utils import (
     build_dict,
     build_form_fake_data,
@@ -35,11 +36,13 @@ from aurora.core.utils import (
     is_root,
     namify,
 )
-from aurora.i18n.forms import TemplateForm
+from aurora.i18n.forms import TemplateForm, TranslationForm
+from aurora.i18n.translate import Translator
 from aurora.registration.admin.filters import (
     OrganizationFilter,
     RegistrationProjectFilter,
 )
+from aurora.registration.admin.forms import DebugForm
 from aurora.registration.admin.protocol import AuroraSyncRegistrationProtocol
 from aurora.registration.forms import (
     CloneForm,
@@ -128,10 +131,16 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
     def media(self):
         extra = "" if settings.DEBUG else ".min"
         base = super().media
-        return base + forms.Media(
-            js=[
-                "/static/clipboard%s.js" % extra,
-            ]
+        return (
+            VersionMedia(
+                js=[
+                    "admin/js/vendor/jquery/jquery%s.js" % extra,
+                    "admin/js/jquery.init%s.js" % extra,
+                    "jquery.compat%s.js" % extra,
+                    "clipboard%s.js" % extra,
+                ]
+            )
+            + base
         )
 
     @view(permission=can_export_data)
@@ -162,7 +171,8 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
                     )
                     if qs.count() >= 5000:
                         raise Exception("Too many records please change your filters. (max 5000)")
-                    records = [build_dict(r, **fmt_form.cleaned_data) for r in qs]
+                    valid = fmt_form.cleaned_data
+                    records = [build_dict(r, **valid) for r in qs]
                     if not records:
                         raise Exception("No records matching filtering criteria")
                     skipped = []
@@ -201,6 +211,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
                         ctx["skipped"] = skipped
                         ctx["qs"] = records[:10]
             except Exception as e:
+                logger.exception(e)
                 self.message_error_to_user(request, e)
         else:
             form = RegistrationExportForm(initial={"include": ".*"})
@@ -278,8 +289,34 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
             self.create_translation,
             self.prepare_translation,
             self.create_custom_template,
+            self.debug,
         ]
         return button
+
+    @view()
+    def debug(self, request, pk):
+        ctx = self.get_common_context(request, pk)
+        if request.method == "POST":
+            form = DebugForm(request.POST)
+            if form.is_valid():
+                target = form.cleaned_data["search"]
+                v = Validator.objects.filter(code__icontains=target).defer("code")
+                fss = FormSet.objects.filter(advanced__icontains=target).defer("advanced")
+                frms = FlexForm.objects.filter(advanced__icontains=target).defer("advanced")
+                flds = FlexFormField.objects.filter(advanced__icontains=target).defer("advanced")
+                ctx["results"] = {
+                    "validators": [(str(e), e.get_admin_change_url()) for e in v],
+                    "forms": [(str(e), e.get_admin_change_url()) for e in frms],
+                    "fields": [(str(e), e.get_admin_change_url()) for e in flds],
+                    "formsets": [(str(e), e.get_admin_change_url()) for e in fss],
+                }
+            else:
+                pass
+        else:
+            form = DebugForm()
+
+        ctx["form"] = form
+        return render(request, "admin/registration/registration/debug.html", ctx)
 
     @view()
     def inspect(self, request, pk):
@@ -396,8 +433,6 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
 
     @view()
     def prepare_translation(self, request, pk):
-        from aurora.i18n.forms import LanguageForm
-
         ctx = self.get_common_context(
             request,
             pk,
@@ -407,12 +442,13 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
         instance: Registration = ctx["original"]
         if request.method == "POST":
             if "create" in request.POST:
-                form = LanguageForm(request.POST)
+                form = TranslationForm(request.POST)
                 if form.is_valid():
                     key = f"i18n_{request.user.pk}_{md5(request.session.session_key.encode()).hexdigest()}"
                     con = get_redis_connection("default")
                     con.delete(key)
                     locale = form.cleaned_data["locale"]
+                    translate = form.cleaned_data["translate"]
                     if locale not in instance.locales:
                         self.message_user(request, "Language not enabled for this registration", messages.ERROR)
                         return HttpResponseRedirect(".")
@@ -423,7 +459,15 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
 
                     entries = list(Message.objects.filter(locale=locale).values_list("msgid", "msgstr"))
                     data = dict(entries)
-                    ctx["collected"] = {c: data.get(c, "") for c in collected}
+                    if translate == "2":
+                        t: Translator = import_string(settings.TRANSLATOR_SERVICE)()
+                        func = lambda x: t.translate(locale, x)
+                    elif translate == "1":
+                        t: Translator = import_string(settings.TRANSLATOR_SERVICE)()
+                        func = lambda x: x if data.get(x, "") == x else t.translate(locale, x)
+                    else:
+                        func = lambda x: data.get(x, "")
+                    ctx["collected"] = {c: func(c) for c in collected}
                     ctx["language_code"] = locale
             elif "export" in request.POST:
                 selection = request.POST.getlist("selection")
@@ -441,7 +485,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
                 # for i, row in enumerate(data["messages"], 1):
 
         else:
-            form = LanguageForm()
+            form = TranslationForm()
             ctx["form"] = form
 
         return render(request, "admin/registration/registration/translation.html", ctx)

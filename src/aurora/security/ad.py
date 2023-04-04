@@ -78,8 +78,8 @@ class ADUSerMixin:
 
     def _sync_ad_data(self, user) -> None:
         ms_graph = MicrosoftGraphAPI()
-        if user.ad_uuid:
-            filters = [{"uuid": user.ad_uuid}, {"email": user.email}]
+        if user.profile and user.profile.ad_uuid:
+            filters = [{"uuid": user.profile.ad_uuid}, {"email": user.email}]
         else:
             filters = [{"email": user.email}]
 

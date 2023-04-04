@@ -41,9 +41,8 @@ if __name__ == "__main__":
     while True:
         seed = rnd()
         for url in urls:
-            ret = requests.get(f"{url}?{seed}")
+            ret = requests.get(f"{url}?{seed}", headers={"User-Agent": "Exorcist/1.0 "})
             ver = ret.headers.get("X-Aurora-Version", "N/A")
-            ref = ret.headers.get("X-Azure-Ref", "N/A")
             if lastest_version is not None:
                 if ver != lastest_version:
                     marker = COLORS.WARNING
@@ -56,9 +55,8 @@ if __name__ == "__main__":
                     f"{ver:<7} - "
                     f"{ret.headers.get('X-Aurora-Build', 'N/A'):<16} - "
                     f"{ret.headers.get('X-Aurora-Time', 'N/A')} - "
-                    f"{ret.headers.get('X-Azure-Ref', 'N/A')[:20]}{COLORS.RESET}"
+                    f"{ret.headers.get('ETag', 'N/A')[:20]}{COLORS.RESET}"
                 )
-            latest_ref[url] = ref
             lastest_version = latest_ver[url] = ver
         if len(urls) > 1:
             print("=====")

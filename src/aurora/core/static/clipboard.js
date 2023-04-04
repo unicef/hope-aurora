@@ -26,4 +26,4 @@
             $(this).html("Copied");
         })
     });
-})($);
+})(django.jQuery);

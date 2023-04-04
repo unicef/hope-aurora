@@ -2,6 +2,8 @@ from django import forms
 from django.conf import settings
 from django.forms import widgets
 
+from aurora.core.version_media import VersionMedia
+
 
 class CompilationTimeWidget(forms.MultiWidget):
     def __init__(self, attrs=None):
@@ -25,8 +27,11 @@ class CompilationTimeWidget(forms.MultiWidget):
     def media(self):
         extra = "" if settings.DEBUG else ".min"
         base = super().media
-        return base + forms.Media(
+        return base + VersionMedia(
             js=[
+                "admin/js/vendor/jquery/jquery%s.js" % extra,
+                "admin/js/jquery.init%s.js" % extra,
+                "jquery.compat%s.js" % extra,
                 "elapsed%s.js" % extra,
             ],
         )

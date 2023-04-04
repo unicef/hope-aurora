@@ -4,7 +4,20 @@ from django.utils.translation import gettext as _
 
 
 class LanguageForm(forms.Form):
-    locale = forms.ChoiceField(choices=settings.LANGUAGES)
+    locale = forms.ChoiceField(choices=settings.LANGUAGES, help_text="select destination language ")
+
+
+class TranslationForm(LanguageForm):
+    CHOICES = [
+        ("0", "No"),
+        ("1", "Only Missing"),
+        ("2", "All"),
+    ]
+    translate = forms.ChoiceField(
+        widget=forms.RadioSelect,
+        choices=CHOICES,
+        help_text="automatically create initial translations using online services",
+    )
 
 
 class ImportForm(forms.Form):

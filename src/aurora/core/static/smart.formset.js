@@ -3,6 +3,9 @@ var configureFormsets = function (configs) {
         var config = {};
         $.extend(true, config, DEFAULT, c);
         var $target = $("." + config.formCssClass);
+        if (!$target){
+            throw Error(configs)
+        }
         config.initialized = function ($$) {
             if ($$.options.showCounter) {
                 updateCounter($$, null);

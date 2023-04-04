@@ -66,11 +66,12 @@ django-mdeditor = "^0.1.20"
 djangorestframework-datatables = "^0.7.0"
 django-filter = "^22.1"
 django-front-door = "^0.10.0"
+django-debug-toolbar = "^3"
+pygments = "^2.14.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
 coverage = "*"
-django-debug-toolbar = "^3"
 django-webtest = "^1.9.7"
 factory_boy = "*"
 flake8 = "*"

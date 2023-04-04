@@ -566,6 +566,11 @@ CSRF_FAILURE_VIEW = "aurora.web.views.site.error_csrf"
 AUTH_USER_MODEL = "auth.User"
 # AUTH_USER_MODEL = "security.AuroraUser"
 
+# Graph API
+AZURE_GRAPH_API_BASE_URL = "https://graph.microsoft.com"
+AZURE_GRAPH_API_VERSION = "v1.0"
+AZURE_TOKEN_URL = "https://login.microsoftonline.com/unicef.org/oauth2/token"
+
 # Social Auth settings.
 SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_SECRET = env.str("AZURE_CLIENT_SECRET")
 SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_TENANT_ID = env("AZURE_TENANT_ID")
@@ -605,7 +610,6 @@ SOCIAL_AUTH_AZUREAD_B2C_OAUTH2_SCOPE = [
     "email",
     "profile",
 ]
-
 
 SOCIAL_AUTH_SANITIZE_REDIRECTS = True
 SOCIAL_AUTH_JWT_LEEWAY = env.int("JWT_LEEWAY", 0)
@@ -797,7 +801,6 @@ REST_FRAMEWORK = {
     ],
 }
 
-
 FRONT_DOOR_CONFIG = "front_door.conf.DjangoConstance"
 FRONT_DOOR_ENABLED = env("FRONT_DOOR_ENABLED")
 FRONT_DOOR_ALLOWED_PATHS = env("FRONT_DOOR_ALLOWED_PATHS")
@@ -818,3 +821,10 @@ FRONT_DOOR_RULES = [
     "front_door.rules.cookie_value",  # grant access if request.COOKIES[COOKIE_NAME]
     # "front_door.rules.cookie_exists",  # grant access ir COOKIE_NAME in request.COOKIES
 ]
+
+TRANSLATOR_SERVICE = env("TRANSLATOR_SERVICE")
+AZURE_TRANSLATOR_KEY = env("AZURE_TRANSLATOR_KEY")
+AZURE_TRANSLATOR_LOCATION = env("AZURE_TRANSLATOR_LOCATION")
+
+AZURE_CLIENT_ID = env("AZURE_CLIENT_ID")
+AZURE_CLIENT_SECRET = env("AZURE_CLIENT_SECRET")

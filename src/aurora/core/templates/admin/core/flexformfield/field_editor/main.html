@@ -1,10 +1,12 @@
 {% extends "admin_extra_buttons/action_page.html" %}{% load static itrans aurora field_editor %}
 {% block extrahead %}
-    <link rel="stylesheet" href="{% static "admin/field_editor/field_editor.css" %}">
-    <script src="/static/admin/js/vendor/jquery/jquery.js"></script>
-    <script src="/static/admin/js/jquery.init.js"></script>
-    <script src="{% static "smart_field.js" %}"></script>
-    {{ forms_media }}
+<link rel="stylesheet" href="{% static "admin/field_editor/field_editor.css" %}">
+{#    <script src="/static/admin/js/vendor/jquery/jquery.js"></script>#}
+{#    <script src="/static/admin/js/jquery.init.js"></script>#}
+{#    <script>window.jQuery = window.$ = django.jQuery;</script>#}
+{#    <script>console.log(  111111, jQuery)</script>#}
+{#    <script src="{% static "smart_field.js" %}"></script>#}
+{{ media }}
 {% endblock %}
 {% block object-tools %}{% endblock %}
 {% block content_title %}<h1>Field: {{ original.name }}</h1>{% endblock %}
@@ -124,9 +126,8 @@
                 </div>
             </div>
         </div>
+        <pre id="debugLog" style="width: 100%; border: 1px solid grey"></pre>
     </form>
     <script id="field_editor_script" src="{% static "admin/field_editor/field_editor.min.js" %}"
-            data-url="{% url "admin:core_flexformfield_widget_refresh" original.pk %}">
-
-
+            data-url="{% url "admin:core_flexformfield_widget_refresh" original.pk %}"></script>
 {% endblock action-content %}

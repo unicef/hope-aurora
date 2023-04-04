@@ -1,8 +1,8 @@
 from django import forms
 from django.conf import settings
 
-from ...utils import get_versioned_static_name
 from .mixins import TailWindMixin
+from ...version_media import VersionMedia
 
 
 class SmartDateWidget(TailWindMixin, forms.DateInput):
@@ -24,11 +24,13 @@ class SmartDateWidget(TailWindMixin, forms.DateInput):
     def media(self):
         extra = "" if settings.DEBUG else ".min"
         base = super().media
-        return base + forms.Media(
+        return base + VersionMedia(
             js=[
+                "admin/js/vendor/jquery/jquery%s.js" % extra,
+                "admin/js/jquery.init%s.js" % extra,
+                "jquery.compat%s.js" % extra,
                 "datetimepicker/datepicker%s.js" % extra,
-                # "https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js",
                 "datetimepicker/dt%s.js" % extra,
             ],
-            css={"all": [get_versioned_static_name("datetimepicker/datepicker.css")]},
+            css={"all": ["datetimepicker/datepicker.css"]},
         )

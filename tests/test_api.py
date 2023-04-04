@@ -120,3 +120,22 @@ def test_version(django_app, registration, admin_user):
     assert data["protected"] == registration.protected
     assert data["session_id"]
     assert data["auth"]
+
+
+@pytest.mark.django_db
+def test_version_lang(django_app, registration, admin_user):
+    # do not use reverse because url is hardcoded in survey.js
+    api_url = "/api/registration/%s/en-us/version/" % registration.pk
+
+    res = django_app.get(api_url)
+    data = res.json
+    assert data["version"] == registration.version
+    assert not data["auth"]
+
+    res = django_app.get(api_url, user=admin_user)
+    data = res.json
+    assert data["version"] == registration.version
+    assert data["active"] == registration.active
+    assert data["protected"] == registration.protected
+    assert data["session_id"]
+    assert data["auth"]

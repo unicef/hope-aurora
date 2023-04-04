@@ -7,14 +7,14 @@
 <link href="https://unpkg.com/tailwindcss@1.9.6/dist/tailwind.min.css" rel="stylesheet">
 <link rel="stylesheet" href="{% static "base.css" %}">
 <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
-<script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>
-<script src="{% static "admin/js/jquery.init.js" %}"></script>
-<script src="{% static "smart_validation.js" %}"></script>
-<script src="{% static "smart.js" %}"></script>
-<script src="{% static "smart_field.js" %}"></script>
-
-<script>jQuery = $ = django.jQuery;</script>
+{#<script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>#}
+{#<script src="{% static "admin/js/jquery.init.js" %}"></script>#}
+{#<script src="{% static "jquery.compat.js" %}"></script>#}
+{#<script src="{% static "smart_validation.js" %}"></script>#}
+{#<script src="{% static "smart.js" %}"></script>#}
+{#<script src="{% static "smart_field.js" %}"></script>#}
 {{ form.media }}
+
 {% if request.method == "POST" %}
     {% if valid %}
         <div class="mb-10 w-full text-capitalize m-auto text-center text-xl border rounded">Success</div>

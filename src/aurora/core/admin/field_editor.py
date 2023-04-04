@@ -1,15 +1,16 @@
 import json
+from django.conf import settings
 from typing import Dict
 
 from django import forms
 from django.core.cache import caches
-from django.forms import Media
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.template import Context, Template
 from django.utils.functional import cached_property
 
 from aurora.core.fields.widgets import JavascriptEditor
+from aurora.core.forms import VersionMedia, FlexFormBaseForm
 from aurora.core.models import FlexFormField, OptionSet
 from aurora.core.utils import merge_data
 
@@ -181,7 +182,7 @@ class FieldEditor:
         form_class_attrs = {
             self.field.name: instance,
         }
-        form_class = type(forms.Form)("TestForm", (forms.Form,), form_class_attrs)
+        form_class = type(FlexFormBaseForm)("TestForm", (FlexFormBaseForm,), form_class_attrs)
         ctx = self.get_context(self.request)
         if self.request.method == "POST":
             form = form_class(self.request.POST)
@@ -228,10 +229,20 @@ class FieldEditor:
 
     def get(self, request, pk):
         ctx = self.get_context(request, pk)
-        ctx["forms_media"] = Media()
+        extra = "" if settings.DEBUG else ".min"
+        ctx["media"] = VersionMedia(
+            js=[
+                "admin/js/vendor/jquery/jquery%s.js" % extra,
+                "admin/js/jquery.init%s.js" % extra,
+                "jquery.compat%s.js" % extra,
+                "smart_validation%s.js" % extra,
+                "smart%s.js" % extra,
+                "smart_field%s.js" % extra,
+            ]
+        )
         for prefix, frm in self.get_forms().items():
             ctx[f"form_{prefix}"] = frm
-            ctx["forms_media"] += frm.media
+            ctx["media"] += frm.media
         return render(request, "admin/core/flexformfield/field_editor/main.html", ctx)
 
     def post(self, request, pk):

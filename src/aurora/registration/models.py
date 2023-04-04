@@ -5,12 +5,11 @@ import logging
 import jmespath
 from concurrency.fields import AutoIncVersionField
 from Crypto.PublicKey import RSA
-from django import forms
 from django.conf import settings
 from django.contrib.flatpages.models import FlatPage
 from django.contrib.postgres.fields import CICharField
 from django.db import models
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.utils.functional import cached_property
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
@@ -20,6 +19,7 @@ from strategy_field.utils import fqn
 
 from aurora.core.crypto import Crypto, crypt, decrypt, decrypt_offline
 from aurora.core.fields import AjaxSelectField, LabelOnlyField
+from aurora.core.forms import VersionMedia
 from aurora.core.models import FlexForm, FlexFormField, Project, Validator
 from aurora.core.utils import (
     cache_aware_reverse,
@@ -123,12 +123,16 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
 
     @property
     def media(self):
-        return forms.Media(js=[script.get_script_url() for script in self.scripts.all()])
+        return VersionMedia(js=[script.get_script_url() for script in self.scripts.all()])
 
     def __str__(self):
         return self.name
 
     def get_absolute_url(self):
+        return cache_aware_reverse("register", args=[self.slug, self.version])
+
+    def get_i18n_url(self, lang=None):
+        translation.activate(language=lang or self.locale)
         return cache_aware_reverse("register", args=[self.slug, self.version])
 
     def get_welcome_url(self):
@@ -235,6 +239,13 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
 
     @cached_property
     def metadata(self):
+        script: Validator
+
+        def _get_validator(owner):
+            if owner.validator:
+                return {}
+            return {}
+
         def _get_field_details(flex_field: FlexFormField):
             kwargs = flex_field.get_field_kwargs()
             return {
@@ -244,6 +255,7 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
                 "smart_attrs": kwargs["smart_attrs"],
                 "widget_kwargs": kwargs["widget_kwargs"],
                 "choices": kwargs.get("choices"),
+                "validator": _get_validator(flex_field),
             }
 
         def _process_form(frm):
@@ -253,13 +265,22 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
                 if field.field_type not in [LabelOnlyField]
             }
 
-        metadata = {"base": {"fields": _process_form(self.flex_form)}}
+        metadata = {
+            "base": {"fields": _process_form(self.flex_form)},
+            "scripts": [],
+            "validator": _get_validator(self.flex_form),
+        }
         for name, fs in self.flex_form.get_formsets({}).items():
             metadata[name] = {
                 "fields": _process_form(fs.form.flex_form),
                 "min_num": fs.min_num,
                 "max_num": fs.max_num,
+                "validator": _get_validator(fs.form.flex_form),
             }
+
+        for script in self.scripts.all():
+            url = state.request.build_absolute_uri(script.get_script_url())
+            metadata["scripts"].append({"name": script.name, "url": url})
 
         return metadata
 

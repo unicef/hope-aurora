@@ -23,7 +23,10 @@ if ($ === undefined) {
         $("[data-visibility=hidden]").parents(".field-container").hide();
 
         $("[data-trigger=change]").each(function (i, e) {
-            $(e).trigger("change");
+            try{
+                $(e).trigger("change");
+            }catch (e){
+            }
         });
 
         $(".errorlist").each(function (i, e) {

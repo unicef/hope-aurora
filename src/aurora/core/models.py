@@ -3,6 +3,8 @@ import logging
 import re
 from datetime import date, datetime, time
 from json import JSONDecodeError
+
+from django.contrib.admin.templatetags.admin_urls import admin_urlname
 from pathlib import Path
 
 import jsonpickle
@@ -44,12 +46,20 @@ logger = logging.getLogger(__name__)
 cache = caches["default"]
 
 
+class AdminReverseMixin:
+    def get_admin_change_url(self):
+        return reverse(admin_urlname(self._meta, "change"), args=[self.pk])
+
+    def get_admin_changelist_url(self):
+        return reverse(admin_urlname(self._meta, "changelist"))
+
+
 class OrganizationManager(TreeManager):
     def get_by_natural_key(self, slug):
         return self.get(slug=slug)
 
 
-class Organization(MPTTModel):
+class Organization(AdminReverseMixin, MPTTModel):
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
 
@@ -79,7 +89,7 @@ class ProjectManager(TreeManager):
         return self.get(slug=slug, organization__slug=org_slug)
 
 
-class Project(MPTTModel):
+class Project(AdminReverseMixin, MPTTModel):
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
 
@@ -108,7 +118,7 @@ class Project(MPTTModel):
         super().save(*args, **kwargs)
 
 
-class Validator(NaturalKeyModel):
+class Validator(AdminReverseMixin, NaturalKeyModel):
     STATUS_ERROR = "error"
     STATUS_EXCEPTION = "exc"
     STATUS_SUCCESS = "success"
@@ -209,7 +219,7 @@ _.is_adult = function(d) { return !_.is_child(d)};
     def validate(self, value, registration=None):
         from py_mini_racer import MiniRacer
 
-        set_tag("Validator", self.name)
+        set_tag("validator", self.name)
 
         if self.active:
             self.monitor(self.STATUS_UNKNOWN, value)
@@ -223,6 +233,7 @@ _.is_adult = function(d) { return !_.is_child(d)};
                 base = f"{self.CONSOLE};{self.LIB}; var value = {pickled};"
 
                 ctx.eval(base)
+
                 result = ctx.eval(self.code)
 
                 if result is None:
@@ -289,7 +300,7 @@ def get_validators(field):
     return []
 
 
-class FlexForm(I18NModel, NaturalKeyModel):
+class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
     project = models.ForeignKey(Project, null=True, on_delete=models.CASCADE)
@@ -421,7 +432,7 @@ class FlexForm(I18NModel, NaturalKeyModel):
         return ret
 
 
-class FormSet(NaturalKeyModel, OrderableModel):
+class FormSet(AdminReverseMixin, NaturalKeyModel, OrderableModel):
     FORMSET_DEFAULT_ATTRS = {
         "smart": {
             "title": {
@@ -524,7 +535,7 @@ class RegexPatternValidator:
             raise ValidationError(e)
 
 
-class FlexFormField(NaturalKeyModel, I18NModel, OrderableModel):
+class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableModel):
     I18N_FIELDS = [
         "label",
     ]
@@ -737,7 +748,7 @@ class OptionSetManager(NaturalKeyModelManager):
         return value
 
 
-class OptionSet(NaturalKeyModel, models.Model):
+class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
     name = CICharField(max_length=100, unique=True, validators=[RegexValidator("[a-z0-9-_]")])
@@ -833,7 +844,7 @@ def clean_choices(value):
         return list(zip(map(str.lower, value), value))
 
 
-class CustomFieldType(NaturalKeyModel, models.Model):
+class CustomFieldType(AdminReverseMixin, NaturalKeyModel, models.Model):
     name = CICharField(max_length=100, unique=True, validators=[RegexValidator("[A-Z][a-zA-Z0-9_]*")])
     base_type = StrategyClassField(registry=field_registry, default=forms.CharField)
     attrs = models.JSONField(default=dict)

@@ -27,11 +27,9 @@
                       class="required-label hidden itrans lowercase font-thin required text-xs">({% trans "required" %})</span>
 {#            {% endif %}#}
         </label>
-        {% if ADV.smart.description %}
         <div class="itrans text-sm description" data-msgid="{{ ADV.smart.description }}">
-            {% trans ADV.smart.description %}
+        {% if ADV.smart.description %}{% trans ADV.smart.description %}{% endif %}
         </div>
-        {% endif %}
 {#        -- {{ field.field.flex_field.advanced.events.validation }} --#}
 
         <span class="errors">{{ field.errors }}</span>

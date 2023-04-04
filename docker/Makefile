@@ -94,6 +94,7 @@ dev:
 			-e DJANGO_SETTINGS_MODULE="aurora.config.settings" \
 			-e SENTRY_DSN="${SENTRY_DSN}" \
 			-e REDIS_CONNSTR="192.168.66.66" \
+			-e VERSION="${VERSION}" \
 			-v ${PWD}/conf/:/conf/ \
 			-v ${PWD}/bin/entrypoint.sh:/usr/local/bin/entrypoint.sh \
 			-v ${PWD}/conf/nginx:/var/nginx/ \

@@ -1,4 +1,4 @@
-FROM python:3.9.2-slim-buster
+FROM python:3.9.16-slim-bullseye
 ARG BUILD_DATE
 ARG VERSION
 
@@ -8,7 +8,6 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
                 build-essential \
                 locales \
-                circus \
                 nginx \
                 locales-all \
                 gettext \
@@ -17,8 +16,8 @@ RUN apt-get update \
                 git-core \
                 postgresql-client \
                 libpq-dev \
-                python-psycopg2 \
-                python-gdal \
+                python3-psycopg2 \
+                python3-gdal \
                 redis-server \
                 gdal-bin \
                 curl \
@@ -57,7 +56,7 @@ ADD poetry.lock pyproject.toml /code/
 
 RUN poetry config virtualenvs.create false \
     && mkdir -p /var/nginx/system \
-    && poetry install --no-interaction --no-ansi --no-root \
+    && poetry install --no-interaction --no-ansi --no-root --without dev \
     && pip install uwsgi
 
 ADD . /code/

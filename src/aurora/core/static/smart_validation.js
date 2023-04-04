@@ -3,10 +3,21 @@ dateutil = {
     today: TODAY,
     years18: new Date(new Date().setDate(TODAY.getDate() - (365 * 18))),
     years2: new Date(new Date().setDate(TODAY.getDate() - (365 * 2))),
-    getAge: function (birthDate) {
-        return Math.floor((new Date() - new Date(birthDate).getTime()) / 3.15576e+10);
+    getAge(date2, date1) {
+        // use today's date if ageAtDate is not provided
+        if (typeof date1 == "undefined")
+            date1 = new Date();
+        let years = new Date(date1).getFullYear() - new Date(date2).getFullYear();
+        let month = new Date(date1).getMonth() - new Date(date2).getMonth();
+        let dateDiff = new Date(date1).getDay() - new Date(date2).getDay();
+        if (dateDiff < 0) {
+            month -= 1;
+        }
+        if (month < 0) {
+            years -= 1;
+        }
+        return years;
     }
-
 };
 _ = {
     is_child: function (d) {

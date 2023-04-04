@@ -5,11 +5,11 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.forms import BaseFormSet
-from django.templatetags.static import static
 from django.utils import formats
 from django.utils.translation import gettext as _
 
 from .fields.widgets import JavascriptEditor
+from .version_media import VersionMedia
 
 
 class ValidatorForm(forms.ModelForm):
@@ -41,11 +41,18 @@ class FlexFormBaseForm(forms.Form):
     def media(self):
         extra = "" if settings.DEBUG else ".min"
         base = super().media
-        return base + forms.Media(
-            js=[
-                static("smart_validation%s.js" % extra),
-                static("smart%s.js" % extra),
-            ]
+        return (
+            VersionMedia(
+                js=[
+                    "admin/js/vendor/jquery/jquery%s.js" % extra,
+                    "admin/js/jquery.init%s.js" % extra,
+                    "jquery.compat%s.js" % extra,
+                    "smart_validation%s.js" % extra,
+                    "smart%s.js" % extra,
+                    "smart_field%s.js" % extra,
+                ]
+            )
+            + base
         )
 
     def get_storage_mapping(self):
@@ -92,11 +99,17 @@ class SmartBaseFormSet(BaseFormSet):
     def media(self):
         extra = "" if settings.DEBUG else ".min"
         base = super().media
-        return base + forms.Media(
-            js=[
-                static("jquery.formset%s.js" % extra),
-                static("smart.formset%s.js" % extra),
-            ]
+        return (
+            VersionMedia(
+                js=[
+                    "admin/js/vendor/jquery/jquery%s.js" % extra,
+                    "admin/js/jquery.init%s.js" % extra,
+                    "jquery.compat%s.js" % extra,
+                    "jquery.formset%s.js" % extra,
+                    "smart.formset%s.js" % extra,
+                ]
+            )
+            + base
         )
 
 

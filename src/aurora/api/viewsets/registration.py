@@ -67,13 +67,13 @@ class RegistrationViewSet(SmartViewSet):
         reg: Registration = self.get_object()
         return Response(reg.metadata)
 
-    @action(detail=True, permission_classes=[AllowAny])
-    def version(self, request, pk=None):
+    @action(detail=True, permission_classes=[AllowAny], url_path="((?P<language>[a-z-]*)/)*version")
+    def version1(self, request, pk, language=""):
         reg: Registration = self.get_object()
         return Response(
             {
                 "version": reg.version,
-                "url": reg.get_absolute_url(),
+                "url": reg.get_i18n_url(language),
                 "auth": request.user.is_authenticated,
                 "session_id": get_session_id(request),
                 "active": reg.active,

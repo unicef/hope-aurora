@@ -14,7 +14,6 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core import signing
 from django.core.exceptions import ValidationError
-from django.forms import forms
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -28,6 +27,8 @@ from django.views.generic import TemplateView
 from django.views.generic.edit import FormView
 from sentry_sdk import set_tag
 
+from aurora.core.version_media import VersionMedia
+from aurora.core.models import FormSet
 from aurora.core.utils import (
     get_etag,
     get_qrcode,
@@ -37,7 +38,6 @@ from aurora.core.utils import (
 from aurora.i18n.gettext import gettext as _
 from aurora.registration.models import Record, Registration
 from aurora.state import state
-from aurora.stubs import FormSet
 from aurora.web.middlewares.admin import is_admin_site, is_public_site
 
 logger = logging.getLogger(__name__)
@@ -219,7 +219,7 @@ class RegisterView(RegistrationMixin, AdminAccesMixin, FormView):
     def get_initial(self):
         return self.registration.flex_form.get_initial()
 
-    def get_formsets(self):
+    def get_formsets(self) -> Dict[str, FormSet]:
         formsets = {}
         attrs = self.get_form_kwargs().copy()
         attrs["initial"] = []
@@ -229,6 +229,27 @@ class RegisterView(RegistrationMixin, AdminAccesMixin, FormView):
             formsets[name] = fs(prefix=f"{name}", **attrs)
         return formsets
 
+    @property
+    def media(self):
+        extra = "" if settings.DEBUG else ".min"
+        m = self.registration.flex_form.get_form_class()().media
+        for __, fs in self.get_formsets().items():
+            m += fs.media
+
+        mine = VersionMedia(
+            js=[
+                "admin/js/vendor/jquery/jquery%s.js" % extra,
+                "admin/js/jquery.init%s.js" % extra,
+                "jquery.compat%s.js" % extra,
+                "sentry%s.js" % extra,
+                "i18n/i18n%s.js" % extra,
+                "registration/auth%s.js" % extra,
+                "registration/survey%s.js" % extra,
+                "page%s.js" % extra,
+            ]
+        )
+        return mine + m
+
     def get_context_data(self, **kwargs):
         if "formsets" not in kwargs:
             kwargs["formsets"] = self.get_formsets()
@@ -237,11 +258,7 @@ class RegisterView(RegistrationMixin, AdminAccesMixin, FormView):
         kwargs["can_translate"] = self.request.user.is_staff
 
         ctx = super().get_context_data(**kwargs)
-        m = forms.Media(js=["smart_field.js"])
-        m += ctx["form"].media
-        for __, f in ctx["formsets"].items():
-            m += f.media
-        ctx["media"] = m
+        ctx["media"] = self.media
         return ctx
 
     def validate(self, cleaned_data):
@@ -359,8 +376,6 @@ class RegisterAuthView(RegistrationMixin, View):
                 "project": project,
                 "user": {
                     "username": request.user.username,
-                    # "perms": request.user.get_all_permissions(self.registration),
-                    # "authenticated": request.user.is_authenticated,
                     "anonymous": not request.user.is_authenticated,
                 },
             }

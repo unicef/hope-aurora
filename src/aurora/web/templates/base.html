@@ -1,6 +1,4 @@
-{% load static feature_flags http2 %}
-
-<!DOCTYPE html>
+{% load static feature_flags http2 %}<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -15,8 +13,8 @@
     <link href="{% static "staff-toolbar.css" %}" type="text/css" media="all" rel="stylesheet">
     <link rel="stylesheet" href="{% static "admin/debug.css" %}">
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
-            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+{#    <script src="https://code.jquery.com/jquery-3.6.0.min.js"#}
+{#            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>#}
     {% block cache %}{#<script src="{% static "cache.min.js" %}"></script>#}{% endblock %}
 
     {% block head %}{% endblock head %}

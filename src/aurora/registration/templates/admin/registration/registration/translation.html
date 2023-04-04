@@ -11,20 +11,43 @@
             </table>
             <input type="submit" name="create" value="Create">
         {% else %}
-            <table>{% for k, v in collected.items %}
-                <input type="hidden" name="language_code" value="{{ language_code }}">
+            <div class="submit-row">
+                <div style="float: left">
+
+                </div>
+                <input type="submit" name="export" value="Export File">
+            </div>
+            <input type="hidden" name="language_code" value="{{ language_code }}">
+            <table>
                 <tr>
                     <td>
-                        <input type="checkbox" {% if not v %}checked{% endif %} name="selection" value="{{ forloop.counter }}">
-                        <input type="hidden" name="msgid_{{ forloop.counter }}" value="{{ k }}">
+                        <input type="checkbox" id="select_all">
                     </td>
-                    <td><a target="_inspect"
-                           href="{% url "admin:i18n_message_changelist" %}?qs=msgid__startswith={{ k }}&qs__negate=false&locale__exact={{ language_code }}">{{ k }}</a>
-                    </td>
-                    <td>{{ v }}</td>
+                    <td>Message</td>
+                    <td>Current value</td>
                 </tr>
-            {% endfor %}</table>
-            <input type="submit" name="export" value="Create">
+                {% for k, v in collected.items %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" {% if not v %}checked{% endif %} name="selection"
+                                   value="{{ forloop.counter }}">
+                            <input type="hidden" name="msgid_{{ forloop.counter }}" value="{{ k }}">
+                        </td>
+                        <td><a target="_inspect"
+                               href="{% url "admin:i18n_message_changelist" %}?qs=msgid__startswith={{ k }}&qs__negate=false&locale__exact={{ language_code }}">{{ k }}</a>
+                        </td>
+                        <td>{{ v }}</td>
+                    </tr>
+                {% endfor %}</table>
         {% endif %}
     </form>
+    <script>
+        //https://api.cognitive.microsofttranslator.com/translate?api-version=3.0
+
+        (function ($) {
+            $('#select_all').on('click', function () {
+                $(':input[type=checkbox]').prop('checked', this.checked);
+            });
+        })(django.jQuery);
+    </script>
 {% endblock action-content %}

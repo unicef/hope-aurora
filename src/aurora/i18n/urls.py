@@ -6,6 +6,6 @@ from .views import SmartJavascriptCatalog, editor_info
 
 urlpatterns = [
     path("editor_info/", editor_info, name="editor_info"),
-    path("setlang22/", csrf_exempt(set_language), name="set_language"),
+    path("setlang/", csrf_exempt(set_language), name="set_language"),
     path("<str:locale>/", SmartJavascriptCatalog.as_view(), name="javascript-catalog"),
 ]

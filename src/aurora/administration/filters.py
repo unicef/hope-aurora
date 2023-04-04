@@ -2,9 +2,10 @@ from adminfilters.autocomplete import get_real_field
 from adminfilters.mixin import MediaDefinitionFilter, SmartFieldListFilter
 from django.conf import settings
 from django.contrib.admin.widgets import SELECT2_TRANSLATIONS
-from django.forms import forms
 from django.urls import reverse
 from django.utils.translation import get_language
+
+from aurora.core.version_media import VersionMedia
 
 
 class BaseAutoCompleteFilter(SmartFieldListFilter, MediaDefinitionFilter):
@@ -44,9 +45,11 @@ class BaseAutoCompleteFilter(SmartFieldListFilter, MediaDefinitionFilter):
         extra = "" if settings.DEBUG else ".min"
         i18n_name = SELECT2_TRANSLATIONS.get(get_language())
         i18n_file = ("admin/js/vendor/select2/i18n/%s.js" % i18n_name,) if i18n_name else ()
-        return forms.Media(
+        return VersionMedia(
             js=(
                 "admin/js/vendor/jquery/jquery%s.js" % extra,
+                "admin/js/jquery.init%s.js" % extra,
+                "jquery.compat%s.js" % extra,
                 "admin/js/vendor/select2/select2.full%s.js" % extra,
             )
             + i18n_file

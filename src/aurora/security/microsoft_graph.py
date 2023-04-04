@@ -18,8 +18,8 @@ DJANGO_USER_MAP = {
 
 class MicrosoftGraphAPI:
     def __init__(self) -> None:
-        self.azure_client_id = settings.AZURE_CLIENT_ID
-        self.azure_client_secret = settings.AZURE_CLIENT_SECRET
+        self.azure_client_id = settings.SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_KEY
+        self.azure_client_secret = settings.SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_SECRET
         self.access_token = self.get_token()
 
     def get_token(self) -> str:
