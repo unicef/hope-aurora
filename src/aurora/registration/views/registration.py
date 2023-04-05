@@ -239,7 +239,7 @@ class RegisterView(RegistrationMixin, AdminAccesMixin, FormView):
         mine = VersionMedia(
             js=[
                 "admin/js/vendor/jquery/jquery%s.js" % extra,
-                "admin/js/jquery.init%s.js" % extra,
+                "admin/js/jquery.init.js",
                 "jquery.compat%s.js" % extra,
                 "sentry%s.js" % extra,
                 "i18n/i18n%s.js" % extra,

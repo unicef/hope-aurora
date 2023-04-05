@@ -38,7 +38,7 @@ class AjaxSelectWidget(TailWindMixin, forms.Select):
         return base + forms.Media(
             js=[
                 "admin/js/vendor/jquery/jquery%s.js" % extra,
-                "admin/js/jquery.init%s.js" % extra,
+                "admin/js/jquery.init.js",
                 "jquery.compat%s.js" % extra,
                 "https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js",
                 "select2/ajax_select%s.js" % extra,

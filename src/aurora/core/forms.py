@@ -45,7 +45,7 @@ class FlexFormBaseForm(forms.Form):
             VersionMedia(
                 js=[
                     "admin/js/vendor/jquery/jquery%s.js" % extra,
-                    "admin/js/jquery.init%s.js" % extra,
+                    "admin/js/jquery.init.js",
                     "jquery.compat%s.js" % extra,
                     "smart_validation%s.js" % extra,
                     "smart%s.js" % extra,
@@ -103,7 +103,7 @@ class SmartBaseFormSet(BaseFormSet):
             VersionMedia(
                 js=[
                     "admin/js/vendor/jquery/jquery%s.js" % extra,
-                    "admin/js/jquery.init%s.js" % extra,
+                    "admin/js/jquery.init.js",
                     "jquery.compat%s.js" % extra,
                     "jquery.formset%s.js" % extra,
                     "smart.formset%s.js" % extra,

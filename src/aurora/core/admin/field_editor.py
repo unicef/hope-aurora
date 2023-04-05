@@ -233,7 +233,7 @@ class FieldEditor:
         ctx["media"] = VersionMedia(
             js=[
                 "admin/js/vendor/jquery/jquery%s.js" % extra,
-                "admin/js/jquery.init%s.js" % extra,
+                "admin/js/jquery.init.js",
                 "jquery.compat%s.js" % extra,
                 "smart_validation%s.js" % extra,
                 "smart%s.js" % extra,
