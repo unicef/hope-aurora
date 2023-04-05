@@ -13,7 +13,7 @@ class ForgivingManifestStaticFilesStorage(ManifestStaticFilesStorage):
         except ValueError as e:
             if settings.DEBUG:
                 logger.exception(e)
-            return ""
+            return name
 
     def hashed_name(self, name, content=None, filename=None) -> str:
         try:
