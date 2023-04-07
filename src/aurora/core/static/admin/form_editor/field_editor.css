@@ -35,7 +35,7 @@ body {
 #fieldEditor #mainPanel .output, #formEditor #mainPanel .output {
   position: sticky;
   top: 40px;
-  width: 40%;
+  width: 50%;
 }
 #fieldEditor #mainPanel .output iframe, #formEditor #mainPanel .output iframe {
   width: 100%;
@@ -45,7 +45,7 @@ body {
 }
 #fieldEditor #mainPanel .settings, #formEditor #mainPanel .settings {
   overflow-y: scroll;
-  width: 60%;
+  width: 50%;
   background: var(--breadcrumbs-bg);
 }
 #fieldEditor #mainPanel .settings table:first-child, #formEditor #mainPanel .settings table:first-child {

@@ -41,7 +41,7 @@ body {
     .output {
       position: sticky;
       top: 40px;
-      width: 40%;
+      width: 50%;
 
       iframe {
         width: 100%;
@@ -53,7 +53,7 @@ body {
 
     .settings {
       overflow-y: scroll;
-      width: 60%;
+      width: 50%;
       background: var(--breadcrumbs-bg);
 
       table:first-child {

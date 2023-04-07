@@ -72,7 +72,7 @@ class FieldRegistry(Registry):
 
 field_registry = FieldRegistry(forms.Field)
 
-field_registry.register(forms.BooleanField)
+# field_registry.register(forms.BooleanField)
 field_registry.register(forms.CharField)
 field_registry.register(forms.ChoiceField)
 field_registry.register(forms.DateField)
@@ -90,6 +90,7 @@ field_registry.register(forms.TimeField)
 field_registry.register(forms.URLField)
 
 field_registry.register(fields.AjaxSelectField)
+field_registry.register(fields.BooleanField)
 field_registry.register(fields.DocumentField)
 field_registry.register(fields.MultiCheckboxField)
 field_registry.register(fields.WebcamField)

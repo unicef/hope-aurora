@@ -81,6 +81,7 @@ OPTIONS = {
     "ROOT_TOKEN": (str, uuid.uuid4().hex),
     "SECRET_KEY": (str, ""),
     "SENTRY_DSN": (str, ""),
+    "SENTRY_ENVIRONMENT": (str, "production"),
     "SENTRY_PROJECT": (str, ""),
     "SENTRY_SECURITY_TOKEN": (str, ""),
     "SENTRY_SECURITY_TOKEN_HEADER": (str, "X-Sentry-Token"),

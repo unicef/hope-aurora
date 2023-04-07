@@ -6,19 +6,13 @@ from ...version_media import VersionMedia
 
 
 class SmartDateWidget(TailWindMixin, forms.DateInput):
-    # class Media:
-    #     js = [
-    #         get_versioned_static_name("datetimepicker/datepicker"s.js"),
-    #         # "https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js",
-    #         get_versioned_static_name("datetimepicker/dt.js"),
-    #     ]
-    #     css = {"all": [get_versioned_static_name("datetimepicker/datepicker.css")]}
-
     def __init__(self, attrs=None, format=None):
         super().__init__(attrs=attrs, format=format)
-        self.attrs.setdefault("class", {})
-        self.attrs["class"] += " vDateField "
         self.attrs["size"] = 10
+
+    def build_attrs(self, base_attrs, extra_attrs=None):
+        base_attrs["class"] += " vDateField"
+        return super().build_attrs(base_attrs, extra_attrs)
 
     @property
     def media(self):
