@@ -42,6 +42,12 @@ class SmartFieldMixin:
     def is_stored(self):
         return self.storage in [self.PRIMARY, self.BLOB]
 
+    def get_advanced(self, target, dafault=None):
+        ret = self.flex_field.advanced
+        for part in target.split("."):
+            ret = ret.get(part)
+        return ret
+
     def widget_attrs(self, widget):
         attrs = super().widget_attrs(widget)
         attrs.update({k: v for k, v in self.widget_kwargs.items() if v is not None})

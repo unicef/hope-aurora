@@ -1,4 +1,5 @@
 import logging
+from smart_admin.mixins import LinkedObjectsMixin
 
 from admin_extra_buttons.decorators import button, view
 from admin_ordering.admin import OrderableAdmin
@@ -65,7 +66,7 @@ class FlexFormFieldInline(LoadDumpMixin, OrderableAdmin, TabularInline):
 
 
 @register(FlexForm)
-class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
+class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, LinkedObjectsMixin, SmartModelAdmin):
     SYNC_COOKIE = "sync"
     inlines = [
         FlexFormFieldInline,

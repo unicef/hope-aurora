@@ -151,7 +151,8 @@
             self.$ = $fieldset;
             self.$input = $input;
             self.$fieldset = $fieldset;
-            self.name = $fieldset.data("fname");
+            self.flexName = $fieldset.data("fname");
+            self.name = $input.attr("name");
             self.$description = $fieldset.find('.description');
             self.$hint = $fieldset.find('.hint');
 
@@ -210,6 +211,19 @@
                         return false;
                     }
                 }
+                if ($input.data('validator')) {
+                    try {
+                        var f = $input.data('validator');
+                        return f(self.origin);
+                        // (function () {
+                        //     return eval(code);
+                        // }.call(self.origin));
+                        // ret = !module.getError(self.name);
+                        // return ret;
+                    } catch (e) {
+                        return false;
+                    }
+                }
             };
             self.setError = function (text) {
                 if (text) {
@@ -247,6 +261,7 @@
             }
             self.setValue = function (value) {
                 $input.val(value);
+                $input.trigger("change");
                 return self;
             };
             self.getValue = function () {

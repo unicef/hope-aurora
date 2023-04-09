@@ -37,7 +37,7 @@ class TailWindMixin:
         return final_attrs
 
 
-class SmartWidgetMixin:
+class SmartWidgetMixin(TailWindMixin):
     def get_context(self, name, value, attrs):
         ret = super().get_context(name, value, attrs)
         ret["LANGUAGE_CODE"] = get_language()
@@ -49,3 +49,10 @@ class SmartWidgetMixin:
         ret["widget"]["flex_field"] = self.flex_field
 
         return ret
+
+    def build_attrs(self, base_attrs, extra_attrs=None):
+        attrs = super().build_attrs(base_attrs, extra_attrs)
+        if cls := attrs.get("class", " "):
+            cls += f" {str(self.__class__.__name__)}"
+        attrs["class"] = cls
+        return attrs

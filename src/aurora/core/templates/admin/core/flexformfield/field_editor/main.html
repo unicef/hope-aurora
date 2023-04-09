@@ -2,6 +2,9 @@
 {% block extrahead %}
     {#<link rel="stylesheet" href="{% static "admin/field_editor/field_editor.css" %}">#}
     <meta id="url" data-url="{% url "admin:core_flexformfield_widget_refresh" original.pk %}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.13.6/underscore-min.js"
+            integrity="sha512-2V49R8ndaagCOnwmj8QnbT1Gz/rie17UouD9Re5WxbzRVUGoftCu5IuqqtAM9+UC3fwfHCSJR1hkzNQh/2wdtg=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     {{ media }}
 {% endblock %}
 {% block object-tools %}{% endblock %}

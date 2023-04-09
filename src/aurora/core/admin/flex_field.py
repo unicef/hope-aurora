@@ -18,7 +18,7 @@ from ..forms import Select2Widget
 from ..models import FlexFormField
 from ..utils import is_root
 from .base import ConcurrencyVersionAdmin
-from .field_editor import FieldEditor
+from ..editors.field import FieldEditor
 from .filters import Select2FieldComboFilter
 
 logger = logging.getLogger(__name__)

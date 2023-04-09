@@ -53,12 +53,14 @@ def test_plain(attrs):
 @pytest.mark.parametrize(
     "value,expected",
     [
+        ("1,2", [("1", "1"), ("2", "2")]),
         ("[1,2]", [(1, 1), (2, 2)]),
-        ('{"1":"a","2":"b"}', [("1", "a"), ("2", "b")]),
+        ('{"a":10,"b":20}', [("a", 10), ("b", 20)]),
+        ('{"1":"a", "2":"b"}', [("1", "a"), ("2", "b")]),
     ],
 )
 def test_choices(value, expected):
-    f: FlexFormField = FlexFormFieldFactory(field_type=forms.ChoiceField, choices=value)
+    f: FlexFormField = FlexFormFieldFactory(field_type=forms.ChoiceField, advanced={"custom": {"choices": value}})
     i: forms.Field = f.get_instance()
     assert isinstance(i, forms.ChoiceField)
     assert i.choices == expected

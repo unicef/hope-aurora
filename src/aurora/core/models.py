@@ -1,3 +1,5 @@
+from typing import Literal, Tuple
+
 import copy
 
 import json
@@ -549,6 +551,10 @@ class ChoicesValidator:
                 raise ValidationError(e)
 
 
+Section = Literal["field", "widget", "smart", "css", "custom", "data"]
+Sections = Tuple[Section, ...]
+
+
 class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableModel):
     I18N_FIELDS = [
         "label",
@@ -595,19 +601,26 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
         return self.advanced.get("kwargs", {}).get("default_value", None)
 
     def get_choices(self):
+        value = self.advanced.get("custom", {}).get("choices", "")
         try:
-            value = json.loads(self.choices)
-            if isinstance(value, (list, tuple)):
-                return list(zip(value, value))
-            elif isinstance(value, (dict)):
-                return list(dict(value).items())
-        except ValueError:
-            return None
+            choices = json.loads(value)
+        except JSONDecodeError:
+            try:
+                choices = value.split(",")
+            except (ValueError, KeyError):
+                return []
+
+        if isinstance(choices, (list, tuple)):
+            return list(zip(choices, choices))
+        elif isinstance(choices, dict):
+            return list(dict(choices).items())
+        return []
 
     def get_field_kwargs(self):
         field_kwargs = copy.deepcopy({**WIDGET_FOR_FORMFIELD_DEFAULTS.get(self.field_type, {})})
         field_kwargs.update(**self.advanced.get("field", {}))
         widget_kwargs = copy.deepcopy(self.advanced.get("widget", {}))
+        custom_kwargs = copy.deepcopy(self.advanced.get("custom", {}))
         data = copy.deepcopy(self.advanced.get("data", {}))
         # smart_attrs = self.advanced.get("smart", {})
         # config = self.advanced.get("config", {})
@@ -618,7 +631,7 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
         if issubclass(self.field_type, CustomFieldMixin):
             raise NotImplementedError("")
         else:
-            # field_type = self.field_type
+            field_type = self.field_type
             field_kwargs.update(
                 **{
                     "label": self.label,
@@ -626,14 +639,19 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
                     "required": self.required,
                 }
             )
+            if "choices" in custom_kwargs:
+                field_kwargs["choices"] = self.get_choices()
+
             for k, v in data.items():
                 if v:
                     widget_kwargs[f"data-{k}"] = oneline(v)
 
-            # if hasattr(field_type, "choices"):
-            #     field_kwargs["choices"] = self.get_choices()
+            if hasattr(field_type, "choices"):
+                field_kwargs["choices"] = self.get_choices()
             #
-            # widget_kwargs["class"] = self.advanced.get("css", {}).get("input", "") or TailWindMixin.default_class
+            widget_kwargs["class"] = self.advanced.get("css", {}).get("input", "") or getattr(
+                self.field_type.widget, "default_class", ""
+            )
             # widget_kwargs["value"] = smart_attrs.get("default", "")
             # widget_kwargs["placeholder"] = smart_attrs.get("placeholder", "")
             # widget_kwargs.update(**config)
@@ -641,7 +659,7 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
             # widget_kwargs.update(**{k: oneline(v) for k, v in events.items()})
             #
             # widget_kwargs = {k: v for k, v in widget_kwargs.items() if v and str(v).strip()}
-
+        field_kwargs.setdefault("validators", get_validators(self))
         widget_kwargs = {k: oneline(v) for k, v in widget_kwargs.items() if v and str(v).strip()}
         kwargs = {"field": field_kwargs, "widget": widget_kwargs}
         return kwargs
