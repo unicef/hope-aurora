@@ -10,6 +10,25 @@
  * See: http://www.opensource.org/licenses/bsd-license.php
  */
 ;(function ($) {
+    // var _clone = function ($source) {
+    //     $source.find(".ajaxSelect").each(function (i, e) {
+    //         $(e).select2("destroy")
+    //             .removeAttr('data-live-search')
+    //             .removeAttr('data-select2-id')
+    //             .removeAttr('aria-hidden')
+    //             .removeAttr('tabindex');
+    //     });
+    //     var target = $source.clone(true).removeAttr("id");
+    //     $source.find(".ajaxSelect").each(function (i, e) {
+    //         _select2.init(e);
+    //     });
+    //     // target.find(".ajaxSelect").each(function (i, e) {
+    //     //     _select2.init(e);
+    //     // });
+    //
+    //     return target;
+    // };
+
     $.fn.formset = function (opts) {
         var options = $.extend({}, $.fn.formset.defaults, opts),
             flatExtraClasses = options.extraClasses.join(" "),
@@ -171,26 +190,38 @@
                 });
                 insertDeleteLink(template);
             } else {
-                // Otherwise, use the last form in the formset; this works much better if you've got
-                // extra (>= 1) forms (thnaks to justhamade for pointing this out):
-                if (options.hideLastAddForm) {
-                    $("." + options.formCssClass + ":last").hide();
-                }
-                template = $("." + options.formCssClass + ":last").clone(true).removeAttr("id");
-                template.find("input:hidden[id $= \"-DELETE\"]").remove();
-                // Clear all cloned fields, except those the user wants to keep (thanks to brunogola for the
-                // suggestion):
-                template.find(childElementSelector).not(options.keepFieldValues).each(function () {
-                    var elem = $(this);
-                    // If this is a checkbox or radiobutton, uncheck it.
-                    // This fixes Issue 1, reported by Wilson.Andrew.J:
-                    if (elem.is("input:checkbox") || elem.is("input:radio")) {
-                        elem.attr("checked", false);
-                    } else {
-                        elem.val("");
-                    }
+                // // Otherwise, use the last form in the formset; this works much better if you've got
+                // // extra (>= 1) forms (thnaks to justhamade for pointing this out):
+                // if (options.hideLastAddForm) {
+                //     $("." + options.formCssClass + ":last").hide();
+                // }
+                var $source = $("." + options.formCssClass + ":last");
+                $source.find(".ajaxSelect").each(function (i, e) {
+                    $(e).select2("destroy")
+                        .removeAttr('data-live-search')
+                        .removeAttr('data-select2-id')
+                        .removeAttr('aria-hidden')
+                        .removeAttr('tabindex');
                 });
-                insertDeleteLink(template);
+                template = $source.clone(true).removeAttr("id");
+                $source.find(".ajaxSelect").each(function (i, e) {
+                    $(e).select2();
+                });
+                // // template = _clone($source);
+                // template.find("input:hidden[id $= \"-DELETE\"]").remove();
+                // // Clear all cloned fields, except those the user wants to keep (thanks to brunogola for the
+                // // suggestion):
+                // template.find(childElementSelector).not(options.keepFieldValues).each(function () {
+                //     var elem = $(this);
+                //     // If this is a checkbox or radiobutton, uncheck it.
+                //     // This fixes Issue 1, reported by Wilson.Andrew.J:
+                //     if (elem.is("input:checkbox") || elem.is("input:radio")) {
+                //         elem.attr("checked", false);
+                //     } else {
+                //         elem.val("");
+                //     }
+                // });
+                // insertDeleteLink(template);
             }
             // FIXME: Perhaps using $.data would be a better idea?
             options.formTemplate = template;
@@ -222,11 +253,14 @@
             }
 
             addButton.click(function () {
+                // var row = _clone(options.formTemplate);
+                // row.removeClass("formset-custom-template");
                 var formCount = parseInt(totalForms.val()),
                     row = options.formTemplate.clone(true).removeClass("formset-custom-template"),
                     buttonRow = $($(this).parents("tr." + options.formCssClass + "-add").get(0) || this),
                     delCssSelector = $.trim(options.deleteCssClass).replace(/\s+/g, ".");
                 applyExtraClasses(row, formCount);
+
                 row.insertBefore(buttonRow).show();
                 row.find(childElementSelector).each(function () {
                     updateElementIndex($(this), options.prefix, formCount);
@@ -246,6 +280,9 @@
                 if (options.added) {
                     options.added($$, row);
                 }
+                row.find(".ajaxSelect").each(function (i, e) {
+                    $(e).select2();
+                });
                 return false;
             });
         }

@@ -68,11 +68,7 @@ var DEFAULT = {
         $(row).find(".vPictureField").each(function (i, obj) {
             initWebCamField(obj);
         });
-        $(row).find(".ajaxSelect").each(function (i, obj) {
-            if (!$(obj).data('select2')){
-                $(obj).select2();
-            }
-        });
+
         $(row).find(".question-visibility").each(function (i, e) {
             $(e).on("click", function () {
                 smart.handleQuestion(this);
