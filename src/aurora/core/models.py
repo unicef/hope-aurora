@@ -388,7 +388,6 @@ class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
             "flex_form": self,
             "compilation_time_field": fields.pop("compilation_time_field_name", None),
             "field_order": self.advanced.get("field_order"),
-            # "indexes": indexes,
             **fields,
         }
 

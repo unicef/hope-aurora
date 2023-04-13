@@ -217,11 +217,13 @@ class FlexFormEventForm(AdvancedFlexFormAttrsForm):
 
 
 class FieldConfigWidget(widgets.MultiWidget):
+    template_name = "django/forms/widgets/fieldconfigwidget.html"
+
     def __init__(self, attrs=None):
         _widgets = (
             widgets.TextInput(attrs={"required": "required"}),
-            widgets.CheckboxInput(attrs={"class": "required"}),
-            widgets.CheckboxInput(attrs={"class": "enabled"}),
+            widgets.CheckboxInput(attrs={"class": "required", "title": "required"}),
+            widgets.CheckboxInput(attrs={"class": "enabled", "title": "enabled"}),
             widgets.HiddenInput(attrs={"style": "width: 20px", "class": "ordering"}),
         )
         super().__init__(_widgets, attrs)
@@ -236,9 +238,6 @@ class FieldConfigWidget(widgets.MultiWidget):
             widget.value_from_datadict(data, files, name + widget_name)
             for widget_name, widget in zip(self.widgets_names, self.widgets)
         ]
-
-    def format_output(self, rendered_widgets):
-        return "".join(rendered_widgets)
 
 
 class FieldConfigField(forms.Field):

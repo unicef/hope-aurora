@@ -3,6 +3,7 @@ from typing import Dict
 from django.conf import settings
 from django.core.cache import caches
 from django.core.exceptions import ValidationError
+from django.db.transaction import atomic
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.template.loader import get_template
@@ -20,6 +21,44 @@ from aurora.core.utils import merge_data
 from aurora.core.version_media import VersionMedia
 
 cache = caches["default"]
+
+
+class FlexFormWrapper(FlexForm):
+    def __init__(self, form: FlexForm, *args, **kwargs):
+        self.form = form
+        self.overrides = {}
+        self._get_form_fields = self.form.get_form_fields
+        self.form.get_form_fields = self.get_form_fields
+        self.override = {}
+
+    @property
+    def advanced(self):
+        return self.form.advanced
+
+    @advanced.setter
+    def advanced(self, value):
+        self.form.advanced = value
+
+    def get_form_class(self):
+        return self.form.get_form_class()
+
+    def get_form_fields(self):
+        original = self._get_form_fields()
+        for field_name, field in original.items():
+            original[field_name].required = self.overrides[field_name]["required"]
+            original[field_name].enabled = self.overrides[field_name]["enabled"]
+            original[field_name].label = self.overrides[field_name]["label"]
+        return original
+
+    @atomic()
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        fields = self._get_form_fields()
+        for field_name, field in fields.items():
+            field.flex_field.required = self.overrides[field_name]["required"]
+            field.flex_field.enabled = self.overrides[field_name]["enabled"]
+            field.flex_field.label = self.overrides[field_name]["label"]
+            field.flex_field.save()
+        return self.form.save()
 
 
 class FormEditor:
@@ -44,7 +83,7 @@ class FormEditor:
 
     @cached_property
     def patched_form(self) -> FlexForm:
-        form: FlexForm = self.flex_form
+        form: FlexForm = FlexFormWrapper(self.flex_form)
         form.advanced = {}
 
         if config := cache.get(self.cache_key, None):
@@ -53,7 +92,14 @@ class FormEditor:
             for prefix, frm in _forms.items():
                 if frm.is_valid():
                     if prefix == "fields":
-                        merged["field_order"] = [x[0] for x in sorted(frm.cleaned_data.items(), key=lambda x: x[1][-1])]
+                        ordered = [x[0] for x in sorted(frm.cleaned_data.items(), key=lambda x: x[1][-1])]
+                        merged["field_order"] = ordered
+                        for fname in ordered:
+                            form.overrides[fname] = {
+                                "label": frm.cleaned_data[fname][0],
+                                "required": frm.cleaned_data[fname][1],
+                                "enabled": frm.cleaned_data[fname][2],
+                            }
                     else:
                         processed = []
                         for sect in AdvancedFlexFormAttrsForm.SECTIONS_MAP.keys():
@@ -69,8 +115,10 @@ class FormEditor:
             form.advanced = merged
         return form
 
-    def patch(self, request, pk):
-        pass
+    def get_advanced(self):
+        frm: FlexForm = self.patched_form
+        rendered = attr_dumps(frm.advanced, indent=4)
+        return HttpResponse(rendered, content_type="text/plain")
 
     def get_configuration(self):
         frm: FlexForm = self.patched_form
@@ -85,18 +133,8 @@ class FormEditor:
         from pygments.formatters.html import HtmlFormatter
         from pygments.lexers import HtmlLexer
 
-        # instance = self.patched_form
-        # form_class_attrs = {
-        #     self.field.name: instance,
-        # }
-        # form_class = type(forms.Form)("TestForm", (forms.Form,), form_class_attrs)
         ctx = self.get_context(self.request)
         ctx["form"] = self.patched_form.get_form_class()
-        # ctx["form"] = self.flex_form.get_form_class()
-        # ctx["instance"] = instance
-        # code = Template(
-        #     "{{ form }}"
-        # ).render(Context(ctx))
         code = get_template("smart/_form.html").render(ctx)
         formatter = formatter.HTMLFormatter(indent=2)
         soup = bs(code)
@@ -106,15 +144,8 @@ class FormEditor:
         ctx["code"] = highlight(prettyHTML, HtmlLexer(), formatter)
         return render(self.request, "admin/core/flexformfield/field_editor/code.html", ctx, content_type="text/html")
 
-    def get_advanced(self):
-        rendered = attr_dumps(self.flex_form.advanced, indent=4)
-        return HttpResponse(rendered, content_type="text/plain")
-
     def render(self):
         instance = self.patched_form
-        # form_class_attrs = {
-        #     'fo': instance,
-        # }
         form_class = self.flex_form.get_form_class()
         ctx = self.get_context(self.request)
         if self.request.method == "POST":
@@ -188,5 +219,5 @@ class FormEditor:
     def post(self, request, pk):
         forms = self.get_forms()
         if all(map(lambda f: f.is_valid(), forms.values())):
-            # self.patched_f.save()
+            self.patched_form.save()
             return HttpResponseRedirect(".")
