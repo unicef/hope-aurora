@@ -43,21 +43,43 @@ class FlexFormWrapper(FlexForm):
         return self.form.get_form_class()
 
     def get_form_fields(self):
-        original = self._get_form_fields()
-        for field_name, field in original.items():
-            original[field_name].required = self.overrides[field_name]["required"]
-            original[field_name].enabled = self.overrides[field_name]["enabled"]
-            original[field_name].label = self.overrides[field_name]["label"]
-        return original
+        from aurora.core.fields import CompilationTimeField
+
+        fields = {}
+        # indexes = FlexFormBaseForm.indexes.copy()
+        # base_order = self.advanced.get("field_order", [])
+
+        for field in self.form.fields.order_by("ordering"):
+            try:
+                field.required = self.overrides[field.name]["required"]
+                field.label = self.overrides[field.name]["label"]
+                field.enabled = self.overrides[field.name]["enabled"]
+                fld = field.get_instance()
+                if field.enabled:
+                    fields[field.name] = fld
+                    if isinstance(fld, CompilationTimeField):
+                        fields["compilation_time_field_name"] = field.name
+                    self.form._initial[field.name] = field.get_default_value()
+            except TypeError:
+                pass
+        return fields
+        #
+        # original = self._get_form_fields()
+        # fields = {}
+        # for field_name, field in original.items():
+        #     if self.overrides[field_name]["enabled"]:
+        #         fields[field_name] = field
+        #         fields[field_name].required = self.overrides[field_name]["required"]
+        #         fields[field_name].label = self.overrides[field_name]["label"]
+        # return fields
 
     @atomic()
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        fields = self._get_form_fields()
-        for field_name, field in fields.items():
-            field.flex_field.required = self.overrides[field_name]["required"]
-            field.flex_field.enabled = self.overrides[field_name]["enabled"]
-            field.flex_field.label = self.overrides[field_name]["label"]
-            field.flex_field.save()
+        for field in self.form.fields.order_by("ordering"):
+            field.required = self.overrides[field.name]["required"]
+            field.label = self.overrides[field.name]["label"]
+            field.enabled = self.overrides[field.name]["enabled"]
+            field.save()
         return self.form.save()
 
 
