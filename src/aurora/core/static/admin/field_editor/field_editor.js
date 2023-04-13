@@ -1,6 +1,6 @@
 (function ($) {
     $(document).ready(function () {
-        var $me = $("#field_editor_script");
+        // var $me = $("#field_editor_script");
         var refreshUrl = $("#url").data("url");
 
         $(".toolbutton").on("click", function () {
@@ -42,6 +42,16 @@
                 })
         }
 
+        function checkForUpdate() {
+            if ($("#autoRefresh").is(":checked")) {
+                clearTimeout($.data(this, 'timer'));
+                var wait = setTimeout(update, 500);
+                $(this).data('timer', wait);
+            } else {
+                $("iframe.display").contents().find("*").css("background-color", "#bbbbbb");
+            }
+        }
+
         $('input[type=checkbox],input[type=radio]').on('click', function () {
             update();
         });
@@ -49,11 +59,7 @@
             update();
         });
         $('input,textarea').on('keyup', function () {
-            if ($("#autoRefresh").is(":checked")) {
-                clearTimeout($.data(this, 'timer'));
-                var wait = setTimeout(update, 500);
-                $(this).data('timer', wait);
-            }
+            checkForUpdate();
         });
         $('textarea.js-editor').each(function (i, e) {
             var editor = $(e).data("CodeMirror");
@@ -85,7 +91,6 @@
             $("iframe").hide();
             var $target = $("iframe." + targetClass);
             $(this).is(":checked") ? $target.show() : $target.hide();
-
         })
         $(".tabs th").on("click", function () {
             const targetName = $(this).data('target');

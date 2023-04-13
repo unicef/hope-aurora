@@ -362,30 +362,38 @@ class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
         return FormSet.objects.update_or_create(parent=self, flex_form=form, defaults=defaults)[0]
 
     # @cache_form
-    def get_form_class(self):
+    def get_form_fields(self):
         from aurora.core.fields import CompilationTimeField
 
         fields = {}
-        compilation_time_field = None
-        indexes = FlexFormBaseForm.indexes.copy()
+        # indexes = FlexFormBaseForm.indexes.copy()
+        # base_order = self.advanced.get("field_order", [])
+
         for field in self.fields.filter(enabled=True).select_related("validator").order_by("ordering"):
             try:
                 fld = field.get_instance()
                 fields[field.name] = fld
                 if isinstance(fld, CompilationTimeField):
-                    compilation_time_field = field.name
-                if index := field.advanced.get("smart", {}).get("index"):
-                    indexes[str(index)] = field.name
+                    fields["compilation_time_field_name"] = field.name
+                # if index := field.advanced.get("smart", {}).get("index"):
+                #     indexes[str(index)] = field.name
                 self._initial[field.name] = field.get_default_value()
             except TypeError:
                 pass
-        form_class_attrs = {
+        return fields
+
+    def get_form_attrs(self):
+        fields = self.get_form_fields()
+        return {
             "flex_form": self,
-            "compilation_time_field": compilation_time_field,
-            "indexes": indexes,
+            "compilation_time_field": fields.pop("compilation_time_field_name", None),
+            "field_order": self.advanced.get("field_order"),
+            # "indexes": indexes,
             **fields,
         }
-        flexForm = type(f"{self.name}FlexForm", (self.base_type,), form_class_attrs)
+
+    def get_form_class(self):
+        flexForm = type(f"{self.name}FlexForm", (self.base_type,), self.get_form_attrs())
         return flexForm
 
     def get_formsets_classes(self):

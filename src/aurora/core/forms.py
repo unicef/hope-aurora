@@ -28,6 +28,7 @@ class FlexFormBaseForm(forms.Form):
     flex_form = None
     compilation_time_field = None
     indexes = {"1": None, "2": None, "3": None}
+    field_order = None
 
     def get_counters(self, data):
         if self.compilation_time_field:

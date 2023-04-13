@@ -93,14 +93,6 @@ class FieldEditor:
         if config := cache.get(self.cache_key, None):
             merged = {}
             _forms: Dict[str, AdvancendAttrsForm] = self.get_forms(config)
-            # fieldForm = _forms.get("field", None)
-            # if fieldForm.is_valid():
-            #     fld.field_type = field_registry.get_class(fieldForm.cleaned_data.pop("field_type"))
-            #     for k, v in fieldForm.cleaned_data.items():
-            #         setattr(fld, k, v)
-            # else:
-            #     raise ValidationError(fieldForm.errors)
-
             for __, frm in _forms.items():
                 if frm.is_valid():
                     processed = []
@@ -125,10 +117,6 @@ class FieldEditor:
             i = self.patched_field.get_instance()
             data = self.field.get_field_kwargs()
             data["field"]["widget"] = fqn(i.widget)
-
-            # data["__field__"] = fqn(i)
-            # data["__widget__"] = {"class": fqn(i.widget),
-            #                       "attrs": i.widget.attrs}
             rendered = json.dumps(data, indent=4)
         except Exception as e:
             logger.exception(e)

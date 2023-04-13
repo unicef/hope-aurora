@@ -1,64 +1,35 @@
-import json
 from typing import Dict
 
-from django import forms
+from django.conf import settings
 from django.core.cache import caches
-from django.forms import Media
+from django.core.exceptions import ValidationError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.template.loader import get_template
 from django.utils.functional import cached_property
 
-from aurora.core.fields.widgets import JavascriptEditor
+from aurora.core.editors.forms import (
+    FlexFormAttributesForm,
+    FlexFormEventForm,
+    AdvancedFlexFormAttrsForm,
+    FlexFormFieldsForm,
+)
+from aurora.core.editors.utils import attr_dumps
 from aurora.core.models import FlexForm
+from aurora.core.utils import merge_data
+from aurora.core.version_media import VersionMedia
 
 cache = caches["default"]
 
 
-class AdvancendAttrsMixin:
-    def __init__(self, *args, **kwargs):
-        self.form = kwargs.pop("form", None)
-        super().__init__(*args, **kwargs)
-
-
-#
-class FlexFormAttributesForm(AdvancendAttrsMixin, forms.ModelForm):
-    class Meta:
-        model = FlexForm
-        fields = (
-            "name",
-            "base_type",
-        )
-
-
-class EventForm(AdvancendAttrsMixin, forms.Form):
-    onsubmit = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
-    onload = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
-    validation = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
-
-
-DEFAULTS = {
-    #     "css": {"question": "cursor-pointer", "label": "block uppercase tracking-wide text-gray-700 font-bold mb-2"},
-    #     "css": {"question": "cursor-pointer", "label": "block uppercase tracking-wide text-gray-700 font-bold mb-2"},
-}
-
-
-def get_initial(form, prefix):
-    base = DEFAULTS.get(prefix, {})
-    # for k, v in form.advanced.get(prefix, {}).items():
-    #     if v:
-    #         base[k] = v
-    return base
-
-
 class FormEditor:
     FORMS = {
-        "frm": FlexFormAttributesForm,
-        # "kwargs": FormFieldAttributesForm,
+        "form": FlexFormAttributesForm,
+        "fields": FlexFormFieldsForm,
         # "widget": WidgetAttributesForm,
         # "smart": SmartAttributesForm,
         # "css": CssForm,
-        "events": EventForm,
+        "events": FlexFormEventForm,
     }
 
     def __init__(self, modeladmin, request, pk):
@@ -72,26 +43,39 @@ class FormEditor:
         return FlexForm.objects.get(pk=self.pk)
 
     @cached_property
-    def patched_form(self):
-        fld = self.flex_form.get_form_class()
-        # if config := cache.get(self.cache_key, None):
-        #     forms = self.get_forms(config)
-        #     fieldForm = forms.pop("field", None)
-        #     if fieldForm.is_valid():
-        #         for k, v in fieldForm.cleaned_data.items():
-        #             setattr(fld, k, v)
-        #     for prefix, frm in forms.items():
-        #         frm.is_valid()
-        #         merged = merge_data(fld.advanced, {**{prefix: frm.cleaned_data}})
-        #         fld.advanced = merged
-        return fld
+    def patched_form(self) -> FlexForm:
+        form: FlexForm = self.flex_form
+        form.advanced = {}
+
+        if config := cache.get(self.cache_key, None):
+            merged = {}
+            _forms: Dict[str, AdvancedFlexFormAttrsForm] = self.get_forms(config)
+            for prefix, frm in _forms.items():
+                if frm.is_valid():
+                    if prefix == "fields":
+                        merged["field_order"] = [x[0] for x in sorted(frm.cleaned_data.items(), key=lambda x: x[1][-1])]
+                    else:
+                        processed = []
+                        for sect in AdvancedFlexFormAttrsForm.SECTIONS_MAP.keys():
+                            values = {k: v for k, v in frm.get_section(sect).items() if v and str(v).strip()}
+                            processed.extend(values.keys())
+                            if sect == "field":
+                                for k, v in values.items():
+                                    setattr(frm, k, v)
+                            else:
+                                merged = merge_data(merged, {**{sect: values}})
+                else:
+                    raise ValidationError(frm.errors)
+            form.advanced = merged
+        return form
 
     def patch(self, request, pk):
         pass
 
     def get_configuration(self):
-        self.patched_form.get_instance()
-        rendered = json.dumps(self.flex_form.advanced, indent=4)
+        frm: FlexForm = self.patched_form
+        attrs = frm.get_form_attrs()
+        rendered = attr_dumps(attrs, indent=4)
         return HttpResponse(rendered, content_type="text/plain")
 
     def get_code(self):
@@ -101,14 +85,15 @@ class FormEditor:
         from pygments.formatters.html import HtmlFormatter
         from pygments.lexers import HtmlLexer
 
-        instance = self.patched_form()
+        # instance = self.patched_form
         # form_class_attrs = {
         #     self.field.name: instance,
         # }
         # form_class = type(forms.Form)("TestForm", (forms.Form,), form_class_attrs)
         ctx = self.get_context(self.request)
-        ctx["form"] = self.flex_form.get_form_class()
-        ctx["instance"] = instance
+        ctx["form"] = self.patched_form.get_form_class()
+        # ctx["form"] = self.flex_form.get_form_class()
+        # ctx["instance"] = instance
         # code = Template(
         #     "{{ form }}"
         # ).render(Context(ctx))
@@ -120,6 +105,10 @@ class FormEditor:
         formatter = HtmlFormatter(style="default", full=True)
         ctx["code"] = highlight(prettyHTML, HtmlLexer(), formatter)
         return render(self.request, "admin/core/flexformfield/field_editor/code.html", ctx, content_type="text/html")
+
+    def get_advanced(self):
+        rendered = attr_dumps(self.flex_form.advanced, indent=4)
+        return HttpResponse(rendered, content_type="text/plain")
 
     def render(self):
         instance = self.patched_form
@@ -145,15 +134,10 @@ class FormEditor:
             return {prefix: Form(data, prefix=prefix, form=self.flex_form) for prefix, Form in self.FORMS.items()}
         if self.request.method == "POST":
             return {
-                prefix: Form(
-                    self.request.POST, prefix=prefix, form=self.flex_form, initial=get_initial(self.flex_form, prefix)
-                )
+                prefix: Form(self.request.POST, prefix=prefix, form=self.flex_form)
                 for prefix, Form in self.FORMS.items()
             }
-        return {
-            prefix: Form(prefix=prefix, form=self.flex_form, initial=get_initial(self.flex_form, prefix))
-            for prefix, Form in self.FORMS.items()
-        }
+        return {prefix: Form(prefix=prefix, form=self.flex_form) for prefix, Form in self.FORMS.items()}
 
     def refresh(self):
         forms = self.get_forms()
@@ -171,12 +155,34 @@ class FormEditor:
             **kwargs,
         }
 
+    def sort(self):
+        print("aurora/core/editors/flex_form.py: 136", self.request.body)
+
     def get(self, request, pk):
         ctx = self.get_context(request, pk)
-        ctx["forms_media"] = Media()
+        ctx["forms"] = {}
+        extra = "" if settings.DEBUG else ".min"
+        media = VersionMedia()
         for prefix, frm in self.get_forms().items():
-            ctx[f"form_{prefix}"] = frm
-            ctx["forms_media"] += frm.media
+            # ctx[f"form_{prefix}"] = frm
+            ctx["forms"][prefix] = frm
+            media += frm.media
+
+        media += VersionMedia(
+            js=[
+                "admin/js/vendor/jquery/jquery%s.js" % extra,
+                "admin/js/jquery.init.js",
+                "jquery.compat%s.js" % extra,
+                # "admin/resizer%s.js" % extra,
+                "smart_validation%s.js" % extra,
+                "smart%s.js" % extra,
+                "smart_field%s.js" % extra,
+                "https://cdn.jsdelivr.net/npm/dragsort@1.0.6/dist/js/jquery.dragsort.min.js",
+            ],
+            css={"all": ["admin/form_editor/form_editor.css"]},
+        )
+        ctx["media"] = media
+        # + VersionMedia(js=["admin/field_editor/field_editor%s.js" % extra])
         return render(request, "admin/core/flexform/form_editor/main.html", ctx)
 
     def post(self, request, pk):

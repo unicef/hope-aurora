@@ -41,7 +41,7 @@ body {
     .output {
       position: sticky;
       top: 40px;
-      width: 50%;
+      width: 40%;
 
       iframe {
         width: 100%;
@@ -53,8 +53,22 @@ body {
 
     .settings {
       overflow-y: scroll;
-      width: 50%;
+      width: 60%;
       background: var(--breadcrumbs-bg);
+
+      #event_selector {
+        option {
+          font-style: oblique;
+          font-weight: bold;
+          color: red;
+
+          &.used::after {
+            content: " --- ";
+            color: red;
+
+          }
+        }
+      }
 
       table:first-child {
         background: var(--breadcrumbs-bg);
@@ -224,6 +238,7 @@ table2 {
   .code {
     display: none;
   }
+
   .code.selected {
     display: block;
   }

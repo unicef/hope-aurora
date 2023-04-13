@@ -1,0 +1,30 @@
+@import "../f_editor.scss";
+
+#formEditor {
+  #mainPanel {
+    .settings {
+
+      #fields {
+        tr {
+          td {
+            input{
+              margin-right: 10px;
+            }
+            input[type=text] {
+              width: 60%;
+
+              &::before {
+                content: "==";
+                display: inline-block;
+                background-size: 14px 14px;
+                background-image: url("admin_ordering-icon.svg");
+                background-repeat: no-repeat;
+                background-position: center center;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

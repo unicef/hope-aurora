@@ -71,7 +71,6 @@
                                 <table id="events" class="cfg-form collapse collapsed">
                                     <tr>
                                         <td>
-
                                             <select id="event_selector">
                                                 {% for n,f in forms.events.fields.items %}
                                                     {% with forms.events|get:n as ff %}
@@ -120,7 +119,6 @@
                 </div>
             </div>
         </div>
-        {#        <pre id="debugLog" style="width: 100%; border: 1px solid grey"></pre>#}
     </form>
     <script id="field_editor_script" src="{% static "admin/field_editor/field_editor.min.js" %}"></script>
 {% endblock action-content %}

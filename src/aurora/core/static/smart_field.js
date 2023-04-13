@@ -110,7 +110,25 @@
             self.fields = function () {
                 if (_fields == null) {
                     _fields = {}
-                    $me.find(`:input[data-flex]`).each(function (i, e) {
+                    $me.find(`:input[data-flex-name]`).each(function (i, e) {
+                        var f = new aurora.Field(e);
+                        _fields[f.name] = f;
+                    });
+                }
+                return _fields
+            };
+        },
+        FlexForm: function (name) {
+            var self = this;
+            const $me = $(".form-container." + name);
+
+            self.$ = $me;
+            // var $container=$(".form-container");
+            var _fields = null;
+            self.fields = function () {
+                if (_fields == null) {
+                    _fields = {}
+                    $me.find(`:input[data-flex-name]`).each(function (i, e) {
                         var f = new aurora.Field(e);
                         _fields[f.name] = f;
                     });
