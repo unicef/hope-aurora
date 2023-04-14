@@ -23,7 +23,7 @@ from aurora.core.version_media import VersionMedia
 cache = caches["default"]
 
 
-class FlexFormWrapper(FlexForm):
+class FlexFormWrapper:
     def __init__(self, form: FlexForm, *args, **kwargs):
         self.form = form
         self.overrides = {}
@@ -41,6 +41,9 @@ class FlexFormWrapper(FlexForm):
 
     def get_form_class(self):
         return self.form.get_form_class()
+
+    def get_form_attrs(self):
+        return self.form.get_form_attrs()
 
     def get_form_fields(self):
         from aurora.core.fields import CompilationTimeField
