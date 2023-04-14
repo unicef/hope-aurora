@@ -363,30 +363,35 @@ class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
 
     # @cache_form
     def get_form_fields(self):
-        from aurora.core.fields import CompilationTimeField
-
         fields = {}
-        # indexes = FlexFormBaseForm.indexes.copy()
         # base_order = self.advanced.get("field_order", [])
 
         for field in self.fields.filter(enabled=True).select_related("validator").order_by("ordering"):
             try:
                 fld = field.get_instance()
                 fields[field.name] = fld
-                if isinstance(fld, CompilationTimeField):
-                    fields["compilation_time_field_name"] = field.name
-                # if index := field.advanced.get("smart", {}).get("index"):
-                #     indexes[str(index)] = field.name
+                # if isinstance(fld, CompilationTimeField):
+                #     fields["compilation_time_field_name"] = field.name
                 self._initial[field.name] = field.get_default_value()
             except TypeError:
                 pass
         return fields
 
+    def get_indexed_fields(self, fields):
+        indexes = FlexFormBaseForm.indexes.copy()
+        for name, field in fields.items():
+            if index := field.flex_field.advanced.get("smart", {}).get("index"):
+                indexes[str(index)] = name
+        return indexes
+
     def get_form_attrs(self):
         fields = self.get_form_fields()
+        indexed = self.get_indexed_fields(fields)
+
         return {
             "flex_form": self,
-            "compilation_time_field": fields.pop("compilation_time_field_name", None),
+            # "compilation_time_field": fields.pop("compilation_time_field_name", None),
+            "indexes": indexed,
             "field_order": self.advanced.get("field_order"),
             **fields,
         }

@@ -46,12 +46,7 @@ class FlexFormWrapper:
         return self.form.get_form_attrs()
 
     def get_form_fields(self):
-        from aurora.core.fields import CompilationTimeField
-
         fields = {}
-        # indexes = FlexFormBaseForm.indexes.copy()
-        # base_order = self.advanced.get("field_order", [])
-
         for field in self.form.fields.order_by("ordering"):
             try:
                 field.required = self.overrides[field.name]["required"]
@@ -60,8 +55,8 @@ class FlexFormWrapper:
                 fld = field.get_instance()
                 if field.enabled:
                     fields[field.name] = fld
-                    if isinstance(fld, CompilationTimeField):
-                        fields["compilation_time_field_name"] = field.name
+                    # if isinstance(fld, CompilationTimeField):
+                    #     fields["compilation_time_field_name"] = field.name
                     self.form._initial[field.name] = field.get_default_value()
             except TypeError:
                 pass
