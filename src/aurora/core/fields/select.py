@@ -7,6 +7,7 @@ from django.urls import NoReverseMatch, reverse
 from django.utils.translation import get_language
 
 from .widgets.mixins import TailWindMixin
+from ..version_media import VersionMedia
 
 logger = logging.getLogger(__name__)
 
@@ -35,17 +36,19 @@ class AjaxSelectWidget(TailWindMixin, forms.Select):
     def media(self):
         extra = "" if settings.DEBUG else ".min"
         base = super().media
-        return base + forms.Media(
+        return base + VersionMedia(
             js=[
                 "admin/js/vendor/jquery/jquery%s.js" % extra,
                 "admin/js/jquery.init.js",
                 "jquery.compat%s.js" % extra,
-                "https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js",
+                "https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js",
                 "select2/ajax_select%s.js" % extra,
+                "jquery.formset%s.js" % extra,
+                "smart.formset%s.js" % extra,
             ],
             css={
                 "all": [
-                    "https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css",
+                    "https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css",
                 ]
             },
         )

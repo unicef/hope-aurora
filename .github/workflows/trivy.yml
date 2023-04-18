@@ -20,8 +20,12 @@ jobs:
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.28.0
 
       - uses: actions/checkout@v2
-      - name: Install dependencies
+
+      - name: Install poetry
         run: python -m pip install --upgrade poetry
+
+      - name: Install dependencies
+        run: poetry install
 
       - name: Scan
         run: |
