@@ -210,7 +210,6 @@
                     _select2.collect_subscribers(e);
                 //     $(e).select2();
                 //     var f = $(e).data("_select2");
-                    // console.log(1111, f);
                    // f(e);
                 });
                 // // template = _clone($source);
@@ -227,7 +226,7 @@
                 //         elem.val("");
                 //     }
                 // });
-                // insertDeleteLink(template);
+                insertDeleteLink(template);
             }
             // FIXME: Perhaps using $.data would be a better idea?
             options.formTemplate = template;
