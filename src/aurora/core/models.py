@@ -793,12 +793,16 @@ class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
                 label_col = self.languages.split(",").index(requested_language)
             except ValueError:
                 logger.error(f"Language {requested_language} not available for OptionSet {self.name}")
-                label_col = self.languages.split(",").index(self.locale)
+                try:
+                    label_col = self.languages.split(self.separator).index(self.locale)
+                except ValueError:
+                    label_col = self.languages.split(",").index(self.locale)
         else:
             label_col = 0
 
         key = self.get_cache_key(requested_language)
         value = cache.get(key, version=self.version)
+        value = None
         if not value:
             value = []
             for line in self.data.split("\r\n"):
@@ -812,7 +816,7 @@ class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
                     pk = cols[self.pk_col]
                     label = cols[label_col]
                     if self.parent_col > 0:
-                        parent = cols[self.parent_col]
+                        parent = str(cols[self.parent_col])
                 else:
                     label = line
                     pk = str(line).lower()

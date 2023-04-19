@@ -85,7 +85,6 @@ var DEFAULT = {
             var value = JSON.parse($e.text());
             formsetConfig.push(value);
         });
-
         if (formsetConfig.length > 0) {
             configureFormsets(formsetConfig);
         }

@@ -32,6 +32,7 @@ class OptionSetAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartMod
     save_as = True
     readonly_fields = ("version", "last_update_date")
     object_history_template = "reversion-compare/object_history.html"
+    exclude = ("columns",)
 
     @button()
     def display_data(self, request, pk):

@@ -199,13 +199,19 @@
                 $source.find(".ajaxSelect").each(function (i, e) {
                     $(e).select2("destroy")
                         .removeAttr('data-live-search')
+                        .removeAttr('data-subscribers')
                         .removeAttr('data-select2-id')
                         .removeAttr('aria-hidden')
                         .removeAttr('tabindex');
                 });
                 template = $source.clone(true).removeAttr("id");
                 $source.find(".ajaxSelect").each(function (i, e) {
-                    $(e).select2();
+                    _select2.init(e);
+                    _select2.collect_subscribers(e);
+                //     $(e).select2();
+                //     var f = $(e).data("_select2");
+                    // console.log(1111, f);
+                   // f(e);
                 });
                 // // template = _clone($source);
                 // template.find("input:hidden[id $= \"-DELETE\"]").remove();
@@ -281,7 +287,9 @@
                     options.added($$, row);
                 }
                 row.find(".ajaxSelect").each(function (i, e) {
-                    $(e).select2();
+                    $(e).data("subscribers", []);
+                    _select2.init(e);
+                    _select2.collect_subscribers(e);
                 });
                 return false;
             });

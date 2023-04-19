@@ -41,14 +41,14 @@ class AjaxSelectWidget(TailWindMixin, forms.Select):
                 "admin/js/vendor/jquery/jquery%s.js" % extra,
                 "admin/js/jquery.init.js",
                 "jquery.compat%s.js" % extra,
-                "https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js",
+                "https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js",
                 "select2/ajax_select%s.js" % extra,
                 "jquery.formset%s.js" % extra,
                 "smart.formset%s.js" % extra,
             ],
             css={
                 "all": [
-                    "https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css",
+                    "select2/select2.min.css",
                 ]
             },
         )

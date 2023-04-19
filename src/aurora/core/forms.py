@@ -105,6 +105,7 @@ class SmartBaseFormSet(BaseFormSet):
                     "admin/js/vendor/jquery/jquery%s.js" % extra,
                     "admin/js/jquery.init.js",
                     "jquery.compat%s.js" % extra,
+                    "select2/ajax_select%s.js" % extra,
                     "jquery.formset%s.js" % extra,
                     "smart.formset%s.js" % extra,
                 ]
