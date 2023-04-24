@@ -3,6 +3,7 @@ from collections import namedtuple
 from typing import Any, Dict
 
 from admin_extra_buttons.decorators import button
+from constance import config
 from django import forms
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -163,19 +164,23 @@ class ADUSerMixin:
                         try:
                             if email in existing:
                                 user = User.objects.get(email=email)
-                                self._sync_ad_data(user)
+                                if config.GRAPH_API_ENABLED:
+                                    self._sync_ad_data(user)
                                 results.updated.append(user)
                             else:
-                                user_data = ms_graph.get_user_data(email=email)
-                                user_args = build_arg_dict_from_dict(user_data, DJANGO_USER_MAP)
-                                user = User(**user_args)
-                                if user.first_name is None:
-                                    user.first_name = ""
-                                if user.last_name is None:
-                                    user.last_name = ""
-                                job_title = user_data.get("jobTitle")
-                                if job_title is not None:
-                                    user.job_title = job_title
+                                if config.GRAPH_API_ENABLED:
+                                    user_data = ms_graph.get_user_data(email=email)
+                                    user_args = build_arg_dict_from_dict(user_data, DJANGO_USER_MAP)
+                                    user = User(**user_args)
+                                    if user.first_name is None:
+                                        user.first_name = ""
+                                    if user.last_name is None:
+                                        user.last_name = ""
+                                    job_title = user_data.get("jobTitle")
+                                    if job_title is not None:
+                                        user.job_title = job_title
+                                else:
+                                    user = User.objects.create(email=email, username=email)
                                 user.set_unusable_password()
                                 users_to_bulk_create.append(user)
                                 results.created.append(user)
