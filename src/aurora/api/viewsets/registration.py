@@ -132,7 +132,7 @@ class RegistrationViewSet(SmartViewSet):
         return response
 
     @action(detail=True)
-    def csv(self, request: HttpRequest, pk, language=""):
+    def csv(self, request: HttpRequest, pk):
         """
         "form": {
             "filters": "({}, {})",
@@ -197,9 +197,9 @@ class RegistrationViewSet(SmartViewSet):
                         all_fields.append(field_name)
             csv_options = opts_form.cleaned_data
             add_header = csv_options.pop("header")
-            # date_format = csv_options.pop("date_format")
-            # datetime_format = csv_options.pop("datetime_format")
-            # time_format = csv_options.pop("time_format")
+            date_format = csv_options.pop("date_format")  # noqa
+            datetime_format = csv_options.pop("datetime_format")  # noqa
+            time_format = csv_options.pop("time_format")  # noqa
             if "download" in request.GET or "preview" in request.GET:
                 filename = f"Registration_{reg.slug}.csv"
                 if "preview" in request.GET:
