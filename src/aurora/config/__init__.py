@@ -69,6 +69,7 @@ OPTIONS = {
     "FRONT_DOOR_ALLOWED_PATHS": (str, ".*"),
     "FRONT_DOOR_TOKEN": (str, uuid.uuid4()),
     "FRONT_DOOR_LOG_LEVEL": (str, "ERROR"),
+    "GRAPH_API_ENABLED": (bool, False),
     # "FERNET_KEY": (str, "2jQklRvSAZUdsVOKH-521Wbf_p5t2nTDA0LgD9sgim4="),
     "INTERNAL_IPS": (list, ["127.0.0.1", "localhost"]),
     "LANGUAGE_CODE": (str, "en-us"),
