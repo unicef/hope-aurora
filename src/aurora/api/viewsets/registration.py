@@ -174,7 +174,7 @@ class RegistrationViewSet(SmartViewSet):
             include_fields = form.cleaned_data["include"]
             exclude_fields = form.cleaned_data["exclude"]
             qs = (
-                Record.objects.filter(pk=pk)
+                Record.objects.filter(registration__pk=pk)
                 .defer(
                     "storage",
                     "counters",
@@ -229,6 +229,10 @@ class RegistrationViewSet(SmartViewSet):
 
                 return Response(
                     {
+                        "reg": {
+                            "name": reg.name,
+                            "slug": reg.slug,
+                        },
                         "data": {
                             "download": request.build_absolute_uri(
                                 "?download=1&" + parse.urlencode(request.GET.dict(), doseq=False)

@@ -2,6 +2,7 @@ import json
 import logging
 import re
 from datetime import date, datetime, time
+from inspect import isclass
 from json import JSONDecodeError
 
 from django.contrib.admin.templatetags.admin_urls import admin_urlname
@@ -601,7 +602,7 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
         return self.advanced.get("kwargs", {}).get("default_value", None)
 
     def get_field_kwargs(self):
-        if issubclass(self.field_type, CustomFieldMixin):
+        if isclass(self.field_type) and issubclass(self.field_type, CustomFieldMixin):
             advanced = self.advanced.copy()
             smart_attrs = advanced.pop("smart", {}).copy()
             widget_kwargs = self.advanced.get("widget_kwargs", {}).copy()
