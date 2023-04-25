@@ -159,7 +159,6 @@ class ADUSerMixin:
                 existing = set(User.objects.filter(email__in=emails).values_list("email", flat=True))
                 results = self.Results([], [], [], [])
                 try:
-                    ms_graph = MicrosoftGraphAPI()
                     for email in emails:
                         try:
                             if email in existing:
@@ -169,6 +168,7 @@ class ADUSerMixin:
                                 results.updated.append(user)
                             else:
                                 if config.GRAPH_API_ENABLED:
+                                    ms_graph = MicrosoftGraphAPI()
                                     user_data = ms_graph.get_user_data(email=email)
                                     user_args = build_arg_dict_from_dict(user_data, DJANGO_USER_MAP)
                                     user = User(**user_args)
