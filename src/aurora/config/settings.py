@@ -422,6 +422,7 @@ CONSTANCE_CONFIG = OrderedDict(
         "ADMIN_SYNC_LOCAL_ADMIN_URL": ("/admin/", "", str),
         "ADMIN_SYNC_USE_REVERSION": (False, "", bool),
         "LOG_POST_ERRORS": (False, "", bool),
+        "GRAPH_API_ENABLED": (bool, False),
         "MINIFY_RESPONSE": (0, "select yes or no", "html_minify_select"),
         "MINIFY_IGNORE_PATH": (r"", "regex for ignored path", str),
         "BASE_TEMPLATE": ("base_lean.html", "Default base template", str),
