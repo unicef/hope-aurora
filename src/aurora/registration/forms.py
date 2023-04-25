@@ -62,6 +62,7 @@ class RegistrationOptionForm(forms.ModelForm):
 
 
 class RegistrationExportForm(forms.Form):
+    defaults = {}
     filters = forms.CharField(
         widget=forms.Textarea({"rows": 3, "cols": 80}),
         required=False,
@@ -84,7 +85,8 @@ class RegistrationExportForm(forms.Form):
 
     def clean_include(self):
         try:
-            return RegexList([re.compile(rule) for rule in self.cleaned_data["include"].split("\n")])
+            patterns = [p for p in self.cleaned_data.get("include", ".*").split("\n") if p.strip()]
+            return RegexList([re.compile(rule) for rule in patterns] or [".*"])
         except Exception as e:
             raise ValidationError(e)
 

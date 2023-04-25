@@ -120,9 +120,9 @@ class DateFormatsForm(forms.Form):
         "datetime_format": formats.get_format("DATETIME_FORMAT"),
         "time_format": formats.get_format("TIME_FORMAT"),
     }
-    datetime_format = forms.CharField(label=_("Datetime format"))
-    date_format = forms.CharField(label=_("Date format"))
-    time_format = forms.CharField(label=_("Time format"))
+    datetime_format = forms.CharField(label=_("Datetime format"), required=False)
+    date_format = forms.CharField(label=_("Date format"), required=False)
+    time_format = forms.CharField(label=_("Time format"), required=False)
 
 
 class CSVOptionsForm(forms.Form):
@@ -156,11 +156,13 @@ class CSVOptionsForm(forms.Form):
     )
     delimiter = forms.ChoiceField(
         label=_("Delimiter"),
+        required=False,
         choices=list(zip(delimiters, delimiters)),
         help_text=_("A one-character string used to separate fields"),
     )
     quotechar = forms.ChoiceField(
         label=_("Quotechar"),
+        required=False,
         choices=list(zip(quotes, quotes)),
         help_text=_(
             "A one-character string used to quote fields containing special characters, "
@@ -169,6 +171,7 @@ class CSVOptionsForm(forms.Form):
     )
     quoting = forms.TypedChoiceField(
         coerce=int,
+        required=False,
         label=_("Quoting"),
         choices=(
             (csv.QUOTE_ALL, _("All")),
