@@ -628,26 +628,37 @@ HTTP2_PRESEND_CACHED_HEADERS = True
 HTTP2_SERVER_PUSH = False
 # CSP
 SOURCES = (
-    "self",
+    "'self'",
     "inline",
     "unsafe-inline",
-    "http://localhost:8000",
-    "https://unpkg.com",
-    "https://browser.sentry-cdn.com",
-    "https://cdnjs.cloudflare.com",
-    "data",
-    "unsafe-inline",
+    "data:",
+    "blob:",
+    "'unsafe-inline'",
+    "localhost:8000",
+    "unpkg.com",
+    "browser.sentry-cdn.com",
+    "cdnjs.cloudflare.com",
+    "register.unicef.org",
+    "uni-hope-ukr-sr.azurefd.net",
+    "uni-hope-ukr-sr-dev.azurefd.net",
+    "uni-hope-ukr-sr-dev.unitst.org",
 )
-# MIDDLEWARE += ["csp.middleware.CSPMiddleware", ]
+MIDDLEWARE += [
+    "csp.middleware.CSPMiddleware",
+]
 CSP_DEFAULT_SRC = SOURCES
-# CSP_SCRIPT_SRC = ("self",)
-CSP_STYLE_SRC = (
-    "self",
-    "unsafe-inline",
-    "https://unpkg.com",
-    "http://localhost:8000",
-    "https://cdnjs.cloudflare.com",
-)
+CSP_FRAME_SRC = []
+# CSP_SCRIPT_SRC = SOURCES
+# CSP_STYLE_SRC = (
+#     "'self'",
+#     "'data'",
+#     "'unsafe-inline'",
+#     "https://unpkg.com",
+#     "http://localhost:8000",
+#     "https://cdnjs.cloudflare.com",
+#     "http://cdnjs.cloudflare.com",
+#
+# )
 # CSP_OBJECT_SRC = ("self",)
 # CSP_BASE_URI = ("self", "http://localhost:8000",)
 # CSP_CONNECT_SRC = ("self",)
@@ -677,6 +688,9 @@ worker-src 'none';
 # CSP_REPORT_ONLY = env("CSP_REPORT_ONLY")
 # CSP_DEFAULT_SRC = env("CSP_DEFAULT_SRC")
 # CSP_SCRIPT_SRC = env("CSP_SCRIPT_SRC")
+
+SECURE_HSTS_SECONDS = 60
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
 # Add reversion models to admin interface:
 ADD_REVERSION_ADMIN = True

@@ -39,7 +39,7 @@ jobs:
         python-version: [ "3.9", ]
         experimental: [ false ]
         include:
-          - django-version: "4.0"
+          - django-version: "4.2"
             python-version: "3.9"
             experimental: true
     continue-on-error: ${{ matrix.experimental }}

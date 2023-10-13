@@ -15,6 +15,15 @@ class CounterManager(models.Manager):
         today = datetime.today()
         yesterday = datetime.combine(today - timedelta(days=1), datetime.max.time())
         selection = Registration.objects.filter(archived=False)
+
+        def annotate(qs):
+            return (
+                qs.annotate(hour=ExtractHour("timestamp"), day=TruncDay("timestamp"))
+                .values("day", "hour")
+                .annotate(c=Count("id"))
+                .order_by("day", "hour")
+            )
+
         if registrations:
             selection = selection.filter(id__in=registrations)
         querysets = []
@@ -26,35 +35,36 @@ class CounterManager(models.Manager):
                 latest = latest.day + timedelta(days=1)
             else:
                 latest = datetime.min
-            # result["details"][registration.slug]["range"] = (
-            #     latest.strftime("%Y-%B-%d"),
-            #     yesterday.strftime("%Y-%B-%d"),
-            # )
-            qs = Record.objects.filter(registration=registration, timestamp__range=(latest, yesterday))
-            qs = (
-                qs.annotate(hour=ExtractHour("timestamp"), day=TruncDay("timestamp"))
-                .values("day", "hour")
-                .annotate(c=Count("id"))
-                .order_by("day", "hour")
-            )
+            qs = annotate(Record.objects.filter(registration=registration, timestamp__range=(latest, yesterday)))
+            today_data = annotate(Record.objects.filter(registration=registration, timestamp__date=today))
             querysets.append(qs)
             counter = defaultdict(lambda: {"records": 0, "extra": {}})
-            for match in qs.all():
-                counter[match["day"]]["records"] += match["c"]
-                counter[match["day"]]["extra"][match["hour"]] = match["c"]
-                result["days"] += 1
-
+            for q in [qs, today_data]:
+                for match in q.all():
+                    counter[match["day"]]["records"] += match["c"]
+                    counter[match["day"]]["extra"][match["hour"]] = match["c"]
+                    result["days"] += 1
             for day, values in counter.items():
                 result["records"] += values["records"]
                 result["details"][registration.slug]["days"] += 1
-                Counter.objects.get_or_create(
-                    registration=registration,
-                    day=day,
-                    defaults={
-                        "records": values["records"],
-                        "details": {"hours": values["extra"]},
-                    },
-                )
+                if today.date() == day.date():
+                    Counter.objects.update_or_create(
+                        registration=registration,
+                        day=day,
+                        defaults={
+                            "records": values["records"],
+                            "details": {"hours": values["extra"]},
+                        },
+                    )
+                else:
+                    Counter.objects.get_or_create(
+                        registration=registration,
+                        day=day,
+                        defaults={
+                            "records": values["records"],
+                            "details": {"hours": values["extra"]},
+                        },
+                    )
         return querysets, result
 
 

@@ -4,6 +4,7 @@ trigger:
     include:
     - develop
     - master
+    - staging
     - ops/*
 pr: none
 resources:
@@ -24,6 +25,14 @@ variables:
       value: "UNI_WEBS rs-uni-hope-ukr-sr"
     - name: appName
       value: "uni-hope-ukr-sr"
+  - ${{ elseif eq(variables['Build.SourceBranchName'], 'staging') }}:
+    - group: flex-registration-stg
+    - name: Docker.registry
+      value: "unihopeukrsrdev"
+    - name: azureSubscription
+      value: "UNI_WEBS rs-uni-hope-ukr-sr-dev"
+    - name: appName
+      value: "uni-hope-ukr-sr-stg"
   - ${{ else }}:
     - group: flex-registration-dev
     - name: Docker.registry

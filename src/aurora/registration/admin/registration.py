@@ -543,14 +543,16 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
 
     @choice(order=900, change_list=False)
     def data(self, button):
-        button.choices = [
-            self.charts,
-            self.inspect_data,
-            self.view_collected_data,
-        ]
+        button.choices = [self.charts, self.inspect_data, self.view_collected_data, self.collect]
         if can_export_data(button.context["request"], button.original):
             button.choices.append(self.export_as_csv)
         return button
+
+    @view()
+    def collect(self, request, pk):
+        from aurora.counters.models import Counter
+
+        Counter.objects.collect(registrations=[pk])
 
     @view()
     def inspect_data(self, request, pk):

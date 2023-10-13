@@ -17,6 +17,7 @@ from aurora.core.utils import is_root
 
 from .ad import ADUSerMixin
 from .forms import AuroraRoleForm
+from .utils import generate_pwd
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +61,10 @@ class UserAdmin(AdminActionPermMixin, ADUSerMixin, UserAdmin_):
     def hijack(self, request, pk):
         hijacked = self.get_object(request, pk)
         impersonate(request, hijacked)
+
+    @button()
+    def generate_password(self, request, pk):
+        generate_pwd(pk)
 
 
 class UserProfileAdmin(SmartModelAdmin):
