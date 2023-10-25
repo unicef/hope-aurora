@@ -12,12 +12,12 @@ logger = logging.getLogger(__name__)
 
 
 def is_admin_site(request):
-    parts = urlparse(request.get_raw_uri())
+    parts = urlparse(request.build_absolute_uri())
     return re.compile(config.WAF_ADMIN_ALLOWED_HOSTNAMES).match(parts.netloc)
 
 
 def is_public_site(request):
-    parts = urlparse(request.get_raw_uri())
+    parts = urlparse(request.build_absolute_uri())
     return re.compile(config.WAF_REGISTRATION_ALLOWED_HOSTNAMES).match(parts.netloc)
 
 
@@ -29,7 +29,7 @@ class AdminSiteMiddleware:
         if is_root(request) or request.user.is_staff:
             return self.get_response(request)
         else:
-            parts = urlparse(request.get_raw_uri())
+            parts = urlparse(request.build_absolute_uri())
             try:
                 if parts.path.startswith(f"/{settings.DJANGO_ADMIN_URL}"):
                     if not is_admin_site(request):
