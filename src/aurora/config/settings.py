@@ -573,6 +573,7 @@ AZURE_GRAPH_API_VERSION = "v1.0"
 AZURE_TOKEN_URL = "https://login.microsoftonline.com/unicef.org/oauth2/token"
 
 # Social Auth settings.
+SOCIAL_AUTH_BACKEND_NAME = 'macioce'
 SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_SECRET = env.str("AZURE_CLIENT_SECRET")
 SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_TENANT_ID = env("AZURE_TENANT_ID")
 SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_KEY = env.str("AZURE_CLIENT_KEY")
@@ -638,6 +639,7 @@ SOURCES = (
     "unpkg.com",
     "browser.sentry-cdn.com",
     "cdnjs.cloudflare.com",
+    "unisitetracker.unicef.io",
     "register.unicef.org",
     "uni-hope-ukr-sr.azurefd.net",
     "uni-hope-ukr-sr-dev.azurefd.net",
