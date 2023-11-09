@@ -1,5 +1,7 @@
+{% load matomo %}
 {% block footer %}
     <div class="flex justify-center text-xs footer m-auto pt-1 pb-2 border-t-2 text-gray-400 border-gray-400">
         {{ project.build_date }} - {{ LANGUAGE_CODE }} -- {{ project.version }}
     </div>
+    {% include "_matomo.html" %}
 {% endblock footer %}
