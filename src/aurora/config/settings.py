@@ -649,7 +649,6 @@ MIDDLEWARE += [
     "csp.middleware.CSPMiddleware",
 ]
 CSP_DEFAULT_SRC = SOURCES
-CSP_DEFAULT_SRC = ("'self'",)
 CSP_FRAME_ANCESTORS = ("'none'",)
 # CSP_SCRIPT_SRC = SOURCES
 # CSP_STYLE_SRC = (
