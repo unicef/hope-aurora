@@ -378,10 +378,9 @@ if SENTRY_DSN:
         level=logging.INFO,  # Capture info and above as breadcrumbs
         event_level=logging.ERROR,  # Send errors as events
     )
-
     sentry_sdk.init(
         dsn=SENTRY_DSN,
-        environment="production",
+        environment=env("SENTRY_ENVIRONMENT", default=None),
         integrations=[
             DjangoIntegration(transaction_style="url"),
             sentry_logging,
