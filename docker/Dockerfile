@@ -1,68 +1,66 @@
-FROM python:3.11-slim-bullseye
-ARG BUILD_DATE
-ARG VERSION
-
-WORKDIR /code/
+FROM python:3.11-slim-bookworm as base
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-                build-essential \
-                locales \
-                nginx \
-                locales-all \
-                gettext \
-                libjpeg-dev \
-                zlib1g-dev \
-                git-core \
-                postgresql-client \
-                libpq-dev \
-                python3-psycopg2 \
-                python3-gdal \
-                redis-server \
-                gdal-bin \
-                curl \
-    && locale-gen --no-purge uk_UA.UTF-8 \
-    && apt-get clean
+    && apt-get install -y \
+        build-essential \
+        locales \
+        nginx \
+        locales-all \
+        gettext \
+        libjpeg-dev \
+        zlib1g-dev \
+        git-core \
+        postgresql-client \
+        libpq-dev \
+        python3-psycopg2 \
+        python3-gdal \
+        redis-server \
+        gdal-bin \
+        curl \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* \
+    && addgroup --system --gid 82 aur \
+    && adduser \
+        --system --uid 82 \
+        --disabled-password --home /home/aur \
+        --shell /sbin.nologin --group aur --gecos aur \
+    && mkdir -p /code /tmp /data /static \
+    && chown -R aur:aur /code /tmp /data /static
 
-ENV PATH="${PATH}:/root/.local/bin:/code/__pypackages__/3.11/bin" \
-    ADMINS="" \
-    BUILD_DATE=${BUILD_DATE} \
-    CACHE_DEFAULT="redis://127.0.0.1/0" \
-    CONSTANCE_DATABASE_CACHE_BACKEND="" \
-    DATABASE_URL="" \
-    DEFAULT_ORGANIZATION="UNICEF"\
-    DJANGO_SETTINGS_MODULE="aurora.config.settings" \
-    IPSTACK_KEY="" \
-    LOG_LEVEL="ERROR" \
-    MAINTENANCE_MODE="off" \
-    NGINX_CACHE_DIR="/data/nginx/cache" \
-    NGINX_MAX_BODY_SIZE=30M \
-    REDIS_LOGLEVEL="warning" \
-    REDIS_MAXMEMORY="100Mb" \
-    REDIS_MAXMEMORY_POLICY="volatile-ttl" \
-    PYTHONPATH="/code/src/:/code/__pypackages__/3.11/lib" \
-    PYTHONUNBUFFERED=1 \
-    SECRET_KEY="secret-key-just-for-build" \
-    SENTRY_DSN="" \
-    STATIC_ROOT="/var/static" \
-    STATIC_URL="/static/" \
-    UWSGI_PROCESSES=4 \
-    VERSION=${VERSION} \
-    POETRY_VERSION=${POETRY_VERSION}
+ENV PACKAGES_DIR=/packages
+ENV PYPACKAGES=$PACKAGES_DIR/__pypackages__/3.11
+ENV LIB_DIR=$PYPACKAGES/lib
+ENV PYTHONPATH=$PYTHONPATH:$LIB_DIR:/code/src
+ENV PATH=$PATH:$PYPACKAGES/bin
 
-#    STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage" \
+WORKDIR /code
 
+FROM base as builder
+
+WORKDIR $PACKAGES_DIR
 RUN pip install pdm==2.9.3
-ADD pyproject.toml pdm.toml pdm.lock ./
-RUN sed -i 's/use_venv = true/use_venv = false/' pdm.toml
+ADD pyproject.toml ./
+ADD pdm.toml ./pdm.toml
+ADD pdm.lock ./
 RUN pdm sync --prod --no-editable --no-self
 
-RUN mkdir -p /var/nginx/system
+FROM builder AS dev
 
-ADD . ./
-ADD ./docker/conf/nginx/* /var/nginx/
-ADD ./docker/conf/* /conf/
-ADD ./docker/bin/* /usr/local/bin/
+RUN pdm sync --no-editable --no-self
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-EXPOSE 8000
+WORKDIR /code
+COPY ./ ./
+
+ADD docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["entrypoint.sh"]
+
+
+FROM base AS prd
+
+ENV PATH=$PATH:/code/.venv/bin/
+
+COPY --chown=aur:aur ./ ./
+COPY --chown=aur:aur --from=builder $PACKAGES_DIR $PACKAGES_DIR
+USER aur
+
+ADD docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["entrypoint.sh"]

@@ -1,0 +1,85 @@
+version: '3.7'
+
+volumes:
+  postgres_data:
+  backend_data:
+
+
+services:
+  proxy:
+    image: tivix/docker-nginx:v17
+    environment:
+      - UPSTREAMS=/:backend:8000
+      - STATICS=/static:/data
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    volumes:
+      - backend_data:/data
+
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: dev
+    command: |
+      sh -c "
+        entrypoint.sh ./wait-for-it.sh db:5432
+        entrypoint.sh ./wait-for-it.sh redis:6379
+        python3 manage.py upgrade
+        entrypoint.sh dev
+      "
+    env_file:
+      - .env
+    ports:
+      - 8000:8000
+    volumes:
+      - .:/code
+      - backend_data:/var/static
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://backend:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - 5432:5432
+    env_file:
+      - .env
+    restart: always
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      start_period: 5s
+      start_interval: 1s
+      interval: 5s
+      timeout: 4s
+      retries: 5
+
+  redis:
+    image: redis:7.2
+    ports:
+      - 6379:6379
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      start_period: 5s
+      start_interval: 1s
+      interval: 5s
+      timeout: 4s
+      retries: 5
