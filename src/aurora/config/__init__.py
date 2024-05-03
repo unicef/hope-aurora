@@ -53,6 +53,7 @@ OPTIONS = {
     "CSRF_COOKIE_NAME": (str, "aurora"),
     "DEBUG": (bool, False),
     "DEBUG_PROPAGATE_EXCEPTIONS": (bool, False),
+    "DEFAULT_FILE_STORAGE": (str, "django.core.files.storage.FileSystemStorage"),
     "DJANGO_ADMIN_TITLE": (str, "Aurora"),
     "EMAIL_BACKEND": (str, "anymail.backends.mailjet.EmailBackend"),
     "MAILJET_API_KEY": (str, ""),
@@ -93,7 +94,6 @@ OPTIONS = {
     # "CSP_DEFAULT_SRC": (list, ),
     # "CSP_SCRIPT_SRC": (str, None),
     # "FERNET_KEY": (str, "Nl_puP2z0-OKVNKMtPXx4jEI-ox7sKLM7CgnGT-yAug="),
-    # "STATICFILES_STORAGE": (str, "django.contrib.staticfiles.storage.StaticFilesStorage"),
     # "STATIC_ROOT": (str, "/tmp/static/"),
     # Sentry - see CONTRIBUTING.md
 }

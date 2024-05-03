@@ -8,7 +8,6 @@ from pathlib import Path
 
 from django import forms
 from django.contrib.admin.templatetags.admin_urls import admin_urlname
-from django.contrib.postgres.fields import CICharField
 from django.core.cache import caches
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
@@ -66,7 +65,7 @@ class Organization(AdminReverseMixin, NaturalKeyModel, MPTTModel):
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
 
-    name = CICharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100, unique=True, db_collation="_")
     slug = models.SlugField(max_length=100, unique=True, blank=True, null=True)
     parent = TreeForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="children")
 
@@ -95,7 +94,7 @@ class Project(AdminReverseMixin, NaturalKeyModel, MPTTModel):
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
 
-    name = CICharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100, unique=True, db_collation="_")
     slug = models.SlugField(max_length=100, blank=True)
     organization = models.ForeignKey(Organization, related_name="projects", on_delete=models.CASCADE)
     parent = TreeForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="children")
@@ -161,8 +160,10 @@ _.is_adult = function(d) { return !_.is_child(d)};
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
 
-    label = CICharField(max_length=255)
-    name = CICharField(verbose_name=_("Function Name"), max_length=255, unique=True, blank=True, null=True)
+    label = models.CharField(max_length=255, db_collation="_")
+    name = models.CharField(
+        verbose_name=_("Function Name"), max_length=255, unique=True, blank=True, null=True, db_collation="_"
+    )
     code = models.TextField(blank=True, null=True)
     target = models.CharField(
         max_length=10,
@@ -303,7 +304,7 @@ class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    name = CICharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255, unique=True, db_collation="_")
     base_type = StrategyClassField(registry=form_registry, default=FlexFormBaseForm)
     validator = models.ForeignKey(
         Validator, limit_choices_to={"target": Validator.FORM}, blank=True, null=True, on_delete=models.PROTECT
@@ -458,7 +459,7 @@ class FormSet(AdminReverseMixin, NaturalKeyModel, OrderableModel):
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
 
-    name = CICharField(max_length=255)
+    name = models.CharField(max_length=255)
     title = models.CharField(max_length=300, blank=True, null=True)
     description = models.TextField(max_length=2000, blank=True, null=True)
     enabled = models.BooleanField(default=True)
@@ -567,7 +568,7 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
 
     flex_form = models.ForeignKey(FlexForm, on_delete=models.CASCADE, related_name="fields")
     label = models.CharField(max_length=2000)
-    name = CICharField(max_length=100, blank=True, validators=[RegexValidator("^[a-z_0-9]*$")])
+    name = models.CharField(max_length=100, blank=True, validators=[RegexValidator("^[a-z_0-9]*$")], db_collation="_")
     field_type = StrategyClassField(registry=field_registry, import_error=import_custom_field)
     choices = models.CharField(max_length=2000, blank=True, null=True)
     required = models.BooleanField(default=False)
@@ -750,7 +751,7 @@ class OptionSetManager(NaturalKeyModelManager):
 class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
-    name = CICharField(max_length=100, unique=True, validators=[RegexValidator("[a-z0-9-_]")])
+    name = models.CharField(max_length=100, unique=True, validators=[RegexValidator("[a-z0-9-_]")], db_collation="_")
     description = models.CharField(max_length=1000, blank=True, null=True)
     data = models.TextField(blank=True, null=True)
     separator = models.CharField(max_length=1, default="", blank=True)
@@ -848,7 +849,9 @@ def clean_choices(value):
 
 
 class CustomFieldType(AdminReverseMixin, NaturalKeyModel, models.Model):
-    name = CICharField(max_length=100, unique=True, validators=[RegexValidator("[A-Z][a-zA-Z0-9_]*")])
+    name = models.CharField(
+        max_length=100, unique=True, validators=[RegexValidator("[A-Z][a-zA-Z0-9_]*")], db_collation="_"
+    )
     base_type = StrategyClassField(registry=field_registry, default=forms.CharField)
     attrs = models.JSONField(default=dict)
     regex = RegexField(blank=True, null=True)

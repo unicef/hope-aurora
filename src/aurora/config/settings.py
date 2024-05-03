@@ -264,9 +264,15 @@ USE_TZ = True
 # STATIC_URL = f"/static/{os.environ.get('VERSION', '')}/"
 STATIC_URL = env("STATIC_URL")
 STATIC_ROOT = env("STATIC_ROOT") + STATIC_URL  # simplify nginx config
-# STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
-# STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
-STATICFILES_STORAGE = env("STATICFILES_STORAGE")
+
+STORAGES = {
+    "default": {
+        "BACKEND": env("DEFAULT_FILE_STORAGE"),
+    },
+    "staticfiles": {
+        "BACKEND": env("STATICFILES_STORAGE"),
+    },
+}
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "web/static"),

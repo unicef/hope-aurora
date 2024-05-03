@@ -4,7 +4,6 @@ import logging
 
 from django.conf import settings
 from django.contrib.flatpages.models import FlatPage
-from django.contrib.postgres.fields import CICharField
 from django.db import models
 from django.utils import timezone, translation
 from django.utils.functional import cached_property
@@ -55,7 +54,7 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
 
-    name = CICharField(max_length=255)
+    name = models.CharField(max_length=255, db_collation="_")
     title = models.CharField(max_length=500, blank=True, null=True)
     slug = models.SlugField(max_length=500, blank=True, null=True, unique=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="registrations")

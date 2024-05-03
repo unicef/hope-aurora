@@ -3,7 +3,7 @@ import os
 import pytest
 
 from django import forms
-from django.core.files.storage import get_storage_class
+from django.core.files.storage import storages
 
 from aurora.core.fields import CompilationTimeField, SmartFileField
 
@@ -45,7 +45,7 @@ def pytest_configure(config):
 
     from django.conf import global_settings, settings
 
-    settings.STATICFILES_STORAGE = global_settings.STATICFILES_STORAGE
+    settings.STORAGES = global_settings.STORAGES
 
 
 @pytest.fixture()
@@ -142,7 +142,7 @@ def mock_storage(monkeypatch):
     def _mock_exists(instance, name):
         return getattr(instance, f"mock_{clean_name(name)}_exists", False)
 
-    storage_class = get_storage_class()
+    storage_class = storages['default']
 
     monkeypatch.setattr(storage_class, "_save", _mock_save)
     monkeypatch.setattr(storage_class, "delete", _mock_delete)
