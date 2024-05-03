@@ -73,3 +73,5 @@ jobs:
       - uses: codecov/codecov-action@v4
         with:
           verbose: false # optional (default = false)
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
