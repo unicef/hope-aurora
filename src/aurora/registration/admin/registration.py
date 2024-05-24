@@ -572,7 +572,10 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
 
     @view(change_form=True, html_attrs={"target": "_new"})
     def charts(self, request, pk):
-        return HttpResponseRedirect(reverse("charts:registration", args=[pk]))
+        obj = self.get_object(request, pk)
+        return HttpResponseRedirect(
+            reverse("charts:registration", args=[obj.project.organization.slug, obj.project.pk, pk])
+        )
 
     @view(permission=is_root, html_attrs={"class": "aeb-warn"})
     def view_collected_data(self, button, pk):
