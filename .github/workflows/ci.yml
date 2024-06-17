@@ -166,7 +166,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [unit_tests, isort, black, flake8, mypy]
+    needs: [unit_tests, isort, black, flake8, mypy, build_and_push_dist]
     if: |
       github.event_name == 'push' &&
       (
