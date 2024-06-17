@@ -8,7 +8,6 @@ coverage.xml
 bin/
 Dockerfile*
 __pycache__
-tests
 node_modules
 src/*.egg-info
 src/aurora/staticfiles/
