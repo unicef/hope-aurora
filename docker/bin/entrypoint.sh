@@ -18,7 +18,7 @@ if [ $# -eq 0 ]; then
     envsubst < /conf/nginx.conf.tpl > /conf/nginx.conf && nginx -tc /conf/nginx.conf
     envsubst < /conf/redis.conf.tpl > /conf/redis.conf
 
-    django-admin upgrade --no-input
+    python -m django upgrade --no-input
 
     nginx -c /conf/nginx.conf
     redis-server /conf/redis.conf
@@ -29,9 +29,9 @@ else
         "dev")
         until pg_isready -h db -p 5432;
           do echo "waiting for database"; sleep 2; done;
-        django-admin collectstatic --no-input
-        django-admin migrate
-        django-admin runserver 0.0.0.0:8000
+        python -m django collectstatic --no-input
+        python -m django migrate
+        python -m django runserver 0.0.0.0:8000
         ;;
     *)
     exec "$@"
