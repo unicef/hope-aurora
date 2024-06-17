@@ -132,7 +132,7 @@ jobs:
         run: |
           backend_image=${{ vars.DOCKERHUB_ORGANIZATION }}/hope-support-images:flex-registration-${{ github.sha }}-dev docker compose \
             -f ./ops/compose.test.yml \
-            run backend pytest --create-db ./src/
+            run backend pytest --create-db ./tests/
 
   build_and_push_dist:
     runs-on: ubuntu-latest
