@@ -90,7 +90,6 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Check
-        continue-on-error: true # TODO
         run: |
           docker run --rm -i \
             ${{ vars.DOCKERHUB_ORGANIZATION }}/hope-support-images:flex-registration-${{ github.sha }}-dev \
@@ -128,7 +127,6 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Unit tests
-        continue-on-error: true # TODO
         run: |
           backend_image=${{ vars.DOCKERHUB_ORGANIZATION }}/hope-support-images:flex-registration-${{ github.sha }}-dev docker compose \
             -f ./ops/compose.test.yml \
