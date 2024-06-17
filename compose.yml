@@ -12,6 +12,9 @@ services:
       dockerfile: ./docker/Dockerfile
       target: dev
     command: dev
+    # FIXME: if the below lines are uncommented, then __pypackages__ get lost
+    # volumes:
+    #   - ./:/code/
     ports:
       - "8000:8000"
     depends_on:
