@@ -13,3 +13,4 @@ src/aurora/staticfiles/
 Makefile
 README.md
 manage.py
+!.flake8
