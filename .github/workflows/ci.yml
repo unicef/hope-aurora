@@ -5,6 +5,7 @@ on:
     branches:
     - develop
     - staging
+    - ci # WIP
   pull_request:
     branches:
     - develop
