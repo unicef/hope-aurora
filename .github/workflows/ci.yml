@@ -35,6 +35,7 @@ jobs:
             -t ${{ vars.DOCKERHUB_ORGANIZATION }}/hope-support-images:flex-registration-${{ github.sha }}-dev \
             -t ${{ vars.DOCKERHUB_ORGANIZATION }}/hope-support-images:flex-registration-latest-dev \
             -f ./docker/Dockerfile \
+            --target dev \
             --push \
             ./
 
