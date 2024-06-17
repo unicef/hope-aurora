@@ -151,6 +151,8 @@ jobs:
         run: |
           docker buildx create --use
           docker buildx build \
+            --cache-from ${{ vars.DOCKERHUB_ORGANIZATION }}/hope-support-images:cache-flex-registration-${{ github.sha }}-dev \
+            --cache-from ${{ vars.DOCKERHUB_ORGANIZATION }}/hope-support-images:cache-flex-registration-latest-dev \
             --cache-from ${{ vars.DOCKERHUB_ORGANIZATION }}/hope-support-images:cache-flex-registration-${{ github.sha }}-dist \
             --cache-from ${{ vars.DOCKERHUB_ORGANIZATION }}/hope-support-images:cache-flex-registration-latest-dist \
             --cache-to ${{ vars.DOCKERHUB_ORGANIZATION }}/hope-support-images:cache-flex-registration-${{ github.sha }}-dist \
