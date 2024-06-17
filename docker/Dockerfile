@@ -68,4 +68,4 @@ EXPOSE 8000
 FROM base as dev
 RUN pdm sync --dev
 
-FROM base as prod
+FROM base as dist
