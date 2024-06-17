@@ -1,6 +1,5 @@
 .*
 ~*
-*.ini
 *.yml
 *.min.min.js
 package*.*
