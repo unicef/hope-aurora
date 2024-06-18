@@ -178,13 +178,13 @@ jobs:
       - name: Trigger deploy
         run: |
           if [ ${{ github.ref }} == 'refs/heads/develop' ]; then
-            pipelineId=TODO
+            pipelineId=1331
           elif [ ${{ github.ref }} == 'refs/heads/staging' ]; then
             pipelineId=TODO
           elif [ ${{ github.ref }} == 'refs/heads/master' ]; then
             pipelineId=TODO
           elif [ ${{ github.ref }} == 'refs/heads/ci' ]; then
-            pipelineId=WIP
+            pipelineId=1331
           else
             echo "No pipeline to trigger for ref ${{ github.ref }}"
             exit 0
