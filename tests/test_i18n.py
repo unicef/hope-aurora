@@ -3,6 +3,11 @@ import pytest
 from django.urls import reverse
 
 
+@pytest.fixture
+def app(django_app_factory):
+    return django_app_factory(csrf_checks=False)
+
+
 @pytest.fixture()
 def simple_registration(simple_form):
     from testutils.factories import RegistrationFactory
@@ -23,10 +28,10 @@ def simple_registration(simple_form):
 
 
 @pytest.mark.django_db
-def test_register_simple(django_app, simple_registration):
+def test_register_simple(app, simple_registration):
     url = reverse("register", args=[simple_registration.slug, simple_registration.version])
     assert url == f"/en-us/register/{simple_registration.slug}/{simple_registration.version}/"
-    res = django_app.get(url)
+    res = app.get(url)
     res = res.form.submit()
     res.form["first_name"] = "first_name"
     res.form["last_name"] = "f"
@@ -38,10 +43,10 @@ def test_register_simple(django_app, simple_registration):
 
 
 @pytest.mark.django_db
-def test_create_translation(django_app, simple_registration, admin_user):
+def test_create_translation(app, simple_registration, admin_user):
     url = reverse("admin:registration_registration_create_translation", args=[simple_registration.pk])
     # assert url == f"/en-us/register/registration-1/{simple_registration.version}/"
-    res = django_app.get(url, user=admin_user)
+    res = app.get(url, user=admin_user)
     # translation-form
     res = res.forms[1].submit()
     # res = res.form.submit()
