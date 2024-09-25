@@ -1,31 +1,10 @@
 # Aurora
 
-Aurora is an open source project to collect and register data.
-It is focused mainly on performance and security.
+[![Test](https://github.com/unicef/hope-aurora/actions/workflows/test.yml/badge.svg)](https://github.com/unicef/hope-aurora/actions/workflows/test.yml)
 
 
-### Run the code 
+Aurora is the official HOPE online registration tool, it is released as open source project, feel free to contribute and use it. 
 
-- Option 1: with local machine services (redis, postgres) with `direnv`
+It has be development taking performance and security as main key points 
 
-First configure your `.envrc` and run
-
-```shell
-  python manage.py runserver
-````
-
-- Option 2: using docker compose
-
-For the first time you need to run in root project directory
-
-```shell
-./manage env --comment --defaults > .env
-docker compose build
-docker compose up
-```
-
-each next time
-
-```shell
-docker compose up
-```
+Please read more about Aurora and HOPE in the [official documentation](https://unicef.github.io/hope-documentation/) 

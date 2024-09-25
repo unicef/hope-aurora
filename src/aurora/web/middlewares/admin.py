@@ -27,9 +27,7 @@ class AdminSiteMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if is_root(request) or request.user.is_staff:
-            return self.get_response(request)
-        else:
+        if config.WAF_REGISTRATION_ALLOWED_HOSTNAMES:
             parts = urlparse(request.build_absolute_uri())
             try:
                 if parts.path.startswith(f"/{settings.DJANGO_ADMIN_URL}"):
@@ -42,3 +40,5 @@ class AdminSiteMiddleware:
                 logging.exception(e)
             ret = self.get_response(request)
             return ret
+        else:
+            return self.get_response(request)

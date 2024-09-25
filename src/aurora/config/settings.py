@@ -31,6 +31,7 @@ DJANGO_ADMIN_URL = env("DJANGO_ADMIN_URL")
 SITE_ID = env("SITE_ID")
 INSTALLED_APPS = [
     "daphne",
+    "smart_env",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -291,7 +292,9 @@ AUTHENTICATION_BACKENDS = [
 
 CSRF_COOKIE_NAME = env("CSRF_COOKIE_NAME")
 CSRF_HEADER_NAME = "HTTP_X_CSRFTOKEN"
-CSRF_COOKIE_SECURE = False
+CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
+CSRF_COOKIE_SECURE = env("CSRF_COOKIE_SECURE")
+
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = env("USE_X_FORWARDED_HOST")
 
