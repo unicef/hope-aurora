@@ -1,4 +1,4 @@
-FROM python:3.11-slim-bullseye as base
+FROM python:3.12-slim-bookworm AS base
 ARG BUILD_DATE
 ARG VERSION
 
@@ -24,13 +24,16 @@ RUN apt-get update \
     && locale-gen --no-purge uk_UA.UTF-8 \
     && apt-get clean
 
-ENV PATH="${PATH}:/root/.local/bin:/code/__pypackages__/3.11/bin" \
+ENV PATH="${PATH}:/root/.local/bin:/code/__pypackages__/3.12/bin" \
     ADMINS="" \
     BUILD_DATE=${BUILD_DATE} \
-    CACHE_DEFAULT="redis://127.0.0.1/0" \
     CONSTANCE_DATABASE_CACHE_BACKEND="" \
+    CSRF_TRUSTED_ORIGINS="" \
+    CSRF_COOKIE_NAME="aurora" \
+    CSRF_COOKIE_SECURE="true" \
     DATABASE_URL="" \
     DEFAULT_ORGANIZATION="UNICEF"\
+    DEBUG="false"\
     DJANGO_SETTINGS_MODULE="aurora.config.settings" \
     IPSTACK_KEY="" \
     LOG_LEVEL="ERROR" \
@@ -40,7 +43,7 @@ ENV PATH="${PATH}:/root/.local/bin:/code/__pypackages__/3.11/bin" \
     REDIS_LOGLEVEL="warning" \
     REDIS_MAXMEMORY="100Mb" \
     REDIS_MAXMEMORY_POLICY="volatile-ttl" \
-    PYTHONPATH="/code/src/:/code/__pypackages__/3.11/lib" \
+    PYTHONPATH="/code/src/:/code/__pypackages__/3.12/lib" \
     PYTHONUNBUFFERED=1 \
     SECRET_KEY="secret-key-just-for-build" \
     SENTRY_DSN="" \
@@ -63,9 +66,12 @@ ADD ./docker/conf/* /conf/
 ADD ./docker/bin/* /usr/local/bin/
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["run"]
+
+EXPOSE 80
 EXPOSE 8000
 
-FROM base as dev
+FROM base AS dev
 RUN pdm sync --dev
 
-FROM base as dist
+FROM base AS dist

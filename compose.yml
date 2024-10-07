@@ -2,34 +2,59 @@ volumes:
   db:
 
 services:
-  backend:
+  app:
     stdin_open: true
     tty: true
-    env_file:
-      - .env
+    environment:
+      - ADMIN_EMAIL=admin@example.com
+      - ADMIN_PASSWORD=password
+      - ALLOWED_HOSTS=app,localhost,127.0.0.1
+      - CACHE_URL=redis://redis:6379/1?client_class=django_redis.client.DefaultClient
+      - CACHE_DEFAULT=redis://redis:6379/2
+      - CELERY_BROKER_URL=redis://redis:6379/9
+      - CSRF_COOKIE_SECURE=False
+      - CSRF_TRUSTED_ORIGINS=http://localhost:8000,http://localhost
+      - DATABASE_URL=postgres://aurora:password@db:5432/aurora
+      - DEBUG=true
+      - DJANGO_ADMIN_URL=admin/
+      - FERNET_KEY=3bfbbad7d5e149e9b313fd47d33db5e6
+      - MEDIA_ROOT=/var/storage/media/
+      - SECRET_KEY=super_secret_key_just_for_development_that_needs_to_be_more_than_fifty_characters
+      - SECURE_HSTS_PRELOAD=0
+      - SECURE_SSL_REDIRECT=False
+      - SESSION_COOKIE_DOMAIN=localhost:8000
+      - SESSION_COOKIE_SECURE=False
+      - SOCIAL_AUTH_REDIRECT_IS_HTTPS=False
+      - STORAGE_STATIC=django.core.files.storage.FileSystemStorage
+      - STORAGE_MEDIA=django.core.files.storage.FileSystemStorage
+      - STORAGE_DEFAULT=django.core.files.storage.FileSystemStorage
+      - STATIC_ROOT=/var/storage/static/
+      - STATIC_URL=/static/
+      - USE_HTTPS=false
+      - USE_X_FORWARDED_HOST=false
     build:
       context: ./
       dockerfile: ./docker/Dockerfile
       target: dev
-    command: dev
-    # FIXME: if the below lines are uncommented, then __pypackages__ get lost
-    # volumes:
-    #   - ./:/code/
     ports:
-      - "8000:8000"
+      - "8000:80"  # expose nginx here
+#      - "8000:8000"
     depends_on:
       - db
       - redis
 
   db:
     image: postgres:16
+    environment:
+      - PGUSER=aurora
+      - POSTGRES_USER=aurora
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=aurora
     volumes:
       - db:/var/lib/postgresql/data
-    env_file:
-      - .env
 
   redis:
     image: redis:7
     restart: unless-stopped
-    expose:
-      - "6379"
+#    expose:
+#      - "6379"
