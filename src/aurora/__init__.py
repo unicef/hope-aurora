@@ -1,8 +1,7 @@
-import os
 from functools import lru_cache
 from subprocess import STDOUT
 
-VERSION = os.environ.get("VERSION", "")
+VERSION = "2.0.0"
 
 
 @lru_cache(1)

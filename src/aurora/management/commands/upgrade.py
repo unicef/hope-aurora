@@ -54,7 +54,7 @@ def upgrade(admin_email, admin_password, static, migrate, prompt, verbosity, org
 
             # ensure project/org
             click.echo("Set default Org/Project")
-            UNICEF, __ = Organization.objects.get_or_create(slug="unicef", defaults={"name": "UNICEF"})
+            UNICEF, __ = Organization.objects.get_or_create(slug="unicef", defaults={"name": organization})
             DEF, __ = Project.objects.get_or_create(slug="default-project", organization=UNICEF)
 
             Project.objects.filter(organization__isnull=True).update(organization=UNICEF)

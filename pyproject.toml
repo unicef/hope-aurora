@@ -3,7 +3,7 @@ authors = [
     {name = "sax", email = "s.apostolico@gmail.com"},
     {name = "Domenico DiNicola", email = "dom.dinicola@gmail.com"},
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "Faker",
     "Markdown",
@@ -68,6 +68,7 @@ dependencies = [
     "beautifulsoup4",
     "django-anymail[mailjet]",
     "uwsgi",
+    "django-smart-env>=0.1.0",
 ]
 name = "Aurora"
 version = "0.1"
@@ -124,6 +125,7 @@ exclude = '''
   | dist
   | migrations
   | snapshots
+  | __pypackages__
 )/
 '''
 

@@ -36,6 +36,12 @@ def pytest_configure(config):
     os.environ["DEBUG"] = "0"
     os.environ["ADMINS"] = "admin@demo.org"
     os.environ["CAPTCHA_TEST_MODE"] = "true"
+    os.environ["CSRF_COOKIE_SECURE"] = "false"
+    os.environ["CSRF_TRUSTED_ORIGINS"] = "http://testserver"
+    os.environ["SECURE_SSL_REDIRECT"] = "false"
+    os.environ["SESSION_COOKIE_DOMAIN"] = "http://testserver/"
+    os.environ["SESSION_COOKIE_SECURE"] = "false"
+    os.environ["SOCIAL_AUTH_REDIRECT_IS_HTTPS"] = "false"
 
     if config.option.show_browser:
         setattr(config.option, "enable_selenium", True)
