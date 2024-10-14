@@ -14,7 +14,7 @@ class RecordFilter(filters.FilterSet):
 
     class Meta:
         model = Record
-        fields = ["registration", "after", "id"]
+        fields = ["registration", "after", "id", "registration__project",  "registration__project__organization"]
 
 
 class RecordPaginator(CursorPagination):
