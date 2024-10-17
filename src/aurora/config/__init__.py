@@ -70,7 +70,7 @@ OPTIONS = {
     "LOG_LEVEL": (str, "ERROR"),
     "MAILJET_API_KEY": (str, ""),
     "MAILJET_SECRET_KEY": (str, ""),
-    "MATOMO_ID": (str, ""),
+    "MATOMO_ID": (str, "", "", False),
     "MATOMO_SITE": (str, "https://unisitetracker.unicef.io/"),
     "MEDIA_ROOT": (str, "/tmp/media/"),
     "MIGRATION_LOCK_KEY": (str, "django-migrations"),
