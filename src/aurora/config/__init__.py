@@ -71,7 +71,7 @@ OPTIONS = {
     "MAILJET_API_KEY": (str, ""),
     "MAILJET_SECRET_KEY": (str, ""),
     "MATOMO_ID": (str, ""),
-    "MATOMO_SITE": (str, ""),
+    "MATOMO_SITE": (str, "https://unisitetracker.unicef.io/"),
     "MEDIA_ROOT": (str, "/tmp/media/"),
     "MIGRATION_LOCK_KEY": (str, "django-migrations"),
     "PRODUCTION_SERVER": (str, ""),
