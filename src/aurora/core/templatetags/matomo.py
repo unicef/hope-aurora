@@ -11,4 +11,4 @@ def matomo_site():
 
 @register.simple_tag()
 def matomo_id():
-    return settings.MATOMO_ID
+    return getattr(settings, 'MATOMO_ID', '')

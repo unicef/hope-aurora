@@ -80,7 +80,7 @@ dev:
 	cd .. && docker run \
 	 		--rm \
 	 		--name=${CONTAINER_NAME} \
-			-p 8000:80 \
+			-p 8000:8000 \
 			-e AUTHENTICATION_BACKENDS=\
 			-e ADMIN_EMAIL="${ADMIN_EMAIL}" \
 			-e ADMIN_PASSWORD="${ADMIN_PASSWORD}" \
@@ -92,7 +92,7 @@ dev:
 			-e DATABASE_URL="${DATABASE_URL}" \
 			-e DEBUG="0" \
 			-e SENTRY_DSN="${SENTRY_DSN}" \
-			-e REDIS_CONNSTR="127.0.0.1" \
+			-e REDIS_CONNSTR="${REDIS_CONNSTR}" \
 			-e VERSION="${VERSION}" \
 			-v ${PWD}/conf/:/conf/ \
 			-v ${PWD}/bin/entrypoint.sh:/usr/local/bin/entrypoint.sh \
@@ -113,6 +113,7 @@ run:  ## run image locally
 	CMD="" $(MAKE) .run
 
 test:  ## test docker image
+	RUN_OPTIONS="-e FERNET_KEY=lhlijhlkjhlkjhlkjhlkjhkjhoj -e SESSION_COOKIE_DOMAIN=aaa -e SESSION_COOKIE_SECURE=1 " \
 	CMD='sh -c "whoami && django-admin collectstatic --no-input -v 3 && django-admin check --deploy"' \
 	$(MAKE) .run
 

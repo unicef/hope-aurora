@@ -14,10 +14,10 @@ from ...registration.models import Record
 class RecordSerializer(serializers.ModelSerializer):
     registration_url = serializers.SerializerMethodField()
     registrar = serializers.CharField()
-    project = serializers.SerializerMethodField()
-    organization = serializers.SerializerMethodField()
-    project_slug = serializers.SerializerMethodField()
-    organization_slug = serializers.SerializerMethodField()
+    project = serializers.ReadOnlyField(source='registration.project.pk')
+    organization = serializers.ReadOnlyField(source='registration.project.organization.pk')
+    project_slug = serializers.ReadOnlyField(source='registration.project.slug')
+    organization_slug = serializers.ReadOnlyField(source='registration.project.organization.slug')
 
     class Meta:
         model = Record
@@ -26,18 +26,6 @@ class RecordSerializer(serializers.ModelSerializer):
     def get_registration_url(self, obj):
         req = self.context["request"]
         return req.build_absolute_uri(reverse("api:registration-detail", kwargs={"pk": obj.registration_id}))
-
-    def get_project(self, obj: Record):
-        return obj.registration.project.pk
-
-    def get_organization(self, obj):
-        return obj.registration.project.organization.pk
-
-    def get_project_slug(self, obj: Record):
-        return obj.registration.project.slug
-
-    def get_organization_slug(self, obj):
-        return obj.registration.project.organization.slug
 
 
 class DataTableRecordSerializer(serializers.ModelSerializer):
