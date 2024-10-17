@@ -17,7 +17,7 @@ if SENTRY_DSN:
     )
     sentry_sdk.init(
         dsn=SENTRY_DSN,
-        environment=env("SENTRY_ENVIRONMENT", default=None),
+        environment=env("SENTRY_ENVIRONMENT"),
         integrations=[
             DjangoIntegration(transaction_style="url"),
             sentry_logging,
