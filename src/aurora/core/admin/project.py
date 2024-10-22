@@ -4,6 +4,7 @@ from django.contrib.admin import register
 from django.core.cache import caches
 
 from adminfilters.mixin import AdminAutoCompleteSearchMixin
+from django.db.models.functions import Collate
 from mptt.admin import MPTTModelAdmin
 from smart_admin.mixins import LinkedObjectsMixin
 
@@ -27,7 +28,9 @@ class ProjectAdmin(SyncMixin, AdminAutoCompleteSearchMixin, LinkedObjectsMixin, 
     autocomplete_fields = "parent, "
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related("organization")
+        return super().get_queryset(request).annotate(
+            name_deterministic=Collate("name", "und-x-icu"),
+        ).select_related("organization")
 
     #
     # def get_search_results(self, request, queryset, search_term):
