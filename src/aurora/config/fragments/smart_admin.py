@@ -1,4 +1,3 @@
-from .. import env
 
 SMART_ADMIN_SECTIONS = {
     "Registration": ["registration", "dbtemplates", "flatpages"],

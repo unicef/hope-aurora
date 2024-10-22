@@ -2,6 +2,7 @@ import logging
 
 from django.contrib.admin import register
 from django.core.cache import caches
+from django.db.models.functions import Collate
 from django.urls import NoReverseMatch
 
 from admin_extra_buttons.decorators import button, link
@@ -28,12 +29,15 @@ class OptionSetAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartMod
         "comment",
         "pk_col",
     )
-    search_fields = ("name",)
+    search_fields = ("name_deterministic",)
     list_filter = (("data", ValueFilter.factory(lookup_name="icontains")),)
     save_as = True
     readonly_fields = ("version", "last_update_date")
     object_history_template = "reversion-compare/object_history.html"
     exclude = ("columns",)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(name_deterministic=Collate("name", "und-x-icu"))
 
     @button()
     def display_data(self, request, pk):

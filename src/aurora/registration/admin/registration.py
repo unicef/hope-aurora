@@ -103,9 +103,14 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
     protocol_class = AuroraSyncRegistrationProtocol
 
     def get_queryset(self, request):
-        return super().get_queryset(request).annotate(
-            name_deterministic=Collate("name", "und-x-icu"),
-        ).select_related("project", "project__organization")
+        return (
+            super()
+            .get_queryset(request)
+            .annotate(
+                name_deterministic=Collate("name", "und-x-icu"),
+            )
+            .select_related("project", "project__organization")
+        )
 
     # def get_search_results(self, request, queryset, search_term):
     #     queryset, may_have_duplicates = super().get_search_results(request, queryset, search_term)
@@ -146,15 +151,15 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
         extra = "" if settings.DEBUG else ".min"
         base = super().media
         return (
-                VersionMedia(
-                    js=[
-                        "admin/js/vendor/jquery/jquery%s.js" % extra,
-                        "admin/js/jquery.init.js",
-                        "jquery.compat%s.js" % extra,
-                        "clipboard%s.js" % extra,
-                    ]
-                )
-                + base
+            VersionMedia(
+                js=[
+                    "admin/js/vendor/jquery/jquery%s.js" % extra,
+                    "admin/js/jquery.init.js",
+                    "jquery.compat%s.js" % extra,
+                    "clipboard%s.js" % extra,
+                ]
+            )
+            + base
         )
 
     @view(permission=can_export_data)

@@ -4,6 +4,7 @@ from django import forms
 from django.contrib import messages
 from django.contrib.admin import register, TabularInline
 from django.core.cache import caches
+from django.db.models.functions import Collate
 
 from admin_extra_buttons.decorators import button, view
 from admin_ordering.admin import OrderableAdmin
@@ -85,7 +86,7 @@ class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
         ("formset", UsedInRFormset),
         ("formset__parent", UsedInRFormset),
     )
-    search_fields = ("name",)
+    search_fields = ("name_deterministic",)
     readonly_fields = ("version", "last_update_date")
     autocomplete_fields = ("validator", "project")
     ordering = ("name",)
@@ -95,6 +96,7 @@ class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
         return (
             super()
             .get_queryset(request)
+            .annotate(name_deterministic=Collate("name", "und-x-icu"))
             .prefetch_related("registration_set")
             .select_related(
                 "project",

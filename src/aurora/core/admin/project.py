@@ -2,9 +2,9 @@ import logging
 
 from django.contrib.admin import register
 from django.core.cache import caches
+from django.db.models.functions import Collate
 
 from adminfilters.mixin import AdminAutoCompleteSearchMixin
-from django.db.models.functions import Collate
 from mptt.admin import MPTTModelAdmin
 from smart_admin.mixins import LinkedObjectsMixin
 
@@ -23,14 +23,19 @@ class ProjectAdmin(SyncMixin, AdminAutoCompleteSearchMixin, LinkedObjectsMixin, 
     list_filter = ("organization",)
     mptt_level_indent = 20
     mptt_indent_field = "name"
-    search_fields = ("name",)
+    search_fields = ("name_deterministic",)
     protocol_class = AuroraSyncProjectProtocol
     autocomplete_fields = "parent, "
 
     def get_queryset(self, request):
-        return super().get_queryset(request).annotate(
-            name_deterministic=Collate("name", "und-x-icu"),
-        ).select_related("organization")
+        return (
+            super()
+            .get_queryset(request)
+            .annotate(
+                name_deterministic=Collate("name", "und-x-icu"),
+            )
+            .select_related("organization")
+        )
 
     #
     # def get_search_results(self, request, queryset, search_term):
