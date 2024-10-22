@@ -7,8 +7,6 @@ from django.http import HttpResponse
 
 from constance import config
 
-from aurora.core.utils import is_root
-
 logger = logging.getLogger(__name__)
 
 

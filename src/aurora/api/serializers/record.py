@@ -14,10 +14,10 @@ from ...registration.models import Record
 class RecordSerializer(serializers.ModelSerializer):
     registration_url = serializers.SerializerMethodField()
     registrar = serializers.CharField()
-    project = serializers.ReadOnlyField(source='registration.project.pk')
-    organization = serializers.ReadOnlyField(source='registration.project.organization.pk')
-    project_slug = serializers.ReadOnlyField(source='registration.project.slug')
-    organization_slug = serializers.ReadOnlyField(source='registration.project.organization.slug')
+    project = serializers.ReadOnlyField(source="registration.project.pk")
+    organization = serializers.ReadOnlyField(source="registration.project.organization.pk")
+    project_slug = serializers.ReadOnlyField(source="registration.project.slug")
+    organization_slug = serializers.ReadOnlyField(source="registration.project.organization.slug")
 
     class Meta:
         model = Record

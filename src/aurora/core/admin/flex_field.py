@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.admin import register
 from django.core.cache import caches
 from django.db.models import JSONField
+from django.db.models.functions import Collate
 
 from admin_extra_buttons.decorators import button, view
 from admin_ordering.admin import OrderableAdmin
@@ -42,7 +43,7 @@ class FlexFormFieldForm(forms.ModelForm):
 
 @register(FlexFormField)
 class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, OrderableAdmin, SmartModelAdmin):
-    search_fields = ("name", "label")
+    search_fields = ("name_deterministic", "label")
     list_display = ("label", "name", "flex_form", "field_type", "required", "enabled")
     list_editable = ["required", "enabled"]
     list_filter = (
@@ -61,7 +62,12 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
     readonly_fields = ("version", "last_update_date")
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related("flex_form")
+        return (
+            super()
+            .get_queryset(request)
+            .annotate(name_deterministic=Collate("name", "und-x-icu"))
+            .select_related("flex_form")
+        )
 
     # change_list_template = "reversion/change_list.html"
     def get_readonly_fields(self, request, obj=None):

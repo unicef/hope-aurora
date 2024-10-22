@@ -94,15 +94,19 @@ dev:
 			-e SENTRY_DSN="${SENTRY_DSN}" \
 			-e REDIS_CONNSTR="${REDIS_CONNSTR}" \
 			-e VERSION="${VERSION}" \
-			-v ${PWD}/conf/:/conf/ \
-			-v ${PWD}/bin/entrypoint.sh:/usr/local/bin/entrypoint.sh \
-			-v ${PWD}/conf/nginx:/var/nginx/ \
 			${RUN_OPTIONS} \
 			${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:latest \
 			${CMD}
 
+#			-v ${PWD}/conf/:/conf/ \
+#			-v ${PWD}/bin/entrypoint.sh:/usr/local/bin/entrypoint.sh \
+#			-v ${PWD}/conf/nginx:/var/nginx/ \
+
 # 			-e STATICFILES_STORAGE="django.contrib.staticfiles.storage.ManifestStaticFilesStorage"\
 #docker push registry.gitlab.com/bitcaster/bitcaster
+dev:
+	RUN_OPTIONS="-v FERNET_KEY=lhlijhlkjhlkjhlkjhlkjhkjhoj -e SESSION_COOKIE_DOMAIN=aaa -e SESSION_COOKIE_SECURE=1 " \
+	$(MAKE) .run
 
 release: .docker-login ## release version $VERSION
 	docker tag ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${VERSION} ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:latest
