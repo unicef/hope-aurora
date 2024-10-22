@@ -31,12 +31,7 @@ class CustomFieldTypeAdmin(SmartModelAdmin):
     }
 
     def get_queryset(self, request):
-        return (
-            super()
-            .get_queryset(request)
-            .annotate(name_deterministic=Collate("name", "und-x-icu"))
-            .select_related("flex_form")
-        )
+        return super().get_queryset(request).annotate(name_deterministic=Collate("name", "und-x-icu"))
 
     @button()
     def test(self, request, pk):
