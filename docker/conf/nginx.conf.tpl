@@ -147,6 +147,7 @@ http {
             add_header X-Aurora-Version "${AURORA_VERSION}";
             add_header X-Aurora-Build "${AURORA_BUILD}";
             add_header X-Aurora-Time "${DOLLAR}date_gmt";
+            add_header X-Aurora-static "${STATIC_URL}";
 
             expires max;
             gzip_static on;

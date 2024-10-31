@@ -13,5 +13,4 @@ node_modules
 src/*.egg-info
 src/aurora/staticfiles/
 Makefile
-README.md
 manage.py
