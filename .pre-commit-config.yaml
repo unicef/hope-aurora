@@ -7,7 +7,7 @@ repos:
       # but we let pre-commit take care of the file filtering.
       - id: black
         name: black
-        args: [ '--check', '-vv' ]
+        args: [ '--check', '--config', 'pyproject.toml' ]
         entry: black
         language: python
         types: [ python ]

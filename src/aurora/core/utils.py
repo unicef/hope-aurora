@@ -134,9 +134,11 @@ def underscore_to_camelcase(value):
     return value[0].upper() + "".join(
         list(
             map(
-                lambda index_word: index_word[1].lower()
-                if index_word[0] == 0
-                else index_word[1][0].upper() + (index_word[1][1:] if len(index_word[1]) > 0 else ""),
+                lambda index_word: (
+                    index_word[1].lower()
+                    if index_word[0] == 0
+                    else index_word[1][0].upper() + (index_word[1][1:] if len(index_word[1]) > 0 else "")
+                ),
                 list(enumerate(re.split(re.compile(r"[_ ]+"), value[1:]))),
             )
         )
