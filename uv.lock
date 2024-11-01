@@ -146,6 +146,7 @@ dev = [
     { name = "pytest-pythonpath" },
     { name = "pytest-selenium" },
     { name = "pytest-variables" },
+    { name = "pytest-xdist" },
     { name = "tox" },
     { name = "watchdog" },
 ]
@@ -246,6 +247,7 @@ dev = [
     { name = "pytest-pythonpath", specifier = ">=0.7.3,<1.0.0" },
     { name = "pytest-selenium", specifier = ">=2.0,<3.0" },
     { name = "pytest-variables", specifier = "<3.0" },
+    { name = "pytest-xdist", specifier = ">=3.6.1" },
     { name = "tox" },
     { name = "watchdog", specifier = ">=2.1.6,<3.0.0" },
 ]
@@ -1189,6 +1191,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c7/a0/7481fee713387fd5c632b05c1d95c32f5b2ea6e1e8f15c9cf1894e1895a8/djangorestframework_datatables-0.7.2.tar.gz", hash = "sha256:d7953968088ceb14968621a0c0a83d2f39ec1cda24b5ebe1240f3c9619bc7129", size = 19647 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f3/25/17cd01982c7299cbca9e20247e73c83bfa53a0ed9e8b7735c915c1bb6675/djangorestframework_datatables-0.7.2-py2.py3-none-any.whl", hash = "sha256:fd5747b1e3d0bfb84713a975394dd4d879b57ee8bc66cc0f97566fa67f4406f4", size = 15303 },
+]
+
+[[package]]
+name = "execnet"
+version = "2.1.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/bb/ff/b4c0dc78fbe20c3e59c0c7334de0c27eb4001a2b2017999af398bf730817/execnet-2.1.1.tar.gz", hash = "sha256:5189b52c6121c24feae288166ab41b32549c7e2348652736540b9e6e7d4e72e3", size = 166524 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/43/09/2aea36ff60d16dd8879bdb2f5b3ee0ba8d08cbbdcdfe870e695ce3784385/execnet-2.1.1-py3-none-any.whl", hash = "sha256:26dee51f1b80cebd6d0ca8e74dd8745419761d3bef34163928cbebbdc4749fdc", size = 40612 },
 ]
 
 [[package]]
@@ -2420,6 +2431,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/5d/d1/c528a1b57b283c44291975e4bfcf2a3586f990e56451c7ba654efb70ecbc/pytest-variables-2.0.0.tar.gz", hash = "sha256:1c9e4fc321e33be7d1b352ac9cf20fdd2c39a8e4e6fa2dcd042aaf70ed516be7", size = 6556 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d7/dd/d9ea36a6ee7225ac0baa2b9b7fd24a0a69c906b6e2424892e937ff09ef68/pytest_variables-2.0.0-py3-none-any.whl", hash = "sha256:1a24a30b7acf9654d71bcdc8b10c1eb0d81b73b3eec72d810703c522475d643b", size = 6744 },
+]
+
+[[package]]
+name = "pytest-xdist"
+version = "3.6.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "execnet" },
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/41/c4/3c310a19bc1f1e9ef50075582652673ef2bfc8cd62afef9585683821902f/pytest_xdist-3.6.1.tar.gz", hash = "sha256:ead156a4db231eec769737f57668ef58a2084a34b2e55c4a8fa20d861107300d", size = 84060 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6d/82/1d96bf03ee4c0fdc3c0cbe61470070e659ca78dc0086fb88b66c185e2449/pytest_xdist-3.6.1-py3-none-any.whl", hash = "sha256:9ed4adfb68a016610848639bb7e02c9352d5d9f03d04809919e2dafc3be4cca7", size = 46108 },
 ]
 
 [[package]]
