@@ -34,15 +34,6 @@ repos:
         types: [ python ]
         additional_dependencies: [flake8]
 
-
-  - repo: https://github.com/Yelp/detect-secrets
-    rev: 0.9.1
-    hooks:
-      - id: detect-secrets
-        args: [ '--baseline', '.secrets.baseline' ]
-        exclude: (tests/.*|.*/tenant\.sql|Pipfile\.lock|.*\.js|.gitlab-ci.yml|pdm.lock)
-        stages: [ push ]
-
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.1.0
     hooks:
