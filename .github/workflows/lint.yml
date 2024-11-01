@@ -88,4 +88,4 @@ jobs:
       - name: Install requirements
         run: pip install black
       - name: Black
-        run: black src/ --check
+        run: black src/ --check --config pyproject.toml
