@@ -115,9 +115,7 @@ jobs:
         shell: bash
         run: |
           set -x
-          LOCK_SHA=$(sha1sum uv.lock docker/bin/* docker/conf/* docker/Dockerfile | sha1sum | awk '{print $1}' | cut -c 1-8)
           IMAGE=$(echo '${{env.DOCKER_METADATA_OUTPUT_JSON}}' | jq '.tags[0]')
-          echo "checksum=$LOCK_SHA" >> "$GITHUB_ENV"
           echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
           echo "BUILD_DATE=$(date +"%Y-%m-%d %H:%M" )" >> $GITHUB_ENV
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
