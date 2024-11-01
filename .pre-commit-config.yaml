@@ -39,17 +39,17 @@ repos:
     hooks:
 
       - id: debug-statements
-        stages: [commit]
+        stages: [pre-commit]
 
       - id: end-of-file-fixer
         exclude: .bumpversion.cfg
-        stages: [commit]
+        stages: [pre-commit]
 
       - id: check-merge-conflict
-        stages: [commit]
+        stages: [pre-commit]
 
       - id: check-case-conflict
-        stages: [commit]
+        stages: [pre-commit]
 
   - repo: https://github.com/saxix/pch
     rev: fc387f44c7c1a51b762a5866ce9d954900e5af68
@@ -57,13 +57,13 @@ repos:
       - id: check-missed-migrations
         args:
           - src
-        stages: [commit]
+        stages: [pre-commit]
 
       - id: check-untracked
         args:
           - src
           - tests
-        stages: [push]
+        stages: [pre-push]
 
 #      - id: check-forbidden
 #        args:
