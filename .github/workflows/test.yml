@@ -97,7 +97,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5.5.1
         with:
-          images: "unicef/aurora"
+          images: "unicef/hope-aurora"
           tags: |
             type=ref,event=branch
             type=ref,event=pr
