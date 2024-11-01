@@ -61,7 +61,7 @@ step4: dist
 			-e DJANGO_ADMIN_URL=admin/ \
 			-e DJANGO_SETTINGS_MODULE=aurora.config.settings \
 			-e LOGGING_LEVEL="DEBUG" \
-			-e SECRET_KEY=liujhljhlkjhlkjhlkj \
+			-e SECRET_KEY="super-secret-key-just-for-testing" \
 			-e SOCIAL_AUTH_REDIRECT_IS_HTTPS="False" \
 			-e SENTRY_DSN="${SENTRY_DSN}" \
 			-e SUPERUSERS="sax," \
