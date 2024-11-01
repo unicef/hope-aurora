@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import index, MonthlyChartView, MonthlyDataView, project_index
+from .views import MonthlyChartView, MonthlyDataView, index, project_index
 
 app_name = "charts"
 

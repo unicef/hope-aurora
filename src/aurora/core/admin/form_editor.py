@@ -1,6 +1,5 @@
-from typing import Dict
-
 import json
+from typing import Dict
 
 from django import forms
 from django.core.cache import caches
@@ -96,7 +95,8 @@ class FormEditor:
         return HttpResponse(rendered, content_type="text/plain")
 
     def get_code(self):
-        from bs4 import BeautifulSoup as bs, formatter
+        from bs4 import BeautifulSoup as bs
+        from bs4 import formatter
         from pygments import highlight
         from pygments.formatters.html import HtmlFormatter
         from pygments.lexers import HtmlLexer

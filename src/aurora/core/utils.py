@@ -1,5 +1,3 @@
-from typing import Dict
-
 import base64
 import datetime
 import decimal
@@ -18,6 +16,7 @@ from hashlib import md5
 from itertools import chain
 from pathlib import Path
 from sys import getsizeof, stderr
+from typing import Dict
 
 from django import forms
 from django.conf import settings

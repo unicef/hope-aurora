@@ -17,7 +17,7 @@ from natural_keys import NaturalKeyModel, NaturalKeyModelManager
 from strategy_field.fields import StrategyField
 from strategy_field.utils import fqn
 
-from aurora.core.crypto import crypt, Crypto, decrypt, decrypt_offline
+from aurora.core.crypto import Crypto, crypt, decrypt, decrypt_offline
 from aurora.core.fields import AjaxSelectField, LabelOnlyField
 from aurora.core.forms import VersionMedia
 from aurora.core.models import FlexForm, FlexFormField, Project, Validator

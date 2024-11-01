@@ -7,7 +7,7 @@ from django.conf import settings as django_settings
 from django.contrib.sites.models import Site
 from django.core.cache.backends.base import BaseCache
 from django.core.management import call_command
-from django.template import loader, TemplateDoesNotExist
+from django.template import TemplateDoesNotExist, loader
 from django.test import TestCase
 
 from dbtemplates.conf import settings

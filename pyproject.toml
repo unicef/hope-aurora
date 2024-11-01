@@ -122,32 +122,22 @@ include = '\.pyi?$'
 exclude = '''
 /(
     \.git
-  | \.hg
-  | \.mypy_cache
+  | \.pytest_cache
   | \.tox
   | \.venv
-  | venv
-  | _build
-  | buck-out
+  | ~build
   | build
-  | dist
+  | ops
   | migrations
-  | snapshots
-  | __pypackages__
 )/
 '''
 
 [tool.isort]
-combine_as_imports = true
-default_section = "THIRDPARTY"
-include_trailing_comma = true
-known_django = "django"
-known_typing = ["typing"]
-known_tests = ["unittest", "pytest"]
-known_app = "aurora"
-sections = ["FUTURE", 'TYPING', 'STDLIB',"TESTS",'DJANGO', 'FIRSTPARTY', 'THIRDPARTY','APP','LOCALFOLDER']
-multi_line_output = 3
+profile = "black"
 line_length = 120
-balanced_wrapping = true
-order_by_type = false
-skip_glob = ["**/migrations/**"]
+default_section = "THIRDPARTY"
+known_first_party = []
+known_django = "django"
+sections = ["FUTURE","STDLIB","DJANGO","THIRDPARTY","FIRSTPARTY","LOCALFOLDER"]
+include_trailing_comma = true
+skip = ["migrations", "snapshots", ".venv"]

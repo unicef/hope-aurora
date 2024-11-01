@@ -7,7 +7,7 @@ from pathlib import Path
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.core.management import call_command
-from django.db import connections, DEFAULT_DB_ALIAS
+from django.db import DEFAULT_DB_ALIAS, connections
 from django.http import JsonResponse
 from django.shortcuts import render
 

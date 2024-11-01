@@ -1,6 +1,4 @@
 from typing import List
-
-import pytest
 from unittest.mock import Mock
 
 from django.contrib.admin.sites import site
@@ -8,6 +6,7 @@ from django.contrib.admin.templatetags.admin_urls import admin_urlname
 from django.db.models.options import Options
 from django.urls import reverse
 
+import pytest
 from _pytest.mark import Mark
 from _pytest.python import Metafunc
 from admin_extra_buttons.handlers import ChoiceHandler

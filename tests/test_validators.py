@@ -1,7 +1,8 @@
-import pytest
 from unittest.mock import Mock
 
 from django.core.exceptions import ValidationError
+
+import pytest
 
 from aurora.core.models import Validator
 

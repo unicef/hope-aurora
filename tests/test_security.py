@@ -1,5 +1,4 @@
 import pytest
-
 from testutils.perms import user_grant_permissions
 
 from aurora.registration.models import Registration
