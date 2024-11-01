@@ -74,10 +74,10 @@ repos:
           - tests
         stages: [push]
 
-      - id: check-forbidden
-        args:
-          - -p
-          - /\.showbrowser\(/
-          - -p
-          - /print\(111/
-        stages: [commit]
+#      - id: check-forbidden
+#        args:
+#          - -p
+#          - /\.showbrowser\(/
+#          - -p
+#          - /print\(111/
+#        stages: [commit]

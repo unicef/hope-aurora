@@ -4,7 +4,7 @@
 Install [uv](https://docs.astral.sh/uv/)
 
 
-    git clone ..
+    git clone https://github.com/unicef/hope-aurora
     uv venv .venv --python 3.12
     source .venv/bin/activate
     uv sync --all-extras
@@ -42,7 +42,7 @@ Install [uv](https://docs.astral.sh/uv/)
 
     To facililate developing you can use:
 
-        export AUTHENTICATION_BACKENDS="country_workspace.security.backends.AnyUserAuthBackend"
+        export AUTHENTICATION_BACKENDS="aurora.security.backends.AnyUserAuthBackend"
 
     It works only if `DEBUG=True`
 

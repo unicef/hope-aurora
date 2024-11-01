@@ -42,6 +42,30 @@ zlib1g-dev  \
     && rm -rf /var/lib/apt/lists/*
 
 
+# ------- tests -------
+FROM builder AS tests
+ARG BUILD_DATE
+ARG VERSION
+
+LABEL distro="tests"
+LABEL org.opencontainers.image.created="$BUILD_DATE"
+LABEL org.opencontainers.image.version="$VERSION"
+
+ENV PATH=/app/.venv/bin:/usr/local/bin/:/usr/bin:/bin \
+    DJANGO_SETTINGS_MODULE=aurora.config.settings \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=""\
+    UWSGI_PROCESSES=4
+WORKDIR /app
+RUN --mount=type=cache,target=/root/.uv-cache \
+    --mount=type=bind,source=uv.lock,target=/app/uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=/app/pyproject.toml \
+    --mount=type=bind,source=MANIFEST.in,target=/app/MANIFEST.in \
+    --mount=type=bind,source=./src/aurora,target=/app/src/aurora \
+    --mount=type=bind,source=./src/dbtemplates,target=/app/src/dbtemplates \
+    uv sync --cache-dir=/root/.uv-cache --no-editable --frozen --extra distribution
+
 # ------- production only deps-------
 FROM builder AS production
 

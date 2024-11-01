@@ -1,6 +1,6 @@
 import mkdocs_gen_files
 
-from country_workspace.config import env
+from aurora.config import env
 
 MD_HEADER = """# Setttings
 

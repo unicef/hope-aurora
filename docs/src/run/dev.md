@@ -22,7 +22,7 @@ To locally run stable not officially released version, simply
 			-e DATABASE_URL="${DATABASE_URL}" \
 			-e DEBUG="1" \
 			-e DJANGO_ADMIN_URL=admin/ \
-			-e DJANGO_SETTINGS_MODULE=country_workspace.config.settings \
+			-e DJANGO_SETTINGS_MODULE=aurora.config.settings \
 			-e LOGGING_LEVEL="DEBUG" \
 			-e SECRET_KEY=${SECRET_KEY} \
 			-e SOCIAL_AUTH_REDIRECT_IS_HTTPS="False" \

@@ -6,7 +6,7 @@ repo_url: https://github.com/unicef/hope-aurora
 site_author: HOPE Team
 site_description: ""
 site_dir: ./~build/docs
-site_name: HOPE Aurora
+site_name: Aurora
 site_url: https://unicef.github.io/unicef/hope-country-workspace/
 strict: false
 exclude_docs: |
