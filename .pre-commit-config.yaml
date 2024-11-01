@@ -39,11 +39,11 @@ repos:
     hooks:
 
       - id: debug-statements
-        stages: [pre-commit]
+        stages: [commit]
 
       - id: end-of-file-fixer
         exclude: .bumpversion.cfg
-        stages: [pre-commit]
+        stages: [commit]
 
       - id: check-merge-conflict
         stages: [pre-commit]
