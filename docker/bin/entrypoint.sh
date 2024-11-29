@@ -22,7 +22,7 @@ case "$1" in
         django-admin upgrade --no-input
 
         nginx -c /conf/nginx.conf
-        redis-server /conf/redis.conf
+#        redis-server /conf/redis.conf
         exec uwsgi --ini /conf/uwsgi.ini
 
     ;;

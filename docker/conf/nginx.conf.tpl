@@ -72,6 +72,8 @@ http {
         add_header X-Aurora-Version "${AURORA_VERSION}" always;
         add_header X-Aurora-Build "${AURORA_BUILD}" always;
         add_header X-Aurora-Time "${DOLLAR}date_gmt" always;
+        add_header X-Aurora-static-root "${STATIC_ROOT}" always;
+        add_header X-Aurora-static-url "${STATIC_URL}" always;
 
         location /404.html {
             root /var/nginx/;
