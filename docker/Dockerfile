@@ -53,7 +53,7 @@ ENV PATH="${PATH}:/root/.local/bin:/code/__pypackages__/3.12/bin" \
     VERSION=${VERSION} \
     POETRY_VERSION=${POETRY_VERSION}
 
-RUN pip install pdm==2.15.1
+RUN pip install pdm==2.18.2
 ADD pyproject.toml pdm.toml pdm.lock ./
 RUN sed -i 's/use_venv = true/use_venv = false/' pdm.toml
 RUN pdm sync --prod --no-editable --no-self
