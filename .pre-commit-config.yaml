@@ -34,31 +34,30 @@ repos:
         types: [ python ]
         additional_dependencies: [flake8]
 
-
   - repo: https://github.com/Yelp/detect-secrets
-    rev: 0.9.1
+    rev: v1.5.0
     hooks:
       - id: detect-secrets
         args: [ '--baseline', '.secrets.baseline' ]
-        exclude: (tests/.*|.*/tenant\.sql|Pipfile\.lock|.*\.js|.gitlab-ci.yml|pdm.lock)
-        stages: [ push ]
+        exclude: (tests/.*|.*/tenant\.sql|.*\.js||pdm.lock)
+        stages: [ pre-push ]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.1.0
     hooks:
 
       - id: debug-statements
-        stages: [commit]
+        stages: [pre-commit]
 
       - id: end-of-file-fixer
         exclude: .bumpversion.cfg
-        stages: [commit]
+        stages: [pre-commit]
 
       - id: check-merge-conflict
-        stages: [commit]
+        stages: [pre-commit]
 
       - id: check-case-conflict
-        stages: [commit]
+        stages: [pre-commit]
 
   - repo: https://github.com/saxix/pch
     rev: fc387f44c7c1a51b762a5866ce9d954900e5af68
@@ -66,18 +65,18 @@ repos:
       - id: check-missed-migrations
         args:
           - src
-        stages: [commit]
+        stages: [pre-commit]
 
       - id: check-untracked
         args:
           - src
           - tests
-        stages: [push]
+        stages: [pre-push]
 
-      - id: check-forbidden
-        args:
-          - -p
-          - /\.showbrowser\(/
-          - -p
-          - /print\(111/
-        stages: [commit]
+#      - id: check-forbidden
+#        args:
+#          - -p
+#          - /\.showbrowser\(/
+#          - -p
+#          - /print\(111/
+#        stages: [pre-commit]

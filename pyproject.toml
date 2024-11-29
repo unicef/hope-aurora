@@ -48,7 +48,7 @@ dependencies = [
     "pycryptodome",
     "qrcode",
     "sentry-sdk",
-    "setuptools",
+    "setuptools>=75.6.0",
     "social-auth-app-django",
     "sqlparse",
     "django-tinymce",
