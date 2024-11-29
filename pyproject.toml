@@ -70,7 +70,7 @@ dependencies = [
     "pyquery",
     "qrcode",
     "sentry-sdk",
-    "setuptools",
+    "setuptools>=75.6.0",
     "social-auth-app-django",
     "soupsieve",
     "sqlparse",
