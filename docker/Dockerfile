@@ -1,6 +1,6 @@
 FROM python:3.12-slim-bookworm AS base
 ARG BUILD_DATE
-ARG VERSION
+ARG GIT_HASH
 
 WORKDIR /code/
 
@@ -27,6 +27,7 @@ RUN apt-get update \
 ENV PATH="${PATH}:/root/.local/bin:/code/__pypackages__/3.12/bin" \
     ADMINS="" \
     BUILD_DATE=${BUILD_DATE} \
+    GIT_HASH=${GIT_HASH} \
     CONSTANCE_DATABASE_CACHE_BACKEND="" \
     CSRF_TRUSTED_ORIGINS="" \
     CSRF_COOKIE_NAME="aurora" \
@@ -50,7 +51,6 @@ ENV PATH="${PATH}:/root/.local/bin:/code/__pypackages__/3.12/bin" \
     STATIC_ROOT="/var/static" \
     STATIC_URL="/static/" \
     UWSGI_PROCESSES=4 \
-    VERSION=${VERSION} \
     POETRY_VERSION=${POETRY_VERSION}
 
 RUN pip install pdm==2.18.2

@@ -62,7 +62,7 @@ http {
         client_max_body_size ${NGINX_MAX_BODY_SIZE};
         large_client_header_buffers 4 16k;
         access_log /dev/stdout;
-        listen 80;
+        listen 8000;
         proxy_no_cache 1;
         proxy_cache_bypass 1;
         proxy_cache off;
@@ -171,7 +171,7 @@ http {
             add_header X-Aurora-Build "${AURORA_BUILD}";
             add_header X-Aurora-Time "${DOLLAR}date_gmt";
 
-            proxy_pass http://127.0.0.1:8000;
+            proxy_pass http://127.0.0.1:8888;
             proxy_set_header Host ${DOLLAR}host;
             proxy_set_header X-Forwarded-For ${DOLLAR}proxy_add_x_forwarded_for;
             proxy_set_header X-Scheme ${DOLLAR}scheme;
