@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="version" content="{{ project.version|slice:':7'|join:'' }}">
+    <meta name="version" content="{{ project.commit|slice:':7'|join:'' }}">
     <meta name="date" content="{{ project.build_date }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -73,10 +73,10 @@
 {% block body_bottom %}{% endblock %}
 
 {% block footer %}
-    <div class="flex justify-center text-xs footer m-auto pt-1 pb-2 border-t-2 text-gray-400 border-gray-400">
-        Aurora {{ project.version }} - {{ project.build_date }} - {{ project.commit }}
-    </div>
-    {% include "_matomo.html" %}
+{#    <div class="flex justify-center text-xs footer m-auto pt-1 pb-2 border-t-2 text-gray-400 border-gray-400">#}
+        {% include "_footer.html" %}
+{#    </div>#}
+{#    {% include "_matomo.html" %}#}
 {% endblock footer %}
 </body>
 </html>
