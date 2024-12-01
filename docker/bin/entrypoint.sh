@@ -14,7 +14,7 @@ export AURORA_BUILD=${BUILD_DATE}
 export DOLLAR='$'
 
 mkdir -p /var/run /var/nginx ${NGINX_CACHE_DIR} ${MEDIA_ROOT} ${STATIC_ROOT}
-echo "created support dirs /var/run ${MEDIA_ROOT} ${STATIC_ROOT}"
+echo "created support dirs /var/run '${MEDIA_ROOT}' '${STATIC_ROOT}' "
 
 case "$1" in
     "run")
@@ -24,6 +24,7 @@ case "$1" in
 
         nginx -c /conf/nginx.conf
         exec uwsgi --ini /conf/uwsgi.ini
+
     ;;
     "dev")
         until pg_isready -h db -p 5432;

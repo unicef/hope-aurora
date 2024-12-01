@@ -15,8 +15,8 @@ RUN apt-get update \
                 python3-gdal \
                 python3-psycopg2 \
     && locale-gen --no-purge uk_UA.UTF-8 \
-    && apt-get clean \
-    && pip install uv
+    && apt-get clean
+
 
 FROM base AS builder
 RUN set -x \
@@ -39,13 +39,15 @@ zlib1g-dev  \
     && apt-get update \
     && apt-get install -y --no-install-recommends $buildDeps \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install uv uwsgi
 
 
 # ------- tests -------
 FROM builder AS tests
 ARG BUILD_DATE
 ARG VERSION
+ARG GIT_SHA
 
 LABEL distro="tests"
 LABEL org.opencontainers.image.created="$BUILD_DATE"
@@ -86,16 +88,19 @@ ARG VERSION
 ARG GIT_SHA
 
 ENV PATH=/app/.venv/bin:/usr/local/bin/:/usr/bin:/bin:/usr/sbin/:/usr/local/sbin/ \
-    DJANGO_SETTINGS_MODULE=aurora.config.settings \
-    PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    STATIC_URL="/static/" \
     BUILD_DATE="${BUILD_DATE}" \
-    VERSION="${VERSION}" \
+    DJANGO_SETTINGS_MODULE=aurora.config.settings \
     GIT_SHA="${GIT_SHA}" \
-    PYTHONPATH=""\
+    MEDIA_ROOT=/var/aurora/media \
     PGSSLCERT="/tmp/postgresql.crt" \
-    UWSGI_PROCESSES=4
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=""\
+    PYTHONUNBUFFERED=1 \
+    STATIC_ROOT=/var/aurora/static/ \
+    STATIC_URL="/static/" \
+    UWSGI_PROCESSES=4 \
+    VERSION="${VERSION}"
+
 
 WORKDIR app/
 

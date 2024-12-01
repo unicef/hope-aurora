@@ -4,6 +4,7 @@ VERSION := $(shell grep -m 1 version ../pyproject.toml | tr -s ' ' | tr -d '"' |
 BUILD_DATE:="$(shell date +"%Y-%m-%d %H:%M")"
 SOURCE_COMMIT=$(shell git rev-parse --short HEAD)
 STAGE?=dist
+TAG?=${VERSION}
 
 .build:
 	DOCKER_BUILDKIT=1 cd .. && docker build \
@@ -11,6 +12,7 @@ STAGE?=dist
 			--build-arg BUILD_DATE=${BUILD_DATE} \
 			--build-arg GIT_SHA=${SOURCE_COMMIT} \
 			--target ${STAGE} \
+			--no-cache \
 			${BUILD_OPTIONS} \
 			-t ${DOCKER_IMAGE} \
 			-f docker/Dockerfile .
@@ -62,21 +64,22 @@ step4: dist
 			-e DJANGO_SETTINGS_MODULE=aurora.config.settings \
 			-e LOGGING_LEVEL="DEBUG" \
 			-e SECRET_KEY="super-secret-key-just-for-testing" \
-			-e SOCIAL_AUTH_REDIRECT_IS_HTTPS="False" \
 			-e SENTRY_DSN="${SENTRY_DSN}" \
+			-e SOCIAL_AUTH_REDIRECT_IS_HTTPS="False" \
 			-e SUPERUSERS="sax," \
+			-v ./docker/conf/:/conf \
 			${RUN_OPTIONS} \
 			-t ${DOCKER_IMAGE} \
 			${CMD}
 
 run:
-	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION} \
+	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${TAG} \
  	CMD='run' \
 	$(MAKE) .run
 
 
 shell:
-	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION} \
+	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${TAG} \
 	RUN_OPTIONS="-it" \
  	CMD='/bin/bash' \
 	$(MAKE) .run
