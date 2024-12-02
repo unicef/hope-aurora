@@ -2,8 +2,8 @@ import os
 
 from django.conf import settings
 
-from aurora.core.utils import get_session_id, has_token, is_root
 from aurora import __version__
+from aurora.core.utils import get_session_id, has_token, is_root
 
 
 def smart(request):
