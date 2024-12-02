@@ -1,5 +1,5 @@
 [project]
-name = "aurora"
+name = "Aurora"
 version = "2.0"
 description = ""
 readme = "README.md"
@@ -46,7 +46,6 @@ dependencies = [
     "django-pwa",
     "django-redis",
     "django-regex",
-    "django-regex",
     "django-reversion",
     "django-reversion-compare",
     "django-simple-captcha",
@@ -76,17 +75,12 @@ dependencies = [
     "sqlparse",
     "uwsgi",
 ]
-name = "Aurora"
-version = "0.1"
-description = ""
-readme = "README.md"
-license = {text = "MIT"}
-
 
 [tool.uv]
 dev-dependencies = [
     "black<23.0.0,>=22.1.0",
     "coverage",
+    "django-stubs[compatible-mypy]<2.0.0,>=1.16.0",
     "django-webtest<2.0.0,>=1.9.7",
     "factory-boy",
     "flake8",
@@ -97,7 +91,6 @@ dev-dependencies = [
     "pdbpp",
     "pre-commit",
     "pyflakes",
-    "pytest<7.2",
     "pytest-asyncio",
     "pytest-coverage<1.0,>=0.0",
     "pytest-django<5.0.0,>=4.1.0",
@@ -106,10 +99,10 @@ dev-dependencies = [
     "pytest-pythonpath<1.0.0,>=0.7.3",
     "pytest-selenium<3.0,>=2.0",
     "pytest-variables<3.0",
+    "pytest-xdist>=3.6.1",
+    "pytest<7.2",
     "tox",
     "watchdog<3.0.0,>=2.1.6",
-    "django-stubs[compatible-mypy]<2.0.0,>=1.16.0",
-    "pytest-xdist>=3.6.1",
 ]
 
 [build-system]
