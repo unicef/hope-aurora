@@ -1,9 +1,8 @@
-from typing import Union
-
 import base64
 import io
 import json
 import logging
+from typing import Union
 
 from django.conf import settings
 

@@ -1,10 +1,9 @@
 import base64
 import json
 from pathlib import Path
-
-import pytest
 from unittest.mock import Mock
 
+import pytest
 from webtest import Upload
 
 LANGUAGES = {

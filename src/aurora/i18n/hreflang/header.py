@@ -3,6 +3,7 @@ Add hreflang response headers as specified by Google
 
 https://support.google.com/webmasters/answer/189077?hl=en
 """
+
 from django.utils.deprecation import MiddlewareMixin
 
 from .functions import get_hreflang_info

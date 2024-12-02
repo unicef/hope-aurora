@@ -1,4 +1,3 @@
-
 SMART_ADMIN_SECTIONS = {
     "Registration": ["registration", "dbtemplates", "flatpages"],
     "Security": ["social_auth", "security"],

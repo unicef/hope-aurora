@@ -1,7 +1,6 @@
-from typing import Any, Dict
-
 import logging
 from collections import namedtuple
+from typing import Any, Dict
 
 from django import forms
 from django.contrib import messages

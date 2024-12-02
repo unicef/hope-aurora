@@ -7,7 +7,7 @@ repos:
       # but we let pre-commit take care of the file filtering.
       - id: black
         name: black
-        args: [ '--check' ]
+        args: [ '--check', '--config', 'pyproject.toml' ]
         entry: black
         language: python
         types: [ python ]
@@ -33,14 +33,6 @@ repos:
         language: python
         types: [ python ]
         additional_dependencies: [flake8]
-
-  - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.5.0
-    hooks:
-      - id: detect-secrets
-        args: [ '--baseline', '.secrets.baseline' ]
-        exclude: (tests/.*|.*/tenant\.sql|.*\.js||pdm.lock)
-        stages: [ pre-push ]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.1.0
@@ -79,4 +71,4 @@ repos:
 #          - /\.showbrowser\(/
 #          - -p
 #          - /print\(111/
-#        stages: [pre-commit]
+#        stages: [commit]

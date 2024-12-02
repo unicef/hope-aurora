@@ -1,9 +1,9 @@
 import os
 
-import pytest
-
 from django import forms
 from django.core.files.storage import get_storage_class
+
+import pytest
 
 from aurora.core.fields import CompilationTimeField, SmartFileField
 

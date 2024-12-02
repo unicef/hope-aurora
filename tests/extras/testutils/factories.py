@@ -3,14 +3,13 @@ from django.contrib.admin.models import LogEntry
 from django.contrib.auth.models import Group, User
 from django.utils import timezone
 
-import dbtemplates.models as dbtemplates
-
 import factory.fuzzy
 from factory.base import FactoryMetaClass
 from rest_framework.authtoken.models import TokenProxy
 from social_django.models import Association, Nonce, UserSocialAuth
 from strategy_field.utils import fqn
 
+import dbtemplates.models as dbtemplates
 from aurora.core.models import (
     CustomFieldType,
     FlexForm,

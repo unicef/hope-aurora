@@ -1,7 +1,8 @@
 from functools import lru_cache
 
 from django.conf import settings
-from django.urls.base import resolve, reverse as lang_implied_reverse
+from django.urls.base import resolve
+from django.urls.base import reverse as lang_implied_reverse
 from django.urls.exceptions import NoReverseMatch
 from django.utils.translation import activate, deactivate, get_language, override
 

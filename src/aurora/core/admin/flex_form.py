@@ -2,7 +2,7 @@ import logging
 
 from django import forms
 from django.contrib import messages
-from django.contrib.admin import register, TabularInline
+from django.contrib.admin import TabularInline, register
 from django.core.cache import caches
 from django.db.models.functions import Collate
 

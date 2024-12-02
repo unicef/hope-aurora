@@ -36,10 +36,10 @@ from ..i18n.models import I18NModel
 from ..state import state
 from . import fields
 from .compat import RegexField, StrategyClassField
-from .fields import SmartFieldMixin, WIDGET_FOR_FORMFIELD_DEFAULTS
+from .fields import WIDGET_FOR_FORMFIELD_DEFAULTS, SmartFieldMixin
 from .forms import CustomFieldMixin, FlexFormBaseForm, SmartBaseFormSet
 from .registry import field_registry, form_registry, import_custom_field
-from .utils import dict_setdefault, JSONEncoder, jsonfy, namify, underscore_to_camelcase
+from .utils import JSONEncoder, dict_setdefault, jsonfy, namify, underscore_to_camelcase
 
 logger = logging.getLogger(__name__)
 

@@ -2,9 +2,8 @@ import csv
 import logging
 from hashlib import md5
 from io import TextIOWrapper
-from urllib.parse import unquote
-
 from unittest.mock import Mock
+from urllib.parse import unquote
 
 from django.conf import settings
 from django.contrib import messages

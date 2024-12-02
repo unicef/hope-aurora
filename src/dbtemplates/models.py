@@ -7,11 +7,11 @@ from django.template import TemplateDoesNotExist
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 
+from natural_keys import NaturalKeyModel, NaturalKeyModelManager
+
 from dbtemplates.conf import settings
 from dbtemplates.utils.cache import add_template_to_cache, remove_cached_template
 from dbtemplates.utils.template import get_template_source
-
-from natural_keys import NaturalKeyModel, NaturalKeyModelManager
 
 
 class Template(NaturalKeyModel, models.Model):

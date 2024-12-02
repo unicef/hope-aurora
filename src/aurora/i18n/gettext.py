@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.utils.safestring import mark_safe, SafeData
+from django.utils.safestring import SafeData, mark_safe
 from django.utils.translation.trans_real import _active, _default, translation  # noqa
 
 from .engine import translator

@@ -1,6 +1,5 @@
-from typing import Dict
-
 import logging
+from typing import Dict
 
 from django.template import Library
 

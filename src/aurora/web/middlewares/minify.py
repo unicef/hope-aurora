@@ -32,7 +32,7 @@ class HtmlMinMiddleware:
 
     @cached_property
     def config_value(self):
-        return int(config.MINIFY_RESPONSE)
+        return int(config.MINIFY_RESPONSE or "0")
 
     @cached_property
     def ignore_regex(self):
