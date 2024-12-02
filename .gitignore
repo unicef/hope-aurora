@@ -1,4 +1,5 @@
 .*
+!.git
 ~*
 *.min.min.js
 *.py[ico]

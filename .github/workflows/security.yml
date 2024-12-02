@@ -32,6 +32,8 @@ jobs:
     name: check files
     runs-on: ubuntu-latest
     timeout-minutes: 3
+    env:
+      GIT_DISCOVERY_ACROSS_FILESYSTEM: 1
     outputs:
       lint: ${{ steps.changes.outputs.lint }}
       docker: ${{ steps.changes.outputs.docker_base }}
