@@ -8,11 +8,15 @@ TAG?=${VERSION}
 
 .build:
 	DOCKER_BUILDKIT=1 cd .. && docker build \
+			--build-arg BUILDKIT_INLINE_CACHE=1 \
 			--build-arg VERSION=${VERSION} \
 			--build-arg BUILD_DATE=${BUILD_DATE} \
 			--build-arg GIT_SHA=${SOURCE_COMMIT} \
+			--cache-from ${DOCKER_IMAGE_NAME}:${VERSION}-base \
+			--cache-from ${DOCKER_IMAGE_NAME}:${VERSION}-builder \
+			--cache-from ${DOCKER_IMAGE_NAME}:${VERSION}-production \
+			--cache-to type=inline,mode=max \
 			--target ${STAGE} \
-			--no-cache \
 			${BUILD_OPTIONS} \
 			-t ${DOCKER_IMAGE} \
 			-f docker/Dockerfile .
@@ -35,6 +39,9 @@ builder:
 	STAGE=builder $(MAKE) .build-stage
 
 
+tests:
+	STAGE=tests $(MAKE) .build-stage
+
 production:
 	STAGE=production $(MAKE) .build-stage
 
@@ -44,8 +51,9 @@ dist:
 
 step1: base
 step2: builder
-step3: production
-step4: dist
+step3: tests
+step4: production
+step5: dist
 
 .run:
 	cd .. && docker run \

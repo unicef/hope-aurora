@@ -12,6 +12,7 @@ RUN apt-get update \
                 locales-all \
                 nginx \
                 postgresql-client \
+                postgresql-client-15 \
                 python3-gdal \
                 python3-psycopg2 \
     && locale-gen --no-purge uk_UA.UTF-8 \
@@ -53,20 +54,24 @@ LABEL distro="tests"
 LABEL org.opencontainers.image.created="$BUILD_DATE"
 LABEL org.opencontainers.image.version="$VERSION"
 
-ENV PATH=/app/.venv/bin:/usr/local/bin/:/usr/bin:/bin \
+ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin \
     DJANGO_SETTINGS_MODULE=aurora.config.settings \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=""\
+    UV_PROJECT_ENVIRONMENT=/venv \
+    VIRTUAL_ENV=/venv \
     UWSGI_PROCESSES=4
+
 WORKDIR /app
+ADD uv.lock README.md MANIFEST.in pyproject.toml /app/
+ADD src /app/src/
+
 RUN --mount=type=cache,target=/root/.uv-cache \
-    --mount=type=bind,source=uv.lock,target=/app/uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=/app/pyproject.toml \
-    --mount=type=bind,source=MANIFEST.in,target=/app/MANIFEST.in \
-    --mount=type=bind,source=./src/aurora,target=/app/src/aurora \
-    --mount=type=bind,source=./src/dbtemplates,target=/app/src/dbtemplates \
-    uv sync --cache-dir=/root/.uv-cache --no-editable --frozen --extra distribution
+      uv sync --cache-dir=/root/.uv-cache \
+        --python=/usr/local/bin/python \
+        --python-preference=system \
+        --frozen
 
 # ------- production only deps-------
 FROM builder AS production
@@ -74,12 +79,18 @@ FROM builder AS production
 WORKDIR /app
 COPY uv.lock README.md MANIFEST.in pyproject.toml /app/
 COPY src /app/src/
+ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=""\
+    UV_PROJECT_ENVIRONMENT=/venv \
+    VIRTUAL_ENV=/venv
 
 RUN --mount=type=cache,target=/root/.uv-cache \
     uv sync --cache-dir=/root/.uv-cache \
         --python=/usr/local/bin/python \
         --python-preference=system \
-        --no-dev --no-editable --frozen --extra distribution
+        --no-dev --no-editable --frozen
 
 
 FROM base AS dist
@@ -87,7 +98,7 @@ ARG BUILD_DATE
 ARG VERSION
 ARG GIT_SHA
 
-ENV PATH=/app/.venv/bin:/usr/local/bin/:/usr/bin:/bin:/usr/sbin/:/usr/local/sbin/ \
+ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin:/usr/sbin/:/usr/local/sbin/ \
     BUILD_DATE="${BUILD_DATE}" \
     DJANGO_SETTINGS_MODULE=aurora.config.settings \
     GIT_SHA="${GIT_SHA}" \
@@ -99,25 +110,24 @@ ENV PATH=/app/.venv/bin:/usr/local/bin/:/usr/bin:/bin:/usr/sbin/:/usr/local/sbin
     STATIC_ROOT=/var/aurora/static/ \
     STATIC_URL="/static/" \
     UWSGI_PROCESSES=4 \
+    UV_PROJECT_ENVIRONMENT=/venv \
+    VIRTUAL_ENV=/venv \
     VERSION="${VERSION}"
 
 
-WORKDIR app/
+WORKDIR /app
+ADD docker/conf /conf/
+ADD docker/bin/* /usr/local/bin/
 
-COPY docker/conf /conf/
-COPY docker/bin/* /usr/local/bin/
-COPY LICENSE README.md /
-COPY --from=production /app/.venv /app/.venv
-COPY --from=builder /usr/local/bin/uv /usr/local/bin/
+ADD uv.lock README.md MANIFEST.in pyproject.toml /app/
+ADD src /app/src/
+
+COPY --from=production /venv /venv
+COPY --from=builder /usr/local/bin/uwsgi /usr/local/bin/uv /usr/local/bin/
 
 RUN --mount=type=cache,target=/root/.uv-cache \
-    --mount=type=bind,source=uv.lock,target=/app/uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=/app/pyproject.toml \
-    --mount=type=bind,source=MANIFEST.in,target=/app/MANIFEST.in \
-    --mount=type=bind,source=README.md,target=/app/README.md \
-    --mount=type=bind,source=./src/aurora,target=/app/src/aurora \
-    --mount=type=bind,source=./src/dbtemplates,target=/app/src/dbtemplates \
-    uv --cache-dir=/root/.uv-cache pip install --no-deps .
+    uv --cache-dir=/root/.uv-cache pip install --no-deps . \
+    && rm -fr /app/*
 
 
 EXPOSE 8000
