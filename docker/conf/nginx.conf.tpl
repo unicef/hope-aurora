@@ -63,6 +63,7 @@ http {
         large_client_header_buffers 4 16k;
         access_log /dev/stdout;
         listen 8000;
+        listen 80;
         proxy_no_cache 1;
         proxy_cache_bypass 1;
         proxy_cache off;
