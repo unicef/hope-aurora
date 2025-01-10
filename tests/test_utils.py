@@ -1,8 +1,8 @@
 import base64
 
-import pytest
-
 from django.core.files.uploadedfile import SimpleUploadedFile
+
+import pytest
 
 from aurora.core.utils import apply_nested, extract_content, flatten_dict, merge_data, namify, underscore_to_camelcase
 from aurora.registration.storage import Router

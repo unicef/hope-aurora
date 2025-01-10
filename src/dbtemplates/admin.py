@@ -7,11 +7,8 @@ from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
-from django.utils.translation import gettext_lazy as _, ngettext
-
-from dbtemplates.conf import settings
-from dbtemplates.models import add_template_to_cache, remove_cached_template, Template
-from dbtemplates.utils.template import check_template_syntax
+from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext
 
 from admin_extra_buttons.decorators import button, view
 
@@ -20,6 +17,10 @@ from admin_extra_buttons.decorators import button, view
 from admin_sync.mixin import PublishMixin, SyncMixin
 from adminfilters.mixin import AdminFiltersMixin
 from adminfilters.value import ValueFilter
+
+from dbtemplates.conf import settings
+from dbtemplates.models import Template, add_template_to_cache, remove_cached_template
+from dbtemplates.utils.template import check_template_syntax
 
 if settings.DBTEMPLATES_USE_REVERSION:
     from reversion.admin import VersionAdmin as TemplateModelAdmin

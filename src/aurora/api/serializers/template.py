@@ -1,6 +1,6 @@
-from dbtemplates.models import Template
-
 from rest_framework import serializers
+
+from dbtemplates.models import Template
 
 
 class TemplateSerializer(serializers.ModelSerializer):

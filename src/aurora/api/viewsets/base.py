@@ -1,6 +1,5 @@
-from dbtemplates.models import Template
-
-from django_filters import rest_framework as filters, utils
+from django_filters import rest_framework as filters
+from django_filters import utils
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication, SessionAuthentication, TokenAuthentication
@@ -9,6 +8,7 @@ from rest_framework.permissions import BasePermission, DjangoModelPermissions
 from aurora.core.models import CustomFieldType, FlexForm, FlexFormField, OptionSet, Organization, Project, Validator
 from aurora.core.utils import is_root
 from aurora.registration.models import Record, Registration
+from dbtemplates.models import Template
 
 
 class LastModifiedFilter(filters.FilterSet):

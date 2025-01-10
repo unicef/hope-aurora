@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from django.template import Library, Node, TemplateSyntaxError, Variable
-from django.template.base import render_value_in_context, TokenType
+from django.template.base import TokenType, render_value_in_context
 from django.template.defaulttags import token_kwargs
 from django.templatetags.static import static
 from django.utils import translation

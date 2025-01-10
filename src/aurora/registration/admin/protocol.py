@@ -1,6 +1,5 @@
-from typing import Any, Iterable, Sequence, Union
-
 import logging
+from typing import Any, Iterable, Sequence, Union
 
 from django.core.serializers.json import Deserializer as JsonDeserializer
 from django.db import connections, transaction

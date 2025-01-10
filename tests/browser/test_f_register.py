@@ -1,11 +1,10 @@
 import logging
 from pathlib import Path
 
-import pytest
-
 from django.core.management import call_command
 from django.utils import translation
 
+import pytest
 from concurrency.api import disable_concurrency
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys

@@ -1,5 +1,5 @@
 from django.apps import AppConfig
-from django.urls import get_script_prefix, NoReverseMatch, reverse
+from django.urls import NoReverseMatch, get_script_prefix, reverse
 from django.utils.encoding import iri_to_uri
 
 from smart_admin.decorators import smart_register

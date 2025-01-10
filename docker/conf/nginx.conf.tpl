@@ -62,6 +62,7 @@ http {
         client_max_body_size ${NGINX_MAX_BODY_SIZE};
         large_client_header_buffers 4 16k;
         access_log /dev/stdout;
+        listen 8000;
         listen 80;
         proxy_no_cache 1;
         proxy_cache_bypass 1;
@@ -72,6 +73,8 @@ http {
         add_header X-Aurora-Version "${AURORA_VERSION}" always;
         add_header X-Aurora-Build "${AURORA_BUILD}" always;
         add_header X-Aurora-Time "${DOLLAR}date_gmt" always;
+        add_header X-Aurora-static-root "${STATIC_ROOT}" always;
+        add_header X-Aurora-static-url "${STATIC_URL}" always;
 
         location /404.html {
             root /var/nginx/;
@@ -147,6 +150,7 @@ http {
             add_header X-Aurora-Version "${AURORA_VERSION}";
             add_header X-Aurora-Build "${AURORA_BUILD}";
             add_header X-Aurora-Time "${DOLLAR}date_gmt";
+            add_header X-Aurora-static "${STATIC_URL}";
 
             expires max;
             gzip_static on;
@@ -169,7 +173,7 @@ http {
             add_header X-Aurora-Build "${AURORA_BUILD}";
             add_header X-Aurora-Time "${DOLLAR}date_gmt";
 
-            proxy_pass http://127.0.0.1:8000;
+            proxy_pass http://127.0.0.1:8888;
             proxy_set_header Host ${DOLLAR}host;
             proxy_set_header X-Forwarded-For ${DOLLAR}proxy_add_x_forwarded_for;
             proxy_set_header X-Scheme ${DOLLAR}scheme;

@@ -1,7 +1,7 @@
 {% load static itrans %}{% if user.is_staff %}
     <div class="fixed flex staff-toolbar">
         <div class="flex-shrink block hidden lg:inline-flex">
-            {% trans "Version" %}: {{ project.version|slice:':7'|join:'' }}
+            {% trans "Version" %}: {{ project.commit|slice:':7'|join:'' }}
         </div>
         <div class="flex-shrink block hidden lg:inline-flex">
             {% trans "Build date" %}: {{ project.build_date }}

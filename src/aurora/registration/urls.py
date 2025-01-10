@@ -1,8 +1,6 @@
 from django.urls import path
 
 from .views import (
-    authorize_cookie,
-    get_pwa_enabled,
     QRVerify,
     RegisterAuthView,
     RegisterCompleteView,
@@ -10,6 +8,8 @@ from .views import (
     RegisterView,
     RegistrationDataApi,
     RegistrationDataView,
+    authorize_cookie,
+    get_pwa_enabled,
     registrations,
 )
 

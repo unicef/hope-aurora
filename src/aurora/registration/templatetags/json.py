@@ -1,7 +1,6 @@
-from typing import Dict
-
 import json
 import logging
+from typing import Dict
 
 from django.template import Library
 from django.utils.safestring import mark_safe

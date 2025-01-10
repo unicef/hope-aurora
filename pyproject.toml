@@ -1,4 +1,10 @@
 [project]
+name = "Aurora"
+version = "2.0"
+description = ""
+readme = "README.md"
+license = {text = "MIT"}
+
 authors = [
     {name = "sax", email = "s.apostolico@gmail.com"},
     {name = "Domenico DiNicola", email = "dom.dinicola@gmail.com"},
@@ -8,14 +14,17 @@ dependencies = [
     "Faker",
     "Markdown",
     "Pillow",
+    "beautifulsoup4",
     "celery",
+    "channels-redis",
+    "channels[daphne]",
     "cryptography",
-    "django<5",
     "django-admin-extra-buttons",
     "django-admin-ordering",
     "django-admin-sync",
     "django-adminactions",
     "django-adminfilters",
+    "django-anymail[mailjet]",
     "django-appconf",
     "django-bitfield",
     "django-click",
@@ -23,11 +32,18 @@ dependencies = [
     "django-constance",
     "django-cors-headers",
     "django-csp",
+    "django-debug-toolbar",
     "django-environ",
+    "django-filter",
     "django-flags",
+    "django-front-door",
+    "django-hijack",
     "django-import-export",
     "django-jsoneditor",
+    "django-mdeditor",
+    "django-mptt",
     "django-picklefield",
+    "django-pwa",
     "django-redis",
     "django-regex",
     "django-reversion",
@@ -35,10 +51,13 @@ dependencies = [
     "django-simple-captcha",
     "django-simple-math-captcha",
     "django-smart-admin",
+    "django-smart-env>=0.1.0",
     "django-strategy-field",
     "django-sysinfo",
-    "django-regex",
+    "django-tinymce",
+    "django<5",
     "djangorestframework",
+    "djangorestframework-datatables",
     "htmlmin",
     "jmespath",
     "jsonpickle",
@@ -46,41 +65,31 @@ dependencies = [
     "psycopg2-binary",
     "py-mini-racer",
     "pycryptodome",
+    "pygments",
+    "pyquery",
     "qrcode",
     "sentry-sdk",
-    "setuptools",
+    "setuptools>=75.6.0",
     "social-auth-app-django",
-    "sqlparse",
-    "django-tinymce",
-    "django-pwa",
-    "django-mptt",
-    "django-hijack",
-    "channels[daphne]",
-    "channels-redis",
-    "django-mdeditor",
-    "djangorestframework-datatables",
-    "django-filter",
-    "django-front-door",
-    "django-debug-toolbar",
-    "pygments",
     "soupsieve",
-    "pyquery",
-    "beautifulsoup4",
-    "django-anymail[mailjet]",
+    "sqlparse",
     "uwsgi",
-    "django-smart-env>=0.1.0",
 ]
-name = "Aurora"
-version = "0.1"
-description = ""
-readme = "README.md"
-license = {text = "MIT"}
 
+[project.optional-dependencies]
+docs = [
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.5.36",
+    "mkdocs-awesome-pages-plugin>=2.9.3",
+    "mkdocstrings-python",
+    "mkdocs-gen-files>=0.5.0",
+]
 
-[tool.pdm.dev-dependencies]
-dev = [
+[tool.uv]
+dev-dependencies = [
     "black<23.0.0,>=22.1.0",
     "coverage",
+    "django-stubs[compatible-mypy]<2.0.0,>=1.16.0",
     "django-webtest<2.0.0,>=1.9.7",
     "factory-boy",
     "flake8",
@@ -91,7 +100,6 @@ dev = [
     "pdbpp",
     "pre-commit",
     "pyflakes",
-    "pytest<7.2",
     "pytest-asyncio",
     "pytest-coverage<1.0,>=0.0",
     "pytest-django<5.0.0,>=4.1.0",
@@ -100,13 +108,21 @@ dev = [
     "pytest-pythonpath<1.0.0,>=0.7.3",
     "pytest-selenium<3.0,>=2.0",
     "pytest-variables<3.0",
+    "pytest-xdist>=3.6.1",
+    "pytest<7.2",
     "tox",
     "watchdog<3.0.0,>=2.1.6",
-    "django-stubs[compatible-mypy]<2.0.0,>=1.16.0",
 ]
 
-[tool.pdm.build]
-includes = []
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools]
+packages = ["aurora", "dbtemplates"]
 
 [tool.black]
 line-length = 120
@@ -114,32 +130,22 @@ include = '\.pyi?$'
 exclude = '''
 /(
     \.git
-  | \.hg
-  | \.mypy_cache
+  | \.pytest_cache
   | \.tox
   | \.venv
-  | venv
-  | _build
-  | buck-out
+  | ~build
   | build
-  | dist
+  | ops
   | migrations
-  | snapshots
-  | __pypackages__
 )/
 '''
 
 [tool.isort]
-combine_as_imports = true
-default_section = "THIRDPARTY"
-include_trailing_comma = true
-known_django = "django"
-known_typing = ["typing"]
-known_tests = ["unittest", "pytest"]
-known_app = "aurora"
-sections = ["FUTURE", 'TYPING', 'STDLIB',"TESTS",'DJANGO', 'FIRSTPARTY', 'THIRDPARTY','APP','LOCALFOLDER']
-multi_line_output = 3
+profile = "black"
 line_length = 120
-balanced_wrapping = true
-order_by_type = false
-skip_glob = ["**/migrations/**"]
+default_section = "THIRDPARTY"
+known_first_party = []
+known_django = "django"
+sections = ["FUTURE","STDLIB","DJANGO","THIRDPARTY","FIRSTPARTY","LOCALFOLDER"]
+include_trailing_comma = true
+skip = ["migrations", "snapshots", ".venv"]

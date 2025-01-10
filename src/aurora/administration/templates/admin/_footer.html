@@ -1,6 +1,6 @@
 {% load static %}
 <div style="text-align: center;margin-bottom: 30px">
-    {{ project.build_date }} - {% include "i18n/_select_language.html" with languages=project.languages %}
+    Aurora {{ project.version }} - {{ project.build_date }} - {{ project.commit }} - {% include "i18n/_select_language.html" with languages=project.languages %}
     {% csrf_token %}
     <script>
         (function ($) {

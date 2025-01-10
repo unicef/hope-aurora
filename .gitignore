@@ -1,4 +1,5 @@
 .*
+!.git
 ~*
 *.min.min.js
 *.py[ico]
@@ -17,6 +18,7 @@ package.json
 !.isort.cfg
 !.flake8
 !.pre-commit-config.yaml
+!.secrets.baseline
 .env
 .venv
 __packages__
