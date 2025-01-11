@@ -20,7 +20,7 @@ class AuroraUserCreationForm(UserCreationForm):
 class AuroraRoleForm(forms.ModelForm):
     class Meta:
         model = AuroraRole
-        fields = "__all__"
+        fields = "organization", "project", "registration", "user", "role", "valid_from", "valid_until"
 
     def clean(self):
         found = [

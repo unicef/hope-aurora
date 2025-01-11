@@ -239,7 +239,6 @@ LANGUAGES = (
 LOCALE_PATHS = (str(PACKAGE_DIR / "LOCALE"),)
 
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 7  # 7 days
-# SESSION_COOKIE_DOMAIN = env('SESSION_COOKIE_DOMAIN')
 SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SECURE = False
 SESSION_COOKIE_NAME = env("SESSION_COOKIE_NAME")
@@ -256,13 +255,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.1/howto/static-files/
-# STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-# Ensure STATIC_ROOT exists.
-# os.makedirs(STATIC_ROOT, exist_ok=True)
-
-# STATIC_URL = f"/static/{os.environ.get('VERSION', '')}/"
 STATIC_URL = env("STATIC_URL")
 STATIC_ROOT = env("STATIC_ROOT") + STATIC_URL  # simplify nginx config
 
@@ -308,16 +300,12 @@ EMAIL_TIMEOUT = env("EMAIL_TIMEOUT")
 EMAIL_USE_SSL = env("EMAIL_USE_SSL")
 EMAIL_USE_TLS = env("EMAIL_USE_TLS")
 
-# FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 LOGIN_REDIRECT_URL = "index"
 LOGOUT_REDIRECT_URL = "index"
-# LOGIN_URL = "/login"
-# USER_LOGIN_URL = "/login"
 
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    # "filters": {"require_debug_false": {"()": "django.utils.log.RequireDebugFalse"}},
     "formatters": {"verbose": {"format": "%(levelname)s %(asctime)s %(module)s: %(message)s"}},
     "handlers": {
         "console": {"class": "logging.StreamHandler", "formatter": "verbose"},
@@ -395,13 +383,10 @@ INTERNAL_IPS = env.list("INTERNAL_IPS")
 
 
 ROOT_TOKEN = env("ROOT_TOKEN")
-CSRF_FAILURE_VIEW = "aurora.web.views.site.error_csrf"
+CSRF_FAILURE_VIEW = "aurora.web.views.sites.error_csrf"
 
-# WARNING: Do NOT touch this line before it will reach out production
 AUTH_USER_MODEL = "auth.User"
-# AUTH_USER_MODEL = "security.AuroraUser"
 
-# fix admin name
 LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/logged-in/"
 

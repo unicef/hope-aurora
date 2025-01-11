@@ -19,7 +19,11 @@ class ValidatorViewSet(SmartViewSet):
 }};
 """
 
-    @action(detail=True, permission_classes=[AllowAny], authentication_classes=[SessionAuthentication])
+    @action(
+        detail=True,
+        permission_classes=[AllowAny],
+        authentication_classes=[SessionAuthentication],
+    )
     def validator(self, request, pk):
         obj = self.get_object()
         return HttpResponse(
@@ -27,7 +31,11 @@ class ValidatorViewSet(SmartViewSet):
             content_type="application/javascript",
         )
 
-    @action(detail=True, permission_classes=[AllowAny], authentication_classes=[SessionAuthentication])
+    @action(
+        detail=True,
+        permission_classes=[AllowAny],
+        authentication_classes=[SessionAuthentication],
+    )
     def script(self, request, pk):
         obj = self.get_object()
         return HttpResponse(

@@ -13,8 +13,7 @@ def parse_bookmarks(value):
 
 def parse_emails(value):
     admins = value.split(",")
-    v = [(a.split("@")[0].strip(), a.strip()) for a in admins]
-    return v
+    return [(a.split("@")[0].strip(), a.strip()) for a in admins]
 
 
 OPTIONS = {
@@ -72,7 +71,7 @@ OPTIONS = {
     "MAILJET_SECRET_KEY": (str, ""),
     "MATOMO_ID": (str, "", "", False),
     "MATOMO_SITE": (str, "https://unisitetracker.unicef.io/"),
-    "MEDIA_ROOT": (str, "/tmp/media/"),
+    "MEDIA_ROOT": (str, "/tmp/media/"),  # noqa
     "MIGRATION_LOCK_KEY": (str, "django-migrations"),
     "PRODUCTION_SERVER": (str, ""),
     "PRODUCTION_TOKEN": (str, ""),
@@ -90,8 +89,11 @@ OPTIONS = {
     "SESSION_COOKIE_SECURE": (bool, True, False, True),
     "SITE_ID": (int, 1),
     "SMART_ADMIN_BOOKMARKS": (parse_bookmarks, ""),
-    "STATICFILES_STORAGE": (str, "aurora.web.storage.ForgivingManifestStaticFilesStorage"),
-    "STATIC_ROOT": (str, "/tmp/static/"),
+    "STATICFILES_STORAGE": (
+        str,
+        "aurora.web.storage.ForgivingManifestStaticFilesStorage",
+    ),
+    "STATIC_ROOT": (str, "/tmp/static/"),  # noqa
     "STATIC_URL": (str, "static/"),
     "TRANSLATOR_SERVICE": (str, ""),
     "USE_HTTPS": (bool, False),

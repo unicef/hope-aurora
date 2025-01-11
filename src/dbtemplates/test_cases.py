@@ -1,8 +1,8 @@
-import io
 import os
 import shutil
 import tempfile
 
+import pytest
 from django.conf import settings as django_settings
 from django.contrib.sites.models import Site
 from django.core.cache.backends.base import BaseCache
@@ -11,7 +11,10 @@ from django.template import TemplateDoesNotExist, loader
 from django.test import TestCase
 
 from dbtemplates.conf import settings
-from dbtemplates.management.commands.sync_templates import DATABASE_TO_FILES, FILES_TO_DATABASE
+from dbtemplates.management.commands.sync_templates import (
+    DATABASE_TO_FILES,
+    FILES_TO_DATABASE,
+)
 from dbtemplates.models import Template
 from dbtemplates.utils.cache import get_cache_backend, get_cache_key
 from dbtemplates.utils.template import check_template_syntax, get_template_source
@@ -36,7 +39,7 @@ class DbTemplatesTestCase(TestCase):
 
     def test_basics(self):
         self.assertEqual(list(self.t1.sites.all()), [self.site1])
-        self.assertTrue("base" in self.t1.content)
+        assert "base" in self.t1.content
         self.assertEqual(list(Template.objects.filter(sites=self.site1)), [self.t1, self.t2])
         self.assertEqual(list(self.t2.sites.all()), [self.site1, self.site2])
 
@@ -62,7 +65,8 @@ class DbTemplatesTestCase(TestCase):
             django_settings.SITE_ID = Site.objects.create(domain="example.net", name="example.net").id
             Site.objects.clear_cache()
 
-            self.assertRaises(TemplateDoesNotExist, loader.get_template, "copyright.html")
+            with pytest.raises(TemplateDoesNotExist):
+                loader.get_template("copyright.html")
         finally:
             django_settings.SITE_ID = old_site_id
             settings.DBTEMPLATES_ADD_DEFAULT_SITE = old_add_default_site
@@ -75,7 +79,10 @@ class DbTemplatesTestCase(TestCase):
 
     def test_error_templates_creation(self):
         call_command("create_error_templates", force=True, verbosity=0)
-        self.assertEqual(list(Template.objects.filter(sites=self.site1)), list(Template.objects.filter()))
+        self.assertEqual(
+            list(Template.objects.filter(sites=self.site1)),
+            list(Template.objects.filter()),
+        )
         self.assertTrue(Template.objects.filter(name="404.html").exists())
 
     def test_automatic_sync(self):
@@ -87,42 +94,48 @@ class DbTemplatesTestCase(TestCase):
         old_template_dirs = settings.TEMPLATES[0].get("DIRS", [])
         temp_template_dir = tempfile.mkdtemp("dbtemplates")
         temp_template_path = os.path.join(temp_template_dir, "temp_test.html")
-        temp_template = io.open(temp_template_path, "w", encoding="utf-8")
-        try:
-            temp_template.write("temp test")
-            settings.TEMPLATES[0]["DIRS"] = (temp_template_dir,)
-            # these works well if is not settings patched at runtime
-            # for supporting django < 1.7 tests we must patch dirs in runtime
-            from dbtemplates.management.commands import sync_templates
+        with open(temp_template_path, "w", encoding="utf-8") as temp_template:
+            try:
+                temp_template.write("temp test")
+                settings.TEMPLATES[0]["DIRS"] = (temp_template_dir,)
+                # these works well if is not settings patched at runtime
+                # for supporting django < 1.7 tests we must patch dirs in runtime
+                from dbtemplates.management.commands import sync_templates
 
-            sync_templates.DIRS = settings.TEMPLATES[0]["DIRS"]
+                sync_templates.DIRS = settings.TEMPLATES[0]["DIRS"]
 
-            self.assertFalse(Template.objects.filter(name="temp_test.html").exists())
-            call_command("sync_templates", force=True, verbosity=0, overwrite=FILES_TO_DATABASE)
-            self.assertTrue(Template.objects.filter(name="temp_test.html").exists())
+                self.assertFalse(Template.objects.filter(name="temp_test.html").exists())
+                call_command("sync_templates", force=True, verbosity=0, overwrite=FILES_TO_DATABASE)
+                self.assertTrue(Template.objects.filter(name="temp_test.html").exists())
 
-            t = Template.objects.get(name="temp_test.html")
-            t.content = "temp test modified"
-            t.save()
-            call_command("sync_templates", force=True, verbosity=0, overwrite=DATABASE_TO_FILES)
-            self.assertEqual("temp test modified", io.open(temp_template_path, encoding="utf-8").read())
+                t = Template.objects.get(name="temp_test.html")
+                t.content = "temp test modified"
+                t.save()
+                call_command("sync_templates", force=True, verbosity=0, overwrite=DATABASE_TO_FILES)
+                with open(temp_template_path, encoding="utf-8") as tmp_modified:
+                    assert tmp_modified.read() == "temp test modified"
 
-            call_command("sync_templates", force=True, verbosity=0, delete=True, overwrite=DATABASE_TO_FILES)
-            self.assertTrue(os.path.exists(temp_template_path))
-            self.assertFalse(Template.objects.filter(name="temp_test.html").exists())
-        finally:
-            temp_template.close()
-            settings.TEMPLATES[0]["DIRS"] = old_template_dirs
-            shutil.rmtree(temp_template_dir)
+                    call_command(
+                        "sync_templates",
+                        force=True,
+                        verbosity=0,
+                        delete=True,
+                        overwrite=DATABASE_TO_FILES,
+                    )
+                    assert os.path.exists(temp_template_path)
+                assert not Template.objects.filter(name="temp_test.html").exists()
+            finally:
+                settings.TEMPLATES[0]["DIRS"] = old_template_dirs
+                shutil.rmtree(temp_template_dir)
 
     def test_get_cache(self):
-        self.assertTrue(isinstance(get_cache_backend(), BaseCache))
+        assert isinstance(get_cache_backend(), BaseCache)
 
     def test_check_template_syntax(self):
         bad_template, _ = Template.objects.get_or_create(name="bad.html", content="{% if foo %}Bar")
         good_template, _ = Template.objects.get_or_create(name="good.html", content="{% if foo %}Bar{% endif %}")
-        self.assertFalse(check_template_syntax(bad_template)[0])
-        self.assertTrue(check_template_syntax(good_template)[0])
+        assert not check_template_syntax(bad_template)[0]
+        assert check_template_syntax(good_template)[0]
 
     def test_get_cache_name(self):
-        self.assertEqual(get_cache_key("name with spaces"), "dbtemplates::name-with-spaces::1")
+        assert get_cache_key("name with spaces") == "dbtemplates::name-with-spaces::1"

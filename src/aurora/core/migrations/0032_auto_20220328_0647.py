@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0031_validator_trace"),
     ]
@@ -31,7 +30,9 @@ class Migration(migrations.Migration):
             model_name="optionset",
             name="name",
             field=django.contrib.postgres.fields.citext.CICharField(
-                max_length=100, unique=True, validators=[django.core.validators.RegexValidator("[a-z0-9-_]")]
+                max_length=100,
+                unique=True,
+                validators=[django.core.validators.RegexValidator("[a-z0-9-_]")],
             ),
         ),
     ]

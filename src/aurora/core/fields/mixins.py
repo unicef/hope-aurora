@@ -62,23 +62,20 @@ class SmartFieldMixin:
 
         if not self.flex_field.required:
             attrs.pop("required", "")
-        # attrs["flex_field"] = self.flex_field
         attrs["data-flex-name"] = self.flex_field.name
         for attr in [
             "onblur",
             "onchange",
             "onkeyup",
         ]:
-            if attr in self.smart_events:
-                if self.smart_events[attr]:
-                    attrs[attr] = oneline(self.smart_events[attr])
+            if attr in self.smart_events and self.smart_events[attr]:
+                attrs[attr] = oneline(self.smart_events[attr])
 
         for attr in [
             "onload",
         ]:
-            if attr in self.smart_events:
-                if self.smart_events[attr]:
-                    attrs[f"data-{attr}"] = oneline(self.smart_events[attr])
+            if attr in self.smart_events and self.smart_events[attr]:
+                attrs[f"data-{attr}"] = oneline(self.smart_events[attr])
 
         if validation := self.smart_events.get("validation", None):
             attrs["data-validation"] = oneline(validation)

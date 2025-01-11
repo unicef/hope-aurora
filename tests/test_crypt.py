@@ -4,6 +4,11 @@ import pytest
 from Crypto.PublicKey import RSA
 
 from aurora.core.crypto import RSACrypto, crypt, decrypt
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from aurora.registration.models import Record
+
 
 LANGUAGES = {
     "english": "first",
@@ -53,7 +58,7 @@ btcA1UFpS9TFL++uMmwbcMzykITUTxhHp0QWEg1cpj8HFakPBZ4=
 -----END RSA PRIVATE KEY-----"""
 
 
-@pytest.fixture()
+@pytest.fixture
 def registration(simple_form):
     from testutils.factories import RegistrationFactory
 
@@ -96,8 +101,6 @@ def test_crypt_complex(data, public_pem, private_pem):
 
 @pytest.mark.parametrize("data", [LANGUAGES], ids=["json"])
 def test_crypt_field(data, registration):
-    from aurora.registration.models import Record
-
     record: Record = registration.add_record(data)
     decrypted = record.decrypt(registration._private_pem)
     assert decrypted == data

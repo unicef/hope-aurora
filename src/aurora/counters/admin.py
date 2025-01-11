@@ -27,8 +27,14 @@ class CounterAdmin(SmartModelAdmin):
     list_display = ("registration", "day", "records")
     list_filter = (
         ("registration__project__organization", LinkedAutoCompleteFilter.factory()),
-        ("registration__project", LinkedAutoCompleteFilter.factory(parent="registration__project__organization")),
-        ("registration", LinkedAutoCompleteFilter.factory(parent="registration__project")),
+        (
+            "registration__project",
+            LinkedAutoCompleteFilter.factory(parent="registration__project__organization"),
+        ),
+        (
+            "registration",
+            LinkedAutoCompleteFilter.factory(parent="registration__project"),
+        ),
         "day",
     )
     date_hierarchy = "day"

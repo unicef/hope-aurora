@@ -40,5 +40,4 @@ class SmartJavascriptCatalog(JavaScriptCatalog):
         return super().get(request)
 
     def render_to_response(self, context, **response_kwargs):
-        response = super().render_to_response(context, **response_kwargs)
-        return response
+        return super().render_to_response(context, **response_kwargs)

@@ -23,7 +23,7 @@ def filter_optionset(obj: OptionSet, pk, term, lang, parent=None):
             valid = valid and str(record["parent"]) == str(parent)
         return valid
 
-    data = {
+    return {
         "results": [
             {
                 "id": record["pk"],
@@ -34,7 +34,6 @@ def filter_optionset(obj: OptionSet, pk, term, lang, parent=None):
             if _filter(record)
         ],
     }
-    return data
 
 
 # @method_decorator(cache_page(60 * 60), name="dispatch")
@@ -71,5 +70,7 @@ class OptionsListView(BaseListView):
 
 
 def service_worker(request):
-    response = HttpResponse(open(settings.PWA_SERVICE_WORKER_PATH).read(), content_type="application/javascript")
-    return response
+    return HttpResponse(
+        open(settings.PWA_SERVICE_WORKER_PATH).read(),
+        content_type="application/javascript",
+    )

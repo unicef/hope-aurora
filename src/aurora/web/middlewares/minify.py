@@ -36,8 +36,7 @@ class HtmlMinMiddleware:
 
     @cached_property
     def ignore_regex(self):
-        if config.MINIFY_IGNORE_PATH:
-            return re.compile(config.MINIFY_IGNORE_PATH)
+        return re.compile(config.MINIFY_IGNORE_PATH) if config.MINIFY_IGNORE_PATH else None
 
     def update_config(self, sender, key, old_value, new_value, **kwargs):
         if hasattr(self, "config_value"):
@@ -47,8 +46,7 @@ class HtmlMinMiddleware:
             del self.ignore_regex
 
     def ignore_path(self, path):
-        if self.ignore_regex:
-            return self.ignore_regex.match(path)
+        return self.ignore_regex.match(path) if self.ignore_regex else None
 
     def can_minify(self, request, response):
         return (

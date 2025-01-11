@@ -22,7 +22,10 @@ def index(request, org):
     o: Organization = Organization.objects.get(slug=org)
     if not request.user.has_perm("counters.view_counter", o):
         raise PermissionDenied("----")
-    context = {"organization": o, "projects": o.projects.filter(members__user=request.user)}
+    context = {
+        "organization": o,
+        "projects": o.projects.filter(members__user=request.user),
+    }
     return render(request, "counters/index.html", context)
 
 
@@ -32,7 +35,10 @@ def project_index(request, org, prj):
     p: Project = Project.objects.get(organization=o, pk=prj)
     if not request.user.has_perm("counters.view_counter", p):
         raise PermissionDenied("----")
-    context = {"project": p, "registrations": p.registrations.filter(members__user=request.user)}
+    context = {
+        "project": p,
+        "registrations": p.registrations.filter(members__user=request.user),
+    }
     return render(request, "counters/project.html", context)
 
 
@@ -78,7 +84,7 @@ class MonthlyDataView(ChartView):
             total += record.records
 
         if not labels:
-            labels = [d.strftime("%-d, %a") for d in values.keys()]
+            labels = [d.strftime("%-d, %a") for d in values]
         period = date.strftime("%B %Y")
         data = {
             "datapoints": qs.all().count(),
@@ -88,11 +94,7 @@ class MonthlyDataView(ChartView):
             "labels": labels,
             "data": list(values.values()),
         }
-        response = JsonResponse(data)
-        # response["Cache-Control"] = "max-age=315360000"
-        # response["Last-Modified"] = "max-age=315360000"
-        # response["ETag"] = etag
-        return response
+        return JsonResponse(data)
 
 
 def daily_data(request, registration, record):

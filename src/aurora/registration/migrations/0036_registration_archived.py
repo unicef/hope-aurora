@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("registration", "0035_registration_unique_field_path"),
     ]
@@ -14,7 +13,8 @@ class Migration(migrations.Migration):
             model_name="registration",
             name="archived",
             field=models.BooleanField(
-                default=False, help_text="Archived/Terminated registration cannot be activated/reopened"
+                default=False,
+                help_text="Archived/Terminated registration cannot be activated/reopened",
             ),
         ),
     ]

@@ -72,7 +72,10 @@ class user_grant_permissions(ContextDecorator):  # noqa
             if isinstance(target, Organization):
                 self.kwargs = {"organization": self.target}
             elif isinstance(target, Project):
-                self.kwargs = {"project": self.target, "organization": self.target.organization}
+                self.kwargs = {
+                    "project": self.target,
+                    "organization": self.target.organization,
+                }
             elif isinstance(target, Registration):
                 self.kwargs = {
                     "project": target.project,
@@ -80,7 +83,7 @@ class user_grant_permissions(ContextDecorator):  # noqa
                     "organization": target.project.organization,
                 }
             else:
-                ValueError("target must one isnstance of Registration|Project|Organization")
+                raise ValueError("target must one instance of Registration|Project|Organization")
 
     def __enter__(self):
         for cache in self.caches:
@@ -101,8 +104,7 @@ class user_grant_permissions(ContextDecorator):  # noqa
 
     def start(self):
         """Activate a patch, returning any created mock."""
-        result = self.__enter__()
-        return result
+        return self.__enter__()
 
     def stop(self):
         """Stop an active patch."""

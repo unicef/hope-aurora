@@ -53,20 +53,20 @@ def callable_rate(group, request):
 
 
 def wait_for(driver, *args):
-    from selenium.webdriver.support import expected_conditions as EC
+    from selenium.webdriver.support import expected_conditions
     from selenium.webdriver.support.ui import WebDriverWait
 
     wait = WebDriverWait(driver, 10)
-    wait.until(EC.visibility_of_element_located((*args,)))
+    wait.until(expected_conditions.visibility_of_element_located((*args,)))
     return driver.find_element(*args)
 
 
 def wait_for_url(driver, url):
-    from selenium.webdriver.support import expected_conditions as EC
+    from selenium.webdriver.support import expected_conditions
     from selenium.webdriver.support.ui import WebDriverWait
 
     wait = WebDriverWait(driver, 10)
-    wait.until(EC.url_contains(url))
+    wait.until(expected_conditions.url_contains(url))
 
 
 @contextlib.contextmanager
@@ -85,9 +85,7 @@ def force_login(user, driver, base_url):
     from django.conf import settings
     from django.contrib.auth import BACKEND_SESSION_KEY, HASH_SESSION_KEY, SESSION_KEY
 
-    SessionStore = import_module(settings.SESSION_ENGINE).SessionStore
-    # selenium_login_start_page = getattr(settings, 'SELENIUM_LOGIN_START_PAGE', '/')
-    # driver.get('{}{}'.format(base_url, selenium_login_start_page))
+    SessionStore = import_module(settings.SESSION_ENGINE).SessionStore  # noqa
     with driver.with_timeouts(page=5):
         driver.get(base_url)
 
@@ -97,6 +95,19 @@ def force_login(user, driver, base_url):
     session[HASH_SESSION_KEY] = user.get_session_auth_hash()
     session.save()
 
-    driver.add_cookie({"name": settings.SESSION_COOKIE_NAME, "value": session.session_key, "path": "/"})
-    driver.add_cookie({"name": "gdpr", "value": '{"base":1, "set":1, "optionals": 1}', "secure": False, "path": "/"})
+    driver.add_cookie(
+        {
+            "name": settings.SESSION_COOKIE_NAME,
+            "value": session.session_key,
+            "path": "/",
+        }
+    )
+    driver.add_cookie(
+        {
+            "name": "gdpr",
+            "value": '{"base":1, "set":1, "optionals": 1}',
+            "secure": False,
+            "path": "/",
+        }
+    )
     driver.refresh()

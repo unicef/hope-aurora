@@ -5,7 +5,6 @@ import time
 from functools import wraps
 from hashlib import md5
 from json import JSONDecodeError
-from typing import Dict, Type
 
 from django.conf import settings
 from django.contrib import messages
@@ -31,7 +30,7 @@ from sentry_sdk import set_tag
 from aurora.core.models import FormSet
 from aurora.core.utils import get_etag, get_qrcode, has_token, never_ever_cache
 from aurora.core.version_media import VersionMedia
-from aurora.i18n.gettext import gettext as _
+from aurora.i18n.get_text import gettext as _
 from aurora.registration.models import Record, Registration
 from aurora.state import state
 from aurora.web.middlewares.admin import is_admin_site, is_public_site
@@ -56,7 +55,11 @@ class RegisterCompleteView(TemplateView):
     def get_template_names(self):
         slug = self.registration.slug
         language = translation.get_language()
-        return [f"registration/{language}/{slug}_done.html", f"registration/{slug}_done.html", self.template_name]
+        return [
+            f"registration/{language}/{slug}_done.html",
+            f"registration/{slug}_done.html",
+            self.template_name,
+        ]
 
     @cached_property
     def registration(self):
@@ -86,7 +89,11 @@ class RegisterCompleteView(TemplateView):
             qrcode, url = None, None
         registration_url = self.registration.get_absolute_url()
         return super().get_context_data(
-            qrcode=qrcode, url=url, registration_url=registration_url, record=self.record, **kwargs
+            qrcode=qrcode,
+            url=url,
+            registration_url=registration_url,
+            record=self.record,
+            **kwargs,
         )
 
 
@@ -152,7 +159,11 @@ def check_access(view_func):
                 response.set_cookie("aurora_form", str(view.registration.slug))
                 return response
             if not request.user.has_perm("registration.register", view.registration):
-                messages.add_message(request, messages.ERROR, _("Sorry you do not have access to requested Form"))
+                messages.add_message(
+                    request,
+                    messages.ERROR,
+                    _("Sorry you do not have access to requested Form"),
+                )
                 return HttpResponseRedirect(login_url)
         return view_func(*args, **kwargs)
 
@@ -167,12 +178,14 @@ class RegisterView(RegistrationMixin, AdminAccesMixin, FormView):
     def get_template_names(self):
         slug = self.registration.slug
         language = translation.get_language()
-        return [f"registration/{language}/{slug}.html", f"registration/{slug}.html", self.template_name]
+        return [
+            f"registration/{language}/{slug}.html",
+            f"registration/{slug}.html",
+            self.template_name,
+        ]
 
     @check_access
     def get(self, request, *args, **kwargs):
-        # if request.user.is_authenticated and not request.GET.get("s"):
-        #     return HttpResponseRedirect(self.registration.get_absolute_url())
         if not self.is_post_allowed():
             return HttpResponse("Not Allowed")
 
@@ -203,11 +216,8 @@ class RegisterView(RegistrationMixin, AdminAccesMixin, FormView):
         return self.registration.flex_form.get_form_class()
 
     # @cache_formset
-    def get_formsets_classes(self) -> Dict[str, Type[FormSet]]:
-        #     return self.registration.flex_form.get_formsets_classes()
+    def get_formsets_classes(self) -> dict[str, type[FormSet]]:
         formsets = {}
-        # attrs = self.get_form_kwargs().copy()
-        # attrs.pop("prefix")
         for fs in self.registration.flex_form.formsets.select_related("flex_form", "parent").filter(enabled=True):
             formsets[fs.name] = fs.get_formset()
         return formsets
@@ -215,7 +225,7 @@ class RegisterView(RegistrationMixin, AdminAccesMixin, FormView):
     def get_initial(self):
         return self.registration.flex_form.get_initial()
 
-    def get_formsets(self) -> Dict[str, FormSet]:
+    def get_formsets(self) -> dict[str, FormSet]:
         formsets = {}
         attrs = self.get_form_kwargs().copy()
         attrs["initial"] = []
@@ -229,7 +239,7 @@ class RegisterView(RegistrationMixin, AdminAccesMixin, FormView):
     def media(self):
         extra = "" if settings.DEBUG else ".min"
         m = self.registration.flex_form.get_form_class()().media
-        for __, fs in self.get_formsets().items():
+        for fs in self.get_formsets().values():
             m += fs.media
 
         mine = VersionMedia(
@@ -283,16 +293,6 @@ class RegisterView(RegistrationMixin, AdminAccesMixin, FormView):
         if not self.is_post_allowed():
             return HttpResponse("Not Allowed")
 
-        # slug = request.resolver_match.kwargs.get("slug")
-        # registration = Registration.objects.filter(slug=slug).first()
-        # if registration and registration.is_pwa_enabled:
-        #     encrypted_data = request.POST.get("encryptedData")
-        #     if encrypted_data:
-        #         kwargs = {"fields": encrypted_data, "size": total_size(encrypted_data), "is_offline": True}
-        #
-        #         Record.objects.create(registration=registration, **kwargs)
-        #         return HttpResponse()
-
         form = self.get_form()
         formsets = self.get_formsets()
         self.errors = []
@@ -309,10 +309,7 @@ class RegisterView(RegistrationMixin, AdminAccesMixin, FormView):
         all_cleaned_data.update(**form.cleaned_data)
 
         is_valid = self.validate(all_cleaned_data) and is_valid
-        if form_valid and is_valid:
-            return self.form_valid(form, formsets)
-        else:
-            return self.form_invalid(form, formsets)
+        return self.form_valid(form, formsets) if form_valid and is_valid else self.form_invalid(form, formsets)
 
     def form_valid(self, form, formsets):
         data = form.cleaned_data
@@ -386,8 +383,12 @@ def registrations(request):
     registration_objs = Registration.objects.filter(active=True)
 
     if request.method == "GET":
-        return render(request, "registration/registrations.html", {"registrations": registration_objs})
-    elif request.method == "POST":
+        return render(
+            request,
+            "registration/registrations.html",
+            {"registrations": registration_objs},
+        )
+    if request.method == "POST":
         slug = request.POST["slug"]
         registration = get_object_or_404(Registration, slug=slug)
         registration.is_pwa_enabled = True
@@ -395,7 +396,12 @@ def registrations(request):
 
         Registration.objects.exclude(slug=slug).update(is_pwa_enabled=False)  # only one can be enabled at once
 
-        return render(request, "registration/registrations.html", {"registrations": registration_objs})
+        return render(
+            request,
+            "registration/registrations.html",
+            {"registrations": registration_objs},
+        )
+    return None
 
 
 def get_pwa_enabled(request):
@@ -420,8 +426,7 @@ def authorize_cookie(request):
         )
         if User.objects.filter(id=int(decoded_key.get("_auth_user_id"))).exists():
             return JsonResponse({"authorized": True})
-        else:
-            return JsonResponse({"authorized": False})
+        return JsonResponse({"authorized": False})
     except (signing.BadSignature, JSONDecodeError):
         logger.info("PWA Cookie was not authorized")
         return JsonResponse({"authorized": False})

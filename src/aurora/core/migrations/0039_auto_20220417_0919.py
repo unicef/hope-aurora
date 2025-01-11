@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0038_auto_20220417_0554"),
     ]
@@ -27,13 +26,17 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="validator",
             name="message",
-            field=models.CharField(help_text="Default error message if validator return 'false'.", max_length=255),
+            field=models.CharField(
+                help_text="Default error message if validator return 'false'.",
+                max_length=255,
+            ),
         ),
         migrations.AlterField(
             model_name="validator",
             name="trace",
             field=models.BooleanField(
-                default=False, help_text="Debug/Testing purposes: trace validator invocation on Sentry."
+                default=False,
+                help_text="Debug/Testing purposes: trace validator invocation on Sentry.",
             ),
         ),
     ]

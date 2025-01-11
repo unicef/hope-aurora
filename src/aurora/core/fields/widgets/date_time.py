@@ -6,15 +6,7 @@ from .mixins import TailWindMixin
 
 
 class SmartDateWidget(TailWindMixin, forms.DateInput):
-    # class Media:
-    #     js = [
-    #         get_versioned_static_name("datetimepicker/datepicker"s.js"),
-    #         # "https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js",
-    #         get_versioned_static_name("datetimepicker/dt.js"),
-    #     ]
-    #     css = {"all": [get_versioned_static_name("datetimepicker/datepicker.css")]}
-
-    def __init__(self, attrs=None, format=None):
+    def __init__(self, attrs=None, format=None):  # noqa
         super().__init__(attrs=attrs, format=format)
         self.attrs.setdefault("class", {})
         self.attrs["class"] += " vDateField "

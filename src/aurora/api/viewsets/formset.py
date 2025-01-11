@@ -12,9 +12,7 @@ class FormSetSerializer(serializers.ModelSerializer):
 
 
 class FormSetViewSet(SmartViewSet):
-    """
-    This viewset automatically provides `list` and `retrieve` actions.
-    """
+    """Viewset automatically provides `list` and `retrieve` actions."""
 
     queryset = FormSet.objects.all()
     serializer_class = FormSetSerializer

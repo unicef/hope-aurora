@@ -1,15 +1,9 @@
-import io
 import os
 
 from django.contrib.sites.models import Site
 from django.core.management.base import BaseCommand, CommandError
 from django.template.loader import _engine_list
 from django.template.utils import get_app_template_dirs
-
-try:
-    from django.utils.six import input as raw_input
-except ImportError:
-    pass
 
 from dbtemplates.models import Template
 
@@ -31,7 +25,7 @@ class Command(BaseCommand):
             dest="ext",
             action="store",
             default="html",
-            help="extension of the files you want to " "sync with the database [default: %default]",
+            help="extension of the files you want to sync with the database [default: %default]",
         )
         parser.add_argument(
             "-f",
@@ -57,10 +51,15 @@ class Command(BaseCommand):
             action="store_true",
             dest="app_first",
             default=False,
-            help="look for templates in applications " "directories before project templates",
+            help="look for templates in applications directories before project templates",
         )
         parser.add_argument(
-            "-d", "--delete", action="store_true", dest="delete", default=False, help="Delete templates after syncing"
+            "-d",
+            "--delete",
+            action="store_true",
+            dest="delete",
+            default=False,
+            help="Delete templates after syncing",
         )
 
     def handle(self, **options):  # noqa C901
@@ -76,9 +75,7 @@ class Command(BaseCommand):
         try:
             site = Site.objects.get_current()
         except Exception:
-            raise CommandError(
-                "Please make sure to have the sites contrib " "app installed and setup with a site object"
-            )
+            raise CommandError("Please make sure to have the sites contrib app installed and setup with a site object")
 
         if app_first:
             tpl_dirs = app_template_dirs + DIRS
@@ -87,31 +84,29 @@ class Command(BaseCommand):
         templatedirs = [d for d in tpl_dirs if os.path.isdir(d)]
 
         for templatedir in templatedirs:
-            for dirpath, subdirs, filenames in os.walk(templatedir):
+            for dirpath, _, filenames in os.walk(templatedir):
                 for f in [f for f in filenames if f.endswith(extension) and not f.startswith(".")]:
                     path = os.path.join(dirpath, f)
-                    name = path.split(templatedir)[1]
-                    if name.startswith("/"):
-                        name = name[1:]
+                    name = path.split(templatedir)[1].removeprefix("/")
                     try:
                         t = Template.on_site.get(name__exact=name)
                     except Template.DoesNotExist:
                         if not force:
-                            confirm = raw_input(
+                            confirm = input(
                                 "\nA '%s' template doesn't exist in the "
                                 "database.\nCreate it with '%s'?"
                                 " (y/[n]): "
                                 "" % (name, path)
                             )
                         if force or confirm.lower().startswith("y"):
-                            with io.open(path, encoding="utf-8") as f:
-                                t = Template(name=name, content=f.read())
+                            with open(path, encoding="utf-8") as f1:
+                                t = Template(name=name, content=f1.read())
                             t.save()
                             t.sites.add(site)
                     else:
                         while 1:
                             if overwrite == ALWAYS_ASK:
-                                confirm = raw_input(
+                                confirm = input(
                                     "\n%(template)s exists in the database.\n"
                                     "(1) Overwrite %(template)s with '%(path)s'\n"
                                     "(2) Overwrite '%(path)s' with %(template)s\n"
@@ -121,8 +116,8 @@ class Command(BaseCommand):
                                 confirm = overwrite
                             if confirm in ("", FILES_TO_DATABASE, DATABASE_TO_FILES):
                                 if confirm == FILES_TO_DATABASE:
-                                    with io.open(path, encoding="utf-8") as f:
-                                        t.content = f.read()
+                                    with open(path, encoding="utf-8") as f2:
+                                        t.content = f2.read()
                                         t.save()
                                         t.sites.add(site)
                                     if delete:
@@ -131,8 +126,8 @@ class Command(BaseCommand):
                                         except OSError:
                                             raise CommandError("Couldn't delete %s" % path)
                                 elif confirm == DATABASE_TO_FILES:
-                                    with io.open(path, "w", encoding="utf-8") as f:
-                                        f.write(t.content)
+                                    with open(path, "w", encoding="utf-8") as f3:
+                                        f3.write(t.content)
                                     if delete:
                                         t.delete()
                                 break

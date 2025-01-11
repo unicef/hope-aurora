@@ -43,9 +43,7 @@ class OptionSetAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartMod
     def display_data(self, request, pk):
         ctx = self.get_common_context(request, pk, title="Data")
         obj: OptionSet = ctx["original"]
-        data = []
-        for line in obj.data.split("\r\n"):
-            data.append(line.split(obj.separator))
+        data = [line.split(obj.separator) for line in obj.data.split("\r\n")]
         ctx["data"] = data
         return render(request, "admin/core/optionset/table.html", ctx)
 

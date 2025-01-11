@@ -25,14 +25,16 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserViewSet(SmartViewSet):
-    """
-    This viewset automatically provides `list` and `retrieve` actions.
-    """
+    """Viewset automatically provides `list` and `retrieve` actions."""
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    @action(detail=False, permission_classes=[AllowAny], authentication_classes=[SessionAuthentication])
+    @action(
+        detail=False,
+        permission_classes=[AllowAny],
+        authentication_classes=[SessionAuthentication],
+    )
     def me(self, request):
         response = {
             "perms": [],

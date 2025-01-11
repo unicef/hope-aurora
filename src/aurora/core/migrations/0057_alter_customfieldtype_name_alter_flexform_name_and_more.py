@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0056_case_insensitive_collation"),
     ]
@@ -70,7 +69,12 @@ class Migration(migrations.Migration):
             model_name="validator",
             name="name",
             field=models.CharField(
-                blank=True, db_collation="_", max_length=255, null=True, unique=True, verbose_name="Function Name"
+                blank=True,
+                db_collation="_",
+                max_length=255,
+                null=True,
+                unique=True,
+                verbose_name="Function Name",
             ),
         ),
     ]

@@ -20,19 +20,5 @@ class State(local):
     def collect_messages(self, value):
         self.data["collect_messages"] = value
 
-    # @property
-    # def hit_messages(self):
-    #     return self.data["hit_messages"]
-
-    # @hit_messages.setter
-    # def hit_messages(self, value):
-    #     self.data["hit_messages"] = value
-
-    # @property
-    # def user(self):
-    #     return self.request.user
-
-
-#
 
 state = State()

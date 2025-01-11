@@ -5,8 +5,6 @@ from ...registration.models import Registration
 
 
 class RegistrationDetailSerializer(serializers.HyperlinkedModelSerializer):
-    # # id = serializers.IntegerField()
-    # url = serializers.HyperlinkedRelatedField(many=False, read_only=True, view_name="registration-detail")
     project = serializers.HyperlinkedRelatedField(many=False, read_only=True, view_name="project-detail")
     records = serializers.SerializerMethodField()
     metadata = serializers.SerializerMethodField()
@@ -31,9 +29,3 @@ class RegistrationDetailSerializer(serializers.HyperlinkedModelSerializer):
 
 class RegistrationListSerializer(RegistrationDetailSerializer):
     pass
-    # id = serializers.HyperlinkedRelatedField(many=False, read_only=True, view_name="registration-detail",
-    #                                          lookup_url_kwarg="attr")
-    #
-    # class Meta:
-    #     model = Registration
-    #     exclude = ("public_key",)

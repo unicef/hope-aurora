@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0028_auto_20220321_1743"),
     ]
@@ -14,7 +13,12 @@ class Migration(migrations.Migration):
             model_name="validator",
             name="target",
             field=models.CharField(
-                choices=[("form", "Form"), ("field", "Field"), ("formset", "Formset"), ("module", "Module")],
+                choices=[
+                    ("form", "Form"),
+                    ("field", "Field"),
+                    ("formset", "Formset"),
+                    ("module", "Module"),
+                ],
                 max_length=10,
             ),
         ),

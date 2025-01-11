@@ -31,7 +31,20 @@ cache = caches["default"]
 class FlexFormFieldForm(forms.ModelForm):
     class Meta:
         model = FlexFormField
-        exclude = ()
+        fields = (
+            "version",
+            "flex_form",
+            "label",
+            "name",
+            "field_type",
+            "choices",
+            "required",
+            "enabled",
+            "validator",
+            "validation",
+            "regex",
+            "advanced",
+        )
 
     def clean(self):
         ret = super().clean()
@@ -69,18 +82,11 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             .select_related("flex_form")
         )
 
-    # change_list_template = "reversion/change_list.html"
     def get_readonly_fields(self, request, obj=None):
-        if is_root(request):
-            return []
-        else:
-            return super().get_readonly_fields(request, obj)
+        return super().get_readonly_fields(request, obj) if is_root(request) else []
 
     def field_type(self, obj):
-        if obj.field_type:
-            return obj.field_type.__name__
-        else:
-            return "[[ removed ]]"
+        return obj.field_type.__name__ if obj.field_type else "[[ removed ]]"
 
     def formfield_for_dbfield(self, db_field, request, **kwargs):
         if db_field.name == "advanced":
@@ -105,8 +111,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             ret = self.editor.post(request, pk)
             self.message_user(request, "Saved", messages.SUCCESS)
             return ret
-        else:
-            return self.editor.get(request, pk)
+        return self.editor.get(request, pk)
 
     @view()
     def widget_attrs(self, request, pk):
@@ -135,11 +140,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             fld = ctx["original"]
             instance = fld.get_instance()
             ctx["debug_info"] = {
-                # "widget": getattr(instance, "widget", None),
                 "field_kwargs": fld.get_field_kwargs(),
-                # "options": getattr(instance, "options", None),
-                # "choices": getattr(instance, "choices", None),
-                # "widget_attrs": instance.widget_attrs(instance.widget),
             }
             form_class_attrs = {
                 "sample": instance,
@@ -152,7 +153,8 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
                 if form.is_valid():
                     ctx["debug_info"]["cleaned_data"] = form.cleaned_data
                     self.message_user(
-                        request, f"Form validation success. You have selected: {form.cleaned_data['sample']}"
+                        request,
+                        f"Form validation success. You have selected: {form.cleaned_data['sample']}",
                     )
             else:
                 form = form_class()

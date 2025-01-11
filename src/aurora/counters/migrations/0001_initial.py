@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -16,13 +15,24 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Counter",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("day", models.DateField(blank=True, db_index=True, null=True)),
                 ("records", models.IntegerField(blank=True, default=0, null=True)),
                 ("details", models.JSONField(blank=True, default=dict)),
                 (
                     "registration",
-                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="registration.registration"),
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="registration.registration",
+                    ),
                 ),
             ],
             options={

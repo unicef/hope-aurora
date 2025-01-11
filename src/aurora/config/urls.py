@@ -3,11 +3,11 @@ from django.conf.urls.i18n import i18n_patterns
 from django.contrib import admin
 from django.urls import include, path, re_path
 
-import adminactions.actions as actions
+from adminactions import actions
 import debug_toolbar
 
 from aurora.core.views import service_worker
-from aurora.web.views.site import error_404
+from aurora.web.views.sites import error_404
 
 actions.add_to_site(admin.site)
 

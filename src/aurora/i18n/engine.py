@@ -66,7 +66,7 @@ class Cache:
         self.locales = {}
 
     def reset(self):
-        for __, locale in self.locales.items():
+        for locale in self.locales.values():
             locale.reset()
 
     def activate(self, locale):

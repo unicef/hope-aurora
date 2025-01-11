@@ -5,7 +5,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0043_rename_name_validator_label"),
     ]
@@ -15,7 +14,11 @@ class Migration(migrations.Migration):
             model_name="validator",
             name="name",
             field=django.contrib.postgres.fields.citext.CICharField(
-                blank=True, null=True, max_length=255, unique=True, verbose_name="Function Name"
+                blank=True,
+                null=True,
+                max_length=255,
+                unique=True,
+                verbose_name="Function Name",
             ),
         ),
         migrations.AlterField(

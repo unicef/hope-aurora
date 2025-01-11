@@ -5,7 +5,11 @@ from .. import env
 CONSTANCE_ADDITIONAL_FIELDS = {
     "html_minify_select": [
         "bitfield.forms.BitFormField",
-        {"initial": 0, "required": False, "choices": (("html", "HTML"), ("line", "NEWLINE"), ("space", "SPACES"))},
+        {
+            "initial": 0,
+            "required": False,
+            "choices": (("html", "HTML"), ("line", "NEWLINE"), ("space", "SPACES")),
+        },
     ],
 }
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
@@ -25,7 +29,7 @@ CONSTANCE_CONFIG = OrderedDict(
         "ADMIN_SYNC_REMOTE_SERVER": ("", "production server url", str),
         "ADMIN_SYNC_REMOTE_ADMIN_URL": ("/admin/", "", str),
         "ADMIN_SYNC_LOCAL_ADMIN_URL": ("/admin/", "", str),
-        "ADMIN_SYNC_USE_REVERSION": (False, "", bool),
+        # "ADMIN_SYNC_USE_REVERSION": (False, "Use Reversion", bool),
         "LOG_POST_ERRORS": (False, "", bool),
         "MINIFY_RESPONSE": (0, "select yes or no", "html_minify_select"),
         "MINIFY_IGNORE_PATH": (r"", "regex for ignored path", str),
@@ -34,7 +38,11 @@ CONSTANCE_CONFIG = OrderedDict(
         "QRCODE": (True, "Enable QRCode generation", bool),
         "SHOW_REGISTER_ANOTHER": (True, "Enable QRCode generation", bool),
         "MAINTENANCE_MODE": (False, "set maintenance mode On/Off", bool),
-        "WAF_REGISTRATION_ALLOWED_HOSTNAMES": (".*", "public website hostname (regex)", str),
+        "WAF_REGISTRATION_ALLOWED_HOSTNAMES": (
+            ".*",
+            "public website hostname (regex)",
+            str,
+        ),
         "WAF_ADMIN_ALLOWED_HOSTNAMES": ("", "admin website hostname (regex)", str),
     }
 )

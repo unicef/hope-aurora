@@ -8,7 +8,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0047_validator_count_errors"),
     ]
@@ -17,9 +16,23 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Organization",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("name", django.contrib.postgres.fields.citext.CICharField(max_length=100, unique=True)),
-                ("slug", models.SlugField(blank=True, max_length=100, null=True, unique=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    django.contrib.postgres.fields.citext.CICharField(max_length=100, unique=True),
+                ),
+                (
+                    "slug",
+                    models.SlugField(blank=True, max_length=100, null=True, unique=True),
+                ),
                 ("lft", models.PositiveIntegerField(editable=False)),
                 ("rght", models.PositiveIntegerField(editable=False)),
                 ("tree_id", models.PositiveIntegerField(db_index=True, editable=False)),
@@ -45,8 +58,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Project",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("name", django.contrib.postgres.fields.citext.CICharField(max_length=100, unique=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    django.contrib.postgres.fields.citext.CICharField(max_length=100, unique=True),
+                ),
                 ("slug", models.SlugField(blank=True, max_length=100, null=True)),
                 ("lft", models.PositiveIntegerField(editable=False)),
                 ("rght", models.PositiveIntegerField(editable=False)),
@@ -82,6 +106,10 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="flexform",
             name="project",
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to="core.project"),
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="core.project",
+            ),
         ),
     ]

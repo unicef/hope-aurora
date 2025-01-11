@@ -5,16 +5,15 @@ register = Library()
 
 @register.filter(name="split")
 def split(value, key):
-    """
-    Returns the value turned into a list.
-    """
+    """Return the value turned into a list."""
     return value.split(key)
 
 
 @register.filter
 def replace(value, arg):
     """
-    Replacing filter
+    Replace filter.
+
     Use `{{ "aaa"|replace:"a|b" }}`
     """
     if len(arg.split("|")) != 2:
