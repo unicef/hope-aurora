@@ -11,9 +11,7 @@ class FlexFormFieldFilter(LastModifiedFilter):
 
 
 class FlexFormFieldViewSet(SmartViewSet):
-    """
-    This viewset automatically provides `list` and `retrieve` actions.
-    """
+    """Viewset automatically provides `list` and `retrieve` actions."""
 
     queryset = FlexFormField.objects.all()
     serializer_class = FlexFormFieldSerializer

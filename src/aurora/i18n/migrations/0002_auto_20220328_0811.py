@@ -7,7 +7,6 @@ import aurora.i18n.fields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("i18n", "0001_initial"),
     ]
@@ -23,7 +22,11 @@ class Migration(migrations.Migration):
             model_name="message",
             name="locale",
             field=aurora.i18n.fields.LanguageField(
-                choices=[("uk-ua", "український"), ("en-us", "English"), ("pl-pl", "Polskie")],
+                choices=[
+                    ("uk-ua", "український"),
+                    ("en-us", "English"),
+                    ("pl-pl", "Polskie"),
+                ],
                 default="en-us",
                 max_length=10,
                 null=True,

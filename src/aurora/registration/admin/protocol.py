@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Iterable, Sequence, Union
+from typing import Any, Iterable, Sequence
 
 from django.core.serializers.json import Deserializer as JsonDeserializer
 from django.db import connections, transaction
@@ -16,26 +16,25 @@ class AuroraSyncRegistrationProtocol(LoadDumpProtocol):
     def serialize(self, data: Iterable):
         return super().serialize(data)
 
-    def deserialize(self, payload: str) -> list[list[Union[str, Any]]]:
+    def deserialize(self, payload: str) -> list[list[Any]]:
         processed = []
         try:
             connection = connections[self.using]
-            with connection.constraint_checks_disabled():
-                with transaction.atomic(self.using):
-                    objects = JsonDeserializer(
-                        payload,
-                        ignorenonexistent=True,
-                        handle_forward_references=True,
+            with connection.constraint_checks_disabled(), transaction.atomic(self.using):
+                objects = JsonDeserializer(
+                    payload,
+                    ignorenonexistent=True,
+                    handle_forward_references=True,
+                )
+                for obj in objects:
+                    obj.save(using=self.using)
+                    processed.append(
+                        [
+                            obj.object._meta.object_name,
+                            str(obj.object.pk),
+                            str(obj.object),
+                        ]
                     )
-                    for obj in objects:
-                        obj.save(using=self.using)
-                        processed.append(
-                            [
-                                obj.object._meta.object_name,
-                                str(obj.object.pk),
-                                str(obj.object),
-                            ]
-                        )
         except Exception as e:
             logger.exception(e)
             raise ProtocolError(e)
@@ -52,7 +51,6 @@ class AuroraSyncRegistrationProtocol(LoadDumpProtocol):
             raise ValueError("AuroraSyncRegistrationProtocol can be used only for Registration")
         return_value = []
         for reg in list(data):
-            # reg: Registration = data[0]
             c = ForeignKeysCollector(False)
             c.collect([reg.flex_form, reg.validator, reg])
             c.add(reg.scripts.all())

@@ -6,7 +6,6 @@ import aurora.registration.fields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("registration", "0047_remove_registration_restrict_to_groups"),
     ]

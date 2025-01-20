@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0027_alter_formset_advanced"),
     ]
@@ -26,7 +25,8 @@ class Migration(migrations.Migration):
             model_name="validator",
             name="target",
             field=models.CharField(
-                choices=[("form", "Form"), ("field", "Field"), ("formset", "Formset")], max_length=10
+                choices=[("form", "Form"), ("field", "Field"), ("formset", "Formset")],
+                max_length=10,
             ),
         ),
     ]

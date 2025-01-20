@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("auth", "0012_alter_user_first_name_max_length"),
         ("registration", "0038_alter_registration_unique_field"),
@@ -15,7 +14,10 @@ class Migration(migrations.Migration):
             name="registration",
             options={
                 "get_latest_by": "start",
-                "permissions": (("manage", "Can Manage Registration"), ("register", "Can User Registration")),
+                "permissions": (
+                    ("manage", "Can Manage Registration"),
+                    ("register", "Can User Registration"),
+                ),
             },
         ),
         migrations.AddField(
@@ -31,7 +33,9 @@ class Migration(migrations.Migration):
             model_name="registration",
             name="restrict_to_groups",
             field=models.ManyToManyField(
-                blank=True, help_text="Restrict access to the following groups", to="auth.Group"
+                blank=True,
+                help_text="Restrict access to the following groups",
+                to="auth.Group",
             ),
         ),
     ]

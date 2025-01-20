@@ -21,7 +21,13 @@ from aurora.core.crypto import Crypto, crypt, decrypt, decrypt_offline
 from aurora.core.fields import AjaxSelectField, LabelOnlyField
 from aurora.core.forms import VersionMedia
 from aurora.core.models import FlexForm, FlexFormField, Project, Validator
-from aurora.core.utils import cache_aware_reverse, dict_setdefault, get_client_ip, get_registration_id, safe_json
+from aurora.core.utils import (
+    cache_aware_reverse,
+    dict_setdefault,
+    get_client_ip,
+    get_registration_id,
+    safe_json,
+)
 from aurora.i18n.models import I18NModel
 from aurora.registration.fields import ChoiceArrayField
 from aurora.registration.storage import router
@@ -64,16 +70,25 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
     end = models.DateField(blank=True, null=True)
     active = models.BooleanField(default=False)
     archived = models.BooleanField(
-        default=False, null=False, help_text=_("Archived/Terminated registration cannot be activated/reopened")
+        default=False,
+        null=False,
+        help_text=_("Archived/Terminated registration cannot be activated/reopened"),
     )
     locale = models.CharField(
-        verbose_name="Default locale", max_length=10, choices=settings.LANGUAGES, default=settings.LANGUAGE_CODE
+        verbose_name="Default locale",
+        max_length=10,
+        choices=settings.LANGUAGES,
+        default=settings.LANGUAGE_CODE,
     )
     dry_run = models.BooleanField(default=False)
     handler = StrategyField(registry=strategies, default=None, blank=True, null=True)
     show_in_homepage = models.BooleanField(default=False)
     welcome_page = models.ForeignKey(FlatPage, blank=True, null=True, on_delete=models.SET_NULL)
-    locales = ChoiceArrayField(models.CharField(max_length=10, choices=settings.LANGUAGES), blank=True, null=True)
+    locales = ChoiceArrayField(
+        models.CharField(max_length=10, choices=settings.LANGUAGES),
+        blank=True,
+        null=True,
+    )
     intro = models.TextField(blank=True, null=True, default="")
     footer = models.TextField(blank=True, null=True, default="")
     client_validation = models.BooleanField(blank=True, null=False, default=False)
@@ -87,14 +102,23 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
     )
 
     scripts = models.ManyToManyField(
-        Validator, related_name="script_for", limit_choices_to={"target": Validator.SCRIPT}, blank=True
+        Validator,
+        related_name="script_for",
+        limit_choices_to={"target": Validator.SCRIPT},
+        blank=True,
     )
 
     unique_field_path = models.CharField(
-        max_length=1000, blank=True, null=True, help_text="JMESPath expression to retrieve unique field"
+        max_length=1000,
+        blank=True,
+        null=True,
+        help_text="JMESPath expression to retrieve unique field",
     )
     unique_field_error = models.CharField(
-        max_length=255, blank=True, null=True, help_text="Error message in case of duplicate 'unique_field'"
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Error message in case of duplicate 'unique_field'",
     )
     public_key = models.TextField(
         blank=True,
@@ -123,35 +147,8 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
         )
         ordering = ("name", "title")
 
-    @property
-    def media(self):
-        return VersionMedia(js=[script.get_script_url() for script in self.scripts.all()])
-
-    @cached_property
-    def organization(self):
-        return self.project.organization
-
     def __str__(self):
         return self.name
-
-    def is_running(self) -> bool:
-        today = timezone.now().today().date()
-        if not self.end:
-            return True
-        return self.start <= today <= self.end
-
-    def get_absolute_url(self):
-        return cache_aware_reverse("register", args=[self.slug, self.version])
-
-    def get_i18n_url(self, lang=None):
-        translation.activate(language=lang or self.locale)
-        return cache_aware_reverse("register", args=[self.slug, self.version])
-
-    def get_welcome_url(self):
-        if self.welcome_page:
-            return self.welcome_page.get_absolute_url()
-        else:
-            return self.get_absolute_url()
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not self.slug:
@@ -160,6 +157,32 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
             self.title = self.name
         dict_setdefault(self.advanced, self.ADVANCED_DEFAULT_ATTRS)
         super().save(force_insert, force_update, using, update_fields)
+
+    def get_absolute_url(self):
+        return cache_aware_reverse("register", args=[self.slug, self.version])
+
+    @property
+    def media(self):
+        return VersionMedia(js=[script.get_script_url() for script in self.scripts.all()])
+
+    @cached_property
+    def organization(self):
+        return self.project.organization
+
+    def is_running(self) -> bool:
+        today = timezone.now().today().date()
+        if not self.end:
+            return True
+        return self.start <= today <= self.end
+
+    def get_i18n_url(self, lang=None):
+        translation.activate(language=lang or self.locale)
+        return cache_aware_reverse("register", args=[self.slug, self.version])
+
+    def get_welcome_url(self):
+        if self.welcome_page:
+            return self.welcome_page.get_absolute_url()
+        return self.get_absolute_url()
 
     def setup_encryption_keys(self):
         key = RSA.generate(2048)
@@ -205,11 +228,12 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
 
     @property
     def option_set_links(self):
-        links = []
-        for field in self.flex_form.fields.all():
-            if field.field_type == AjaxSelectField:
-                links.append(f"/en-us/options/{field.choices}/")  # TODO: is en-us always valid?
-        return links
+        # TODO: is en-us always valid?
+        return [
+            f"/en-us/options/{field.choices}/"
+            for field in self.flex_form.fields.all()
+            if field.field_type == AjaxSelectField
+        ]
 
     @cached_property
     def metadata(self):
@@ -276,8 +300,6 @@ class Record(models.Model):
     ignored = models.BooleanField(default=False, blank=True, null=True)
     size = models.IntegerField(blank=True, null=True)
     counters = models.JSONField(blank=True, null=True)
-    # cleared = models.BooleanField(default=True, blank=True,
-    #                               help_text="Not cleared Records will not be fetched by HOPE")
     fields = models.JSONField(null=True, blank=True)
     files = models.BinaryField(null=True, blank=True)
 
@@ -288,29 +310,29 @@ class Record(models.Model):
     is_offline = models.BooleanField(default=False)
     registrar = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.SET_NULL)
 
-    @property
-    def fields_data(self):
-        if self.is_offline and len(self.fields) > 12_000:
-            return "String too long to display..."
-        else:
-            return self.fields
-
     class Meta:
         unique_together = ("registration", "unique_field")
+
+    def __str__(self):
+        return f"{self.registration} - {self.pk}"
+
+    @property
+    def fields_data(self):
+        return "String too long to display..." if self.is_offline and len(self.fields) > 12_000 else self.fields
 
     def decrypt(self, private_key=undefined, secret=undefined):
         if self.is_offline:
             fields = json.loads(decrypt_offline(self.fields, private_key))
             return router.compress(fields, {})
-        else:
-            if private_key != undefined:
-                files = json.loads(decrypt(self.files, private_key))
-                fields = json.loads(decrypt(base64.b64decode(self.fields), private_key))
-                return router.compress(fields, files)
-            elif secret != undefined:
-                files = json.loads(Crypto(secret).decrypt(self.files))
-                fields = json.loads(Crypto(secret).decrypt(self.fields))
-                return router.compress(fields, files)
+        if private_key != undefined:
+            files = json.loads(decrypt(self.files, private_key))
+            fields = json.loads(decrypt(base64.b64decode(self.fields), private_key))
+            return router.compress(fields, files)
+        if secret != undefined:
+            files = json.loads(Crypto(secret).decrypt(self.files))
+            fields = json.loads(Crypto(secret).decrypt(self.fields))
+            return router.compress(fields, files)
+        return None
 
     @property
     def unicef_id(self):
@@ -320,20 +342,19 @@ class Record(models.Model):
     def data(self):
         if self.registration.public_key:
             return {"Forbidden": "Cannot access encrypted data"}
-        elif self.registration.encrypt_data:
+        if self.registration.encrypt_data:
             return self.decrypt(secret=None)
-        else:
-            files = {}
-            f = self.files
-            if f:
-                if not isinstance(f, bytes):
-                    f = self.files.tobytes()
-                files = json.loads(f.decode())
-            return merge(files, self.fields or {})
+        files = {}
+        f = self.files
+        if f:
+            if not isinstance(f, bytes):
+                f = self.files.tobytes()
+            files = json.loads(f.decode())
+        return merge(files, self.fields or {})
 
 
 def merge(a, b, path=None, update=True):
-    """merges b into a"""
+    """Merge b into a."""
     if path is None:
         path = []
     for key in b:
@@ -343,8 +364,13 @@ def merge(a, b, path=None, update=True):
             elif a[key] == b[key]:
                 pass  # same leaf value
             elif isinstance(a[key], list) and isinstance(b[key], list):
-                for idx, val in enumerate(b[key]):
-                    a[key][idx] = merge(a[key][idx], b[key][idx], path + [str(key), str(idx)], update=update)
+                for idx, _ in enumerate(b[key]):
+                    a[key][idx] = merge(
+                        a[key][idx],
+                        b[key][idx],
+                        path + [str(key), str(idx)],
+                        update=update,
+                    )
             elif update:
                 a[key] = b[key]
             else:

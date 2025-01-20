@@ -28,15 +28,10 @@ class AdminSiteMiddleware:
         if config.WAF_REGISTRATION_ALLOWED_HOSTNAMES:
             parts = urlparse(request.build_absolute_uri())
             try:
-                if parts.path.startswith(f"/{settings.DJANGO_ADMIN_URL}"):
-                    if not is_admin_site(request):
-                        return HttpResponse("Not Allowed")
-                else:
-                    if not is_public_site(request):
-                        return HttpResponse("Not Allowed")
+                if parts.path.startswith(f"/{settings.DJANGO_ADMIN_URL}") and not is_admin_site(request):
+                    return HttpResponse("Not Allowed")
+                if not is_public_site(request):
+                    return HttpResponse("Not Allowed")
             except Exception as e:
                 logging.exception(e)
-            ret = self.get_response(request)
-            return ret
-        else:
-            return self.get_response(request)
+        return self.get_response(request)

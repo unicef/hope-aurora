@@ -11,10 +11,6 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Project
         exclude = ("lft", "rght", "tree_id", "level")
-        # lookup_field = "slug"
-        # extra_kwargs = {
-        #     'url': {'lookup_field': 'slug'}
-        # }
 
     def get_registrations(self, obj):
         req = self.context["request"]

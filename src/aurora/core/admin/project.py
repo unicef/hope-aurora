@@ -37,13 +37,6 @@ class ProjectAdmin(SyncMixin, AdminAutoCompleteSearchMixin, LinkedObjectsMixin, 
             .select_related("organization")
         )
 
-    #
-    # def get_search_results(self, request, queryset, search_term):
-    #     queryset, may_have_duplicates = super().get_search_results(request, queryset, search_term)
-    #     if "oid" in request.GET:
-    #         queryset = queryset.filter(organization__id=request.GET["oid"])
-    #     return queryset, may_have_duplicates
-
     def get_readonly_fields(self, request, obj=None):
         ro = super().get_readonly_fields(request, obj)
         if obj and obj.pk:

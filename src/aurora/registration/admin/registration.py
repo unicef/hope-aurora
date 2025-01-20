@@ -14,7 +14,6 @@ from django.db.models.signals import post_delete, post_save
 from django.db.transaction import atomic
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from django.template import Template
 from django.template.loader import select_template
 from django.urls import reverse, translate_url
 from django.utils.module_loading import import_string
@@ -31,16 +30,36 @@ from smart_admin.modeladmin import SmartModelAdmin
 from aurora.core.admin.base import ConcurrencyVersionAdmin
 from aurora.core.forms import CSVOptionsForm, DateFormatsForm, VersionMedia
 from aurora.core.models import FlexForm, FlexFormField, FormSet, Validator
-from aurora.core.utils import build_dict, build_form_fake_data, clone_model, get_system_cache_version, is_root, namify
+from aurora.core.utils import (
+    build_dict,
+    build_form_fake_data,
+    clone_model,
+    get_system_cache_version,
+    is_root,
+    namify,
+)
+from typing import TYPE_CHECKING
 from aurora.i18n.forms import TemplateForm, TranslationForm
-from aurora.i18n.translate import Translator
-from aurora.registration.admin.filters import OrganizationFilter, RegistrationProjectFilter
+from aurora.registration.admin.filters import (
+    OrganizationFilter,
+    RegistrationProjectFilter,
+)
 from aurora.registration.admin.forms import DebugForm
 from aurora.registration.admin.protocol import AuroraSyncRegistrationProtocol
-from aurora.registration.forms import CloneForm, JamesForm, RegistrationExportForm, RegistrationForm
+from aurora.registration.forms import (
+    CloneForm,
+    JamesForm,
+    RegistrationExportForm,
+    RegistrationForm,
+)
 from aurora.registration.models import Record, Registration
 
 logger = logging.getLogger(__name__)
+
+
+if TYPE_CHECKING:
+    from aurora.i18n.translate import Translator
+    from django.template import Template
 
 
 def can_export_data(request, obj, handler=None):
@@ -93,7 +112,13 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
             },
         ),
         ("Config", {"fields": ("flex_form", "validator", "scripts")}),
-        ("Validity", {"classes": ("collapse",), "fields": (("start", "end"), ("archived", "active"))}),
+        (
+            "Validity",
+            {
+                "classes": ("collapse",),
+                "fields": (("start", "end"), ("archived", "active")),
+            },
+        ),
         ("Languages", {"classes": ("collapse",), "fields": ("locale", "locales")}),
         ("Security", {"classes": ("collapse",), "fields": ("protected",)}),
         ("Text", {"classes": ("collapse",), "fields": ("intro", "footer")}),
@@ -112,12 +137,6 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
             .select_related("project", "project__organization")
         )
 
-    # def get_search_results(self, request, queryset, search_term):
-    #     queryset, may_have_duplicates = super().get_search_results(request, queryset, search_term)
-    #     if "oid" in request.GET:
-    #         queryset = queryset.filter(project__id=request.GET["oid"])
-    #     return queryset, may_have_duplicates
-    #
     def get_list_display(self, request):
         base = list(self.list_display)
         if "project__organization__exact" in request.GET:
@@ -197,7 +216,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
                     skipped = []
                     all_fields = []
                     for r in records:
-                        for field_name in r.keys():
+                        for field_name in r:
                             if field_name not in skipped and field_name in exclude_fields:
                                 skipped.append(field_name)
                             elif field_name not in all_fields and field_name in include_fields:
@@ -208,7 +227,6 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
                         out = io.StringIO()
                         writer = csv.DictWriter(
                             out,
-                            # dialect="excel",
                             fieldnames=all_fields,
                             restval="-",
                             extrasaction="ignore",
@@ -219,16 +237,14 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
                         writer.writerows(records)
                         out.seek(0)
                         filename = f"Registration_{reg.slug}.csv"
-                        response = HttpResponse(
+                        return HttpResponse(
                             out.read(),
                             headers={"Content-Disposition": 'attachment;filename="%s"' % filename},
                             content_type="text/csv",
                         )
-                        return response
-                    else:
-                        ctx["all_fields"] = sorted(set(all_fields))
-                        ctx["skipped"] = skipped
-                        ctx["qs"] = records[:10]
+                    ctx["all_fields"] = sorted(set(all_fields))
+                    ctx["skipped"] = skipped
+                    ctx["qs"] = records[:10]
             except Exception as e:
                 logger.exception(e)
                 self.message_error_to_user(request, e)
@@ -281,13 +297,15 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
             self.message_user(request, "Encryption key removed", messages.WARNING)
             self.log_change(request, self.object, "Encryption Key has been removed")
             return HttpResponseRedirect("..")
-        else:
-            return render(request, "admin/registration/registration/keys_remove.html", ctx)
+        return render(request, "admin/registration/registration/keys_remove.html", ctx)
 
     @view()
     def generate_keys(self, request, pk):
         ctx = self.get_common_context(
-            request, pk, media=self.media, title="Generate Private/Public Key pair to encrypt this Registration data"
+            request,
+            pk,
+            media=self.media,
+            title="Generate Private/Public Key pair to encrypt this Registration data",
         )
 
         if request.method == "POST":
@@ -374,10 +392,17 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
                     with atomic():
                         source = Registration.objects.get(id=reg.pk)
                         title = form.cleaned_data["title"]
-                        reg, __ = clone_model(source, name=namify(title), title=title, version=1, slug=slugify(title))
+                        reg, __ = clone_model(
+                            source,
+                            name=namify(title),
+                            title=title,
+                            version=1,
+                            slug=slugify(title),
+                        )
                         if form.cleaned_data["deep"]:
                             main_form, __ = clone_model(
-                                source.flex_form, name=f"{source.flex_form.name}-(clone: {reg.name})"
+                                source.flex_form,
+                                name=f"{source.flex_form.name}-(clone: {reg.name})",
                             )
                             reg.flex_form = main_form
                             reg.save()
@@ -397,7 +422,11 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
                                     clone_model(field, name=field.name, flex_form=frm2)
 
                             for fs in formsets:
-                                clone_model(fs, parent=forms[fs.parent.pk], flex_form=forms[fs.flex_form.pk])
+                                clone_model(
+                                    fs,
+                                    parent=forms[fs.parent.pk],
+                                    flex_form=forms[fs.flex_form.pk],
+                                )
                         return HttpResponseRedirect(reverse("admin:registration_registration_inspect", args=[reg.pk]))
                 except Exception as e:
                     logger.exception(e)
@@ -469,23 +498,29 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
                     locale = form.cleaned_data["locale"]
                     translate = form.cleaned_data["translate"]
                     if locale not in instance.locales:
-                        self.message_user(request, "Language not enabled for this registration", messages.ERROR)
+                        self.message_user(
+                            request,
+                            "Language not enabled for this registration",
+                            messages.ERROR,
+                        )
                         return HttpResponseRedirect(".")
                     self.create_translation(self, request, pk)
                     stored = con.lrange(key, 0, -1)
-                    collected = sorted(set([c.decode() for c in stored]))
+                    collected = sorted({c.decode() for c in stored})
                     from aurora.i18n.models import Message
 
                     entries = list(Message.objects.filter(locale=locale).values_list("msgid", "msgstr"))
                     data = dict(entries)
                     if translate == "2":
                         t: Translator = import_string(settings.TRANSLATOR_SERVICE)()
-                        func = lambda x: t.translate(locale, x)
+                        func = lambda x: t.translate(locale, x)  # noqa
                     elif translate == "1":
                         t: Translator = import_string(settings.TRANSLATOR_SERVICE)()
-                        func = lambda x: x if data.get(x, "") == x else t.translate(locale, x)
+                        func = (  # noqa
+                            lambda x: x if data.get(x, "") == x else t.translate(locale, x)
+                        )
                     else:
-                        func = lambda x: data.get(x, "")
+                        func = lambda x: data.get(x, "")  # noqa
                     ctx["collected"] = {c: func(c) for c in collected}
                     ctx["language_code"] = locale
             elif "export" in request.POST:
@@ -500,8 +535,6 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
                 for i, msg in enumerate(msgids, 1):
                     writer.writerow([str(i), msg, ""])
                 return response
-                # language_code = request.POST.get("language_code")
-                # for i, row in enumerate(data["messages"], 1):
 
         else:
             form = TranslationForm()
@@ -532,7 +565,11 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
 
                 key = f"i18n_{request.user.pk}_{md5(request.session.session_key.encode()).hexdigest()}"
                 settings.ALLOWED_HOSTS.append("testserver")
-                headers = {"HTTP_ACCEPT_LANGUAGE": "locale", "HTTP_I18N_SESSION": key, "HTTP_I18N": "true"}
+                headers = {
+                    "HTTP_ACCEPT_LANGUAGE": "locale",
+                    "HTTP_I18N_SESSION": key,
+                    "HTTP_I18N": "true",
+                }
                 try:
                     client = Client(**headers)
                     r1 = client.get(uri)
@@ -549,7 +586,10 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
 
                 updated = Message.objects.filter(locale=locale).count()
                 added = Message.objects.filter(locale=locale, draft=True, timestamp__date=today())
-                self.message_user(request, f"{updated - existing} messages created. {updated} available")
+                self.message_user(
+                    request,
+                    f"{updated - existing} messages created. {updated} available",
+                )
                 ctx["uri"] = uri
                 ctx["locale"] = locale
                 ctx["added"] = added
@@ -562,7 +602,12 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
 
     @choice(order=900, change_list=False)
     def data(self, button):
-        button.choices = [self.charts, self.inspect_data, self.view_collected_data, self.collect]
+        button.choices = [
+            self.charts,
+            self.inspect_data,
+            self.view_collected_data,
+            self.collect,
+        ]
         if can_export_data(button.context["request"], button.original):
             button.choices.append(self.export_as_csv)
         return button
@@ -582,7 +627,10 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
     def charts(self, request, pk):
         obj = self.get_object(request, pk)
         return HttpResponseRedirect(
-            reverse("charts:registration", args=[obj.project.organization.slug, obj.project.pk, pk])
+            reverse(
+                "charts:registration",
+                args=[obj.project.organization.slug, obj.project.pk, pk],
+            )
         )
 
     @view(permission=is_root, html_attrs={"class": "aeb-warn"})
@@ -609,7 +657,11 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
             form = JamesForm(request.POST, instance=ctx["original"])
             if form.is_valid():
                 form.save()
-                cache.set(f"james_{pk}", form.cleaned_data["data"], version=get_system_cache_version())
+                cache.set(
+                    f"james_{pk}",
+                    form.cleaned_data["data"],
+                    version=get_system_cache_version(),
+                )
                 return HttpResponseRedirect(".")
         else:
             data = cache.get(f"james_{pk}", version=get_system_cache_version())

@@ -47,14 +47,14 @@ def test_error_dict(db):
     v = Validator(code='{first_name:"Mandatory"}', active=True)
     with pytest.raises(ValidationError) as e:
         v.validate(22)
-        assert e.message == ""
+    assert e.value.message == "Mandatory"
 
 
 def test_default_error(db):
     v = Validator(code="var a=1;", active=True)
     with pytest.raises(ValidationError) as e:
         v.validate(22)
-        assert e.message == "default_error"
+    assert e.value.message == "Please insert a valid value"
 
 
 def test_success_true(db):
@@ -86,7 +86,6 @@ def test_form_complex(db):
     [
         'var error = (value.last_name.length==3) ? "": "Error"; error',
         '(value.last_name.length==3) ? "": "Error"',
-        # 'throw Error("Not Valid")',
     ],
 )
 def test_form_fail_custom_message(db, code):

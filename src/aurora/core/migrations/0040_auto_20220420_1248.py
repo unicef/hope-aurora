@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0039_auto_20220417_0919"),
     ]
@@ -14,7 +13,11 @@ class Migration(migrations.Migration):
             model_name="optionset",
             name="languages",
             field=models.CharField(
-                blank=True, default="-;-;", help_text="language code of each column.", max_length=255, null=True
+                blank=True,
+                default="-;-;",
+                help_text="language code of each column.",
+                max_length=255,
+                null=True,
             ),
         ),
         migrations.AddField(

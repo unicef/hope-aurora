@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("registration", "0020_alter_record_timestamp"),
     ]

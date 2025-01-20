@@ -1,12 +1,12 @@
-from .api import RegistrationDataApi
-from .data import RegistrationDataView
+from .api import RegistrationDataApi  # noqa
+from .data import RegistrationDataView  # noqa
 from .registration import (
-    QRVerify,
-    RegisterAuthView,
-    RegisterCompleteView,
-    RegisterRouter,
-    RegisterView,
-    authorize_cookie,
-    get_pwa_enabled,
-    registrations,
+    QRVerify,  # noqa
+    RegisterAuthView,  # noqa
+    RegisterCompleteView,  # noqa
+    RegisterRouter,  # noqa
+    RegisterView,  # noqa
+    authorize_cookie,  # noqa
+    get_pwa_enabled,  # noqa
+    registrations,  # noqa
 )

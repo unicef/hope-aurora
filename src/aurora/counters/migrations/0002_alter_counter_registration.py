@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("registration", "0037_auto_20220819_0950"),
         ("counters", "0001_initial"),
@@ -16,7 +15,9 @@ class Migration(migrations.Migration):
             model_name="counter",
             name="registration",
             field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, related_name="counters", to="registration.registration"
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="counters",
+                to="registration.registration",
             ),
         ),
     ]

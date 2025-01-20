@@ -9,7 +9,8 @@ cache = caches["default"]
 
 def update_cache(sender, instance, **kwargs):
     tznow = timezone.now()
-    serial = "{:%d-%m-%Y:%H:%M:%S}.{:03d}".format(tznow, tznow.microsecond // 1000)
+    msconds = tznow.microsecond // 1000
+    serial = f"{tznow:%d-%m-%Y:%H:%M:%S}.{msconds:03d}"
     cache.set("i18n", serial)
 
 

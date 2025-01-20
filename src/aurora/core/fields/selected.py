@@ -26,7 +26,6 @@ class AjaxSelectWidget(TailWindMixin, forms.Select):
     def __init__(self, attrs=None):
         super().__init__(attrs=attrs)
         self.attrs.setdefault("class", {})
-        # self.attrs["class"] += " ajaxSelect"
 
     def build_attrs(self, base_attrs, extra_attrs=None):
         base_attrs["class"] += " ajaxSelect"

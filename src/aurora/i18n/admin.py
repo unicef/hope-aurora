@@ -95,7 +95,10 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
                 if form.is_valid() and opts_form.is_valid():
                     csv_file = form.cleaned_data["csv_file"]
                     if csv_file.multiple_chunks():
-                        self.message_user(request, "Uploaded file is too big (%.2f MB)" % (csv_file.size / 1000))
+                        self.message_user(
+                            request,
+                            "Uploaded file is too big (%.2f MB)" % (csv_file.size / 1000),
+                        )
                     else:
                         ctx["language_code"] = form.cleaned_data["locale"]
                         ctx["language"] = dict(form.fields["locale"].choices)[ctx["language_code"]]
@@ -144,7 +147,9 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
                             selected += 1
                             info = row[1]
                             __, c = Message.objects.update_or_create(
-                                locale=lang, msgid=info["msgid"], defaults={"msgstr": info["msgstr"]}
+                                locale=lang,
+                                msgid=info["msgid"],
+                                defaults={"msgstr": info["msgstr"]},
                             )
                             ids.append(str(__.pk))
                             if c:
@@ -207,15 +212,10 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
                     translation.activate(locale)
                     state.collect_messages = False
                     state.hit_messages = False
-                    # return render(request, "admin/i18n/message/check_orphans.html", ctx)
         else:
             form = LanguageForm()
             ctx["form"] = form
         return render(request, "admin/i18n/message/check_orphans.html", ctx)
-
-    # @link()
-    # def translate(self, button):
-    #     return button
 
     @view()
     def get_or_create(self, request):
@@ -263,7 +263,10 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
                     msg, created = Message.objects.get_or_create(
                         msgid=original.msgid,
                         locale=locale,
-                        defaults={"md5": Message.get_md5(locale, original.msgid), "draft": True},
+                        defaults={
+                            "md5": Message.get_md5(locale, original.msgid),
+                            "draft": True,
+                        },
                     )
                     if created:
                         self.message_user(request, "Message created.")
@@ -274,8 +277,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
                     logger.exception(e)
                     self.message_error_to_user(request, e)
                 return HttpResponseRedirect(reverse("admin:i18n_message_change", args=[msg.pk]))
-            else:
-                ctx["form"] = form
+            ctx["form"] = form
         else:
             form = LanguageForm()
             ctx["form"] = form
@@ -298,7 +300,10 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
                         Message.objects.get_or_create(
                             msgid=msg.msgid,
                             locale=locale,
-                            defaults={"md5": Message.get_md5(locale, msg.msgid), "draft": True},
+                            defaults={
+                                "md5": Message.get_md5(locale, msg.msgid),
+                                "draft": True,
+                            },
                         )
                 except Exception as e:
                     logger.exception(e)
@@ -306,7 +311,10 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
 
                 updated = Message.objects.filter(locale=locale).count()
                 added = Message.objects.filter(locale=locale, draft=True, timestamp__date=today())
-                self.message_user(request, f"{updated - existing} messages created. {updated} available")
+                self.message_user(
+                    request,
+                    f"{updated - existing} messages created. {updated} available",
+                )
                 ctx["locale"] = locale
                 ctx["added"] = added
             else:

@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("registration", "0048_auto_20230307_1139"),
@@ -17,7 +16,10 @@ class Migration(migrations.Migration):
             model_name="record",
             name="registrar",
             field=models.ForeignKey(
-                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to=settings.AUTH_USER_MODEL,
             ),
         ),
     ]

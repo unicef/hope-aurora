@@ -5,7 +5,7 @@ from aurora.registration.models import Registration
 from aurora.security.backend import AuroraAuthBackend
 
 
-@pytest.fixture()
+@pytest.fixture
 def simple_registration(simple_form):
     from testutils.factories import RegistrationFactory
 

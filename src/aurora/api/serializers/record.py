@@ -43,9 +43,7 @@ class DataTableRecordSerializer(serializers.ModelSerializer):
 
     @cached_property
     def fields(self):
-        """
-        A dictionary of {field_name: field_instance}.
-        """
+        """Return a dictionary of {field_name: field_instance}."""
         # `fields` is evaluated lazily. We do this to ensure that we don't
         # have issues importing modules that use ModelSerializers as fields,
         # even if Django's app-loading stage has not yet run.

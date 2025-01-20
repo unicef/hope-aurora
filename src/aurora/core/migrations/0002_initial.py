@@ -8,7 +8,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -19,8 +18,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="CustomFieldType",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("name", django.contrib.postgres.fields.citext.CICharField(max_length=100, unique=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    django.contrib.postgres.fields.citext.CICharField(max_length=100, unique=True),
+                ),
                 ("attrs", models.JSONField(default=dict)),
                 ("regex", django_regex.fields.RegexField(blank=True, null=True)),
                 ("clean", models.TextField(blank=True, null=True)),
@@ -29,8 +39,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="FlexForm",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("name", django.contrib.postgres.fields.citext.CICharField(max_length=255, unique=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    django.contrib.postgres.fields.citext.CICharField(max_length=255, unique=True),
+                ),
             ],
             options={
                 "verbose_name": "FlexForm",
@@ -40,8 +61,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="OptionSet",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("name", django.contrib.postgres.fields.citext.CICharField(max_length=100)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    django.contrib.postgres.fields.citext.CICharField(max_length=100),
+                ),
                 ("data", models.TextField(blank=True, null=True)),
                 ("separator", models.CharField(blank=True, default="", max_length=1)),
             ],
@@ -49,25 +81,55 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Validator",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("name", django.contrib.postgres.fields.citext.CICharField(max_length=255, unique=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    django.contrib.postgres.fields.citext.CICharField(max_length=255, unique=True),
+                ),
                 ("message", models.CharField(max_length=255)),
                 ("code", models.TextField(blank=True, null=True)),
-                ("target", models.CharField(choices=[("form", "Form"), ("field", "Field")], max_length=5)),
+                (
+                    "target",
+                    models.CharField(choices=[("form", "Form"), ("field", "Field")], max_length=5),
+                ),
             ],
         ),
         migrations.CreateModel(
             name="FormSet",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("name", django.contrib.postgres.fields.citext.CICharField(max_length=255, unique=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    django.contrib.postgres.fields.citext.CICharField(max_length=255, unique=True),
+                ),
                 ("extra", models.IntegerField(default=0)),
                 ("dynamic", models.BooleanField(default=True)),
-                ("flex_form", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="core.flexform")),
+                (
+                    "flex_form",
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="core.flexform"),
+                ),
                 (
                     "parent",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name="formsets", to="core.flexform"
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="formsets",
+                        to="core.flexform",
                     ),
                 ),
             ],
@@ -90,9 +152,20 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="FlexFormField",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("label", models.CharField(max_length=30)),
-                ("name", django.contrib.postgres.fields.citext.CICharField(blank=True, max_length=30)),
+                (
+                    "name",
+                    django.contrib.postgres.fields.citext.CICharField(blank=True, max_length=30),
+                ),
                 ("field_type", strategy_field.fields.StrategyClassField()),
                 ("choices", models.CharField(blank=True, max_length=2000, null=True)),
                 ("required", models.BooleanField(default=False)),
@@ -101,7 +174,9 @@ class Migration(migrations.Migration):
                 (
                     "flex_form",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name="fields", to="core.flexform"
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="fields",
+                        to="core.flexform",
                     ),
                 ),
                 (

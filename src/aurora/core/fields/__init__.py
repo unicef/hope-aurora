@@ -1,23 +1,27 @@
 from django import forms
 
-from . import widgets
-from .captcha import CaptchaField
-from .compilation_time import CompilationTimeField
-from .document import DocumentField
-from .file import SmartFileField
-from .gis import LocationField
-from .hidden import HiddenField
-from .label import LabelOnlyField
-from .mixins import SmartFieldMixin
-from .multi_checkbox import MultiCheckboxField
-from .radio import RadioField, YesNoChoice, YesNoRadio
-from .remote_ip import RemoteIpField
-from .select import AjaxSelectField, SelectField, SmartSelectWidget
-from .webcam import WebcamField
+from . import widgets  # noqa
+from .captcha import CaptchaField  # noqa
+from .compilation_time import CompilationTimeField  # noqa
+from .document import DocumentField  # noqa
+from .file import SmartFileField  # noqa
+from .gis import LocationField  # noqa
+from .hidden import HiddenField  # noqa
+from .label import LabelOnlyField  # noqa
+from .mixins import SmartFieldMixin  # noqa
+from .multi_checkbox import MultiCheckboxField  # noqa
+from .radio import RadioField, YesNoChoice, YesNoRadio  # noqa
+from .remote_ip import RemoteIpField  # noqa
+from .selected import AjaxSelectField, SelectField, SmartSelectWidget  # noqa
+from .webcam import WebcamField  # noqa
 
 WIDGET_FOR_FORMFIELD_DEFAULTS = {
     forms.DateField: {"widget": widgets.SmartDateWidget},
-    forms.CharField: {"widget": widgets.SmartTextWidget, "max_length": 200, "strip": True},
+    forms.CharField: {
+        "widget": widgets.SmartTextWidget,
+        "max_length": 200,
+        "strip": True,
+    },
     forms.IntegerField: {"widget": widgets.NumberWidget},
     forms.FloatField: {"widget": widgets.NumberWidget},
     forms.ChoiceField: {"widget": SmartSelectWidget},

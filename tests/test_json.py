@@ -22,7 +22,6 @@ DATA_TYPES = [
     (),
     set(),
     {},
-    # today(), now(), time(),
     datetime(2000, 1, 1),
     datetime(2000, 1, 1).date(),
     datetime(2000, 1, 1).time(),
@@ -35,7 +34,7 @@ def pytest_generate_tests(metafunc):
     idlist = []
     argvalues = []
     if "data" in metafunc.fixturenames:
-        for i, data in enumerate(DATA_TYPES):
+        for _, data in enumerate(DATA_TYPES):
             argvalues.append(data)
             idlist.append(type(data).__name__)
         metafunc.parametrize("data", argvalues, ids=idlist)

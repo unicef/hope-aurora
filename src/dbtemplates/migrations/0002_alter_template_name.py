@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("dbtemplates", "0001_initial"),
     ]
@@ -14,7 +13,10 @@ class Migration(migrations.Migration):
             model_name="template",
             name="name",
             field=models.CharField(
-                help_text="Example: 'flatpages/default.html'", max_length=100, unique=True, verbose_name="name"
+                help_text="Example: 'flatpages/default.html'",
+                max_length=100,
+                unique=True,
+                verbose_name="name",
             ),
         ),
     ]

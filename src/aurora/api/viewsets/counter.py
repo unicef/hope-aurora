@@ -27,7 +27,10 @@ class CounterViewSet(SmartViewSet):
     serializer_class = CounterSerializer
 
     @action(
-        detail=False, permission_classes=[AllowAny], authentication_classes=[], throttle_classes=[ScopedRateThrottle2]
+        detail=False,
+        permission_classes=[AllowAny],
+        authentication_classes=[],
+        throttle_classes=[ScopedRateThrottle2],
     )
     def refresh(self, request):
         Counter.objects.collect()
@@ -40,9 +43,7 @@ class CounterViewSet(SmartViewSet):
         )
 
     def throttled(self, request, wait):
-        """
-        If request is throttled, determine what kind of exception to raise.
-        """
+        """If request is throttled, determine what kind of exception to raise."""
         latest = Counter.objects.latest()
         detail = "Request was throttled. Data updated to %s." % latest.day
         raise exceptions.Throttled(wait=wait, detail=detail)

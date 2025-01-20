@@ -17,8 +17,7 @@ class PictureWidget(forms.Textarea):
         super().__init__(attrs=attrs)
 
     def build_attrs(self, base_attrs, extra_attrs=None):
-        attrs = super().build_attrs(base_attrs, extra_attrs)
-        return attrs
+        return super().build_attrs(base_attrs, extra_attrs)
 
     def render(self, name, value, attrs=None, renderer=None):
         """Render the widget as an HTML string."""

@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 from django.conf import settings
 from django.http import Http404
@@ -33,7 +33,7 @@ class MicrosoftGraphAPI:
             "client_secret": self.azure_client_secret,
             "resource": settings.AZURE_GRAPH_API_BASE_URL,
         }
-        response = requests.post(settings.AZURE_TOKEN_URL, post_dict)
+        response = requests.post(settings.AZURE_TOKEN_URL, post_dict, timeout=60)
 
         if response.status_code != 200:
             raise Exception(
@@ -41,21 +41,19 @@ class MicrosoftGraphAPI:
             )
 
         json_response = response.json()
-        token = json_response["access_token"]
-        return token
+        return json_response["access_token"]
 
-    def get_results(self, url: str) -> Dict:
+    def get_results(self, url: str) -> dict:
         headers = {"Authorization": f"Bearer {self.access_token}"}
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, timeout=60)
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
             logger.exception(e)
             raise
-        json_response = response.json()
-        return json_response
+        return response.json()
 
-    def get_user_data(self, *, email: Optional[str] = None, uuid: Optional[str] = None) -> Any:
+    def get_user_data(self, *, email: str | None = None, uuid: str | None = None) -> Any:
         try:
             if uuid:
                 q = f"https://graph.microsoft.com/v1.0/users/{uuid}"

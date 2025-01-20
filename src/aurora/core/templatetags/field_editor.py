@@ -1,5 +1,4 @@
 import logging
-from typing import Dict
 
 from django.template import Library
 
@@ -13,5 +12,5 @@ def field(form, field_name):
 
 
 @register.filter()
-def get(d: Dict, key: str):
+def get(d: dict, key: str):
     return d[key]

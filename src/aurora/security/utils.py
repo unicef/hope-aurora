@@ -1,4 +1,4 @@
-import random
+import secrets
 import string
 
 from django.conf import settings
@@ -11,12 +11,12 @@ def generate_password(length=20):
     count = 0
     length = max(8, length)
     while count < length:
-        upper = [random.choice(string.ascii_uppercase)]
-        lower = [random.choice(string.ascii_lowercase)]
-        num = [random.choice(string.digits)]
-        symbol = [random.choice(string.punctuation)]
+        upper = [secrets.choice(string.ascii_uppercase)]
+        lower = [secrets.choice(string.ascii_lowercase)]
+        num = [secrets.choice(string.digits)]
+        symbol = [secrets.choice(string.punctuation)]
         everything = upper + lower + num + symbol
-        pwd += random.choice(everything)
+        pwd += secrets.choice(everything)
         count += 1
     return pwd
 

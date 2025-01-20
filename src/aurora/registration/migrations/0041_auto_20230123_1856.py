@@ -7,7 +7,6 @@ import aurora.registration.fields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("flatpages", "0001_initial"),
         ("registration", "0040_auto_20221202_1011"),
@@ -34,7 +33,10 @@ class Migration(migrations.Migration):
             model_name="registration",
             name="welcome_page",
             field=models.ForeignKey(
-                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="flatpages.flatpage"
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="flatpages.flatpage",
             ),
         ),
         migrations.AlterField(

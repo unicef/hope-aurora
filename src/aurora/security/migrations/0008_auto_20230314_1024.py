@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("security", "0007_auto_20230314_1013"),
@@ -17,16 +16,38 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="UserProfile",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("version", concurrency.fields.AutoIncVersionField(default=0, help_text="record revision number")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "version",
+                    concurrency.fields.AutoIncVersionField(default=0, help_text="record revision number"),
+                ),
                 ("last_update_date", models.DateTimeField(auto_now=True)),
-                ("ad_uuid", models.CharField(blank=True, editable=False, max_length=64, null=True, unique=True)),
+                (
+                    "ad_uuid",
+                    models.CharField(
+                        blank=True,
+                        editable=False,
+                        max_length=64,
+                        null=True,
+                        unique=True,
+                    ),
+                ),
                 ("custom_fields", models.JSONField(blank=True, default=dict)),
                 ("job_title", models.CharField(blank=True, max_length=255)),
                 (
                     "user",
                     models.OneToOneField(
-                        on_delete=django.db.models.deletion.CASCADE, related_name="profile", to=settings.AUTH_USER_MODEL
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="profile",
+                        to=settings.AUTH_USER_MODEL,
                     ),
                 ),
             ],

@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("registration", "0038_alter_registration_unique_field"),
         ("security", "0001_initial"),
@@ -16,7 +15,9 @@ class Migration(migrations.Migration):
             model_name="registrationrole",
             name="registration",
             field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, related_name="roles", to="registration.registration"
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="roles",
+                to="registration.registration",
             ),
         ),
     ]

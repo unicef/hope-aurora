@@ -10,7 +10,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("auth", "0012_alter_user_first_name_max_length"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
@@ -41,9 +40,20 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="AuroraUser",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("password", models.CharField(max_length=128, verbose_name="password")),
-                ("last_login", models.DateTimeField(blank=True, null=True, verbose_name="last login")),
+                (
+                    "last_login",
+                    models.DateTimeField(blank=True, null=True, verbose_name="last login"),
+                ),
                 (
                     "is_superuser",
                     models.BooleanField(
@@ -63,9 +73,18 @@ class Migration(migrations.Migration):
                         verbose_name="username",
                     ),
                 ),
-                ("first_name", models.CharField(blank=True, max_length=150, verbose_name="first name")),
-                ("last_name", models.CharField(blank=True, max_length=150, verbose_name="last name")),
-                ("email", models.EmailField(blank=True, max_length=254, verbose_name="email address")),
+                (
+                    "first_name",
+                    models.CharField(blank=True, max_length=150, verbose_name="first name"),
+                ),
+                (
+                    "last_name",
+                    models.CharField(blank=True, max_length=150, verbose_name="last name"),
+                ),
+                (
+                    "email",
+                    models.EmailField(blank=True, max_length=254, verbose_name="email address"),
+                ),
                 (
                     "is_staff",
                     models.BooleanField(
@@ -83,8 +102,14 @@ class Migration(migrations.Migration):
                         verbose_name="active",
                     ),
                 ),
-                ("date_joined", models.DateTimeField(default=django.utils.timezone.now, verbose_name="date joined")),
-                ("version", concurrency.fields.AutoIncVersionField(default=0, help_text="record revision number")),
+                (
+                    "date_joined",
+                    models.DateTimeField(default=django.utils.timezone.now, verbose_name="date joined"),
+                ),
+                (
+                    "version",
+                    concurrency.fields.AutoIncVersionField(default=0, help_text="record revision number"),
+                ),
                 ("last_update_date", models.DateTimeField(auto_now=True)),
                 (
                     "groups",
@@ -101,7 +126,9 @@ class Migration(migrations.Migration):
                 (
                     "user",
                     models.OneToOneField(
-                        on_delete=django.db.models.deletion.CASCADE, related_name="profile", to=settings.AUTH_USER_MODEL
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="profile",
+                        to=settings.AUTH_USER_MODEL,
                     ),
                 ),
                 (

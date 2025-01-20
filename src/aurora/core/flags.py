@@ -48,11 +48,11 @@ def request_header(param_name, request=None, **kwargs):
     except ValueError:
         param = param_name
         value = ""
-    key = f'HTTP_{param.replace("-", "_")}'
+    key = f"HTTP_{param.replace('-', '_')}"
     if value:
         enabled = request.META.get(key, None) == value
     else:
-        enabled = key in request.META.keys()
+        enabled = key in request.META
     return enabled
 
 

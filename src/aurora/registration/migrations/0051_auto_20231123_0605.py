@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0054_auto_20231123_0605"),
         ("registration", "0050_auto_20230327_1205"),
@@ -22,7 +21,9 @@ class Migration(migrations.Migration):
             model_name="registration",
             name="project",
             field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, related_name="registrations", to="core.project"
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="registrations",
+                to="core.project",
             ),
         ),
         migrations.AlterField(

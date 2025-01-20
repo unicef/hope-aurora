@@ -31,8 +31,7 @@ class OrgForeignKeysCollector(ForeignKeysCollector):
             if obj not in self._visited:
                 return [obj.parent]
             return []
-        else:
-            return super().get_related_for_field(obj, field)
+        return super().get_related_for_field(obj, field)
 
 
 class AuroraSyncOrganizationProtocol(LoadDumpProtocol):

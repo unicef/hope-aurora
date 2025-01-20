@@ -16,8 +16,7 @@ def incr_key_version(key):
         cache.incr(f"{key}:version", 1)
     except ValueError:
         cache.set(f"{key}:version", 1)
-    ret = get_key_version(key)
-    return ret
+    return get_key_version(key)
 
 
 class Config(AppConfig):

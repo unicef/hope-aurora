@@ -1,6 +1,3 @@
-"""
-"""
-
 import logging
 
 from django.db.transaction import atomic
@@ -15,7 +12,7 @@ from aurora.registration.models import Registration
 logger = logging.getLogger(__name__)
 
 
-class NotRunningInTTYException(Exception):
+class NotRunningInTTYError(Exception):
     pass
 
 
@@ -2013,7 +2010,7 @@ def upgrade(**kwargs):
     for fld in optionsets:
         name = fld.pop("name")
         with atomic():
-            fld = OptionSet.objects.update_or_create(name=name, defaults=fld)
+            OptionSet.objects.update_or_create(name=name, defaults=fld)
 
     custom_fields = [
         {
@@ -2036,7 +2033,11 @@ def upgrade(**kwargs):
                 )
             },
         },
-        {"name": "Gender", "base_type": registry.forms.ChoiceField, "attrs": {"choices": ["Female", "Male"]}},
+        {
+            "name": "Gender",
+            "base_type": registry.forms.ChoiceField,
+            "attrs": {"choices": ["Female", "Male"]},
+        },
         {
             "name": "ID Type",
             "base_type": registry.forms.ChoiceField,
@@ -2112,18 +2113,17 @@ def upgrade(**kwargs):
     for fld in custom_fields:
         name = fld.pop("name")
         with atomic():
-            fld = CustomFieldType.build(name, fld)
-            field_registry.register(fld.get_class())
+            custom_fld = CustomFieldType.build(name, fld)
+            field_registry.register(custom_fld.get_class())
 
     base, __ = FlexForm.objects.get_or_create(name="Basic")
     hh, __ = FlexForm.objects.get_or_create(name="Household")
     ind, __ = FlexForm.objects.get_or_create(name="Individual")
-    doc, __ = FlexForm.objects.get_or_create(name="Document")
-    bank, __ = FlexForm.objects.get_or_create(name="Bank Account")
+    FlexForm.objects.get_or_create(name="Document")
+    FlexForm.objects.get_or_create(name="Bank Account")
 
     base.add_formset(hh, extra=1, dynamic=False, max_num=1, min_num=1)
     base.add_formset(ind, extra=1, dynamic=True, min_num=1)
-    # ind.add_formset(doc, extra=0, dynamic=True)
 
     base.add_field(
         "With whom may we share your information (select one or multiple among the following)?",
@@ -2136,10 +2136,20 @@ def upgrade(**kwargs):
         name="enum_org",
     )
     base.add_field("Residence status", "aurora.core.models.ResidenceStatus")
-    Registration.objects.get_or_create(name="Ucraina", defaults=dict(intro=INTRO, flex_form=base))
+    Registration.objects.get_or_create(name="Ucraina", defaults={"intro": INTRO, "flex_form": base})
 
     hh.add_field("Admin 1", registry.fields.AjaxSelectField, datasource="ua_admin1")
-    hh.add_field("Admin 2", registry.fields.AjaxSelectField, datasource="ua_admin2", parent="ua_admin1")
-    hh.add_field("Admin 3", registry.fields.AjaxSelectField, datasource="ua_admin3", parent="ua_admin2")
+    hh.add_field(
+        "Admin 2",
+        registry.fields.AjaxSelectField,
+        datasource="ua_admin2",
+        parent="ua_admin1",
+    )
+    hh.add_field(
+        "Admin 3",
+        registry.fields.AjaxSelectField,
+        datasource="ua_admin3",
+        parent="ua_admin2",
+    )
     ind.add_field("First Name")
     ind.add_field("Last Name")

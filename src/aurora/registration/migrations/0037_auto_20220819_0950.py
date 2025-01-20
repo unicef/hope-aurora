@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("registration", "0036_registration_archived"),
     ]
@@ -12,6 +11,9 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name="registration",
-            options={"get_latest_by": "start", "permissions": (("can_manage", "Can Manage Registration"),)},
+            options={
+                "get_latest_by": "start",
+                "permissions": (("can_manage", "Can Manage Registration"),),
+            },
         ),
     ]
