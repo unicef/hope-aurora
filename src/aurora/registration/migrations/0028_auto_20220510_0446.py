@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("registration", "0027_alter_registration_slug"),
     ]
@@ -13,7 +12,10 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name="registration",
-            options={"get_latest_by": "start", "permissions": (("can_manage", "Can Manage"),)},
+            options={
+                "get_latest_by": "start",
+                "permissions": (("can_manage", "Can Manage"),),
+            },
         ),
         migrations.AlterField(
             model_name="record",

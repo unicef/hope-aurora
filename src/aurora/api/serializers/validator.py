@@ -6,5 +6,3 @@ class ValidatorSerializer(AuroraHyperlinkedModelSerializer):
     class Meta:
         model = Validator
         exclude = ()
-        # lookup_field = "name"
-        # extra_kwargs = {"url": {"lookup_field": "name"}}

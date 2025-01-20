@@ -10,11 +10,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.select import Select
 
-from aurora.i18n.gettext import gettext
+from aurora.i18n.get_text import gettext
 from aurora.registration.models import Record
 
 
-@pytest.fixture()
+@pytest.fixture
 def data(db, settings):
     log = logging.getLogger("django.server")
     log.setLevel(logging.CRITICAL)
@@ -32,9 +32,8 @@ def pytest_generate_tests(metafunc):
     if "language" in metafunc.fixturenames:
         m = []
         ids = []
-        for lang, __ in LOCATIONS.items():
+        for lang in LOCATIONS:
             url = f"/{lang}/register/registration2/"
-            #     return reverse("register", args=[registration.locale, registration.slug])
             m.append([lang, url])
             ids.append(lang)
         metafunc.parametrize("language,url", m, ids=ids)
@@ -48,7 +47,6 @@ def setup(selenium, data):
 
 
 def set_locations(selenium, lang="uk-ua"):
-    # LOCATIONS = ["Автономна Республіка Крим", "Бахчисарайський", "Ароматненська"]
     loc = LOCATIONS[lang]
     # ADMIN1
     selenium.find_by_css("fieldset.admin1_h_c .select2 .selection .select2-selection").click()
@@ -127,7 +125,14 @@ def individual(
 def fill_form(selenium, language):
     selenium.wait_for(By.CSS_SELECTOR, "label[for=id_household-0-residence_status_h_c_0]").click()
     set_locations(selenium, language)
-    individual(selenium, 0, role="head", collector=True, tax_id="1234567890", passport="СЮ233889")
+    individual(
+        selenium,
+        0,
+        role="head",
+        collector=True,
+        tax_id="1234567890",
+        passport="СЮ233889",
+    )
 
 
 def submit(selenium):
@@ -180,10 +185,10 @@ def test_ukr_base(live_server, selenium, language, url):
     #
     # HOPE-20220618-21
     registration_id = selenium.find_by_css("pre.registration-id").text
-    parts, id = registration_id.split("/")
+    parts, identifier = registration_id.split("/")
     prefix, date, dataset = parts.split("-")
     assert Record.objects.get(
-        id=id,
+        id=identifier,
         registration__id=dataset,
         unique_field="1234567890",
     )
@@ -226,7 +231,7 @@ def test_not_eligible(live_server, selenium, language, url):
     with translation.override(language):
         assert gettext("please fix the errors below") in page
         assert (
-            gettext("Your household information does not meet the " "eligibility criteria for UNICEF cash assistance")
+            gettext("Your household information does not meet the eligibility criteria for UNICEF cash assistance")
             in page
         )
 
@@ -268,8 +273,6 @@ def test_size_mismatch(live_server, selenium, language, url):
         size_mismatch = gettext("Household size and provided members do not match")
         assert gettext("please fix the errors below") in page
         assert size_mismatch in page
-        # let double check
-        # assert size_mismatch == "Розмір домогосподарства та надані члени не збігаються"
 
 
 @pytest.mark.selenium
@@ -291,7 +294,6 @@ def test_birth_date_validation1(live_server, selenium, language, url):
 
 @pytest.mark.selenium
 def test_birth_date_validation2(live_server, selenium, language, url):
-    # url = '/en-us/register/test1/'
     selenium.get(f"{live_server.url}{url}")
 
     selenium.find_by_css("input[name=household-0-size_h_c").send_keys("1")
@@ -310,7 +312,6 @@ def test_birth_date_validation2(live_server, selenium, language, url):
 
 @pytest.mark.selenium
 def test_only_one_head(live_server, selenium, language, url):
-    # url = '/en-us/register/test1/'
     selenium.get(f"{live_server.url}{url}")
 
     selenium.find_by_css("input[name=household-0-size_h_c").send_keys("2")
@@ -331,7 +332,6 @@ def test_only_one_head(live_server, selenium, language, url):
 
 @pytest.mark.selenium
 def test_one_collector(live_server, selenium, language, url):
-    # url = '/en-us/register/test1/'
     selenium.get(f"{live_server.url}{url}")
 
     selenium.find_by_css("input[name=household-0-size_h_c").send_keys("2")

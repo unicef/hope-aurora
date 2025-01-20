@@ -55,7 +55,11 @@ class LoadDumpMixin(ExtraButtonsMixin):
                         finally:
                             fixture.unlink()
                 except Exception as e:
-                    self.message_user(request, f"{e.__class__.__name__}: {e} {out.getvalue()}", messages.ERROR)
+                    self.message_user(
+                        request,
+                        f"{e.__class__.__name__}: {e} {out.getvalue()}",
+                        messages.ERROR,
+                    )
             else:
                 ctx["form"] = form
         else:

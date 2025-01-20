@@ -1,6 +1,6 @@
-from .flatpage import FlatPageSerializer
-from .org import OrganizationSerializer
-from .project import ProjectSerializer
-from .record import RecordSerializer
-from .registration import *
-from .template import TemplateSerializer
+from .flatpage import FlatPageSerializer  # noqa
+from .org import OrganizationSerializer  # noqa
+from .project import ProjectSerializer  # noqa
+from .record import RecordSerializer  # noqa
+from .registration import *  # noqa
+from .template import TemplateSerializer  # noqa

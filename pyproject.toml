@@ -51,16 +51,17 @@ dependencies = [
     "django-simple-captcha",
     "django-simple-math-captcha",
     "django-smart-admin",
-    "django-smart-env>=0.1.0",
+    "django-smart-env",
     "django-strategy-field",
     "django-sysinfo",
     "django-tinymce",
-    "django<5",
+    "django",
     "djangorestframework",
     "djangorestframework-datatables",
     "htmlmin",
     "jmespath",
     "jsonpickle",
+    "mini-racer",
     "natural-keys",
     "psycopg2-binary",
     "py-mini-racer",
@@ -76,13 +77,16 @@ dependencies = [
     "uwsgi",
 ]
 
+[uv]
+package = true
+
 [project.optional-dependencies]
 docs = [
-    "mkdocs>=1.6.1",
-    "mkdocs-material>=9.5.36",
-    "mkdocs-awesome-pages-plugin>=2.9.3",
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocs-awesome-pages-plugin",
     "mkdocstrings-python",
-    "mkdocs-gen-files>=0.5.0",
+    "mkdocs-gen-files",
 ]
 
 [tool.uv]
@@ -149,3 +153,10 @@ known_django = "django"
 sections = ["FUTURE","STDLIB","DJANGO","THIRDPARTY","FIRSTPARTY","LOCALFOLDER"]
 include_trailing_comma = true
 skip = ["migrations", "snapshots", ".venv"]
+
+
+[tool.nitpick]
+    style = [
+        "github://unicef/hope-code-conventions@main/django/django.toml"
+    ]
+    cache = "1 day"

@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0040_auto_20220420_1248"),
     ]
@@ -14,14 +13,22 @@ class Migration(migrations.Migration):
             model_name="validator",
             name="message",
             field=models.CharField(
-                blank=True, help_text="Default error message if validator return 'false'.", max_length=255, null=True
+                blank=True,
+                help_text="Default error message if validator return 'false'.",
+                max_length=255,
+                null=True,
             ),
         ),
         migrations.AlterField(
             model_name="validator",
             name="target",
             field=models.CharField(
-                choices=[("form", "Form"), ("field", "Field"), ("formset", "Formset"), ("module", "Module")],
+                choices=[
+                    ("form", "Form"),
+                    ("field", "Field"),
+                    ("formset", "Formset"),
+                    ("module", "Module"),
+                ],
                 max_length=10,
             ),
         ),

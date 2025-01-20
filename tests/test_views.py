@@ -5,6 +5,10 @@ from unittest.mock import Mock
 
 import pytest
 from webtest import Upload
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from aurora.registration.models import Record
 
 LANGUAGES = {
     "english": "first",
@@ -24,22 +28,14 @@ def mock_state():
     state.request = Mock(user=AnonymousUser())
 
 
-@pytest.fixture()
+@pytest.fixture
 def simple_registration(simple_form):
     from testutils.factories import RegistrationFactory
 
     return RegistrationFactory(flex_form=simple_form, encrypt_data=False)
-    # from aurora.registration.models import Registration
-    # reg, __ = Registration.objects.get_or_create(
-    #     locale="en-us",
-    #     name="registration #1",
-    #     defaults={"flex_form": simple_form, "encrypt_data": False, "active": True},
-    #     project = Project
-    # )
-    # return reg
 
 
-@pytest.fixture()
+@pytest.fixture
 def unique_last_name_registration(simple_form):
     from testutils.factories import RegistrationFactory
 
@@ -50,25 +46,9 @@ def unique_last_name_registration(simple_form):
         unique_field_path="last_name",
         unique_field_error="last_name is not unique",
     )
-    # from aurora.registration.models import Registration
-    # reg, __ = Registration.objects.get_or_create(
-    #     locale="en-us",
-    #     name="registration #3",
-    #     defaults={
-    #         "flex_form": simple_form,
-    #         "unique_field_path": "last_name",
-    #         "unique_field_error": "last_name is not unique",
-    #         "encrypt_data": False,
-    #         "active": True,
-    #     },
-    # )
-    # return reg
 
 
-#
-
-
-@pytest.fixture()
+@pytest.fixture
 def rsa_encrypted_registration(simple_form):
     from testutils.factories import RegistrationFactory
 
@@ -80,19 +60,9 @@ def rsa_encrypted_registration(simple_form):
     priv, pub = reg.setup_encryption_keys()
     reg._private_pem = priv
     return reg
-    # from aurora.registration.models import Registration
-    #
-    # reg, __ = Registration.objects.get_or_create(
-    #     locale="en-us",
-    #     name="registration #1",
-    #     defaults={"flex_form": simple_form, "encrypt_data": False, "active": True},
-    # )
-    # priv, pub = reg.setup_encryption_keys()
-    # reg._private_pem = priv
-    # return reg
 
 
-@pytest.fixture()
+@pytest.fixture
 def fernet_encrypted_registration(simple_form):
     from testutils.factories import RegistrationFactory
 
@@ -104,14 +74,8 @@ def fernet_encrypted_registration(simple_form):
         unique_field_error="last_name is not unique",
     )
 
-    # from aurora.registration.models import Registration
-    # reg, __ = Registration.objects.get_or_create(
-    #     locale="en-us", name="registration #3", encrypt_data=True, flex_form=simple_form, active=True
-    # )
-    # return reg
 
-
-@pytest.fixture()
+@pytest.fixture
 def complex_registration(complex_form):
     from testutils.factories import RegistrationFactory
 
@@ -120,15 +84,9 @@ def complex_registration(complex_form):
         flex_form=complex_form,
         encrypt_data=False,
     )
-    # from aurora.registration.models import Registration
-    #
-    # reg, __ = Registration.objects.get_or_create(
-    #     locale="en-us", name="registration #2", defaults={"flex_form": complex_form, "active": True}
-    # )
-    # return reg
 
 
-@pytest.fixture()
+@pytest.fixture
 def james_registration(complex_form):
     from testutils.factories import RegistrationFactory
 
@@ -137,18 +95,9 @@ def james_registration(complex_form):
         flex_form=complex_form,
         unique_field_path="form2s[].[first_name][0][0]",
     )
-    # from aurora.registration.models import Registration
-    # reg, __ = Registration.objects.get_or_create(
-    #     locale="en-us",
-    #     name="registration #2",
-    #     unique_field_path="form2s[].[first_name][0][0]",
-    #     unique_field_error="xxx must be unique",
-    #     defaults={"flex_form": complex_form, "active": True},
-    # )
-    # return reg
 
 
-@pytest.fixture()
+@pytest.fixture
 def protected_registration(simple_form):
     from testutils.factories import RegistrationFactory
 
@@ -161,21 +110,6 @@ def protected_registration(simple_form):
         active=True,
         protected=True,
     )
-
-    # from aurora.registration.models import Registration
-    # reg, __ = Registration.objects.get_or_create(
-    #     locale="en-us",
-    #     name="registration #3",
-    #     defaults={
-    #         "flex_form": simple_form,
-    #         "unique_field_path": "last_name",
-    #         "unique_field_error": "last_name is not unique",
-    #         "encrypt_data": False,
-    #         "active": True,
-    #         "protected": True,
-    #     },
-    # )
-    # return reg
 
 
 @pytest.mark.django_db
@@ -268,16 +202,6 @@ def test_register_unique_nested(django_app, james_registration):
     res.form["form2s-0-first_name"] = "First0"
     res.form["form2s-0-last_name"] = "Last0"
     res.form["form2s-0-date_of_birth"] = "2000-12-01"
-
-    # add_extra_form_to_formset_with_data(
-    #     res.form,
-    #     "form2s",
-    #     {
-    #         "first_name": "First1",
-    #         "last_name": "Last",
-    #         "date_of_birth": "2000-12-01",
-    #     },
-    # )
     res = res.form.submit()
     assert res.context["errors"][0].message == james_registration.unique_field_error
 
@@ -336,7 +260,6 @@ def test_register_complex(django_app, complex_registration):
     res = res.form.submit()
     assert res.status_code == 302, res.context["form"].errors
     res = res.follow()
-    from aurora.registration.models import Record
 
     r: Record = res.context["record"]
     assert r.data["form2s"][0]["first_name"] == "First0"
@@ -365,10 +288,8 @@ def test_upload_image(django_app, complex_registration, mock_storage):
     url = complex_registration.get_absolute_url()
     res = django_app.get(url)
     res.form["family_name"] = "HH #1"
-    # IMAGE = Upload("tests/data/image.jpeg", Path("tests/data/image.png").read_bytes())
-    # IMAGE = SimpleUploadedFile("tests/data/image.jpeg", Path("tests/data/image.png").read_bytes())
     content = Path("tests/data/image.png").read_bytes()
-    IMAGE = Upload("tests/data/image.jpeg", content)
+    image = Upload("tests/data/image.jpeg", content)
     res.form["form2s-0-first_name"] = "First0"
     res.form["form2s-0-last_name"] = "Last0"
     res.form["form2s-0-date_of_birth"] = "2000-12-01"
@@ -380,7 +301,7 @@ def test_upload_image(django_app, complex_registration, mock_storage):
             "first_name": "First1",
             "last_name": "Last",
             "date_of_birth": "2000-12-01",
-            "image": IMAGE,
+            "image": image,
         },
     )
     res = res.form.submit()
@@ -391,23 +312,18 @@ def test_upload_image(django_app, complex_registration, mock_storage):
     assert obj.data["form2s"][1]["image"] == base64.b64encode(content).decode()
     ff = json.loads(obj.files.tobytes().decode())
     assert ff["form2s"][1]["image"] == base64.b64encode(content).decode()
-    # from aurora.registration.models import Record
-    #
-    # r: Record = res.context["record"]
-    # assert r.data["family_name"] == "HH #1"
-    # assert r.data["form2s"][0]["image"].read().decode() == base64.b64encode(content).decode()
 
 
 @pytest.mark.django_db
 def test_upload_image_register_rsa_encrypted(django_app, rsa_encrypted_registration, mock_storage):
     url = rsa_encrypted_registration.get_absolute_url()
     content = Path("tests/data/image.png").read_bytes()
-    IMAGE = Upload("tests/data/image.jpeg", Path("tests/data/image.png").read_bytes())
+    image = Upload("tests/data/image.jpeg", Path("tests/data/image.png").read_bytes())
 
     res = django_app.get(url)
     res.form["first_name"] = "first"
     res.form["last_name"] = "last"
-    res.form["image"] = IMAGE
+    res.form["image"] = image
 
     res = res.form.submit().follow()
     record = res.context["record"]
@@ -419,17 +335,15 @@ def test_upload_image_register_rsa_encrypted(django_app, rsa_encrypted_registrat
 
 @pytest.mark.django_db
 def test_upload_image_register_fernet_encrypted(django_app, fernet_encrypted_registration, mock_storage):
-    from aurora.registration.models import Record
-
     url = fernet_encrypted_registration.get_absolute_url()
     content = Path("tests/data/image.png").read_bytes()
-    IMAGE = Upload("tests/data/image.jpeg", content)
+    image = Upload("tests/data/image.jpeg", content)
 
     res = django_app.get(url)
     res.form["first_name"] = "first"
     res.form["last_name"] = "last"
-    res.form["image"] = IMAGE
-    res.form["file"] = IMAGE
+    res.form["image"] = image
+    res.form["file"] = image
 
     res = res.form.submit().follow()
     record: Record = res.context["record"]

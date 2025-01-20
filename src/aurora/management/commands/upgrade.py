@@ -1,6 +1,3 @@
-"""
-"""
-
 import logging
 from pathlib import Path
 
@@ -15,7 +12,7 @@ from aurora import VERSION
 logger = logging.getLogger(__name__)
 
 
-class NotRunningInTTYException(Exception):
+class NotRunningInTTYError(Exception):
     pass
 
 
@@ -37,8 +34,22 @@ class NotRunningInTTYException(Exception):
 )
 @click.option("--migrate/--no-migrate", default=True, is_flag=True, help="Run database migrations")
 @click.option("--static/--no-static", default=True, is_flag=True, help="Collect static assets")
-@click.option("--organization", default=None, envvar="DEFAULT_ORGANIZATION", help="Main Organization name")
-def upgrade(admin_email, admin_password, static, migrate, prompt, verbosity, organization, **kwargs):
+@click.option(
+    "--organization",
+    default=None,
+    envvar="DEFAULT_ORGANIZATION",
+    help="Main Organization name",
+)
+def upgrade(
+    admin_email,
+    admin_password,
+    static,
+    migrate,
+    prompt,
+    verbosity,
+    organization,
+    **kwargs,
+):
     from aurora.config import env
     from aurora.core.models import FlexForm, Organization, Project
     from aurora.registration.models import Registration
@@ -46,7 +57,12 @@ def upgrade(admin_email, admin_password, static, migrate, prompt, verbosity, org
     extra = {"no_input": prompt, "verbosity": verbosity - 1, "stdout": None}
     click.echo("Run upgrade.. waiting for lock")
     try:
-        with cache.lock(env("MIGRATION_LOCK_KEY"), timeout=60 * 10, blocking_timeout=2, version=VERSION):
+        with cache.lock(
+            env("MIGRATION_LOCK_KEY"),
+            timeout=60 * 10,
+            blocking_timeout=2,
+            version=VERSION,
+        ):
             if migrate:
                 if verbosity >= 1:
                     click.echo("Run migrations")
@@ -55,17 +71,17 @@ def upgrade(admin_email, admin_password, static, migrate, prompt, verbosity, org
 
             # ensure project/org
             click.echo("Set default Org/Project")
-            UNICEF, __ = Organization.objects.get_or_create(slug="unicef", defaults={"name": organization})
-            DEF, __ = Project.objects.get_or_create(slug="default-project", organization=UNICEF)
+            unicef, __ = Organization.objects.get_or_create(slug="unicef", defaults={"name": organization})
+            default, __ = Project.objects.get_or_create(slug="default-project", organization=unicef)
 
-            Project.objects.filter(organization__isnull=True).update(organization=UNICEF)
-            Registration.objects.filter(project__isnull=True).update(project=DEF)
-            FlexForm.objects.filter(project__isnull=True).update(project=DEF)
+            Project.objects.filter(organization__isnull=True).update(organization=unicef)
+            Registration.objects.filter(project__isnull=True).update(project=default)
+            FlexForm.objects.filter(project__isnull=True).update(project=default)
 
             static_root = Path(env("STATIC_ROOT"))
             if not static_root.exists():
                 static_root.mkdir(parents=True)
-            print(f"STATIC_ROOT set to '{static_root}' ('{static_root.absolute()}')")
+            click.echo(f"STATIC_ROOT set to '{static_root}' ('{static_root.absolute()}')")
             if static:
                 if verbosity >= 1:
                     click.echo("Run collectstatic")
@@ -84,13 +100,13 @@ def upgrade(admin_email, admin_password, static, migrate, prompt, verbosity, org
             if admin_email:
                 from django.contrib.auth import get_user_model
 
-                User = get_user_model()
+                User = get_user_model()  # noqa
                 if User.objects.filter(is_superuser=True).exists():
-                    print("Superuser already exists. Ignoring ADMIN_EMAIL")
+                    click.echo("Superuser already exists. Ignoring ADMIN_EMAIL")
                 else:
                     username, __ = admin_email.split("@")
                     if User.objects.filter(username=username).exists():
-                        print("User with this name already exists")
+                        click.echo("User with this name already exists")
                     else:
                         try:
                             call_command(
@@ -111,9 +127,9 @@ def upgrade(admin_email, admin_password, static, migrate, prompt, verbosity, org
                 from django.utils import translation
 
                 django.setup()
-                print(f"LANGUAGE_CODE: {settings.LANGUAGE_CODE}")
-                print(f"LOCALE: {translation.to_locale(settings.LANGUAGE_CODE)}")
+                click.echo(f"LANGUAGE_CODE: {settings.LANGUAGE_CODE}")
+                click.echo(f"LOCALE: {translation.to_locale(settings.LANGUAGE_CODE)}")
                 translation.activate(settings.LANGUAGE_CODE)
-                print("check_for_language", translation.check_for_language("settings.LANGUAGE_CODE"))
+                click.echo(f"check_for_language {translation.check_for_language("settings.LANGUAGE_CODE")}")
     except LockError as e:
-        print(f"LockError: {e}")
+        click.echo(f"LockError: {e}")

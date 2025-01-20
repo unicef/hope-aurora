@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0041_auto_20220505_1751"),
     ]
@@ -16,6 +15,10 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterModelOptions(
             name="flexformfield",
-            options={"ordering": ["ordering"], "verbose_name": "Flex Field", "verbose_name_plural": "Flex Fields"},
+            options={
+                "ordering": ["ordering"],
+                "verbose_name": "Flex Field",
+                "verbose_name_plural": "Flex Fields",
+            },
         ),
     ]

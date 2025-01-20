@@ -13,7 +13,10 @@ class Migration(migrations.Migration):
             model_name="registration",
             name="unique_field",
             field=models.CharField(
-                blank=True, help_text="Form field to be used as unique key (DEPRECATED)", max_length=255, null=True
+                blank=True,
+                help_text="Form field to be used as unique key (DEPRECATED)",
+                max_length=255,
+                null=True,
             ),
         ),
     ]

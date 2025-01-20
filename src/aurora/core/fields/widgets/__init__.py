@@ -1,8 +1,7 @@
-from .datetime import SmartDateWidget
-from .editor import JavascriptEditor
-from .image import ImageWidget
+from .date_time import SmartDateWidget  # noqa
+from .editor import JavascriptEditor  # noqa
+from .image import ImageWidget  # noqa
 
-# from .multi_checkbox import MultiCheckboxWidget
-from .number import NumberWidget
-from .radio import RadioWidget, YesNoRadioWidget
-from .text import SmartTextWidget
+from .number import NumberWidget  # noqa
+from .radio import RadioWidget, YesNoRadioWidget  # noqa
+from .text import SmartTextWidget  # noqa

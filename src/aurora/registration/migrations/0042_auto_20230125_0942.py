@@ -6,7 +6,6 @@ import aurora.registration.fields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("registration", "0041_auto_20230123_1856"),
     ]

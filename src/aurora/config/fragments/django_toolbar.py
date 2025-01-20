@@ -2,11 +2,9 @@ from django_regex.utils import RegexList
 
 
 def show_ddt(request):  # pragma: no-cover
-    from flags.state import flag_enabled
 
     if request.path in RegexList(("/tpl/.*", "/api/.*", "/dal/.*")):  # pragma: no cache
         return False
-    return flag_enabled("DEVELOP_DEBUG_TOOLBAR", request=request)
 
 
 DEBUG_TOOLBAR_CONFIG = {

@@ -17,5 +17,4 @@ class SentryMiddleware:
             scope.set_tag("debug", settings.DEBUG)
             scope.set_tag("Version", os.environ.get("VERSION", "?"))
             scope.set_tag("Build", os.environ.get("BUILD_DATE", "?"))
-            response = self.get_response(request)
-        return response
+            return self.get_response(request)

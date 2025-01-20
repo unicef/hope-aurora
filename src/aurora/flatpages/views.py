@@ -4,7 +4,6 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.http import Http404, HttpResponse, HttpResponsePermanentRedirect
 from django.shortcuts import get_object_or_404
 from django.template import loader
-from django.utils.safestring import mark_safe
 from django.views.decorators.csrf import csrf_protect
 
 DEFAULT_TEMPLATE = "flatpages/default.html"
@@ -29,18 +28,15 @@ def flatpage(request, url):
     except Http404:
         if not url.endswith("/") and settings.APPEND_SLASH:
             url += "/"
-            f = get_object_or_404(FlatPage, url=url, sites=site_id)
+            get_object_or_404(FlatPage, url=url, sites=site_id)
             return HttpResponsePermanentRedirect("%s/" % request.path)
-        else:
-            raise
+        raise
     return render_flatpage(request, f)
 
 
 @csrf_protect
 def render_flatpage(request, f):
-    """
-    Internal interface to the flat page view.
-    """
+    """Return an internal interface to the flat page view."""
     # If registration is required for accessing this page, and the user isn't
     # logged in, redirect to the login page.
     if f.registration_required and not request.user.is_authenticated:
@@ -55,7 +51,5 @@ def render_flatpage(request, f):
     # To avoid having to always use the "|safe" filter in flatpage templates,
     # mark the title and content as already safe (since they are raw HTML
     # content in the first place).
-    f.title = mark_safe(f.title)
-    f.content = mark_safe(f.content)
 
     return HttpResponse(template.render({"flatpage": f}, request))

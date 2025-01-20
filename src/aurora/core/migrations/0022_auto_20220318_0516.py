@@ -8,7 +8,6 @@ import aurora.core.forms
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0021_auto_20220315_1639"),
     ]

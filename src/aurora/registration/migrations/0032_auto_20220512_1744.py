@@ -23,27 +23,12 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0046_alter_validator_target"),
         ("registration", "0031_auto_20220512_1125"),
     ]
 
     operations = [
-        # migrations.RunSQL(SQL, REVERSE),
-        # migrations.RunSQL(
-        #     'CREATE INDEX CONCURRENTLY "registration_record_unique_field_5edac906" '
-        #     'ON "registration_record" ("unique_field");'
-        # ),
-        # migrations.RunSQL(
-        #     'CREATE INDEX CONCURRENTLY "registration_record_unique_field_5edac906_like" '
-        #     'ON "registration_record" ("unique_field" varchar_pattern_ops);'
-        # ),
-        # migrations.RunSQL(
-        #     'ALTER TABLE "registration_record" '
-        #     'ADD CONSTRAINT "registration_record_registration_id_unique_field_2701a3c6_uniq" '
-        #     'UNIQUE ("registration_id", "unique_field");'
-        # ),
         migrations.AddField(
             model_name="record",
             name="fields",
@@ -63,14 +48,20 @@ class Migration(migrations.Migration):
             model_name="registration",
             name="unique_field",
             field=models.CharField(
-                blank=True, help_text="Form field to be used as unique key", max_length=255, null=True
+                blank=True,
+                help_text="Form field to be used as unique key",
+                max_length=255,
+                null=True,
             ),
         ),
         migrations.AlterField(
             model_name="registration",
             name="scripts",
             field=models.ManyToManyField(
-                blank=True, limit_choices_to={"target": "script"}, related_name="script_for", to="core.Validator"
+                blank=True,
+                limit_choices_to={"target": "script"},
+                related_name="script_for",
+                to="core.Validator",
             ),
         ),
         migrations.AlterUniqueTogether(

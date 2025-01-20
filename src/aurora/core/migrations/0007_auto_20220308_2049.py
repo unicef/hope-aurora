@@ -9,7 +9,6 @@ import aurora.core.forms
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0006_flexform_base_type"),
     ]
@@ -27,7 +26,9 @@ class Migration(migrations.Migration):
             model_name="customfieldtype",
             name="name",
             field=django.contrib.postgres.fields.citext.CICharField(
-                max_length=100, unique=True, validators=[django.core.validators.RegexValidator("[A-Z][a-zA-Z0-9_]*")]
+                max_length=100,
+                unique=True,
+                validators=[django.core.validators.RegexValidator("[A-Z][a-zA-Z0-9_]*")],
             ),
         ),
         migrations.AlterField(

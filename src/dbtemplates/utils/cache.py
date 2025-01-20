@@ -6,9 +6,7 @@ from dbtemplates.conf import settings
 
 
 def get_cache_backend():
-    """
-    Compatibilty wrapper for getting Django's cache backend instance
-    """
+    """Compatibilty wrapper for getting Django's cache backend instance."""
     from django.core.cache import caches
 
     cache = caches[settings.DBTEMPLATES_CACHE_BACKEND]
@@ -45,8 +43,10 @@ def set_and_return(cache_key, content, display_name):
 
 def add_template_to_cache(instance, **kwargs):
     """
-    Called via Django's signals to cache the templates, if the template
-    in the database was added or changed.
+    Cache templates.
+
+    Called via Django's signals to .
+    if the template in the database was added or changed.
     """
     remove_cached_template(instance)
     remove_notfound_key(instance)
@@ -56,7 +56,9 @@ def add_template_to_cache(instance, **kwargs):
 
 def remove_cached_template(instance, **kwargs):
     """
-    Called via Django's signals to remove cached templates, if the template
-    in the database was changed or deleted.
+    Remove cached templates.
+
+    Called via Django's signals.
+    If the template in the database was changed or deleted.
     """
     cache.delete(get_cache_key(instance.name))

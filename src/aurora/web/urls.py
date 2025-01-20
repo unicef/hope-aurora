@@ -1,7 +1,16 @@
 from django.contrib.auth.views import LogoutView
 from django.urls import path
 
-from .views import HomeView, LoginRouter, MaintenanceView, PageView, ProbeView, QRCodeView, RegistrarLoginView, offline
+from .views import (
+    HomeView,
+    LoginRouter,
+    MaintenanceView,
+    PageView,
+    ProbeView,
+    QRCodeView,
+    RegistrarLoginView,
+    offline,
+)
 
 urlpatterns = [
     path("", HomeView.as_view(), name="index"),

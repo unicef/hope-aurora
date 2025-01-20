@@ -43,9 +43,7 @@ class Command(BaseCommand):
         try:
             site = Site.objects.get_current()
         except Site.DoesNotExist:
-            raise CommandError(
-                "Please make sure to have the sites contrib " "app installed and setup with a site object"
-            )
+            raise CommandError("Please make sure to have the sites contrib app installed and setup with a site object")
 
         verbosity = int(options.get("verbosity", 1))
         for error_code in (404, 500):
@@ -55,7 +53,6 @@ class Command(BaseCommand):
                 template.save()
                 template.sites.add(site)
                 if verbosity >= 1:
-                    sys.stdout.write("Created database template " "for %s errors.\n" % error_code)
-            else:
-                if verbosity >= 1:
-                    sys.stderr.write("A template for %s errors " "already exists.\n" % error_code)
+                    sys.stdout.write("Created database template for %s errors.\n" % error_code)
+            elif verbosity >= 1:
+                sys.stderr.write("A template for %s errors already exists.\n" % error_code)

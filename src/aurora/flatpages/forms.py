@@ -58,10 +58,22 @@ class FlatPageForm(forms.ModelForm):
                 # toolbar_sticky_offset: isSmallScreen ? 102: 108,
                 "block_formats": "Paragraph=p; Header 1=h1; Header 2=h2; Header 3=h3; Header 4=h4",
                 "formats": {
-                    "h1": {"block": "h1", "attributes": {"class": "text-5xl leading-1"}},
-                    "h2": {"block": "h2", "attributes": {"class": "text-4xl leading-1"}},
-                    "h3": {"block": "h3", "attributes": {"class": "text-3xl leading-1"}},
-                    "h4": {"block": "h4", "attributes": {"class": "text-2xl leading-1"}},
+                    "h1": {
+                        "block": "h1",
+                        "attributes": {"class": "text-5xl leading-1"},
+                    },
+                    "h2": {
+                        "block": "h2",
+                        "attributes": {"class": "text-4xl leading-1"},
+                    },
+                    "h3": {
+                        "block": "h3",
+                        "attributes": {"class": "text-3xl leading-1"},
+                    },
+                    "h4": {
+                        "block": "h4",
+                        "attributes": {"class": "text-2xl leading-1"},
+                    },
                 },
             },
         ),
@@ -77,7 +89,7 @@ class FlatPageForm(forms.ModelForm):
         help_text=_("Example: “/about/contact/”. Leading and trailing slashes will be added."),
         error_messages={
             "invalid": _(
-                "This value must contain only letters, numbers, dots, " "underscores, dashes, slashes or tildes."
+                "This value must contain only letters, numbers, dots, underscores, dashes, slashes or tildes."
             ),
         },
     )
@@ -85,7 +97,6 @@ class FlatPageForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["content"].widget.mce_attrs["content_css"] = [static("bob/mailing.css")]
-        # self.fields["html"].widget.mce_attrs["document_base_url"] = get_server_url()
 
     class Media:
         js = ("flatpages/tinymce_init.js",)
@@ -123,5 +134,4 @@ class FlatPageForm(forms.ModelForm):
                         code="duplicate_url",
                         params={"url": url, "site": site},
                     )
-        # self.cleaned_data["url"] = url
         return super().clean()

@@ -3,17 +3,13 @@ from django.contrib.admin.widgets import SELECT2_TRANSLATIONS
 from django.urls import reverse
 from django.utils.translation import get_language
 
-from adminfilters.autocomplete import AutoCompleteFilter, get_real_field
+from adminfilters.autocomplete import get_real_field
 from adminfilters.mixin import MediaDefinitionFilter, SmartFieldListFilter
 
 from aurora.core.version_media import VersionMedia
 
 
-class BaseAutoCompleteFilter(AutoCompleteFilter):
-    pass
-
-
-class BaseAutoCompleteFilter___(SmartFieldListFilter, MediaDefinitionFilter):
+class BaseAutoCompleteFilter(SmartFieldListFilter, MediaDefinitionFilter):
     template = "adminfilters/autocomplete.html"
     url_name = "%s:%s_%s_autocomplete"
     filter_title = None
@@ -81,6 +77,5 @@ class BaseAutoCompleteFilter___(SmartFieldListFilter, MediaDefinitionFilter):
         if not self.can_negate and self.negated:
             if self.negated_title:
                 return self.negated_title
-            else:
-                return f"not {self.title}"
+            return f"not {self.title}"
         return self.filter_title or self.title

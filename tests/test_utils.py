@@ -4,23 +4,33 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 import pytest
 
-from aurora.core.utils import apply_nested, extract_content, flatten_dict, merge_data, namify, underscore_to_camelcase
+from aurora.core.utils import (
+    apply_nested,
+    extract_content,
+    flatten_dict,
+    merge_data,
+    namify,
+    underscore_to_camelcase,
+)
 from aurora.registration.storage import Router
 
 
-@pytest.mark.parametrize("v", ["underscore_to_camelcase", "underscore to camelcase", "underscore__to_camelcase"])
+@pytest.mark.parametrize(
+    "v",
+    ["underscore_to_camelcase", "underscore to camelcase", "underscore__to_camelcase"],
+)
 def test_underscore_to_camelcase(v):
     assert underscore_to_camelcase(v) == "UnderscoreToCamelcase"
 
 
-@pytest.mark.parametrize("unicode", (True, False))
+@pytest.mark.parametrize("unicode", [True, False])
 @pytest.mark.parametrize(
-    "value,expected",
-    (
+    ("value", "expected"),
+    [
         ("a-b", "a_b"),
         ("à-b", "a_b"),
         ("à-è-î-ô-ü", "a_e_i_o_u"),
-    ),
+    ],
 )
 def test_namify_allow_unicode(unicode, value, expected):
     assert namify(value, unicode) == expected
@@ -68,11 +78,18 @@ def test_storage_router_nested2():
 def test_merge():
     d1 = {"a": "1", "b": 2, "d": [{"bb": 3}]}
     d2 = {"c": [1], "d": [{"aa": 2}], "aa": {"vv": 1}}
-    assert merge_data(d1, d2) == {"a": "1", "b": 2, "c": [1], "d": [{"aa": 2, "bb": 3}], "aa": {"vv": 1}}
+    assert merge_data(d1, d2) == {
+        "a": "1",
+        "b": 2,
+        "c": [1],
+        "d": [{"aa": 2, "bb": 3}],
+        "aa": {"vv": 1},
+    }
 
 
 @pytest.mark.parametrize(
-    "value,expected", [({"languages": ["1"], "name": "eeeeee"}, {"languages": ["1"], "name": "eeeeee"})]
+    ("value", "expected"),
+    [({"languages": ["1"], "name": "eeeeee"}, {"languages": ["1"], "name": "eeeeee"})],
 )
 def test_apply_nested(value, expected):
     assert apply_nested(value) == expected
@@ -92,7 +109,10 @@ sss3 = {
     "lang": ["russian", "hungarian"],
 }
 
-sss4 = {"label": "Name", "individuals": [{"label": "Name", "lang": ["russian", "hungarian"]}]}
+sss4 = {
+    "label": "Name",
+    "individuals": [{"label": "Name", "lang": ["russian", "hungarian"]}],
+}
 
 
 def test_flatten_dict1():

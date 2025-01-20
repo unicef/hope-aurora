@@ -6,7 +6,6 @@ import aurora.i18n.fields
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = []
@@ -15,11 +14,23 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Message",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 (
                     "locale",
                     aurora.i18n.fields.LanguageField(
-                        choices=[("en-us", "English"), ("pl-pl", "Polskie"), ("uk-ua", "український")],
+                        choices=[
+                            ("en-us", "English"),
+                            ("pl-pl", "Polskie"),
+                            ("uk-ua", "український"),
+                        ],
                         default="en-us",
                         max_length=10,
                         null=True,
@@ -28,7 +39,10 @@ class Migration(migrations.Migration):
                 ),
                 ("msgid", models.TextField()),
                 ("msgstr", models.TextField(blank=True, null=True)),
-                ("md5", models.CharField(db_index=True, max_length=512, verbose_name="MD5")),
+                (
+                    "md5",
+                    models.CharField(db_index=True, max_length=512, verbose_name="MD5"),
+                ),
             ],
         ),
     ]

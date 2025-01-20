@@ -17,7 +17,7 @@ def clean_dict(d, filter_func):
             if filter_func(value):
                 del d[key]
                 continue
-            elif isinstance(value, dict):
+            if isinstance(value, dict):
                 new_val = clean_dict(value, filter_func)
             elif isinstance(value, list) and value:
                 if isinstance(value[0], dict):
@@ -33,7 +33,10 @@ def clean_dict(d, filter_func):
 
 class Router:
     def compress(self, fields, files):
-        ff = apply_nested(files, lambda v, k: SimpleUploadedFile(k, v if isinstance(v, bytes) else v.encode()))
+        ff = apply_nested(
+            files,
+            lambda v, k: SimpleUploadedFile(k, v if isinstance(v, bytes) else v.encode()),
+        )
         return merge_data(fields, ff)
 
     def decompress(self, data):

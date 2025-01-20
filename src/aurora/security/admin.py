@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 def generate_passwords(modeladmin, request, queryset):  # noqa
     opts = modeladmin.model._meta
-    perm = "{0}.{1}".format(opts.app_label, "add_aurorauser")
+    perm = f"{opts.app_label}.add_aurorauser"
     if not request.user.has_perm(perm):
         messages.error(request, _("Sorry you do not have rights to execute this action"))
         return
@@ -53,7 +53,14 @@ class GroupAdmin(AdminActionPermMixin, SyncMixin, GroupAdmin_):
 
 
 class UserAdmin(AdminActionPermMixin, ADUSerMixin, UserAdmin_):
-    list_display = ("username", "email", "first_name", "last_name", "is_staff", "is_superuser")
+    list_display = (
+        "username",
+        "email",
+        "first_name",
+        "last_name",
+        "is_staff",
+        "is_superuser",
+    )
     fieldsets = (
         (None, {"fields": ("username", "password")}),
         (_("Personal info"), {"fields": ("first_name", "last_name", "email")}),
@@ -114,25 +121,3 @@ class AuroraRoleAdmin(SyncMixin, SmartModelAdmin):
             },
         ),
     )
-
-
-#
-# @register(RegistrationRole)
-# class RegistrationRoleAdmin(SyncMixin, SmartModelAdmin):
-#     list_display = ("registration", "user", "role")
-#     list_filter = (
-#         ("registration", AutoCompleteFilter),
-#         ("user", AutoCompleteFilter),
-#         ("role", AutoCompleteFilter),
-#     )
-#     autocomplete_fields = ("registration", "user", "role")
-#
-#
-# @register(OrganizationRole)
-# class OrganizationRoleAdmin(SyncMixin, SmartModelAdmin):
-#     list_display = ("organization", "user", "role")
-#     list_filter = (
-#         ("organization", AutoCompleteFilter),
-#         ("user", AutoCompleteFilter),
-#         ("role", AutoCompleteFilter),
-#     )

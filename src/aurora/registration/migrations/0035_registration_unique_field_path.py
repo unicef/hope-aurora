@@ -13,7 +13,10 @@ class Migration(migrations.Migration):
             model_name="registration",
             name="unique_field_path",
             field=models.CharField(
-                blank=True, help_text="JMESPath expression to retrieve unique field", max_length=1000, null=True
+                blank=True,
+                help_text="JMESPath expression to retrieve unique field",
+                max_length=1000,
+                null=True,
             ),
         ),
     ]

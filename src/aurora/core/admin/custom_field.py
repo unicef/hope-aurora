@@ -43,15 +43,16 @@ class CustomFieldTypeAdmin(SmartModelAdmin):
         form_class_attrs = {
             "sample": field,
         }
-        formClass = type(forms.Form)("TestForm", (forms.Form,), form_class_attrs)
+        form_class = type(forms.Form)("TestForm", (forms.Form,), form_class_attrs)
 
         if request.method == "POST":
-            form = formClass(request.POST)
+            form = form_class(request.POST)
             if form.is_valid():
                 self.message_user(
-                    request, f"Form validation success. " f"You have selected: {form.cleaned_data['sample']}"
+                    request,
+                    f"Form validation success. You have selected: {form.cleaned_data['sample']}",
                 )
         else:
-            form = formClass()
+            form = form_class()
         ctx["form"] = form
         return render(request, "admin/core/customfieldtype/test.html", ctx)

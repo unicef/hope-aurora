@@ -6,7 +6,6 @@ import aurora.registration.fields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("registration", "0039_auto_20220930_1149"),
     ]
@@ -16,7 +15,10 @@ class Migration(migrations.Migration):
             name="registration",
             options={
                 "get_latest_by": "start",
-                "permissions": (("manage", "Can manage Registration"), ("register", "Can use Registration")),
+                "permissions": (
+                    ("manage", "Can manage Registration"),
+                    ("register", "Can use Registration"),
+                ),
             },
         ),
         migrations.AlterField(

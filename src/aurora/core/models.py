@@ -17,21 +17,20 @@ from django.template.defaultfilters import pluralize, slugify
 from django.urls import reverse
 from django.utils.deconstruct import deconstructible
 from django.utils.functional import cached_property
-from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
 
-import jsonpickle
 from admin_ordering.models import OrderableModel
 from concurrency.fields import AutoIncVersionField
 from mptt.fields import TreeForeignKey
 from mptt.managers import TreeManager
 from mptt.models import MPTTModel
 from natural_keys import NaturalKeyModel, NaturalKeyModelManager
+# from py_mini_racer import JSUndefined
 from py_mini_racer.py_mini_racer import MiniRacerBaseException
 from sentry_sdk import set_tag
 from strategy_field.utils import fqn
 
-from ..i18n.gettext import gettext as _
+from ..i18n.get_text import gettext as _
 from ..i18n.models import I18NModel
 from ..state import state
 from . import fields
@@ -131,15 +130,11 @@ class Validator(AdminReverseMixin, NaturalKeyModel):
     SCRIPT = "script"
     HANDLER = "handler"
 
-    CONSOLE = mark_safe(
-        """
+    CONSOLE = """
     console = {log: function(d) {}};
     """
-    )
     LIB = (Path(__file__).parent / "static" / "smart_validation.min.js").read_text()
-    # LIB += (Path(__file__).parent / 'static' / 'validate_utils.min.js').read_text()
-    LIB3 = mark_safe(
-        """
+    LIB3 = """
 TODAY = new Date();
 dateutil = {today: TODAY};
 
@@ -155,14 +150,18 @@ _ = {is_child: function(d) { return d && getAge(d) < 18 ? true: false},
 _.is_adult = function(d) { return !_.is_child(d)};
 
 """
-    )
 
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
 
     label = models.CharField(max_length=255, db_collation="_")
     name = models.CharField(
-        verbose_name=_("Function Name"), max_length=255, unique=True, blank=True, null=True, db_collation="_"
+        verbose_name=_("Function Name"),
+        max_length=255,
+        unique=True,
+        blank=True,
+        null=True,
+        db_collation="_",
     )
     code = models.TextField(blank=True, null=True)
     target = models.CharField(
@@ -183,7 +182,9 @@ _.is_adult = function(d) { return !_.is_child(d)};
     count_errors = models.BooleanField(default=False, help_text="Count failures")
     active = models.BooleanField(default=False, blank=True, help_text="Enable/Disable validator.")
     draft = models.BooleanField(
-        default=False, blank=True, help_text="Testing purposes: draft validator are enabled only for staff users."
+        default=False,
+        blank=True,
+        help_text="Testing purposes: draft validator are enabled only for staff users.",
     )
     _natural_key = ["name"]
 
@@ -192,9 +193,9 @@ _.is_adult = function(d) { return !_.is_child(d)};
 
     @staticmethod
     def js_type(value):
-        if isinstance(value, (datetime, date, time)):
+        if isinstance(value, datetime | date | time):
             return str(value)
-        if isinstance(value, (dict,)):
+        if isinstance(value, dict):
             return jsonfy(value)
         return value
 
@@ -221,10 +222,8 @@ _.is_adult = function(d) { return !_.is_child(d)};
 
         set_tag("validator", self.name)
 
-        if self.active:
-            self.monitor(self.STATUS_UNKNOWN, value)
-        else:
-            self.monitor(self.STATUS_INACTIVE, value)
+        status = self.STATUS_UNKNOWN if self.active else self.STATUS_INACTIVE
+        self.monitor(status, value)
 
         if self.active or (self.draft and state.request.user.is_staff):
             ctx = MiniRacer()
@@ -240,19 +239,20 @@ _.is_adult = function(d) { return !_.is_child(d)};
                     ret = False
                 else:
                     try:
-                        ret = jsonpickle.decode(result)
+                        ret = json.loads(result)
                     except (JSONDecodeError, TypeError):
                         ret = result
                 if isinstance(ret, str):
                     raise ValidationError(_(ret))
-                elif isinstance(ret, (list, tuple)):
+                if isinstance(ret, list | tuple):
                     errors = [_(v) for v in ret]
                     raise ValidationError(errors)
-                elif isinstance(ret, dict):
+                if isinstance(ret, dict):
                     errors = {k: _(v) for (k, v) in ret.items()}
                     raise ValidationError(errors)
-                elif isinstance(ret, bool) and not ret:
+                if isinstance(ret, bool) and not ret or ret == "JSUndefined":
                     raise ValidationError(_("Please insert a valid value"))
+
             except ValidationError as e:
                 import sentry_sdk
 
@@ -280,6 +280,7 @@ _.is_adult = function(d) { return !_.is_child(d)};
 
         elif self.trace:
             self.monitor(self.STATUS_SKIP, value)
+        return None
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not self.name:
@@ -307,7 +308,11 @@ class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
     name = models.CharField(max_length=255, unique=True, db_collation="_")
     base_type = StrategyClassField(registry=form_registry, default=FlexFormBaseForm)
     validator = models.ForeignKey(
-        Validator, limit_choices_to={"target": Validator.FORM}, blank=True, null=True, on_delete=models.PROTECT
+        Validator,
+        limit_choices_to={"target": Validator.FORM},
+        blank=True,
+        null=True,
+        on_delete=models.PROTECT,
     )
     advanced = models.JSONField(default=dict, blank=True)
 
@@ -321,33 +326,6 @@ class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
     def __init__(self, *args, **kwargs):
         self._initial = {}
         super().__init__(*args, **kwargs)
-
-    # def add_field(
-    #     self,
-    #     label,
-    #     field_type=forms.CharField,
-    #     required=False,
-    #     choices=None,
-    #     regex=None,
-    #     validator=None,
-    #     name=None,
-    #     **kwargs,
-    # ):
-    #     if isinstance(choices, (list, tuple)):
-    #         kwargs["choices"] = choices
-    #         choices = None
-    #     return self.fields.update_or_create(
-    #         label=label,
-    #         defaults={
-    #             "name": name,
-    #             "field_type": field_type,
-    #             "choices": choices,
-    #             "regex": regex,
-    #             "validator": validator,
-    #             "advanced": kwargs,
-    #             "required": required,
-    #         },
-    #     )[0]
 
     def get_initial(self):
         return self._initial
@@ -381,8 +359,7 @@ class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
             "indexes": indexes,
             **fields,
         }
-        flexForm = type(f"{self.name}FlexForm", (self.base_type,), form_class_attrs)
-        return flexForm
+        return type(f"{self.name}FlexForm", (self.base_type,), form_class_attrs)
 
     def get_formsets_classes(self):
         formsets = {}
@@ -402,33 +379,39 @@ class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
     def get_usage(self):
         ret = []
 
-        for reg in self.registration_set.all():
-            ret.append(
+        ret.extend(
+            [
                 {
                     "type": "Registration",
                     "obj": reg,
                     "editor_url": reverse("admin:registration_registration_change", args=[reg.pk]),
                     "change_url": reverse("admin:registration_registration_change", args=[reg.pk]),
                 }
-            )
-        for fs in self.formsets.all():
-            ret.append(
+                for reg in self.registration_set.all()
+            ]
+        )
+        ret.extend(
+            [
                 {
                     "type": "Parend Of",
                     "obj": fs.flex_form,
                     "editor_url": reverse("admin:core_flexform_form_editor", args=[fs.flex_form.pk]),
                     "change_url": reverse("admin:core_flexform_change", args=[fs.flex_form.pk]),
                 }
-            )
-        for fs in self.formset_set.all():
-            ret.append(
+                for fs in self.formsets.all()
+            ]
+        )
+        ret.extend(
+            [
                 {
                     "type": "Child Of",
                     "obj": fs.parent,
                     "editor_url": reverse("admin:core_flexform_form_editor", args=[fs.parent.pk]),
                     "change_url": reverse("admin:core_flexform_change", args=[fs.parent.pk]),
                 }
-            )
+                for fs in self.formset_set.all()
+            ]
+        )
         return ret
 
 
@@ -472,10 +455,16 @@ class FormSet(AdminReverseMixin, NaturalKeyModel, OrderableModel):
 
     dynamic = models.BooleanField(default=True)
     validator = models.ForeignKey(
-        Validator, blank=True, null=True, limit_choices_to={"target": Validator.FORMSET}, on_delete=models.SET_NULL
+        Validator,
+        blank=True,
+        null=True,
+        limit_choices_to={"target": Validator.FORMSET},
+        on_delete=models.SET_NULL,
     )
 
     advanced = models.JSONField(default=dict, blank=True)
+
+    _natural_key = ["name"]
 
     class Meta:
         verbose_name = "FormSet"
@@ -500,7 +489,7 @@ class FormSet(AdminReverseMixin, NaturalKeyModel, OrderableModel):
         return self.advanced["smart"]["widget"]
 
     def get_formset(self) -> SmartBaseFormSet:
-        formSet = formset_factory(
+        form_set = formset_factory(
             self.get_form(),
             formset=SmartBaseFormSet,
             extra=self.extra,
@@ -508,13 +497,18 @@ class FormSet(AdminReverseMixin, NaturalKeyModel, OrderableModel):
             absolute_max=self.max_num,
             max_num=self.max_num,
         )
-        formSet.fs = self
-        formSet.required = self.min_num > 0
-        return formSet
+        form_set.fs = self
+        form_set.required = self.min_num > 0
+        return form_set
 
 
 FIELD_KWARGS = {
-    forms.CharField: {"min_length": None, "max_length": None, "empty_value": "", "initial": None},
+    forms.CharField: {
+        "min_length": None,
+        "max_length": None,
+        "empty_value": "",
+        "initial": None,
+    },
     forms.IntegerField: {"min_value": None, "max_value": None, "initial": None},
     forms.DateField: {"initial": None},
     fields.LocationField: {},
@@ -568,13 +562,22 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
 
     flex_form = models.ForeignKey(FlexForm, on_delete=models.CASCADE, related_name="fields")
     label = models.CharField(max_length=2000)
-    name = models.CharField(max_length=100, blank=True, validators=[RegexValidator("^[a-z_0-9]*$")], db_collation="_")
+    name = models.CharField(
+        max_length=100,
+        blank=True,
+        validators=[RegexValidator("^[a-z_0-9]*$")],
+        db_collation="_",
+    )
     field_type = StrategyClassField(registry=field_registry, import_error=import_custom_field)
     choices = models.CharField(max_length=2000, blank=True, null=True)
     required = models.BooleanField(default=False)
     enabled = models.BooleanField(default=True)
     validator = models.ForeignKey(
-        Validator, blank=True, null=True, limit_choices_to={"target": Validator.FIELD}, on_delete=models.PROTECT
+        Validator,
+        blank=True,
+        null=True,
+        limit_choices_to={"target": Validator.FIELD},
+        on_delete=models.PROTECT,
     )
     validation = models.TextField(blank=True, null=True)
     regex = RegexField(blank=True, null=True, validators=[RegexPatternValidator()])
@@ -641,7 +644,6 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
             field_kwargs["required"] = False
             regex = self.regex
 
-            # data = kwargs.pop("data", {}).copy()
             smart_attrs["data-flex"] = self.name
             if self.required:
                 smart_attrs["required_by_question"] = "required"
@@ -651,18 +653,12 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
                     field_kwargs["required"] = True
             else:
                 smart_attrs["required_by_question"] = ""
-            # field_kwargs["required"] = False
 
-            if not smart_attrs.get("visible", True):
-                smart_attrs["data-visibility"] = "hidden"
-            elif smart_attrs.get("question", ""):
+            if not smart_attrs.get("visible", True) or smart_attrs.get("question", ""):
                 smart_attrs["data-visibility"] = "hidden"
 
             field_kwargs.setdefault("smart_attrs", smart_attrs.copy())
             field_kwargs.setdefault("label", self.label)
-            #
-            # if not smart_attrs.get("question"):
-            #     kwargs.setdefault("required", self.required)
 
             field_kwargs.setdefault("validators", get_validators(self))
 
@@ -674,9 +670,9 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
             field_kwargs["datasource"] = self.advanced["datasource"]
 
         if hasattr(field_type, "choices"):
-            if "choices" in smart_attrs:
+            if smart_attrs.get("choices"):
                 field_kwargs["choices"] = smart_attrs["choices"]
-            elif "choices" in self.advanced:  # old deprecated
+            if self.advanced.get("choices"):  # old deprecated
                 field_kwargs["choices"] = self.advanced["choices"]
             elif self.choices:
                 field_kwargs["choices"] = clean_choices(self.choices.split(","))
@@ -702,7 +698,7 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
                 field_type = self.field_type
             kwargs = self.get_field_kwargs()
             kwargs.setdefault("flex_field", self)
-            tt = type(field_type.__name__, (SmartFieldMixin, field_type), dict())
+            tt = type(field_type.__name__, (SmartFieldMixin, field_type), {})
             fld = tt(**kwargs)
         except Exception as e:
             logger.exception(e)
@@ -712,8 +708,6 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
     def clean(self):
         if self.field_type:
             try:
-                # dict_setdefault(self.advanced, self.FLEX_FIELD_DEFAULT_ATTRS)
-                # dict_setdefault(self.advanced, {"kwargs": FIELD_KWARGS.get(self.field_type, {})})
                 self.get_instance()
             except Exception as e:
                 logger.exception(e)
@@ -751,20 +745,32 @@ class OptionSetManager(NaturalKeyModelManager):
 class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
-    name = models.CharField(max_length=100, unique=True, validators=[RegexValidator("[a-z0-9-_]")], db_collation="_")
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        validators=[RegexValidator("[a-z0-9-_]")],
+        db_collation="_",
+    )
     description = models.CharField(max_length=1000, blank=True, null=True)
     data = models.TextField(blank=True, null=True)
     separator = models.CharField(max_length=1, default="", blank=True)
     comment = models.CharField(max_length=1, default="#", blank=True)
     columns = models.CharField(
-        max_length=20, default="0,0,-1", blank=True, help_text="column order. Es: 'pk,parent,label' or 'pk,label'"
+        max_length=20,
+        default="0,0,-1",
+        blank=True,
+        help_text="column order. Es: 'pk,parent,label' or 'pk,label'",
     )
 
     pk_col = models.IntegerField(default=0, help_text="ID column number")
     parent_col = models.IntegerField(default=-1, help_text="Column number of the indicating parent element")
     locale = models.CharField(max_length=5, default="en-us", help_text="default language code")
     languages = models.CharField(
-        max_length=255, default="-;-;", blank=True, null=True, help_text="language code of each column."
+        max_length=255,
+        default="-;-;",
+        blank=True,
+        null=True,
+        help_text="language code of each column.",
     )
     _natural_key = ["name"]
 
@@ -840,33 +846,31 @@ class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
 
 
 def clean_choices(value):
-    if not isinstance(value, (list, tuple)):
+    if not isinstance(value, list | tuple):
         raise ValueError("choices must be list or tuple")
     try:
         return list(dict(value).items())
     except ValueError:
-        return list(zip(map(str.lower, value), value))
+        return list(zip(map(str.lower, value), value, strict=True))
 
 
 class CustomFieldType(AdminReverseMixin, NaturalKeyModel, models.Model):
     name = models.CharField(
-        max_length=100, unique=True, validators=[RegexValidator("[A-Z][a-zA-Z0-9_]*")], db_collation="_"
+        max_length=100,
+        unique=True,
+        validators=[RegexValidator("[A-Z][a-zA-Z0-9_]*")],
+        db_collation="_",
     )
     base_type = StrategyClassField(registry=field_registry, default=forms.CharField)
     attrs = models.JSONField(default=dict)
     regex = RegexField(blank=True, null=True)
-    # choices = models.CharField(max_length=2000, blank=True, null=True)
-    # required = models.BooleanField(default=False)
     validator = models.ForeignKey(
-        Validator, blank=True, null=True, limit_choices_to={"target": Validator.FIELD}, on_delete=models.PROTECT
+        Validator,
+        blank=True,
+        null=True,
+        limit_choices_to={"target": Validator.FIELD},
+        on_delete=models.PROTECT,
     )
-
-    @staticmethod
-    def build(name, defaults):
-        choices = defaults.get("attrs", {}).get("choices", {})
-        if choices:
-            defaults["attrs"]["choices"] = clean_choices(choices)
-        return CustomFieldType.objects.update_or_create(name=name, defaults=defaults)[0]
 
     def __str__(self):
         return self.name
@@ -876,6 +880,13 @@ class CustomFieldType(AdminReverseMixin, NaturalKeyModel, models.Model):
         cls = self.get_class()
         if fqn(cls) not in field_registry:
             field_registry.register(cls)
+
+    @staticmethod
+    def build(name, defaults):
+        choices = defaults.get("attrs", {}).get("choices", {})
+        if choices:
+            defaults["attrs"]["choices"] = clean_choices(choices)
+        return CustomFieldType.objects.update_or_create(name=name, defaults=defaults)[0]
 
     def clean(self):
         if not self.base_type:
@@ -894,4 +905,8 @@ class CustomFieldType(AdminReverseMixin, NaturalKeyModel, models.Model):
     def get_class(self):
         attrs = self.attrs.copy()
         attrs["custom"] = self
-        return type(self.base_type)(underscore_to_camelcase(self.name), (CustomFieldMixin, self.base_type), attrs)
+        return type(self.base_type)(
+            underscore_to_camelcase(self.name),
+            (CustomFieldMixin, self.base_type),
+            attrs,
+        )

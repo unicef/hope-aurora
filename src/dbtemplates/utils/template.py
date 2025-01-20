@@ -23,6 +23,7 @@ def get_template_source(name):
                 continue
             if source:
                 return source
+    return source
 
 
 def check_template_syntax(template):

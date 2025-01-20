@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("auth", "0012_alter_user_first_name_max_length"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
@@ -19,17 +18,36 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="OrganizationRole",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("valid_from", models.DateField(default=django.utils.timezone.now)),
                 ("valid_until", models.DateField(default=None, null=True)),
                 (
                     "organization",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name="users", to="core.organization"
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="users",
+                        to="core.organization",
                     ),
                 ),
-                ("role", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="auth.group")),
-                ("user", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "role",
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="auth.group"),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
                 "unique_together": {("organization", "user", "role")},

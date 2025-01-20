@@ -30,19 +30,16 @@ class SaveToDB(RegistrationStrategy):
         crypter = Crypto()
         if self.registration.public_key:
             kwargs = {
-                # "storage": self.encrypt(fields_data),
                 "files": self.registration.encrypt(files),
                 "fields": base64.b64encode(self.registration.encrypt(fields)).decode(),
             }
         elif self.registration.encrypt_data:
             kwargs = {
-                # "storage": Crypto().encrypt(fields_data).encode(),
                 "files": crypter.encrypt(files).encode(),
                 "fields": crypter.encrypt(fields),
             }
         else:
             kwargs = {
-                # "storage": safe_json(fields_data).encode(),
                 "files": safe_json(files).encode(),
                 "fields": jsonfy(fields),
             }
@@ -119,12 +116,13 @@ class DisplayTestStrategy(RegistrationStrategy):
                 "counters": fields_data.get("counters", {}),
                 "index1": fields_data.get("index1", None),
                 "fields": fields,
-                # "files": files,
             }
         )
         record = Record(registration=self.registration, **kwargs)
         return render(
-            state.request, "registration/test_registration.html", {"record": record, "fields_data": fields_data}
+            state.request,
+            "registration/test_registration.html",
+            {"record": record, "fields_data": fields_data},
         )
 
 

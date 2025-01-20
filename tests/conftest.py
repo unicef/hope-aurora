@@ -10,7 +10,11 @@ from aurora.core.fields import CompilationTimeField, SmartFileField
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--selenium", action="store_true", dest="enable_selenium", default=False, help="enable selenium tests"
+        "--selenium",
+        action="store_true",
+        dest="enable_selenium",
+        default=False,
+        help="enable selenium tests",
     )
 
     parser.addoption(
@@ -44,17 +48,17 @@ def pytest_configure(config):
     os.environ["SOCIAL_AUTH_REDIRECT_IS_HTTPS"] = "false"
 
     if config.option.show_browser:
-        setattr(config.option, "enable_selenium", True)
+        config.option.enable_selenium = True
 
     if not config.option.enable_selenium:
-        setattr(config.option, "markexpr", "not selenium")
+        config.option.markexpr = "not selenium"
 
     from django.conf import global_settings, settings
 
     settings.STORAGES = global_settings.STORAGES
 
 
-@pytest.fixture()
+@pytest.fixture
 def simple_form(db):
     from aurora.core.cache import cache
     from aurora.core.models import Validator
@@ -63,21 +67,20 @@ def simple_form(db):
 
     v1, __ = Validator.objects.update_or_create(
         label="length_1_50",
-        defaults=dict(
-            active=True,
-            target=Validator.FIELD,
-            code="value.length>1 && value.length<=50 ? true: 'String size 1 to 5'",
-        ),
+        defaults={
+            "active": True,
+            "target": Validator.FIELD,
+            "code": "value.length>1 && value.length<=50 ? true: 'String size 1 to 5'",
+        },
     )
     v2, __ = Validator.objects.update_or_create(
         label="length_2_10",
-        defaults=dict(
-            active=True,
-            target=Validator.FIELD,
-            code="value.length>2 && value.length<=10 ? true: 'String size 2 to 10';",
-        ),
+        defaults={
+            "active": True,
+            "target": Validator.FIELD,
+            "code": "value.length>2 && value.length<=10 ? true: 'String size 2 to 10';",
+        },
     )
-    # frm, __ = FlexForm.objects.update_or_create(name="Form1")
     from testutils.factories import FormFactory
 
     frm = FormFactory(name="Form1")
@@ -98,40 +101,50 @@ def simple_form(db):
     return frm
 
 
-@pytest.fixture()
+@pytest.fixture
 def complex_form():
     from aurora.core.models import Validator
 
     v1, __ = Validator.objects.get_or_create(
         name="length_2_8",
-        defaults=dict(
-            active=True, target=Validator.FIELD, code="value.length>1 && value.length<=8 ? true:'String size 1 to 8';"
-        ),
+        defaults={
+            "active": True,
+            "target": Validator.FIELD,
+            "code": "value.length>1 && value.length<=8 ? true:'String size 1 to 8';",
+        },
     )
-    # hh, __ = FlexForm.objects.get_or_create(name="Form1")
     from testutils.factories import FormFactory
 
     hh = FormFactory(name="Form1")
 
     hh.fields.get_or_create(
-        label="Family Name", defaults={"field_type": forms.CharField, "required": True, "validator": v1}
+        label="Family Name",
+        defaults={"field_type": forms.CharField, "required": True, "validator": v1},
     )
 
-    # ind, __ = FlexForm.objects.get_or_create(name="Form2")
     ind = FormFactory(name="Form2", project=hh.project)
 
-    ind.fields.create(label="First Name", **{"field_type": forms.CharField, "required": True, "validator": v1})
-    ind.fields.create(label="Last Name", **{"field_type": forms.CharField, "required": True, "validator": v1})
-    ind.fields.create(label="Date Of Birth", **{"field_type": forms.DateField, "required": True})
+    ind.fields.create(
+        label="First Name",
+        field_type=forms.CharField,
+        required=True,
+        validator=v1,
+    )
+    ind.fields.create(
+        label="Last Name",
+        field_type=forms.CharField,
+        required=True,
+        validator=v1,
+    )
+    ind.fields.create(label="Date Of Birth", field_type=forms.DateField, required=True)
 
-    # ind.fields.get_or_create(label="Image", defaults={"field_type": forms.ImageField, "required": False})
-    ind.fields.create(label="Image", **{"field_type": SmartFileField, "required": False})
-    ind.fields.create(label="File", **{"field_type": SmartFileField, "required": False})
+    ind.fields.create(label="Image", field_type=SmartFileField, required=False)
+    ind.fields.create(label="File", field_type=SmartFileField, required=False)
     hh.add_formset(ind, min_num=0)
     return hh
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_storage(monkeypatch):
     """Mocks the backend storage system by not actually accessing media"""
 
@@ -155,7 +168,7 @@ def mock_storage(monkeypatch):
     monkeypatch.setattr(storage_class, "exists", _mock_exists)
 
 
-@pytest.fixture()
+@pytest.fixture
 def user():
     from testutils.factories import UserFactory
 

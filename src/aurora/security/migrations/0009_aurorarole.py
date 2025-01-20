@@ -8,7 +8,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0051_flexformfield_validation"),
         ("auth", "0012_alter_user_first_name_max_length"),
@@ -21,8 +20,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="AuroraRole",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("version", concurrency.fields.AutoIncVersionField(default=0, help_text="record revision number")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "version",
+                    concurrency.fields.AutoIncVersionField(default=0, help_text="record revision number"),
+                ),
                 ("last_update_date", models.DateTimeField(auto_now=True)),
                 ("valid_from", models.DateField(default=django.utils.timezone.now)),
                 ("valid_until", models.DateField(blank=True, default=None, null=True)),
@@ -56,8 +66,17 @@ class Migration(migrations.Migration):
                         to="registration.registration",
                     ),
                 ),
-                ("role", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="auth.group")),
-                ("user", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "role",
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="auth.group"),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
                 "unique_together": {("organization", "project", "registration", "user", "role")},

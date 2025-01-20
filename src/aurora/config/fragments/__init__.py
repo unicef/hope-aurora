@@ -1,26 +1,26 @@
-from .ad import *
-from .admin_sync import *
-from .anymail import *
-from .azure_graph_api import *
-from .capcha import *
-from .channels import *
-from .concurrency import *
-from .constance import *
-from .cors import *
-from .csp import *
-from .dbtemplate import *
-from .django_toolbar import *
-from .flags import *
-from .front_door import *
-from .hijack import *
-from .json_editor import *
-from .matomo import *
-from .mdeditor import *
-from .rest_framework import *
-from .reversion import *
-from .sentry import *
-from .smart_admin import *
-from .social_auth import *
-from .strategy import *
-from .sysinfo import *
-from .translator import *
+from .ad import *  # noqa
+from .admin_sync import *  # noqa
+from .anymail import *  # noqa
+from .azure_graph_api import *  # noqa
+from .capcha import *  # noqa
+from .channels import *  # noqa
+from .concurrency import *  # noqa
+from .constance import *  # noqa
+from .cors import *  # noqa
+from .csp import *  # noqa
+from .dbtemplate import *  # noqa
+from .django_toolbar import *  # noqa
+from .flags import *  # noqa
+from .front_door import *  # noqa
+from .hijack import *  # noqa
+from .json_editor import *  # noqa
+from .matomo import *  # noqa
+from .mdeditor import *  # noqa
+from .rest_framework import *  # noqa
+from .reversion import *  # noqa
+from .sentry import *  # noqa
+from .smart_admin import *  # noqa
+from .social_auth import *  # noqa
+from .strategy import *  # noqa
+from .sysinfo import *  # noqa
+from .translator import *  # noqa

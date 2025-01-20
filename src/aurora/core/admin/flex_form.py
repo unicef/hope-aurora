@@ -40,12 +40,28 @@ class FormSetInline(OrderableAdmin, TabularInline):
 class FlexFormFieldFormInline(forms.ModelForm):
     class Meta:
         model = FlexFormField
-        exclude = ()
+        fields = (
+            "version",
+            "flex_form",
+            "label",
+            "name",
+            "field_type",
+            "choices",
+            "required",
+            "enabled",
+            "validator",
+            "validation",
+            "regex",
+            "advanced",
+        )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance.pk:
-            self.fields["name"].widget.attrs = {"readonly": True, "tyle": "background-color:#f8f8f8;border:none"}
+            self.fields["name"].widget.attrs = {
+                "readonly": True,
+                "tyle": "background-color:#f8f8f8;border:none",
+            }
 
 
 class FlexFormFieldInline(OrderableAdmin, TabularInline):
@@ -59,9 +75,6 @@ class FlexFormFieldInline(OrderableAdmin, TabularInline):
     ordering_field_hide_input = True
 
     def formfield_for_choice_field(self, db_field, request, **kwargs):
-        # if db_field.name == "field_type":
-        #     kwargs["widget"] = Select2Widget()
-        #     return db_field.formfield(**kwargs)
         return super().formfield_for_choice_field(db_field, request, **kwargs)
 
 
@@ -132,8 +145,7 @@ class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
             ret = self.editor.post(request, pk)
             self.message_user(request, "Saved", messages.SUCCESS)
             return ret
-        else:
-            return self.editor.get(request, pk)
+        return self.editor.get(request, pk)
 
     @view()
     def widget_attrs(self, request, pk):
@@ -168,81 +180,3 @@ class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
             form = form_class(initial=self.object.get_initial())
         ctx["form"] = form
         return render(request, "admin/core/flexform/test.html", ctx)
-
-    # @view(http_basic_auth=True, permission=lambda request, obj: request.user.is_superuser)
-    # def export(self, request):
-    #     try:
-    #         frm = SyncConfigForm(request.GET)
-    #         if frm.is_valid():
-    #             apps = frm.cleaned_data["apps"]
-    #             buf = io.StringIO()
-    #             call_command(
-    #                 "dumpdata",
-    #                 *apps,
-    #                 stdout=buf,
-    #                 exclude=["registration.Record"],
-    #                 use_natural_foreign_keys=True,
-    #                 use_natural_primary_keys=True,
-    #             )
-    #             return JsonResponse(json.loads(buf.getvalue()), safe=False)
-    #         else:
-    #             return JsonResponse(frm.errors, status=400)
-    #     except Exception as e:
-    #         logger.exception(e)
-    #         return JsonResponse({}, status=400)
-
-    # def _get_signed_cookie(self, request, form):
-    #     signer = Signer(request.user.password)
-    #     return signer.sign_object(form.cleaned_data)
-    #
-    # def _get_saved_credentials(self, request):
-    #     try:
-    #         signer = Signer(request.user.password)
-    #         obj: dict = signer.unsign_object(request.COOKIES.get(self.SYNC_COOKIE, {}))
-    #         return obj
-    #     except BadSignature:
-    #         return {}
-
-    # @button(label="Import")
-    # def _import(self, request):
-    #     ctx = self.get_common_context(request, title="Import")
-    #     cookies = {}
-    #     if request.method == "POST":
-    #         form = SyncForm(request.POST)
-    #         if form.is_valid():
-    #             try:
-    #                 auth = HTTPBasicAuth(form.cleaned_data["username"], form.cleaned_data["password"])
-    #                 if form.cleaned_data["remember"]:
-    #                     cookies = {self.SYNC_COOKIE: self._get_signed_cookie(request, form)}
-    #                 else:
-    #                     cookies = {self.SYNC_COOKIE: ""}
-    #                 url = f"{form.cleaned_data['host']}core/flexform/export/?"
-    #                 for app in form.cleaned_data["apps"]:
-    #                     url += f"apps={app}&"
-    #                 if not url.startswith("http"):
-    #                     url = f"https://{url}"
-    #
-    #                 workdir = Path(".").absolute()
-    #                 out = io.StringIO()
-    #                 with requests.get(url, stream=True, auth=auth) as res:
-    #                     if res.status_code != 200:
-    #                         raise Exception(str(res))
-    #                     ctx["url"] = url
-    #                     with tempfile.NamedTemporaryFile(
-    #                         dir=workdir, prefix="~SYNC", suffix=".json", delete=not settings.DEBUG
-    #                     ) as fdst:
-    #                         fdst.write(res.content)
-    #                         with disable_concurrency():
-    #                             fixture = (workdir / fdst.name).absolute()
-    #                             call_command("loaddata", fixture, stdout=out, verbosity=3)
-    #
-    #                         message = out.getvalue()
-    #                         self.message_user(request, message)
-    #                 ctx["res"] = res
-    #             except (Exception, JSONDecodeError) as e:
-    #                 logger.exception(e)
-    #                 self.message_error_to_user(request, e)
-    #     else:
-    #         form = SyncForm(initial=self._get_saved_credentials(request))
-    #     ctx["form"] = form
-    #     return render(request, "admin/core/flexform/import.html", ctx, cookies=cookies)

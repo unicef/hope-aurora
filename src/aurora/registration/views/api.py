@@ -29,4 +29,7 @@ class RegistrationDataApi(ListView):
                 "id", "remote_ip", "timestamp", "files", "fields", "storage"
             )[:1000]
         )
-        return JsonResponse({"reg": reg.pk, "start": start, "end": end, "data": data}, encoder=JSONEncoder)
+        return JsonResponse(
+            {"reg": reg.pk, "start": start, "end": end, "data": data},
+            encoder=JSONEncoder,
+        )

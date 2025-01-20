@@ -1,7 +1,7 @@
 from django import forms
 from django.conf import settings
 
-from aurora.i18n.gettext import gettext as _
+from aurora.i18n.get_text import gettext as _
 
 
 class UploadFileWidget(forms.ClearableFileInput):
@@ -42,9 +42,5 @@ class SmartFileField(forms.FileField):
         "invalid": _("No file was submitted. Check the encoding type on the form."),
         "missing": _("No file was submitted."),
         "empty": _("The submitted file is empty."),
-        # 'max_length': ngettext_lazy(
-        #     'Ensure this filename has at most %(max)d character (it has %(length)d).',
-        #     'Ensure this filename has at most %(max)d characters (it has %(length)d).',
-        #     'max'),
         "contradiction": _("Please either submit a file or check the clear checkbox, not both."),
     }

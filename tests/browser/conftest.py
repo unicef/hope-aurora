@@ -5,12 +5,18 @@ import pytest
 from selenium.webdriver.common.by import By
 from testutils.utils import wait_for
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from selenium.webdriver.common.timeouts import Timeouts
+
+
 Proxy = namedtuple("Proxy", "host,port")
 
 
 def pytest_configure(config):
     if not config.option.driver:
-        setattr(config.option, "driver", "chrome")
+        config.option.driver = "chrome"
 
 
 SELENIUM_DEFAULT_PAGE_LOAD_TIMEOUT = 3
@@ -20,8 +26,6 @@ SELENIUM_DEFAULT_SCRIPT_TIMEOUT = 1
 
 @contextlib.contextmanager
 def timeouts(driver, wait=None, page=None, script=None):
-    from selenium.webdriver.common.timeouts import Timeouts
-
     _current: Timeouts = driver.timeouts
     if wait:
         driver.implicitly_wait(wait)
@@ -68,4 +72,4 @@ def selenium(monkeypatch, settings, driver):
     driver.wait_for = wait_for.__get__(driver)
     driver.find_by_css = find_by_css.__get__(driver)
 
-    yield driver
+    return driver

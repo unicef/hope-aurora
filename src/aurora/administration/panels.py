@@ -16,8 +16,13 @@ from concurrency.api import disable_concurrency
 
 from .. import VERSION
 from ..core.utils import is_root
-from ..security.models import UserProfile
+
 from .forms import ExportForm, ImportForm, SQLForm
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..security.models import UserProfile
+
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +73,11 @@ def panel_loaddata(self, request):
                     finally:
                         fixture.unlink()
             except Exception as e:
-                messages.add_message(request, messages.ERROR, f"{e.__class__.__name__}: {e} {out.getvalue()}")
+                messages.add_message(
+                    request,
+                    messages.ERROR,
+                    f"{e.__class__.__name__}: {e} {out.getvalue()}",
+                )
 
         else:
             context["form"] = form
@@ -143,7 +152,6 @@ def panel_sql(self, request, extra_context=None):
         if form.is_valid():
             try:
                 cmd = form.cleaned_data["command"]
-                # stm = urllib.parse.unquote(base64.b64decode(cmd).decode())
                 response["stm"] = sqlparse.format(cmd)
                 if is_root(request):
                     conn = connections[DEFAULT_DB_ALIAS]
@@ -160,7 +168,6 @@ def panel_sql(self, request, extra_context=None):
         else:
             response["error"] = str(form.errors)
         return JsonResponse(response)
-    else:
-        form = SQLForm()
+    form = SQLForm()
     context["form"] = form
     return render(request, "admin/panels/sql.html", context)

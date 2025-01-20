@@ -1,11 +1,10 @@
 import logging
 
 from django.template import Library
-from django.utils.safestring import mark_safe
 
 import markdown as md
 
-from aurora.i18n.gettext import gettext as _
+from aurora.i18n.get_text import gettext as _
 
 from ...core.models import FormSet
 
@@ -43,8 +42,7 @@ def formset_config(formset):
 @register.filter()
 def markdown(value):
     if value:
-        p = md.markdown(value, extensions=["markdown.extensions.fenced_code"])
-        return mark_safe(p)
+        return md.markdown(value, extensions=["markdown.extensions.fenced_code"])
     return ""
 
 
@@ -52,5 +50,5 @@ def markdown(value):
 def _md(value):
     if value:
         p = md.markdown(value, extensions=["markdown.extensions.fenced_code"])
-        return mark_safe(p.replace("<p>", "").replace("</p>", ""))
+        return p.replace("<p>", "").replace("</p>", "")
     return ""

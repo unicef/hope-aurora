@@ -26,7 +26,12 @@ def error_csrf(request, reason=""):
 
 
 def error_404(request, exception):
-    return TemplateResponse(request, "404.html", status=404, headers={"Session-Token": settings.DJANGO_ADMIN_URL})
+    return TemplateResponse(
+        request,
+        "404.html",
+        status=404,
+        headers={"Session-Token": settings.DJANGO_ADMIN_URL},
+    )
 
 
 def offline(request):
@@ -34,8 +39,7 @@ def offline(request):
 
 
 def get_active_registrations():
-    registrations = Registration.objects.filter(active=True, show_in_homepage=True)
-    return registrations
+    return Registration.objects.filter(active=True, show_in_homepage=True)
 
 
 class PageView(TemplateView):
@@ -45,10 +49,13 @@ class PageView(TemplateView):
         return [f"{self.kwargs['page']}.html"]
 
     def get_context_data(self, **kwargs):
-        from aurora.i18n.gettext import gettext as _
+        from aurora.i18n.get_text import gettext as _
 
         return super().get_context_data(
-            title="Title", registrations=get_active_registrations(), title2=_("Title2"), **kwargs
+            title="Title",
+            registrations=get_active_registrations(),
+            title2=_("Title2"),
+            **kwargs,
         )
 
 
