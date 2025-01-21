@@ -25,7 +25,7 @@ from mptt.fields import TreeForeignKey
 from mptt.managers import TreeManager
 from mptt.models import MPTTModel
 from natural_keys import NaturalKeyModel, NaturalKeyModelManager
-# from py_mini_racer import JSUndefined
+from py_mini_racer._types import JSUndefined
 from py_mini_racer.py_mini_racer import MiniRacerBaseException
 from sentry_sdk import set_tag
 from strategy_field.utils import fqn
@@ -250,7 +250,7 @@ _.is_adult = function(d) { return !_.is_child(d)};
                 if isinstance(ret, dict):
                     errors = {k: _(v) for (k, v) in ret.items()}
                     raise ValidationError(errors)
-                if isinstance(ret, bool) and not ret or ret == "JSUndefined":
+                if isinstance(ret, bool) and not ret or ret is JSUndefined:
                     raise ValidationError(_("Please insert a valid value"))
 
             except ValidationError as e:

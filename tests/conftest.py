@@ -1,7 +1,7 @@
 import os
 
 from django import forms
-from django.core.files.storage import get_storage_class
+from django.core.files.storage import default_storage
 
 import pytest
 
@@ -161,11 +161,9 @@ def mock_storage(monkeypatch):
     def _mock_exists(instance, name):
         return getattr(instance, f"mock_{clean_name(name)}_exists", False)
 
-    storage_class = get_storage_class()
-
-    monkeypatch.setattr(storage_class, "_save", _mock_save)
-    monkeypatch.setattr(storage_class, "delete", _mock_delete)
-    monkeypatch.setattr(storage_class, "exists", _mock_exists)
+    monkeypatch.setattr(default_storage, "_save", _mock_save)
+    monkeypatch.setattr(default_storage, "delete", _mock_delete)
+    monkeypatch.setattr(default_storage, "exists", _mock_exists)
 
 
 @pytest.fixture

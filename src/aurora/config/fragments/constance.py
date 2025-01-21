@@ -29,7 +29,6 @@ CONSTANCE_CONFIG = OrderedDict(
         "ADMIN_SYNC_REMOTE_SERVER": ("", "production server url", str),
         "ADMIN_SYNC_REMOTE_ADMIN_URL": ("/admin/", "", str),
         "ADMIN_SYNC_LOCAL_ADMIN_URL": ("/admin/", "", str),
-        # "ADMIN_SYNC_USE_REVERSION": (False, "Use Reversion", bool),
         "LOG_POST_ERRORS": (False, "", bool),
         "MINIFY_RESPONSE": (0, "select yes or no", "html_minify_select"),
         "MINIFY_IGNORE_PATH": (r"", "regex for ignored path", str),

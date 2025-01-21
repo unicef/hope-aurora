@@ -130,6 +130,6 @@ def upgrade(
                 click.echo(f"LANGUAGE_CODE: {settings.LANGUAGE_CODE}")
                 click.echo(f"LOCALE: {translation.to_locale(settings.LANGUAGE_CODE)}")
                 translation.activate(settings.LANGUAGE_CODE)
-                click.echo(f"check_for_language {translation.check_for_language("settings.LANGUAGE_CODE")}")
+                click.echo(f"check_for_language {translation.check_for_language('settings.LANGUAGE_CODE')}")
     except LockError as e:
         click.echo(f"LockError: {e}")
