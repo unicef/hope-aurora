@@ -11,6 +11,13 @@ CONSTANCE_ADDITIONAL_FIELDS = {
             "choices": (("html", "HTML"), ("line", "NEWLINE"), ("space", "SPACES")),
         },
     ],
+    "write_only_input": [
+        "django.forms.fields.CharField",
+        {
+            "required": False,
+            "widget": "aurora.core.constance.WriteOnlyInput",
+        },
+    ],
 }
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 CONSTANCE_DATABASE_CACHE_BACKEND = env("CONSTANCE_DATABASE_CACHE_BACKEND")
@@ -43,5 +50,8 @@ CONSTANCE_CONFIG = OrderedDict(
             str,
         ),
         "WAF_ADMIN_ALLOWED_HOSTNAMES": ("", "admin website hostname (regex)", str),
+        "IMTO_NAME_ENQUIRY_URL": ("", "IMTO Name Enquiry Service URL", str),
+        "IMTO_ACCOUNT_HOLDER_NAME_CHECK_ENABLED": (True, "IMTO Account Holder Name check enabled", bool),
+        "IMTO_TOKEN": ("", "IMTO Service Token", "write_only_input"),
     }
 )
