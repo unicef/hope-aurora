@@ -55,7 +55,7 @@ dependencies = [
     "django-strategy-field",
     "django-sysinfo",
     "django-tinymce",
-    "django",
+    "django<5",
     "djangorestframework",
     "djangorestframework-datatables",
     "htmlmin",
