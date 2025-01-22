@@ -188,6 +188,10 @@ _.is_adult = function(d) { return !_.is_child(d)};
     )
     _natural_key = ["name"]
 
+    class Meta:
+        verbose_name = "Validator"
+        verbose_name_plural = "Validators"
+
     def __str__(self):
         return f"{self.label} ({self.target})"
 
