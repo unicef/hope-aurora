@@ -27,6 +27,7 @@ urlpatterns = [
     path("i18n/", include("aurora.i18n.urls")),
     path("__debug__/", include(debug_toolbar.urls)),
     path(r"serviceworker.js", service_worker, name="serviceworker"),
+    path(r"sysinfo/", include("django_sysinfo.urls")),
 ]
 
 urlpatterns += i18n_patterns(
