@@ -2,9 +2,9 @@ from django_regex.utils import RegexList
 
 
 def show_ddt(request):  # pragma: no-cover
-
     if request.path in RegexList(("/tpl/.*", "/api/.*", "/dal/.*")):  # pragma: no cache
         return False
+    return None
 
 
 DEBUG_TOOLBAR_CONFIG = {
