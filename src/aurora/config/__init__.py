@@ -63,6 +63,7 @@ OPTIONS = {
     "FRONT_DOOR_ENABLED": (bool, False),
     "FRONT_DOOR_LOG_LEVEL": (str, "ERROR"),
     "FRONT_DOOR_TOKEN": (str, uuid.uuid4()),
+    "GRAPH_API_ENABLED": (bool, False),
     "INTERNAL_IPS": (list, [], ["127.0.0.1", "localhost"]),
     "JWT_LEEWAY": (int, 0),
     "LANGUAGE_CODE": (str, "en-us"),

@@ -13,6 +13,7 @@ from django.http import Http404, HttpRequest
 from django.template.response import TemplateResponse
 
 from admin_extra_buttons.decorators import button
+from constance import config
 from requests import HTTPError
 
 from aurora.core.models import Organization, Project
@@ -160,9 +161,10 @@ class ADUSerMixin:
                     try:
                         if email in existing:
                             user = User.objects.get(email=email)
-                            self._sync_ad_data(user)
+                            if config.GRAPH_API_ENABLED:
+                                self._sync_ad_data(user)
                             results.updated.append(user)
-                        else:
+                        elif config.GRAPH_API_ENABLED:
                             user_data = ms_graph.get_user_data(email=email)
                             user_args = build_arg_dict_from_dict(user_data, DJANGO_USER_MAP)
                             user = User(**user_args)
@@ -173,9 +175,12 @@ class ADUSerMixin:
                             job_title = user_data.get("jobTitle")
                             if job_title is not None:
                                 user.job_title = job_title
-                            user.set_unusable_password()
-                            users_to_bulk_create.append(user)
-                            results.created.append(user)
+                        else:
+                            user = User.objects.create(email=email, username=email)
+
+                        user.set_unusable_password()
+                        users_to_bulk_create.append(user)
+                        results.created.append(user)
 
                         users_role_to_bulk_create.append(
                             AuroraRole(
