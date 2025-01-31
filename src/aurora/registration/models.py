@@ -247,7 +247,7 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
         def _get_field_details(flex_field: FlexFormField):
             kwargs = flex_field.get_field_kwargs()
             return {
-                "type": fqn(flex_field.field_type),
+                "type": fqn(flex_field.field_type) if flex_field.field_type else None,
                 "label": flex_field.label,
                 "name": flex_field.name,
                 "smart_attrs": kwargs["smart_attrs"],
