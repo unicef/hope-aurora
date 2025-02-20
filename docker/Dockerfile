@@ -1,70 +1,151 @@
-FROM python:3.9.16-slim-bullseye
+FROM python:3.12-slim-bookworm AS base
 ARG BUILD_DATE
 ARG VERSION
-
-WORKDIR /code/
+ARG GIT_SHA
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-                build-essential \
-                locales \
-                nginx \
-                locales-all \
-                gettext \
-                libjpeg-dev \
-                zlib1g-dev \
-                git-core \
-                postgresql-client \
-                libpq-dev \
-                python3-psycopg2 \
-                python3-gdal \
-                redis-server \
                 gdal-bin \
-                curl \
+                gettext \
+                git-core \
+                locales \
+                locales-all \
+                nginx \
+                postgresql-client \
+                postgresql-client-15 \
+                python3-gdal \
+                python3-psycopg2 \
     && locale-gen --no-purge uk_UA.UTF-8 \
     && apt-get clean
 
-ENV PATH="${PATH}:/root/.local/bin" \
-    ADMINS="" \
-    BUILD_DATE=${BUILD_DATE} \
-    CACHE_DEFAULT="redis://127.0.0.1/0" \
-    CONSTANCE_DATABASE_CACHE_BACKEND="" \
-    DATABASE_URL="" \
-    DEFAULT_ORGANIZATION="UNICEF"\
-    DJANGO_SETTINGS_MODULE="aurora.config.settings" \
-    IPSTACK_KEY="" \
-    LOG_LEVEL="ERROR" \
-    MAINTENANCE_MODE="off" \
-    NGINX_CACHE_DIR="/data/nginx/cache" \
-    NGINX_MAX_BODY_SIZE=30M \
-    REDIS_LOGLEVEL="warning" \
-    REDIS_MAXMEMORY="100Mb" \
-    REDIS_MAXMEMORY_POLICY="volatile-ttl" \
-    PYTHONPATH="/code/src/" \
+
+FROM base AS builder
+RUN set -x \
+    && buildDeps="build-essential \
+cmake \
+curl \
+gcc \
+git \
+libfontconfig1 \
+libgconf-2-4 \
+libglib2.0-0 \
+libnss3 \
+libssl-dev \
+libjpeg-dev \
+libpq-dev \
+libxml2-dev  \
+python3-dev \
+zlib1g-dev  \
+" \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends $buildDeps \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install uv uwsgi
+
+
+# ------- tests -------
+FROM builder AS tests
+ARG BUILD_DATE
+ARG VERSION
+ARG GIT_SHA
+
+LABEL distro="tests"
+LABEL org.opencontainers.image.created="$BUILD_DATE"
+LABEL org.opencontainers.image.version="$VERSION"
+
+ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin \
+    DJANGO_SETTINGS_MODULE=aurora.config.settings \
     PYTHONUNBUFFERED=1 \
-    SECRET_KEY="secret-key-just-for-build" \
-    SENTRY_DSN="" \
-    STATIC_ROOT="/var/static" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=""\
+    UV_PROJECT_ENVIRONMENT=/venv \
+    VIRTUAL_ENV=/venv \
+    UWSGI_PROCESSES=4
+
+WORKDIR /app
+ADD uv.lock README.md MANIFEST.in pyproject.toml /app/
+ADD src /app/src/
+
+RUN --mount=type=cache,target=/root/.uv-cache \
+      uv sync --cache-dir=/root/.uv-cache \
+        --python=/usr/local/bin/python \
+        --python-preference=system \
+        --frozen
+
+# ------- production only deps-------
+FROM builder AS production
+
+WORKDIR /app
+COPY uv.lock README.md MANIFEST.in pyproject.toml /app/
+COPY src /app/src/
+ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=""\
+    UV_PROJECT_ENVIRONMENT=/venv \
+    VIRTUAL_ENV=/venv
+
+RUN --mount=type=cache,target=/root/.uv-cache \
+    uv sync --cache-dir=/root/.uv-cache \
+        --python=/usr/local/bin/python \
+        --python-preference=system \
+        --no-dev --no-editable --frozen
+
+
+FROM base AS dist
+ARG BUILD_DATE
+ARG VERSION
+ARG GIT_SHA
+
+ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin:/usr/sbin/:/usr/local/sbin/ \
+    BUILD_DATE="${BUILD_DATE}" \
+    DJANGO_SETTINGS_MODULE=aurora.config.settings \
+    GIT_SHA="${GIT_SHA}" \
+    MEDIA_ROOT=/var/aurora/media \
+    PGSSLCERT="/tmp/postgresql.crt" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=""\
+    PYTHONUNBUFFERED=1 \
+    STATIC_ROOT=/var/aurora/static/ \
     STATIC_URL="/static/" \
     UWSGI_PROCESSES=4 \
-    VERSION=${VERSION} \
-    POETRY_VERSION=${POETRY_VERSION}
+    UV_PROJECT_ENVIRONMENT=/venv \
+    VIRTUAL_ENV=/venv \
+    VERSION="${VERSION}"
 
-#    STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage" \
 
-RUN pip install "poetry==1.2.2"
+WORKDIR /app
+ADD docker/conf /conf/
+ADD docker/bin/* /usr/local/bin/
 
-ADD poetry.lock pyproject.toml /code/
+ADD uv.lock README.md MANIFEST.in pyproject.toml /app/
+ADD src /app/src/
 
-RUN poetry config virtualenvs.create false \
-    && mkdir -p /var/nginx/system \
-    && poetry install --no-interaction --no-ansi --no-root --without dev \
-    && pip install uwsgi
+COPY --from=production /venv /venv
+COPY --from=builder /usr/local/bin/uwsgi /usr/local/bin/uv /usr/local/bin/
 
-ADD . /code/
-ADD ./docker/conf/nginx/* /var/nginx/
-ADD ./docker/conf/* /conf/
-ADD ./docker/bin/* /usr/local/bin/
+RUN --mount=type=cache,target=/root/.uv-cache \
+    uv --cache-dir=/root/.uv-cache pip install --no-deps . \
+    && rm -fr /app/*
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
 EXPOSE 8000
+ENTRYPOINT exec entrypoint.sh "$0" "$@"
+CMD ["run"]
+
+LABEL distro="final"
+LABEL maintainer="hope@unicef.org"
+LABEL cheksum="$CHECKSUM"
+
+LABEL org.opencontainers.image.authors="hope@unicef.org"
+LABEL org.opencontainers.image.created="$BUILD_DATE"
+LABEL org.opencontainers.image.description="Bitcaster"
+LABEL org.opencontainers.image.documentation="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+LABEL org.opencontainers.image.licenses="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/blob/${GIT_SHA:-master}/LICENSE.md"
+LABEL org.opencontainers.image.revision=$GIT_SHA
+LABEL org.opencontainers.image.source="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${GIT_SHA:-master}/"
+LABEL org.opencontainers.image.title="Aurora"
+LABEL org.opencontainers.image.version="$VERSION"
+LABEL org.opencontainers.image.url="https://register.unicef.org/"
+LABEL org.opencontainers.image.vendor="UNICEF"

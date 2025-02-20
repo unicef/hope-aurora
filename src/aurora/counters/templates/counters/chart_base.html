@@ -11,6 +11,11 @@
 {% endblock %}
 
 {% block body %}
+    <h1 class="text-lg mb-20">
+        <a href="{% url "charts:index" registration.project.organization.slug %}">{{ registration.project.organization }}</a> /
+        <a href="{% url "charts:project-index" registration.project.organization.slug registration.project.pk %}">{{ registration.project }}</a> /
+        {{ registration }}</h1>
+
     <div class="min-h-screen flex w-wull bg-gray-100 pb-10 charting">
         {% block info %}
             <div class="w-full m-20 lg:w-1/2 mt-5">

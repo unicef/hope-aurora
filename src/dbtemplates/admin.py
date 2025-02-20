@@ -1,6 +1,14 @@
 import logging
 import posixpath
 
+from django import forms
+from django.contrib import admin
+from django.core.exceptions import ImproperlyConfigured
+from django.http import HttpResponse
+from django.shortcuts import render
+from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext
+
 from admin_extra_buttons.decorators import button, view
 
 # Check if django-reversion is installed and use reversions' VersionAdmin
@@ -8,14 +16,6 @@ from admin_extra_buttons.decorators import button, view
 from admin_sync.mixin import PublishMixin, SyncMixin
 from adminfilters.mixin import AdminFiltersMixin
 from adminfilters.value import ValueFilter
-from django import forms
-from django.contrib import admin
-from django.core.exceptions import ImproperlyConfigured
-from django.http import HttpResponse
-from django.shortcuts import render
-from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
-from django.utils.translation import ungettext
 
 from dbtemplates.conf import settings
 from dbtemplates.models import Template, add_template_to_cache, remove_cached_template
@@ -30,18 +30,15 @@ logger = logging.getLogger(__name__)
 
 
 class CodeMirrorTextArea(forms.Textarea):
-    """
-    A custom widget for the CodeMirror browser editor to be used with the
-    content field of the Template model.
-    """
+    """A custom widget for the CodeMirror browser editor to be used with the content field of the Template model."""
 
     class Media:
-        css = dict(screen=[posixpath.join(settings.DBTEMPLATES_MEDIA_PREFIX, "css/editor.css")])
+        css = {"screen": [posixpath.join(settings.DBTEMPLATES_MEDIA_PREFIX, "css/editor.css")]}
         js = [posixpath.join(settings.DBTEMPLATES_MEDIA_PREFIX, "js/codemirror.js")]
 
     def render(self, name, value, attrs=None, renderer=None):
         result = []
-        result.append(super(CodeMirrorTextArea, self).render(name, value, attrs))
+        result.append(super().render(name, value, attrs))
         result.append(
             """
 <script type="text/javascript">
@@ -57,9 +54,9 @@ class CodeMirrorTextArea(forms.Textarea):
   });
 </script>
 """
-            % dict(media_prefix=settings.DBTEMPLATES_MEDIA_PREFIX, name=name)
+            % {"media_prefix": settings.DBTEMPLATES_MEDIA_PREFIX, "name": name}
         )
-        return mark_safe("".join(result))
+        return "".join(result)
 
 
 if settings.DBTEMPLATES_USE_CODEMIRROR:
@@ -78,7 +75,7 @@ else:
 
 if settings.DBTEMPLATES_USE_CODEMIRROR and settings.DBTEMPLATES_USE_TINYMCE:
     raise ImproperlyConfigured(
-        "You may use either CodeMirror or TinyMCE " "with dbtemplates, not both. Please disable " "one of them."
+        "You may use either CodeMirror or TinyMCE with dbtemplates, not both. Please disable one of them."
     )
 
 if settings.DBTEMPLATES_USE_TINYMCE:
@@ -92,18 +89,17 @@ elif settings.DBTEMPLATES_USE_REDACTOR:
 
 
 class TemplateAdminForm(forms.ModelForm):
-    """
-    Custom AdminForm to make the content textarea wider.
-    """
+    """Custom AdminForm to make the content textarea wider."""
 
     content = forms.CharField(
-        widget=TemplateContentTextArea(attrs={"rows": "24"}), help_text=content_help_text, required=False
+        widget=TemplateContentTextArea(attrs={"rows": "24"}),
+        help_text=content_help_text,
+        required=False,
     )
 
     class Meta:
         model = Template
         fields = ("name", "content", "sites", "creation_date", "last_changed")
-        fields = "__all__"
 
 
 class TemplateAdmin(SyncMixin, AdminFiltersMixin, PublishMixin, TemplateModelAdmin):
@@ -138,7 +134,11 @@ class TemplateAdmin(SyncMixin, AdminFiltersMixin, PublishMixin, TemplateModelAdm
     )
     filter_horizontal = ("sites",)
     list_display = ("name", "creation_date", "last_changed", "site_list", "active")
-    list_filter = ("sites", "active", ("name", ValueFilter.factory(lookup_name="endswith")))
+    list_filter = (
+        "sites",
+        "active",
+        ("name", ValueFilter.factory(lookup_name="endswith")),
+    )
     save_as = True
     search_fields = ("name", "content")
     actions = ["invalidate_cache", "repopulate_cache", "check_syntax"]
@@ -147,27 +147,27 @@ class TemplateAdmin(SyncMixin, AdminFiltersMixin, PublishMixin, TemplateModelAdm
         for template in queryset:
             remove_cached_template(template)
         count = queryset.count()
-        message = ungettext(
+        message = ngettext(
             "Cache of one template successfully invalidated.",
             "Cache of %(count)d templates successfully invalidated.",
             count,
         )
         self.message_user(request, message % {"count": count})
 
-    invalidate_cache.short_description = _("Invalidate cache of " "selected templates")
+    invalidate_cache.short_description = _("Invalidate cache of selected templates")
 
     def repopulate_cache(self, request, queryset):
         for template in queryset:
             add_template_to_cache(template)
         count = queryset.count()
-        message = ungettext(
+        message = ngettext(
             "Cache successfully repopulated with one template.",
             "Cache successfully repopulated with %(count)d templates.",
             count,
         )
         self.message_user(request, message % {"count": count})
 
-    repopulate_cache.short_description = _("Repopulate cache with " "selected templates")
+    repopulate_cache.short_description = _("Repopulate cache with selected templates")
 
     def check_syntax(self, request, queryset):
         errors = []
@@ -177,7 +177,7 @@ class TemplateAdmin(SyncMixin, AdminFiltersMixin, PublishMixin, TemplateModelAdm
                 errors.append("%s: %s" % (template.name, error))
         if errors:
             count = len(errors)
-            message = ungettext(
+            message = ngettext(
                 "Template syntax check FAILED for %(names)s.",
                 "Template syntax check FAILED for %(count)d templates: %(names)s.",
                 count,
@@ -185,7 +185,11 @@ class TemplateAdmin(SyncMixin, AdminFiltersMixin, PublishMixin, TemplateModelAdm
             self.message_user(request, message % {"count": count, "names": ", ".join(errors)})
         else:
             count = queryset.count()
-            message = ungettext("Template syntax OK.", "Template syntax OK for %(count)d templates.", count)
+            message = ngettext(
+                "Template syntax OK.",
+                "Template syntax OK for %(count)d templates.",
+                count,
+            )
             self.message_user(request, message % {"count": count})
 
     check_syntax.short_description = _("Check template syntax")
@@ -212,7 +216,7 @@ class TemplateAdmin(SyncMixin, AdminFiltersMixin, PublishMixin, TemplateModelAdm
 
     @button()
     def preview(self, request, pk):
-        ctx = self.get_common_context(request, pk, title="Preview")
+        ctx = self.get_common_context(request, pk, title="Preview", preview_template=True)
         return render(request, "admin/dbtemplates/template/preview.html", ctx)
 
 

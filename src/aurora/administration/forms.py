@@ -1,9 +1,10 @@
 import base64
 import urllib.parse
 
-import sqlparse
 from django import forms
 from django.core.exceptions import ValidationError
+
+import sqlparse
 
 
 class ImportForm(forms.Form):
@@ -11,8 +12,17 @@ class ImportForm(forms.Form):
 
 
 class ExportForm(forms.Form):
-    APPS = ("core", "registration", "i18n", "constance", "counters", "flatpages", "security", "dbtemplates")
-    apps = forms.MultipleChoiceField(choices=zip(APPS, APPS), widget=forms.CheckboxSelectMultiple())
+    APPS = (
+        "core",
+        "registration",
+        "i18n",
+        "constance",
+        "counters",
+        "flatpages",
+        "security",
+        "dbtemplates",
+    )
+    apps = forms.MultipleChoiceField(choices=zip(APPS, APPS, strict=True), widget=forms.CheckboxSelectMultiple())
 
 
 class SQLForm(forms.Form):

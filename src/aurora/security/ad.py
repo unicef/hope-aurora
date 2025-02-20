@@ -1,9 +1,7 @@
 import logging
 from collections import namedtuple
-from typing import Any, Dict
+from typing import Any
 
-from admin_extra_buttons.decorators import button
-from constance import config
 from django import forms
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -13,6 +11,9 @@ from django.core.validators import validate_email
 from django.forms.forms import Form
 from django.http import Http404, HttpRequest
 from django.template.response import TemplateResponse
+
+from admin_extra_buttons.decorators import button
+from constance import config
 from requests import HTTPError
 
 from aurora.core.models import Organization, Project
@@ -63,7 +64,7 @@ class LoadUsersForm(forms.Form):
             raise ValidationError("You must set only one scope")
 
 
-def build_arg_dict_from_dict(data_dict: Dict, mapping_dict: Dict) -> Dict:
+def build_arg_dict_from_dict(data_dict: dict, mapping_dict: dict) -> dict:
     return {key: data_dict.get(value) for key, value in mapping_dict.items()}
 
 
@@ -74,8 +75,7 @@ class ADUSerMixin:
     def _get_ad_form(self, request: HttpRequest) -> Form:
         if request.method == "POST":
             return self.ad_form_class(request.POST, request=request)
-        else:
-            return self.ad_form_class(request=request)
+        return self.ad_form_class(request=request)
 
     def _sync_ad_data(self, user) -> None:
         ms_graph = MicrosoftGraphAPI()
@@ -136,76 +136,73 @@ class ADUSerMixin:
         ctx = self.get_common_context(
             request,
             None,
-            **{
-                "change": True,
-                "is_popup": False,
-                "save_as": False,
-                "has_delete_permission": False,
-                "has_add_permission": False,
-                "has_change_permission": True,
-            },
+            change=True,
+            is_popup=False,
+            save_as=False,
+            has_delete_permission=False,
+            has_add_permission=False,
+            has_change_permission=True,
         )
         form = self._get_ad_form(request)
-        User = get_user_model()
-        if request.method == "POST":
-            if form.is_valid():
-                emails = set(form.cleaned_data["emails"].split())
-                role = form.cleaned_data["role"]
-                organization = form.cleaned_data.get("organization", None)
-                project = form.cleaned_data.get("project", None)
-                registration = form.cleaned_data.get("registration", None)
-                users_to_bulk_create = []
-                users_role_to_bulk_create = []
-                existing = set(User.objects.filter(email__in=emails).values_list("email", flat=True))
-                results = self.Results([], [], [], [])
-                try:
-                    for email in emails:
-                        try:
-                            if email in existing:
-                                user = User.objects.get(email=email)
-                                if config.GRAPH_API_ENABLED:
-                                    self._sync_ad_data(user)
-                                results.updated.append(user)
-                            else:
-                                if config.GRAPH_API_ENABLED:
-                                    ms_graph = MicrosoftGraphAPI()
-                                    user_data = ms_graph.get_user_data(email=email)
-                                    user_args = build_arg_dict_from_dict(user_data, DJANGO_USER_MAP)
-                                    user = User(**user_args)
-                                    if user.first_name is None:
-                                        user.first_name = ""
-                                    if user.last_name is None:
-                                        user.last_name = ""
-                                    job_title = user_data.get("jobTitle")
-                                    if job_title is not None:
-                                        user.job_title = job_title
-                                else:
-                                    user = User.objects.create(email=email, username=email)
-                                user.set_unusable_password()
-                                users_to_bulk_create.append(user)
-                                results.created.append(user)
+        User = get_user_model()  # noqa
+        if request.method == "POST" and form.is_valid():
+            emails = set(form.cleaned_data["emails"].split())
+            role = form.cleaned_data["role"]
+            organization = form.cleaned_data.get("organization", None)
+            project = form.cleaned_data.get("project", None)
+            registration = form.cleaned_data.get("registration", None)
+            users_to_bulk_create = []
+            users_role_to_bulk_create = []
+            existing = set(User.objects.filter(email__in=emails).values_list("email", flat=True))
+            results = self.Results([], [], [], [])
+            try:
+                ms_graph = MicrosoftGraphAPI()
+                for email in emails:
+                    try:
+                        if email in existing:
+                            user = User.objects.get(email=email)
+                            if config.GRAPH_API_ENABLED:
+                                self._sync_ad_data(user)
+                            results.updated.append(user)
+                        elif config.GRAPH_API_ENABLED:
+                            user_data = ms_graph.get_user_data(email=email)
+                            user_args = build_arg_dict_from_dict(user_data, DJANGO_USER_MAP)
+                            user = User(**user_args)
+                            if user.first_name is None:
+                                user.first_name = ""
+                            if user.last_name is None:
+                                user.last_name = ""
+                            job_title = user_data.get("jobTitle")
+                            if job_title is not None:
+                                user.job_title = job_title
+                        else:
+                            user = User.objects.create(email=email, username=email)
 
-                            users_role_to_bulk_create.append(
-                                AuroraRole(
-                                    role=role,
-                                    organization=organization,
-                                    registration=registration,
-                                    project=project,
-                                    user=user,
-                                )
+                        user.set_unusable_password()
+                        users_to_bulk_create.append(user)
+                        results.created.append(user)
+
+                        users_role_to_bulk_create.append(
+                            AuroraRole(
+                                role=role,
+                                organization=organization,
+                                registration=registration,
+                                project=project,
+                                user=user,
                             )
-                        except HTTPError as e:
-                            if e.response.status_code != 404:
-                                raise
-                            results.missing.append(email)
-                        except Http404:
-                            results.missing.append(email)
-                    User.objects.bulk_create(users_to_bulk_create)
-                    AuroraRole.objects.bulk_create(users_role_to_bulk_create, ignore_conflicts=True)
-                    ctx["results"] = results
-                    return TemplateResponse(request, "admin/aurorauser/load_users.html", ctx)
-                except Exception as e:
-                    logger.exception(e)
-                    self.message_user(request, str(e), messages.ERROR)
+                        )
+                    except HTTPError as e:
+                        if e.response.status_code != 404:
+                            raise
+                        results.missing.append(email)
+                    except Http404:
+                        results.missing.append(email)
+                User.objects.bulk_create(users_to_bulk_create)
+                AuroraRole.objects.bulk_create(users_role_to_bulk_create, ignore_conflicts=True)
+                ctx["results"] = results
+                return TemplateResponse(request, "admin/aurorauser/load_users.html", ctx)
+            except Exception as e:
+                logger.exception(e)
+                self.message_user(request, str(e), messages.ERROR)
         ctx["form"] = form
         return TemplateResponse(request, "admin/aurorauser/load_users.html", ctx)

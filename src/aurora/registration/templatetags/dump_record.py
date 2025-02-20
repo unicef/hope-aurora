@@ -4,6 +4,7 @@ import logging
 import re
 
 from django.template import Library, Node
+
 from PIL import Image, UnidentifiedImageError
 
 logger = logging.getLogger(__name__)
@@ -12,13 +13,12 @@ register = Library()
 
 class EscapeScriptNode(Node):
     def __init__(self, nodelist):
-        super(EscapeScriptNode, self).__init__()
+        super().__init__()
         self.nodelist = nodelist
 
     def render(self, context):
         out = self.nodelist.render(context)
-        escaped_out = out.replace("</script>", "<\\/script>")
-        return escaped_out
+        return out.replace("</script>", "<\\/script>")
 
 
 @register.tag()
@@ -30,17 +30,17 @@ def escapescript(parser, token):
 
 @register.filter
 def islist(value):
-    return isinstance(value, (list, tuple))
+    return isinstance(value, list | tuple)
 
 
 @register.filter
 def isstring(value):
-    return isinstance(value, (str,))
+    return isinstance(value, str)
 
 
 @register.filter
 def isdict(value):
-    return isinstance(value, (dict,))
+    return isinstance(value, dict)
 
 
 @register.inclusion_tag("dump/dump.html")
@@ -65,7 +65,6 @@ def smart_attr(field, attr):
 
 @register.filter(name="lookup")
 def lookup(value, arg):
-    # value_dict = ast.literal_eval(value)
     return value.get(arg, None)
 
 
@@ -95,5 +94,5 @@ def is_base64(element):
 
 @register.filter
 def concat(a, b):
-    """concatenate arg1 & arg2"""
+    """Concatenate arg1 & arg2."""
     return "".join(map(str, (a, b)))

@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import Http404
 from django.utils.functional import cached_property
 from django.views.generic import TemplateView
+
 from sentry_sdk import set_tag
 
 from ..models import Registration

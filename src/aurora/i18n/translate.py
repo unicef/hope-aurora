@@ -1,18 +1,17 @@
 import logging
-
 import uuid
+from abc import ABC, abstractmethod
+
+from django.conf import settings
 
 import requests
-from abc import ABC, abstractmethod
-from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
 
 class Translator(ABC):
     @abstractmethod
-    def translate(self, language, text):
-        ...
+    def translate(self, language, text): ...
 
 
 class AzureTranslator:
@@ -32,7 +31,7 @@ class AzureTranslator:
         try:
             body = [{"text": text}]
             params = {"api-version": "3.0", "from": "en", "to": [language]}
-            request = requests.post(self.endpoint, params=params, headers=self.headers, json=body)
+            request = requests.post(self.endpoint, params=params, headers=self.headers, json=body, timeout=60)
             response = request.json()
             return response[0]["translations"][0]["text"]
         except Exception as e:

@@ -25,7 +25,6 @@ from dbtemplates.models import Template
 
 class LastModifiedFilter(filters.FilterSet):
     modified_after = filters.DateFilter(label="Updated after", field_name="last_update_date", lookup_expr="gte")
-    # date_range = filters.DateFromToRangeFilter(widget=RangeWidget(attrs={'placeholder': 'YYYY/MM/DD'}))
 
 
 class IsRootUser(BasePermission):
@@ -66,7 +65,11 @@ class AuroraFilterBackend(DjangoFilterBackend):
 
 
 class SmartViewSet(viewsets.ReadOnlyModelViewSet):
-    authentication_classes = (SessionAuthentication, TokenAuthentication, BasicAuthentication)
+    authentication_classes = (
+        SessionAuthentication,
+        TokenAuthentication,
+        BasicAuthentication,
+    )
     permission_classes = (IsRootUser | AuroraPermission | DjangoModelPermissions,)
     filter_backends = [AuroraFilterBackend]
     filterset_class = LastModifiedFilter

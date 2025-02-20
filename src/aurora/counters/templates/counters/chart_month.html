@@ -1,6 +1,6 @@
 {% extends "counters/chart_base.html" %}{% load static %}
 {% block data %}
     <script id="counters" data-registration={{ registration.pk }} data-token="{{ token }}"
-            data-url="{% url "charts:monthly_data" registration.pk %}"
+            data-url="{% url "charts:monthly_data" registration.project.organization.slug registration.project.pk registration.pk %}"
             src="{% static "counters/monthly.min.js" %}"></script>
 {% endblock %}

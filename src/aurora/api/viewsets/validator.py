@@ -1,4 +1,5 @@
 from django.http import HttpResponse
+
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
@@ -18,7 +19,11 @@ class ValidatorViewSet(SmartViewSet):
 }};
 """
 
-    @action(detail=True, permission_classes=[AllowAny], authentication_classes=[SessionAuthentication])
+    @action(
+        detail=True,
+        permission_classes=[AllowAny],
+        authentication_classes=[SessionAuthentication],
+    )
     def validator(self, request, pk):
         obj = self.get_object()
         return HttpResponse(
@@ -26,7 +31,11 @@ class ValidatorViewSet(SmartViewSet):
             content_type="application/javascript",
         )
 
-    @action(detail=True, permission_classes=[AllowAny], authentication_classes=[SessionAuthentication])
+    @action(
+        detail=True,
+        permission_classes=[AllowAny],
+        authentication_classes=[SessionAuthentication],
+    )
     def script(self, request, pk):
         obj = self.get_object()
         return HttpResponse(

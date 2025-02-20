@@ -2,8 +2,11 @@ from contextlib import ContextDecorator
 from random import choice
 
 from django.contrib.auth.models import Permission
+
 from faker import Faker
 
+from aurora.core.models import Organization
+from aurora.registration.models import Project, Registration
 from aurora.security.models import AuroraRole
 
 from .factories import GroupFactory
@@ -58,13 +61,29 @@ class user_grant_permissions(ContextDecorator):  # noqa
         "_dss_acl_cache",
     ]
 
-    def __init__(self, user, permissions=None, registration=None):
+    def __init__(self, user, permissions=None, target: "Registration|Project|Organization" = None):
         self.user = user
         if not isinstance(permissions, (list, tuple)):
             permissions = [permissions]
         self.permissions = permissions
         self.group = None
-        self.registration = registration
+        if target:
+            self.target = target
+            if isinstance(target, Organization):
+                self.kwargs = {"organization": self.target}
+            elif isinstance(target, Project):
+                self.kwargs = {
+                    "project": self.target,
+                    "organization": self.target.organization,
+                }
+            elif isinstance(target, Registration):
+                self.kwargs = {
+                    "project": target.project,
+                    "registration": self.target,
+                    "organization": target.project.organization,
+                }
+            else:
+                raise ValueError("target must one instance of Registration|Project|Organization")
 
     def __enter__(self):
         for cache in self.caches:
@@ -72,9 +91,8 @@ class user_grant_permissions(ContextDecorator):  # noqa
                 delattr(self.user, cache)
         self.group = get_group(permissions=self.permissions or [])
         self.user.groups.add(self.group)
-        if self.registration:
-            AuroraRole.objects.get_or_create(registration=self.registration, user=self.user, role=self.group)
-            # self.registration.restrict_to_groups.add(self.group)
+        if self.target:
+            AuroraRole.objects.get_or_create(user=self.user, role=self.group, **self.kwargs)
 
     def __exit__(self, e_typ, e_val, trcbak):
         if self.group:
@@ -86,8 +104,7 @@ class user_grant_permissions(ContextDecorator):  # noqa
 
     def start(self):
         """Activate a patch, returning any created mock."""
-        result = self.__enter__()
-        return result
+        return self.__enter__()
 
     def stop(self):
         """Stop an active patch."""

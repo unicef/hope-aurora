@@ -1,10 +1,11 @@
 import json
 import logging
 
-from admin_extra_buttons.decorators import button
 from django import forms
 from django.contrib.admin import register
 from django.core.cache import caches
+
+from admin_extra_buttons.decorators import button
 from smart_admin.modeladmin import SmartModelAdmin
 
 from ...administration.mixin import LoadDumpMixin
@@ -40,9 +41,13 @@ class ValidatorAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartMod
         Validator.FIELD: "",  # field value
         Validator.SCRIPT: "",  # field value
         Validator.MODULE: [{}],
-        Validator.FORMSET: {"total_form_count": 2, "errors": {}, "non_form_errors": {}, "cleaned_data": []},
+        Validator.FORMSET: {
+            "total_form_count": 2,
+            "errors": {},
+            "non_form_errors": {},
+            "cleaned_data": [],
+        },
     }
-    # change_list_template = "reversion/change_list.html"
     object_history_template = "reversion-compare/object_history.html"
     change_form_template = None
     inlines = []
@@ -54,14 +59,15 @@ class ValidatorAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartMod
     def used_by(self, obj):
         if obj.target == Validator.FORM:
             return ", ".join(obj.flexform_set.values_list("name", flat=True))
-        elif obj.target == Validator.FIELD:
+        if obj.target == Validator.FIELD:
             return ", ".join(obj.flexformfield_set.values_list("name", flat=True))
-        elif obj.target == Validator.FORMSET:
+        if obj.target == Validator.FORMSET:
             return ", ".join(obj.formset_set.values_list("name", flat=True))
-        elif obj.target == Validator.MODULE:
+        if obj.target == Validator.MODULE:
             return ", ".join(obj.validator_for.values_list("name", flat=True))
-        elif obj.target == Validator.SCRIPT:
+        if obj.target == Validator.SCRIPT:
             return ", ".join(obj.script_for.values_list("name", flat=True))
+        return None
 
     @button()
     def test(self, request, pk):
@@ -80,7 +86,6 @@ class ValidatorAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartMod
             if form.is_valid():
                 self.object.code = form.cleaned_data["code"]
                 self.object.save()
-                # return HttpResponseRedirect("..")
         else:
             form = ValidatorTestForm(
                 initial={"code": self.object.code, "input": original.jspickle(param)},

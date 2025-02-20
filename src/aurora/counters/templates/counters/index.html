@@ -3,10 +3,10 @@
 
     <div class="min-h-screen flex w-wull bg-gray-100 pb-10">
         <div class="w-full m-20 lg:w-1/2 mt-5">
-            <h1 class="text-lg mb-20">Welcome {{ user }}</h1>
+            <h1 class="text-lg mb-20">{{ organization }}</h1>
         <ul>
-            {% for reg in registrations %}
-                <li><a href="{% url "charts:registration" reg.pk %}">{{ reg }}</a></li>
+            {% for project in projects %}
+                <li><a href="{% url "charts:project-index" organization.slug project.pk %}">{{ project }}</a></li>
             {% endfor %}
         </ul>
         </div>

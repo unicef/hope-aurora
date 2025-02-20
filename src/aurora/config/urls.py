@@ -1,12 +1,13 @@
-import adminactions.actions as actions
-import debug_toolbar
 from django.conf import settings
 from django.conf.urls.i18n import i18n_patterns
 from django.contrib import admin
 from django.urls import include, path, re_path
 
+from adminactions import actions
+import debug_toolbar
+
 from aurora.core.views import service_worker
-from aurora.web.views.site import error_404
+from aurora.web.views.sites import error_404
 
 actions.add_to_site(admin.site)
 
@@ -26,6 +27,7 @@ urlpatterns = [
     path("i18n/", include("aurora.i18n.urls")),
     path("__debug__/", include(debug_toolbar.urls)),
     path(r"serviceworker.js", service_worker, name="serviceworker"),
+    path(r"sysinfo/", include("django_sysinfo.urls")),
 ]
 
 urlpatterns += i18n_patterns(

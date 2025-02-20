@@ -59,7 +59,7 @@ class CompilationTimeField(forms.CharField):
         super().__init__(**kwargs)
 
     def to_python(self, value):
-        return dict(zip(["start", "elapsed", "rounds", "total"], value))
+        return dict(zip(["start", "elapsed", "rounds", "total"], value, strict=True))
 
     def widget_attrs(self, widget):
         attrs = super().widget_attrs(widget)

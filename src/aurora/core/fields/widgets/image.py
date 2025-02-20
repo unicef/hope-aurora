@@ -1,6 +1,6 @@
 from django import forms
 
-from aurora.i18n.gettext import gettext as _
+from aurora.i18n.get_text import gettext as _
 
 
 class ImageWidget(forms.ClearableFileInput):

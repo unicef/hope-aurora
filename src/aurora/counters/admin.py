@@ -1,12 +1,13 @@
 import logging
 
-from admin_extra_buttons.decorators import button
-from adminfilters.autocomplete import AutoCompleteFilter
 from django.contrib.admin import register
 from django.db.transaction import atomic
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+
+from admin_extra_buttons.decorators import button
+from adminfilters.autocomplete import LinkedAutoCompleteFilter
 from smart_admin.modeladmin import SmartModelAdmin
 
 from ..core.utils import is_root
@@ -24,12 +25,26 @@ def get_token(request):
 @register(Counter)
 class CounterAdmin(SmartModelAdmin):
     list_display = ("registration", "day", "records")
-    list_filter = (("registration", AutoCompleteFilter), "day")
+    list_filter = (
+        ("registration__project__organization", LinkedAutoCompleteFilter.factory()),
+        (
+            "registration__project",
+            LinkedAutoCompleteFilter.factory(parent="registration__project__organization"),
+        ),
+        (
+            "registration",
+            LinkedAutoCompleteFilter.factory(parent="registration__project"),
+        ),
+        "day",
+    )
     date_hierarchy = "day"
     autocomplete_fields = ("registration",)
     change_form_template = None
     paginator = LargeTablePaginator
     show_full_result_count = False
+
+    def check(self, **kwargs):
+        return super().check(**kwargs)
 
     def get_exclude(self, request, obj=None):
         return ("details",)

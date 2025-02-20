@@ -1,6 +1,4 @@
-{% load static %}
-{% load i18n %}
-{% load rest_framework %}
+{% load i18n rest_framework static %}
 
 <!DOCTYPE html>
 <html>
@@ -10,7 +8,7 @@
       {% block meta %}
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <meta name="robots" content="NONE,NOARCHIVE" />
-      {% endblock %}
+      {% endblock meta %}
 
       <title>{% block title %}Aurora API{% endblock %}</title>
 
@@ -18,15 +16,15 @@
         {% block bootstrap_theme %}
           <link rel="stylesheet" type="text/css" href="{% static "rest_framework/css/bootstrap.min.css" %}"/>
           <link rel="stylesheet" type="text/css" href="{% static "rest_framework/css/bootstrap-tweaks.css" %}"/>
-        {% endblock %}
+        {% endblock bootstrap_theme %}
 
         <link rel="stylesheet" type="text/css" href="{% static "rest_framework/css/prettify.css" %}"/>
         <link rel="stylesheet" type="text/css" href="{% static "rest_framework/css/default.css" %}"/>
           <link rel="stylesheet" type="text/css" href="{% static "api/style.css" %}"/>
         {% if code_style %}<style>{{ code_style }}</style>{% endif %}
-      {% endblock %}
+      {% endblock style %}
 
-    {% endblock %}
+    {% endblock head %}
   </head>
 
   {% block body %}
@@ -35,27 +33,27 @@
     <div class="wrapper">
       {% block navbar %}
         <div class="navbar navbar-static-top {% block bootstrap_navbar_variant %}navbar-inverse{% endblock %}"
-             role="navigation" aria-label="{% trans "navbar" %}">
+             role="navigation" aria-label="{% translate "navbar" %}">
           <div class="container">
             <span>
               {% block branding %}
                 <a class='navbar-brand' rel="nofollow" href='/api/'>
                     Aurora API
                 </a>
-              {% endblock %}
+              {% endblock branding %}
             </span>
             <ul class="nav navbar-nav pull-right">
               {% block userlinks %}
                 {% if user.is_authenticated %}
-                  {% optional_logout request user %}
+                  {% optional_logout request user csrf_token %}
                 {% else %}
                   {% optional_login request %}
                 {% endif %}
-              {% endblock %}
+              {% endblock userlinks %}
             </ul>
           </div>
         </div>
-      {% endblock %}
+      {% endblock navbar %}
 
       <div class="container">
         {% block breadcrumbs %}
@@ -67,16 +65,16 @@
                 <li><a href="{{ breadcrumb_url }}">{{ breadcrumb_name }}</a></li>
               {% endif %}
             {% empty %}
-              {% block breadcrumbs_empty %}&nbsp;{% endblock breadcrumbs_empty %}
+              {% block breadcrumbs_empty %}&nbsp;{% endblock %}
             {% endfor %}
           </ul>
-        {% endblock %}
+        {% endblock breadcrumbs %}
 
         <!-- Content -->
-        <div id="content" role="main" aria-label="{% trans "content" %}">
+        <div id="content" role="main" aria-label="{% translate "content" %}">
           {% block content %}
 
-          <div class="region"  aria-label="{% trans "request form" %}">
+          <div class="region"  aria-label="{% translate "request form" %}">
           {% block request_forms %}
 
           {% if 'GET' in allowed_methods %}
@@ -134,7 +132,7 @@
           {% if extra_actions %}
             <div class="dropdown" style="float: right; margin-right: 10px">
               <button class="btn btn-default" id="extra-actions-menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                {% trans "Extra Actions" %}
+                {% translate "Extra Actions" %}
                 <span class="caret"></span>
               </button>
               <ul class="dropdown-menu" aria-labelledby="extra-actions-menu">
@@ -148,21 +146,21 @@
           {% if filter_form %}
             <button style="float: right; margin-right: 10px" data-toggle="modal" data-target="#filtersModal" class="btn btn-default">
               <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
-              {% trans "Filters" %}
+              {% translate "Filters" %}
             </button>
           {% endif %}
 
           {% endblock request_forms %}
           </div>
 
-            <div class="content-main" role="main"  aria-label="{% trans "main content" %}">
+            <div class="content-main" role="main"  aria-label="{% translate "main content" %}">
               <div class="page-header">
                 <h1>{{ name }}</h1>
               </div>
               <div style="float:left">
                 {% block description %}
                   {{ description }}
-                {% endblock %}
+                {% endblock description %}
               </div>
 
               {% if paginator %}
@@ -171,11 +169,11 @@
                 </nav>
               {% endif %}
 
-              <div class="request-info" style="clear: both" aria-label="{% trans "request info" %}">
+              <div class="request-info" style="clear: both" aria-label="{% translate "request info" %}">
                 <pre class="prettyprint"><b>{{ request.method }}</b> {{ request.get_full_path }}</pre>
               </div>
 
-              <div class="response-info" aria-label="{% trans "response info" %}">
+              <div class="response-info" aria-label="{% translate "response info" %}">
                 <pre class="prettyprint"><span class="meta nocode"><b>HTTP {{ response.status_code }} {{ response.status_text }}</b>{% for key, val in response_headers|items %}
 <b>{{ key }}:</b> <span class="lit">{{ val|break_long_headers|urlize }}</span>{% endfor %}
 
@@ -305,8 +303,8 @@
           $('form').ajaxForm();
         });
       </script>
-    {% endblock %}
+    {% endblock script %}
 
   </body>
-  {% endblock %}
+  {% endblock body %}
 </html>

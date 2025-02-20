@@ -5,7 +5,7 @@ from aurora.core.models import OptionSet
 
 
 @pytest.fixture
-def complex(db):
+def complex_dataset(db):
     return OptionSet.objects.get_or_create(
         name="complex",
         defaults={
@@ -38,7 +38,7 @@ def nested(db):
     )[0]
 
 
-def test_select_complex(complex):
+def test_select_complex(complex_dataset):
     fld = SelectField(datasource="complex")
     assert fld.choices == [("1", "Rome"), ("2", "Milan")]
 

@@ -2,6 +2,7 @@ import logging
 
 from django.core.cache import caches
 from django.utils import timezone
+
 from django_redis import get_redis_connection
 
 from ..state import state
@@ -65,7 +66,7 @@ class Cache:
         self.locales = {}
 
     def reset(self):
-        for __, locale in self.locales.items():
+        for locale in self.locales.values():
             locale.reset()
 
     def activate(self, locale):

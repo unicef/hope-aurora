@@ -2,19 +2,16 @@ import io
 import tempfile
 from pathlib import Path
 
-import pytest
 from django.core.management import call_command
 
+import pytest
 
-@pytest.fixture()
+
+@pytest.fixture
 def registration(simple_form):
-    from aurora.registration.models import Registration
+    from testutils.factories import RegistrationFactory
 
-    reg, __ = Registration.objects.get_or_create(
-        locale="en-us",
-        name="registration #1",
-        defaults={"flex_form": simple_form, "intro": "intro", "footer": "footer", "active": True},
-    )
+    reg = RegistrationFactory()
     priv, pub = reg.setup_encryption_keys()
     reg._private_pem = priv
     return reg
@@ -25,7 +22,13 @@ def test_sync(db):
     workdir = Path(".").absolute()
 
     with tempfile.NamedTemporaryFile("w", dir=workdir, prefix="~SYNC", suffix=".json", delete=False) as fdst:
-        call_command("dumpdata", "core", stdout=buf, use_natural_foreign_keys=True, use_natural_primary_keys=True)
+        call_command(
+            "dumpdata",
+            "core",
+            stdout=buf,
+            use_natural_foreign_keys=True,
+            use_natural_primary_keys=True,
+        )
         fdst.write(buf.getvalue())
     call_command("loaddata", (workdir / fdst.name).absolute())
 
@@ -43,7 +46,8 @@ def test_protocol_registration_marhalling(db, registration):
     from aurora.registration.admin.protocol import AuroraSyncRegistrationProtocol
 
     c = AuroraSyncRegistrationProtocol()
-    assert c.deserialize(c.serialize([registration]))
+    r = c.serialize([registration])
+    assert c.deserialize(r)
 
 
 def test_protocol_organization(db):

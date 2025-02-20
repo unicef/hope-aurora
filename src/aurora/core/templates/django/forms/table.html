@@ -11,7 +11,7 @@
 {% for field, errors in fields %}
   <tr{% with classes=field.css_classes %}{% if classes %} class="{{ classes }}"{% endif %}{% endwith %}><th>{% if field.label %}{{ field.label_tag }}{% endif %}</th>
     <td>
-        {% include "registration/_fieldset.html" %}
+        {% include "smart/_fieldset.html" %}
     </td>
   </tr>
 {% endfor %}

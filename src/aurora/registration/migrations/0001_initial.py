@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -17,20 +16,38 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Registration",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("name", django.contrib.postgres.fields.citext.CICharField(max_length=255, unique=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    django.contrib.postgres.fields.citext.CICharField(max_length=255, unique=True),
+                ),
                 ("start", models.DateField(auto_now_add=True)),
                 ("end", models.DateField(blank=True, null=True)),
                 ("active", models.BooleanField(default=False)),
                 (
                     "locale",
                     models.CharField(
-                        choices=[("en-us", "English"), ("pl-pl", "Polskie"), ("uk-UA", "український")],
+                        choices=[
+                            ("en-us", "English"),
+                            ("pl-pl", "Polskie"),
+                            ("uk-UA", "український"),
+                        ],
                         default="en",
                         max_length=10,
                     ),
                 ),
-                ("flex_form", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="core.flexform")),
+                (
+                    "flex_form",
+                    models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="core.flexform"),
+                ),
             ],
             options={
                 "get_latest_by": "start",
@@ -39,12 +56,23 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Record",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("timestamp", models.DateField(auto_now_add=True)),
                 ("data", models.JSONField(default=dict)),
                 (
                     "registration",
-                    models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="registration.registration"),
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="registration.registration",
+                    ),
                 ),
             ],
         ),

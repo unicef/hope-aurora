@@ -1,8 +1,14 @@
-import pytest
 from django.contrib.admin.sites import site
 from django.urls import reverse
 
+import pytest
+
 pytestmark = pytest.mark.admin
+
+
+@pytest.fixture
+def app(django_app_factory):
+    return django_app_factory(csrf_checks=False)
 
 
 def pytest_generate_tests(metafunc):
@@ -25,8 +31,8 @@ def test_panel(panel, django_app, admin_user):
     assert res.status_code == 200
 
 
-def test_panel_email(django_app, admin_user):
+def test_panel_email(app, admin_user):
     url = reverse("admin:email")
-    res = django_app.get(url, user=admin_user)
-    res = res.form.submit()
+    res = app.get(url, user=admin_user)
+    res = res.forms[1].submit()
     assert res.status_code == 200

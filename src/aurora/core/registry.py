@@ -3,6 +3,7 @@ from inspect import isclass
 
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
+
 from simplemathcaptcha.fields import MathCaptchaField
 from strategy_field.exceptions import StrategyAttributeError
 from strategy_field.registry import Registry
@@ -23,13 +24,12 @@ def clean_classname(value):
 def classloader(value):
     if not value:
         return value
-    elif isinstance(value, str):
+    if isinstance(value, str):
         value = clean_classname(value)
         return import_by_name(value)
-    elif isclass(value):
+    if isclass(value):
         return value
-    else:
-        return type(value)
+    return type(value)
 
 
 def get_custom_field(value):
@@ -58,7 +58,10 @@ class FieldRegistry(Registry):
 
     def as_choices(self):
         if not self._choices:
-            self._choices = sorted([(fqn(klass), self.get_name(klass)) for klass in self], key=lambda e: e[1])
+            self._choices = sorted(
+                [(fqn(klass), self.get_name(klass)) for klass in self],
+                key=lambda e: e[1],
+            )
         return self._choices
 
     def __contains__(self, y):
@@ -79,7 +82,6 @@ field_registry.register(forms.DateField)
 field_registry.register(forms.DateTimeField)
 field_registry.register(forms.DurationField)
 field_registry.register(forms.EmailField)
-# field_registry.register(forms.FileField)
 field_registry.register(forms.FloatField)
 field_registry.register(forms.GenericIPAddressField)
 field_registry.register(forms.ImageField)

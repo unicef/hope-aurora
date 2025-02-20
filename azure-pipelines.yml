@@ -72,7 +72,7 @@ stages:
               repository: $(Docker.repository)
               buildContext: "**/.."
 #              arguments: '--build-arg VERSION=$(Build.SourceVersion) --build-arg BUILD_DATE="$(buildDate)" --cache-from=$(Docker.registry).azurecr.io/$(Docker.repository):latest'
-              arguments: '--build-arg VERSION="$(commitHash)" --build-arg BUILD_DATE="$(buildDate)" --cache-from=$(Docker.registry).azurecr.io/$(Docker.repository):latest'
+              arguments: '--build-arg GIT_HASH="$(commitHash)" --build-arg BUILD_DATE="$(buildDate)" --cache-from=$(Docker.registry).azurecr.io/$(Docker.repository):latest'
               tags: |
                 $(Build.BuildId)
                 $(Build.SourceVersion)
@@ -109,18 +109,20 @@ stages:
                             -CONSTANCE_DATABASE_CACHE_BACKEND $(CONSTANCE_DATABASE_CACHE_BACKEND)
                             -ALLOWED_HOSTS $(ALLOWED_HOSTS)
                             -SECRET_KEY $(SECRET_KEY)
-                            -SENTRY_DSN $(SENTRY_DSN)
-                            -ADMIN_EMAIL $(ADMIN_EMAIL)
-                            -ADMIN_PASSWORD $(ADMIN_PASSWORD)
-                            -ROOT_TOKEN $(ROOT_TOKEN)
                             -DEBUG $(DEBUG)
                             -BUILD_VERSION $(Build.SourceVersion)
                             -LANGUAGE_CODE $(LANGUAGE_CODE)
                             -USE_X_FORWARDED_HOST $(USE_X_FORWARDED_HOST)
-                            -LANGUAGE_CODE $(LANGUAGE_CODE)
+                            -ROOT_TOKEN $(ROOT_TOKEN)
+                            -ADMIN_EMAIL $(ADMIN_EMAIL)
+                            -ADMIN_PASSWORD $(ADMIN_PASSWORD)
+                            -EMAIL_HOST_USER $(EMAIL_HOST_USER)
+                            -MAILJET_API_KEY $(MAILJET_API_KEY)
+                            -MAILJET_SECRET_KEY $(MAILJET_SECRET_KEY)
                             -AZURE_CLIENT_ID $(KEY_VALUT_AZURE_CLIENT_ID)
                             -AZURE_CLIENT_KEY $(KEY_VALUT_AZURE_CLIENT_ID)
                             -AZURE_CLIENT_SECRET $(KEY_VALUT_AZURE_CLIENT_SECRET)
                             -AZURE_TENANT_ID $(KEY_VALUT_AZURE_TENANT_KEY)
-                            -MATOMO_ID $(MATOMO_ID)
-                            -SENTRY_ENVIRONMENT $(SENTRY_ENVIRONMENT)"
+                            -SENTRY_DSN $(SENTRY_DSN)
+                            -SENTRY_ENVIRONMENT $(SENTRY_ENVIRONMENT)
+                            -MATOMO_ID $(MATOMO_ID)"

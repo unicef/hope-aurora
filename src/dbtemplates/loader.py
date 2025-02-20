@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.sites.models import Site
 from django.db import router
 from django.template import Origin, TemplateDoesNotExist
@@ -10,6 +12,8 @@ from dbtemplates.utils.cache import (
     get_cache_notfound_key,
     set_and_return,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class Loader(BaseLoader):
@@ -61,8 +65,8 @@ class Loader(BaseLoader):
                 backend_template = cache.get(cache_key)
                 if backend_template:
                     return backend_template, template_name
-            except Exception:
-                pass
+            except Exception as e:
+                logger.exception(e)
 
         # Not found in cache, move on.
         cache_notfound_key = get_cache_notfound_key(template_name)

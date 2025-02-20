@@ -1,13 +1,14 @@
 import json
 import logging
 
+from django.conf import settings
+from django.shortcuts import render
+from django.urls import reverse
+
 from admin_extra_buttons.decorators import button, link
 from adminfilters.autocomplete import AutoCompleteFilter
 from adminfilters.numbers import NumberFilter
 from adminfilters.value import ValueFilter
-from django.conf import settings
-from django.shortcuts import render
-from django.urls import reverse
 from smart_admin.modeladmin import SmartModelAdmin
 
 from ...core.utils import is_root
@@ -21,7 +22,14 @@ logger = logging.getLogger(__name__)
 class RecordAdmin(SmartModelAdmin):
     search_fields = ("registration__name",)
     list_display = ("timestamp", "remote_ip", "id", "registration", "ignored")
-    readonly_fields = ("registration", "timestamp", "remote_ip", "id", "fields", "counters")
+    readonly_fields = (
+        "registration",
+        "timestamp",
+        "remote_ip",
+        "id",
+        "fields",
+        "counters",
+    )
     list_filter = (
         ("registration", AutoCompleteFilter),
         ("registrar", AutoCompleteFilter),
@@ -42,16 +50,10 @@ class RecordAdmin(SmartModelAdmin):
 
     def get_actions(self, request):
         return {}
-        # {name: (func, name, desc) for func, name, desc in actions}
-        # actions = super().get_actions(request)
-        # for name, __ in actions.items():
-        #     print("src/aurora/registration/admin.py: 485", name)
-        # return {"export_as_csv": self.get_action(self.export_as_csv)}
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        qs = qs.select_related("registration", "registrar")
-        return qs
+        return qs.select_related("registration", "registrar")
 
     def get_common_context(self, request, pk=None, **kwargs):
         return super().get_common_context(request, pk, is_root=is_root(request), **kwargs)
@@ -64,7 +66,10 @@ class RecordAdmin(SmartModelAdmin):
     def receipt(self, button):
         try:
             if button.original:
-                base = reverse("register-done", args=[button.original.registration.pk, button.original.pk])
+                base = reverse(
+                    "register-done",
+                    args=[button.original.registration.pk, button.original.pk],
+                )
                 button.href = base
                 button.html_attrs["target"] = f"_{button.original.pk}"
         except Exception as e:

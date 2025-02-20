@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("registration", "0011_auto_20220321_0507"),
     ]
@@ -14,7 +13,11 @@ class Migration(migrations.Migration):
             model_name="registration",
             name="locale",
             field=models.CharField(
-                choices=[("en-us", "English"), ("pl-pl", "Polskie"), ("uk-ua", "український")],
+                choices=[
+                    ("en-us", "English"),
+                    ("pl-pl", "Polskie"),
+                    ("uk-ua", "український"),
+                ],
                 default="en",
                 max_length=10,
             ),

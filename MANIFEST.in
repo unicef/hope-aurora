@@ -1,0 +1,21 @@
+exclude *
+
+include README.md
+include MANIFEST.in
+include LICENSE.md
+include pyproject.toml
+include *.py
+include uv.lock
+
+recursive-include src/aurora *
+recursive-include src/aurora *.html
+recursive-include src/dbtemplates *
+recursive-include src/dbtemplates *.html
+
+recursive-exclude tests *
+
+prune **/~*
+global-exclude .*
+global-exclude *~
+global-exclude ~*
+exclude manage.py

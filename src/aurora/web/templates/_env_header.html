@@ -1,6 +1,6 @@
 {% if project.debug %}
     <div class="fixed flex staff-toolbar">
-        <div class="inline-flex flex-shrink">&nbsp;&nbsp;&nbsp;Version: {{ project.version|slice:':7'|join:'' }}</div>
+        <div class="inline-flex flex-shrink">&nbsp;&nbsp;&nbsp;Hash: {{ project.commit|slice:':7'|join:'' }}</div>
         <div class="inline-flex flex-shrink"> Build date: {{ project.build_date }}</div>
         <div class="inline-flex flex-grow"> {{ project.env }}</div>
         {% if request.user.is_staff %}<div class="inline-flex flex-shrink">

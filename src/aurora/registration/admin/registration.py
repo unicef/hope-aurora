@@ -2,32 +2,34 @@ import csv
 import io
 import json
 import logging
-from django.utils.module_loading import import_string
 from hashlib import md5
 
-from admin_extra_buttons.decorators import button, choice, view
-from admin_sync.mixin import SyncMixin
-from dateutil.utils import today
 from django import forms
 from django.conf import settings
 from django.contrib import messages
 from django.core.cache import cache
 from django.db.models import JSONField
+from django.db.models.functions import Collate
 from django.db.models.signals import post_delete, post_save
 from django.db.transaction import atomic
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from django.template import Template
 from django.template.loader import select_template
 from django.urls import reverse, translate_url
+from django.utils.module_loading import import_string
 from django.utils.text import slugify
+
+from admin_extra_buttons.decorators import button, choice, view
+from admin_sync.mixin import SyncMixin
+from adminfilters.mixin import AdminAutoCompleteSearchMixin
+from dateutil.utils import today
 from django_redis import get_redis_connection
 from jsoneditor.forms import JSONEditor
 from smart_admin.modeladmin import SmartModelAdmin
 
 from aurora.core.admin.base import ConcurrencyVersionAdmin
 from aurora.core.forms import CSVOptionsForm, DateFormatsForm, VersionMedia
-from aurora.core.models import FormSet, Validator, FlexForm, FlexFormField
+from aurora.core.models import FlexForm, FlexFormField, FormSet, Validator
 from aurora.core.utils import (
     build_dict,
     build_form_fake_data,
@@ -36,8 +38,8 @@ from aurora.core.utils import (
     is_root,
     namify,
 )
+from typing import TYPE_CHECKING
 from aurora.i18n.forms import TemplateForm, TranslationForm
-from aurora.i18n.translate import Translator
 from aurora.registration.admin.filters import (
     OrganizationFilter,
     RegistrationProjectFilter,
@@ -55,22 +57,37 @@ from aurora.registration.models import Record, Registration
 logger = logging.getLogger(__name__)
 
 
+if TYPE_CHECKING:
+    from aurora.i18n.translate import Translator
+    from django.template import Template
+
+
 def can_export_data(request, obj, handler=None):
     return (obj.export_allowed and request.user.has_perm("registration.export_data", obj)) or is_root(request)
 
 
-class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
-    search_fields = ("name", "title", "slug")
+class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, SyncMixin, SmartModelAdmin):
+    search_fields = ("name_deterministic", "title", "slug")
     date_hierarchy = "start"
     list_filter = (
         "active",
-        ("flex_form__project__organization", OrganizationFilter),
-        ("flex_form__project", RegistrationProjectFilter),
+        ("project__organization", OrganizationFilter),
+        ("project", RegistrationProjectFilter),
         "archived",
         "protected",
         "show_in_homepage",
     )
-    list_display = ("name", "slug", "project", "secure", "active", "archived", "protected", "show_in_homepage")
+    list_display = (
+        "name",
+        "slug",
+        "organization",
+        "project",
+        "secure",
+        "active",
+        "archived",
+        "protected",
+        "show_in_homepage",
+    )
     exclude = ("public_key",)
     autocomplete_fields = ("flex_form",)
     save_as = True
@@ -95,7 +112,13 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
             },
         ),
         ("Config", {"fields": ("flex_form", "validator", "scripts")}),
-        ("Validity", {"classes": ("collapse",), "fields": (("start", "end"), ("archived", "active"))}),
+        (
+            "Validity",
+            {
+                "classes": ("collapse",),
+                "fields": (("start", "end"), ("archived", "active")),
+            },
+        ),
         ("Languages", {"classes": ("collapse",), "fields": ("locale", "locales")}),
         ("Security", {"classes": ("collapse",), "fields": ("protected",)}),
         ("Text", {"classes": ("collapse",), "fields": ("intro", "footer")}),
@@ -105,7 +128,22 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
     protocol_class = AuroraSyncRegistrationProtocol
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related("project")
+        return (
+            super()
+            .get_queryset(request)
+            .annotate(
+                name_deterministic=Collate("name", "und-x-icu"),
+            )
+            .select_related("project", "project__organization")
+        )
+
+    def get_list_display(self, request):
+        base = list(self.list_display)
+        if "project__organization__exact" in request.GET:
+            base.remove("organization")
+        else:
+            base.remove("project")
+        return base
 
     def formfield_for_dbfield(self, db_field, request, **kwargs):
         formfield = super().formfield_for_dbfield(db_field, request, **kwargs)
@@ -178,7 +216,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
                     skipped = []
                     all_fields = []
                     for r in records:
-                        for field_name in r.keys():
+                        for field_name in r:
                             if field_name not in skipped and field_name in exclude_fields:
                                 skipped.append(field_name)
                             elif field_name not in all_fields and field_name in include_fields:
@@ -189,7 +227,6 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
                         out = io.StringIO()
                         writer = csv.DictWriter(
                             out,
-                            # dialect="excel",
                             fieldnames=all_fields,
                             restval="-",
                             extrasaction="ignore",
@@ -200,16 +237,14 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
                         writer.writerows(records)
                         out.seek(0)
                         filename = f"Registration_{reg.slug}.csv"
-                        response = HttpResponse(
+                        return HttpResponse(
                             out.read(),
                             headers={"Content-Disposition": 'attachment;filename="%s"' % filename},
                             content_type="text/csv",
                         )
-                        return response
-                    else:
-                        ctx["all_fields"] = sorted(set(all_fields))
-                        ctx["skipped"] = skipped
-                        ctx["qs"] = records[:10]
+                    ctx["all_fields"] = sorted(set(all_fields))
+                    ctx["skipped"] = skipped
+                    ctx["qs"] = records[:10]
             except Exception as e:
                 logger.exception(e)
                 self.message_error_to_user(request, e)
@@ -262,13 +297,15 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
             self.message_user(request, "Encryption key removed", messages.WARNING)
             self.log_change(request, self.object, "Encryption Key has been removed")
             return HttpResponseRedirect("..")
-        else:
-            return render(request, "admin/registration/registration/keys_remove.html", ctx)
+        return render(request, "admin/registration/registration/keys_remove.html", ctx)
 
     @view()
     def generate_keys(self, request, pk):
         ctx = self.get_common_context(
-            request, pk, media=self.media, title="Generate Private/Public Key pair to encrypt this Registration data"
+            request,
+            pk,
+            media=self.media,
+            title="Generate Private/Public Key pair to encrypt this Registration data",
         )
 
         if request.method == "POST":
@@ -355,10 +392,17 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
                     with atomic():
                         source = Registration.objects.get(id=reg.pk)
                         title = form.cleaned_data["title"]
-                        reg, __ = clone_model(source, name=namify(title), title=title, version=1, slug=slugify(title))
+                        reg, __ = clone_model(
+                            source,
+                            name=namify(title),
+                            title=title,
+                            version=1,
+                            slug=slugify(title),
+                        )
                         if form.cleaned_data["deep"]:
                             main_form, __ = clone_model(
-                                source.flex_form, name=f"{source.flex_form.name}-(clone: {reg.name})"
+                                source.flex_form,
+                                name=f"{source.flex_form.name}-(clone: {reg.name})",
                             )
                             reg.flex_form = main_form
                             reg.save()
@@ -378,7 +422,11 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
                                     clone_model(field, name=field.name, flex_form=frm2)
 
                             for fs in formsets:
-                                clone_model(fs, parent=forms[fs.parent.pk], flex_form=forms[fs.flex_form.pk])
+                                clone_model(
+                                    fs,
+                                    parent=forms[fs.parent.pk],
+                                    flex_form=forms[fs.flex_form.pk],
+                                )
                         return HttpResponseRedirect(reverse("admin:registration_registration_inspect", args=[reg.pk]))
                 except Exception as e:
                     logger.exception(e)
@@ -450,23 +498,29 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
                     locale = form.cleaned_data["locale"]
                     translate = form.cleaned_data["translate"]
                     if locale not in instance.locales:
-                        self.message_user(request, "Language not enabled for this registration", messages.ERROR)
+                        self.message_user(
+                            request,
+                            "Language not enabled for this registration",
+                            messages.ERROR,
+                        )
                         return HttpResponseRedirect(".")
                     self.create_translation(self, request, pk)
                     stored = con.lrange(key, 0, -1)
-                    collected = sorted(set([c.decode() for c in stored]))
+                    collected = sorted({c.decode() for c in stored})
                     from aurora.i18n.models import Message
 
                     entries = list(Message.objects.filter(locale=locale).values_list("msgid", "msgstr"))
                     data = dict(entries)
                     if translate == "2":
                         t: Translator = import_string(settings.TRANSLATOR_SERVICE)()
-                        func = lambda x: t.translate(locale, x)
+                        func = lambda x: t.translate(locale, x)  # noqa
                     elif translate == "1":
                         t: Translator = import_string(settings.TRANSLATOR_SERVICE)()
-                        func = lambda x: x if data.get(x, "") == x else t.translate(locale, x)
+                        func = (  # noqa
+                            lambda x: x if data.get(x, "") == x else t.translate(locale, x)
+                        )
                     else:
-                        func = lambda x: data.get(x, "")
+                        func = lambda x: data.get(x, "")  # noqa
                     ctx["collected"] = {c: func(c) for c in collected}
                     ctx["language_code"] = locale
             elif "export" in request.POST:
@@ -481,8 +535,6 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
                 for i, msg in enumerate(msgids, 1):
                     writer.writerow([str(i), msg, ""])
                 return response
-                # language_code = request.POST.get("language_code")
-                # for i, row in enumerate(data["messages"], 1):
 
         else:
             form = TranslationForm()
@@ -513,7 +565,11 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
 
                 key = f"i18n_{request.user.pk}_{md5(request.session.session_key.encode()).hexdigest()}"
                 settings.ALLOWED_HOSTS.append("testserver")
-                headers = {"HTTP_ACCEPT_LANGUAGE": "locale", "HTTP_I18N_SESSION": key, "HTTP_I18N": "true"}
+                headers = {
+                    "HTTP_ACCEPT_LANGUAGE": "locale",
+                    "HTTP_I18N_SESSION": key,
+                    "HTTP_I18N": "true",
+                }
                 try:
                     client = Client(**headers)
                     r1 = client.get(uri)
@@ -530,7 +586,10 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
 
                 updated = Message.objects.filter(locale=locale).count()
                 added = Message.objects.filter(locale=locale, draft=True, timestamp__date=today())
-                self.message_user(request, f"{updated - existing} messages created. {updated} available")
+                self.message_user(
+                    request,
+                    f"{updated - existing} messages created. {updated} available",
+                )
                 ctx["uri"] = uri
                 ctx["locale"] = locale
                 ctx["added"] = added
@@ -543,7 +602,12 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
 
     @choice(order=900, change_list=False)
     def data(self, button):
-        button.choices = [self.charts, self.inspect_data, self.view_collected_data, self.collect]
+        button.choices = [
+            self.charts,
+            self.inspect_data,
+            self.view_collected_data,
+            self.collect,
+        ]
         if can_export_data(button.context["request"], button.original):
             button.choices.append(self.export_as_csv)
         return button
@@ -561,7 +625,13 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
 
     @view(change_form=True, html_attrs={"target": "_new"})
     def charts(self, request, pk):
-        return HttpResponseRedirect(reverse("charts:registration", args=[pk]))
+        obj = self.get_object(request, pk)
+        return HttpResponseRedirect(
+            reverse(
+                "charts:registration",
+                args=[obj.project.organization.slug, obj.project.pk, pk],
+            )
+        )
 
     @view(permission=is_root, html_attrs={"class": "aeb-warn"})
     def view_collected_data(self, button, pk):
@@ -587,7 +657,11 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, SyncMixin, SmartModelAdmin):
             form = JamesForm(request.POST, instance=ctx["original"])
             if form.is_valid():
                 form.save()
-                cache.set(f"james_{pk}", form.cleaned_data["data"], version=get_system_cache_version())
+                cache.set(
+                    f"james_{pk}",
+                    form.cleaned_data["data"],
+                    version=get_system_cache_version(),
+                )
                 return HttpResponseRedirect(".")
         else:
             data = cache.get(f"james_{pk}", version=get_system_cache_version())

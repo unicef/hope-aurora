@@ -4,12 +4,12 @@ import json
 import logging
 import re
 
-import markdown as md
 from django.template import Library, Node
-from django.utils.safestring import mark_safe
+
+import markdown as md
 from PIL import Image, UnidentifiedImageError
 
-from aurora.i18n.gettext import gettext as _
+from aurora.i18n.get_text import gettext as _
 
 from ...core.flags import parse_bool
 from ...core.utils import dict_get_nested, dict_setdefault, oneline
@@ -21,13 +21,12 @@ register = Library()
 
 class EscapeScriptNode(Node):
     def __init__(self, nodelist):
-        super(EscapeScriptNode, self).__init__()
+        super().__init__()
         self.nodelist = nodelist
 
     def render(self, context):
         out = self.nodelist.render(context)
-        escaped_out = out.replace("</script>", "<\\/script>")
-        return escaped_out
+        return out.replace("</script>", "<\\/script>")
 
 
 @register.tag()
@@ -39,17 +38,17 @@ def escapescript(parser, token):
 
 @register.filter
 def islist(value):
-    return isinstance(value, (list, tuple))
+    return isinstance(value, list | tuple)
 
 
 @register.filter
 def isstring(value):
-    return isinstance(value, (str,))
+    return isinstance(value, str)
 
 
 @register.filter
 def isdict(value):
-    return isinstance(value, (dict,))
+    return isinstance(value, dict)
 
 
 @register.inclusion_tag("dump/dump.html")
@@ -85,7 +84,6 @@ def jsonfy(d):
 
 @register.filter(name="lookup")
 def lookup(value, arg):
-    # value_dict = ast.literal_eval(value)
     return value.get(arg, None)
 
 
@@ -133,8 +131,7 @@ def link(registration):
 @register.filter()
 def markdown(value):
     if value:
-        p = md.markdown(value, extensions=["markdown.extensions.fenced_code"])
-        return mark_safe(p)
+        return md.markdown(value, extensions=["markdown.extensions.fenced_code"])
     return ""
 
 
@@ -142,7 +139,7 @@ def markdown(value):
 def _md(value):
     if value:
         p = md.markdown(value, extensions=["markdown.extensions.fenced_code"])
-        return mark_safe(p.replace("<p>", "").replace("</p>", ""))
+        return p.replace("<p>", "").replace("</p>", "")
     return ""
 
 

@@ -1,11 +1,11 @@
 import logging
 import re
 
-import jmespath
-from adminfilters.querystring import QueryStringFilter
 from django import forms
 from django.core.exceptions import ValidationError
-from django.utils.safestring import mark_safe
+
+import jmespath
+from adminfilters.querystring import QueryStringFilter
 from django_regex.utils import RegexList
 from mdeditor.fields import MDTextFormField
 
@@ -32,19 +32,50 @@ class JMESPathFormField(forms.CharField):
 
 
 def as_link(param):
-    return mark_safe(f'<a target="_new" href="{param}">{param}</a>')
+    return f'<a target="_new" href="{param}">{param}</a>'
 
 
 class RegistrationForm(forms.ModelForm):
     unique_field_path = JMESPathFormField(
-        required=False, help_text=mark_safe("JAMESPath expression. " f"Read more at {as_link('https://jmespath.org/')}")
+        required=False,
+        help_text=f"JAMESPath expression. Read more at {as_link('https://jmespath.org/')}",
     )
     intro = MDTextFormField(required=False)
     footer = MDTextFormField(required=False)
 
     class Meta:
         model = Registration
-        exclude = ()
+        fields = (
+            "version",
+            "name",
+            "title",
+            "slug",
+            "project",
+            "flex_form",
+            "start",
+            "end",
+            "active",
+            "archived",
+            "locale",
+            "dry_run",
+            "handler",
+            "show_in_homepage",
+            "welcome_page",
+            "locales",
+            "intro",
+            "footer",
+            "client_validation",
+            "validator",
+            "scripts",
+            "unique_field_path",
+            "unique_field_error",
+            "public_key",
+            "encrypt_data",
+            "advanced",
+            "protected",
+            "is_pwa_enabled",
+            "export_allowed",
+        )
 
 
 class CloneForm(forms.Form):
@@ -80,8 +111,8 @@ class RegistrationExportForm(forms.Form):
     )
 
     def clean_filters(self):
-        filter = QueryStringFilter(None, {}, Record, None)
-        return filter.get_filters(self.cleaned_data["filters"])
+        qs_filter = QueryStringFilter(None, {}, Record, None)
+        return qs_filter.get_filters(self.cleaned_data["filters"])
 
     def clean_include(self):
         try:
@@ -98,9 +129,9 @@ class RegistrationExportForm(forms.Form):
 
 
 class JamesForm(forms.ModelForm):
-    # unique_field = forms.CharField(widget=forms.HiddenInput)
     unique_field_path = forms.CharField(
-        label="JMESPath expression", widget=forms.TextInput(attrs={"style": "width:90%"})
+        label="JMESPath expression",
+        widget=forms.TextInput(attrs={"style": "width:90%"}),
     )
     data = forms.CharField(widget=forms.Textarea, required=False)
 

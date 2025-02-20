@@ -1,8 +1,7 @@
 import json
-from django.conf import settings
-from typing import Dict
 
 from django import forms
+from django.conf import settings
 from django.core.cache import caches
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
@@ -10,7 +9,7 @@ from django.template import Context, Template
 from django.utils.functional import cached_property
 
 from aurora.core.fields.widgets import JavascriptEditor
-from aurora.core.forms import VersionMedia, FlexFormBaseForm
+from aurora.core.forms import FlexFormBaseForm, VersionMedia
 from aurora.core.models import FlexFormField, OptionSet
 from aurora.core.utils import merge_data
 
@@ -29,7 +28,6 @@ class AdvancendAttrsMixin:
 class FlexFieldAttributesForm(AdvancendAttrsMixin, forms.ModelForm):
     required = forms.BooleanField(widget=forms.CheckboxInput, required=False)
     enabled = forms.BooleanField(widget=forms.CheckboxInput, required=False)
-    # onchange = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
 
     def __init__(self, *args, **kwargs):
         kwargs["instance"] = kwargs["field"]
@@ -37,7 +35,15 @@ class FlexFieldAttributesForm(AdvancendAttrsMixin, forms.ModelForm):
 
     class Meta:
         model = FlexFormField
-        fields = ("field_type", "label", "required", "enabled", "validator", "regex", "validation")
+        fields = (
+            "field_type",
+            "label",
+            "required",
+            "enabled",
+            "validator",
+            "regex",
+            "validation",
+        )
 
 
 class FormFieldAttributesForm(AdvancendAttrsMixin, forms.Form):
@@ -49,30 +55,36 @@ class WidgetAttributesForm(AdvancendAttrsMixin, forms.Form):
     css_class = forms.CharField(label="Field class", required=False, help_text="Input CSS class to apply (will")
     extra_classes = forms.CharField(required=False, help_text="Input CSS classes to add input")
     fieldset = forms.CharField(label="Fieldset class", required=False, help_text="Fieldset CSS class to apply")
-    # onchange = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
-    # onblur = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
-    # onkeyup = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
 
 
 def get_datasources():
     v = OptionSet.objects.order_by("name").values_list("name", flat=True)
-    return [("", "")] + list(zip(v, v))
+    return [("", "")] + list(zip(v, v, strict=True))
 
 
 class SmartAttributesForm(AdvancendAttrsMixin, forms.Form):
-    question = forms.CharField(required=False, help_text="If set, user must check related box to display the field")
+    question = forms.CharField(
+        required=False,
+        help_text="If set, user must check related box to display the field",
+    )
     question_onchange = forms.CharField(
-        widget=forms.Textarea, required=False, help_text="Js to tigger on 'question' check/uncheck "
+        widget=forms.Textarea,
+        required=False,
+        help_text="Js to tigger on 'question' check/uncheck ",
     )
     hint = forms.CharField(required=False, help_text="Text to display above the input")
     description = forms.CharField(required=False, help_text="Text to display below the input")
-    datasource = forms.ChoiceField(choices=get_datasources, required=False, help_text="Datasource name for ajax field")
+    datasource = forms.ChoiceField(
+        choices=get_datasources,
+        required=False,
+        help_text="Datasource name for ajax field",
+    )
     parent_datasource = forms.ChoiceField(
-        choices=get_datasources, required=False, help_text="Parent Datasource name for ajax field"
+        choices=get_datasources,
+        required=False,
+        help_text="Parent Datasource name for ajax field",
     )
     choices = forms.JSONField(required=False)
-    # onchange = forms.CharField(widget=forms.Textarea, required=False, help_text="Javascript onchange event")
-    # onblur = forms.CharField(widget=forms.Textarea, required=False, help_text="Javascript onblur event")
     visible = forms.BooleanField(required=False, help_text="Hide/Show field")
 
 
@@ -95,7 +107,10 @@ class EventForm(AdvancendAttrsMixin, forms.Form):
 
 
 DEFAULTS = {
-    "css": {"question": "cursor-pointer", "label": "block uppercase tracking-wide text-gray-700 font-bold mb-2"},
+    "css": {
+        "question": "cursor-pointer",
+        "label": "block uppercase tracking-wide text-gray-700 font-bold mb-2",
+    },
 }
 
 
@@ -132,13 +147,13 @@ class FieldEditor:
         fld = self.field
         if config := cache.get(self.cache_key, None):
             forms = self.get_forms(config)
-            fieldForm = forms.pop("field", None)
-            if fieldForm.is_valid():
-                for k, v in fieldForm.cleaned_data.items():
+            field_form = forms.pop("field", None)
+            if field_form.is_valid():
+                for k, v in field_form.cleaned_data.items():
                     setattr(fld, k, v)
             for prefix, frm in forms.items():
                 frm.is_valid()
-                merged = merge_data(fld.advanced, {**{prefix: frm.cleaned_data}})
+                merged = merge_data(fld.advanced, {prefix: frm.cleaned_data})
                 fld.advanced = merged
         return fld
 
@@ -151,7 +166,7 @@ class FieldEditor:
         return HttpResponse(rendered, content_type="text/plain")
 
     def get_code(self):
-        from bs4 import BeautifulSoup as bs
+        from bs4 import BeautifulSoup
         from bs4 import formatter
         from pygments import highlight
         from pygments.formatters.html import HtmlFormatter
@@ -166,16 +181,20 @@ class FieldEditor:
         ctx["form"] = form_class()
         ctx["instance"] = instance
         code = Template(
-            "{% for field in form %}{% spaceless %}"
-            '{% include "smart/_fieldset.html" %}{% endspaceless %}{% endfor %}'
+            '{% for field in form %}{% spaceless %}{% include "smart/_fieldset.html" %}{% endspaceless %}{% endfor %}'
         ).render(Context(ctx))
         formatter = formatter.HTMLFormatter(indent=2)
-        soup = bs(code)
-        prettyHTML = soup.prettify(formatter=formatter)
+        soup = BeautifulSoup(code)
+        pretty_html = soup.prettify(formatter=formatter)
 
         formatter = HtmlFormatter(style="default", full=True)
-        ctx["code"] = highlight(prettyHTML, HtmlLexer(), formatter)
-        return render(self.request, "admin/core/flexformfield/field_editor/code.html", ctx, content_type="text/html")
+        ctx["code"] = highlight(pretty_html, HtmlLexer(), formatter)
+        return render(
+            self.request,
+            "admin/core/flexformfield/field_editor/code.html",
+            ctx,
+            content_type="text/html",
+        )
 
     def render(self):
         instance = self.patched_field.get_instance()
@@ -196,13 +215,16 @@ class FieldEditor:
 
         return render(self.request, "admin/core/flexformfield/field_editor/preview.html", ctx)
 
-    def get_forms(self, data=None) -> Dict:
+    def get_forms(self, data=None) -> dict:
         if data:
             return {prefix: Form(data, prefix=prefix, field=self.field) for prefix, Form in self.FORMS.items()}
         if self.request.method == "POST":
             return {
                 prefix: Form(
-                    self.request.POST, prefix=prefix, field=self.field, initial=get_initial(self.field, prefix)
+                    self.request.POST,
+                    prefix=prefix,
+                    field=self.field,
+                    initial=get_initial(self.field, prefix),
                 )
                 for prefix, Form in self.FORMS.items()
             }
@@ -213,7 +235,7 @@ class FieldEditor:
 
     def refresh(self):
         forms = self.get_forms()
-        if all(map(lambda f: f.is_valid(), forms.values())):
+        if all(f.is_valid() for f in forms.values()):
             data = self.request.POST.dict()
             data.pop("csrfmiddlewaretoken")
             cache.set(self.cache_key, data)
@@ -247,6 +269,7 @@ class FieldEditor:
 
     def post(self, request, pk):
         forms = self.get_forms()
-        if all(map(lambda f: f.is_valid(), forms.values())):
+        if all(f.is_valid() for f in forms.values()):
             self.patched_field.save()
             return HttpResponseRedirect(".")
+        return None

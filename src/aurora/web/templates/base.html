@@ -1,8 +1,8 @@
-{% load static feature_flags http2 %}<!DOCTYPE html>
+{% load static feature_flags  %}<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="version" content="{{ project.version|slice:':7'|join:'' }}">
+    <meta name="version" content="{{ project.commit|slice:':7'|join:'' }}">
     <meta name="date" content="{{ project.build_date }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -67,215 +67,18 @@
         </div>
     </header>
 {% endblock %}
-{% block body %}{% endblock body %}
-{% block footer %}{% include "_footer.html" %}{% endblock %}
+{% block body_top %}{% endblock %}
 
-{#<script type="text/javascript">#}
-{#    let db;#}
-{##}
-{#    const state = {#}
-{#        online: "ONLINE",#}
-{#        offline: "OFFLINE",#}
-{#        isAuthorized: false#}
-{#    }#}
-{##}
-{#    const registerServiceWorker = () => {#}
-{#        if ("serviceWorker" in navigator) {#}
-{#            navigator.serviceWorker#}
-{#                .register("/serviceworker.js", {#}
-{#                    scope: '/'#}
-{#                }).then((registration) => {#}
-{#                    console.log(`Service worker for scope ${registration.scope} registered`);#}
-{#                },#}
-{#                (err) => {#}
-{#                    console.log('django-pwa: ServiceWorker registration failed: ', err);#}
-{#                });#}
-{##}
-{#            if (navigator.serviceWorker.controller) {#}
-{#                console.log("Service worker installed");#}
-{#            }#}
-{##}
-{#            navigator.serviceWorker.oncontrollerchange = event => {#}
-{#                console.log("New service worker activated");#}
-{#            }#}
-{#        } else {#}
-{#            console.log("Service worker is not supported");#}
-{#        }#}
-{#    }#}
-{##}
-{#    registerServiceWorker();#}
-{##}
-{#    const initDB = () => {#}
-{#        let request = indexedDB.open('forms', 1);#}
-{##}
-{#        request.onerror = function (e) {#}
-{#            console.error('Unable to open database.');#}
-{#        }#}
-{##}
-{#        request.onsuccess = function (e) {#}
-{#            db = e.target.result;#}
-{#            console.log('DB opened');#}
-{#        }#}
-{##}
-{#        request.onupgradeneeded = function (e) {#}
-{#            db = e.target.result;#}
-{#            db.createObjectStore("cachedForms", {keyPath: "id", autoIncrement: true});#}
-{#        }#}
-{#    }#}
-{##}
-{#    // Doubled from serviceworker.js#}
-{#    const synchronizeRegistrationData = () => {#}
-{#        const url = "http://localhost:8000/en-us/";#}
-{##}
-{#        fetch(`${url}get_pwa_enabled/`)#}
-{#            .then(fetchResponse => fetchResponse.json())#}
-{#            .then(response => {#}
-{#                const {slug, version, publicKey, optionsSets} = response#}
-{#                const searchedUrl = `/en-us/register/${slug}/${version}/`;#}
-{##}
-{#                caches.open("internalCache-1").then(cache => {#}
-{#                    cache.keys()#}
-{#                        .then(keys => {#}
-{#                            keys.forEach(key => {#}
-{#                                if (key.url.match(/\/register\//)) {#}
-{#                                    cache.delete(key).then(() => `Key ${key} deleted from cache`)#}
-{#                                }#}
-{#                            })#}
-{#                        })#}
-{#                        .then(() => {#}
-{#                            cache.addAll([searchedUrl, ...optionsSets])#}
-{#                                .then(() => console.log("Version of pwa-enabled registration synchronized"))#}
-{#                                .then(() => {#}
-{#                                    localStorage.setItem("publicKey", publicKey);#}
-{#                                })#}
-{#                        })#}
-{##}
-{#                })#}
-{#            })#}
-{#            .catch(err => console.log(`Sorry, we couldn't synchronize data because of this error: ${err}`));#}
-{#    };#}
-{##}
-{#    const getCookie = name => {#}
-{#        const value = `; ${document.cookie}`;#}
-{#        const parts = value.split(`; ${name}=`);#}
-{#        if (parts.length === 2) return parts.pop().split(';').shift();#}
-{#    }#}
-{##}
-{##}
-{#    async function authorizeCookie(url = "") {#}
-{#        const response = await fetch(url, {#}
-{#            method: "POST",#}
-{#            mode: "cors",#}
-{#            cache: 'no-cache',#}
-{#            credentials: 'same-origin',#}
-{#            headers: {#}
-{#                "Content-Type": "application/json",#}
-{#                "X-CSRFToken": getCookie("csrftoken")#}
-{#            },#}
-{#            body: JSON.stringify(getCookie("reg_id"))#}
-{#        })#}
-{##}
-{#        return response.json();#}
-{#    }#}
-{##}
-{##}
-{#    const prepareFormData = dataObj => {#}
-{#        const dataForm = new FormData();#}
-{##}
-{#        Object.keys(dataObj).map(key => {#}
-{#            dataForm.append(key, dataObj[key])#}
-{#        });#}
-{#        return dataForm;#}
-{#    }#}
-{##}
-{#    const sendData = (url, dataForm) => {#}
-{#        const xhr = new XMLHttpRequest();#}
-{#        xhr.open('POST', `http://localhost:8000${url}`);#}
-{#        xhr.send(dataForm);#}
-{##}
-{#        return xhr#}
-{#    }#}
-{##}
-{#    const loopOverDB = () => {#}
-{#        let transaction = db.transaction(['cachedForms'], 'readonly');#}
-{##}
-{#        let objectStore = transaction.objectStore('cachedForms');#}
-{#        objectStore.openCursor().addEventListener("success", event => {#}
-{#            let cursor = event.target.result;#}
-{#            if (cursor) {#}
-{#                let record = cursor.value;#}
-{#                const url = record.url;#}
-{#                const recordId = record.id;#}
-{##}
-{#                delete record.id;#}
-{#                delete record.url;#}
-{##}
-{#                const dataForm = new FormData();#}
-{#                dataForm.append("encryptedData", record.formDict);#}
-{##}
-{#                const xhr = sendData(url, dataForm);#}
-{##}
-{#                xhr.addEventListener('load', () => {#}
-{#                    console.log("Data sent successfully to sever.");#}
-{#                    removeForm(recordId);#}
-{#                });#}
-{##}
-{#                xhr.addEventListener('error', () => {#}
-{#                    console.log("Oops! Something went wrong.");#}
-{#                });#}
-{##}
-{#                cursor.continue();#}
-{#            }#}
-{#        });#}
-{#    }#}
-{##}
-{#    const removeForm = key => {#}
-{#        const request = db.transaction(['cachedForms'], 'readwrite').objectStore('cachedForms').delete(key);#}
-{##}
-{#        request.onsuccess = () => console.log(`Form deleted, id: ${key}`);#}
-{#        request.onerror = err => console.error(`Error to delete form: ${err}`)#}
-{#    }#}
-{##}
-{#    const clearFormsDB = () => {#}
-{#        let objectStore = db.transaction(['cachedForms'], 'readwrite').objectStore('cachedForms');#}
-{##}
-{#        const objectStoreRequest = objectStore.clear();#}
-{#        objectStoreRequest.addEventListener("success", () => {#}
-{#            console.log("Indexeddb forms cleared");#}
-{#        });#}
-{#    }#}
-{##}
-{#    const processOnline = () => {#}
-{#        authorizeCookie("http://localhost:8000/en-us/authorize_cookie/").then(response => {#}
-{#            state.isAuthorized = response.authorized;#}
-{#        }).then(() => {#}
-{#            if (state.isAuthorized === true) {#}
-{#                console.log("User authorized, starting to send forms");#}
-{#                initDB();#}
-{#                synchronizeRegistrationData();#}
-{#                setTimeout(() => {#}
-{#                    loopOverDB();#}
-{#                }, 5000);#}
-{#            } else {#}
-{#                console.log("User not authorized to send forms...");#}
-{#            }#}
-{#        });#}
-{#    }#}
-{##}
-{#    window.addEventListener("online", () => {#}
-{#        console.log(`Application is ${state.online}`);#}
-{#        processOnline();#}
-{#    });#}
-{##}
-{#    window.addEventListener("offline", () => {#}
-{#        console.log(`Application is ${state.offline}`);#}
-{#    });#}
-{##}
-{#    if (navigator.onLine) {#}
-{#        processOnline();#}
-{#    }#}
-{##}
-{#</script>#}
+{% block body %}{% endblock body %}
+{% block body_bottom %}{% endblock %}
+
+{% block footer %}
+{#    <div class="flex justify-center text-xs footer m-auto pt-1 pb-2 border-t-2 text-gray-400 border-gray-400">#}
+        {% include "_footer.html" %}
+{#    </div>#}
+{#    {% include "_matomo.html" %}#}
+{% endblock footer %}
+{% include "_matomo.html" %}
 
 </body>
 </html>

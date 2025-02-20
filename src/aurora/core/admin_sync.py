@@ -1,15 +1,15 @@
 import json
 from datetime import datetime
-from typing import Dict
+
+from django.contrib import messages
+from django.contrib.admin import action
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 
 from admin_extra_buttons.decorators import button, view
 from admin_sync.mixin import SyncMixin as SyncMixin_
 from admin_sync.perms import check_publish_permission, check_sync_permission
 from admin_sync.utils import SyncResponse, is_local, is_remote, wraps
-from django.contrib import messages
-from django.contrib.admin import action
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
 
 
 class SyncMixin(SyncMixin_):
@@ -25,7 +25,10 @@ class SyncMixin(SyncMixin_):
     def get_version(self, request, key):
         obj = self.model.objects.get_by_natural_key(*key.split("|"))
         return SyncResponse(
-            {"version": obj.version, "last_update_date": obj.last_update_date.strftime(self.UPDATE_FORMAT)}
+            {
+                "version": obj.version,
+                "last_update_date": obj.last_update_date.strftime(self.UPDATE_FORMAT),
+            }
         )
 
     def get_remote_version(self, request, pk):
@@ -41,7 +44,9 @@ class SyncMixin(SyncMixin_):
         local_date = datetime.strptime(obj.last_update_date.strftime(self.UPDATE_FORMAT), self.UPDATE_FORMAT)
         if remote_date > local_date:
             self.message_user(
-                request, f"Remote Record is most recent than the local one: {remote_date}", messages.WARNING
+                request,
+                f"Remote Record is most recent than the local one: {remote_date}",
+                messages.WARNING,
             )
         else:
             self.message_user(
@@ -52,11 +57,11 @@ class SyncMixin(SyncMixin_):
     @button(visible=is_local, order=999, permission=check_publish_permission)
     def publish(self, request, pk):
         obj = self.get_object(request, pk)
-        i: Dict = self.get_remote_version(request, obj)
+        i: dict = self.get_remote_version(request, obj)
         if i["version"] == obj.version:
             return super().publish.func(self, request, pk)
-        else:
-            self.message_user(request, "Version mismatch. Fetch before publish", messages.ERROR)
+        self.message_user(request, "Version mismatch. Fetch before publish", messages.ERROR)
+        return None
 
     @button(
         visible=lambda b: b.model_admin.admin_sync_show_inspect(),
@@ -68,7 +73,6 @@ class SyncMixin(SyncMixin_):
         data = collector.collect(self.get_queryset(request))
         context["data"] = data
         return render(request, "admin/admin_sync/inspect.html", context)
-        # return JsonResponse(c.models, safe=False)
 
     @action(description="Publish")
     def publish_action(self, request, queryset):

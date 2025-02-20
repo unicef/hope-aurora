@@ -1,10 +1,12 @@
 import logging
 
-from admin_extra_buttons.decorators import button, link
-from adminfilters.value import ValueFilter
 from django.contrib.admin import register
 from django.core.cache import caches
+from django.db.models.functions import Collate
 from django.urls import NoReverseMatch
+
+from admin_extra_buttons.decorators import button, link
+from adminfilters.value import ValueFilter
 from smart_admin.modeladmin import SmartModelAdmin
 
 from ...administration.mixin import LoadDumpMixin
@@ -27,20 +29,21 @@ class OptionSetAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartMod
         "comment",
         "pk_col",
     )
-    search_fields = ("name",)
+    search_fields = ("name_deterministic",)
     list_filter = (("data", ValueFilter.factory(lookup_name="icontains")),)
     save_as = True
     readonly_fields = ("version", "last_update_date")
     object_history_template = "reversion-compare/object_history.html"
     exclude = ("columns",)
 
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(name_deterministic=Collate("name", "und-x-icu"))
+
     @button()
     def display_data(self, request, pk):
         ctx = self.get_common_context(request, pk, title="Data")
         obj: OptionSet = ctx["original"]
-        data = []
-        for line in obj.data.split("\r\n"):
-            data.append(line.split(obj.separator))
+        data = [line.split(obj.separator) for line in obj.data.split("\r\n")]
         ctx["data"] = data
         return render(request, "admin/core/optionset/table.html", ctx)
 

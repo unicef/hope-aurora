@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils.translation import get_language
+
 from rest_framework import serializers
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action
@@ -24,14 +25,16 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserViewSet(SmartViewSet):
-    """
-    This viewset automatically provides `list` and `retrieve` actions.
-    """
+    """Viewset automatically provides `list` and `retrieve` actions."""
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    @action(detail=False, permission_classes=[AllowAny], authentication_classes=[SessionAuthentication])
+    @action(
+        detail=False,
+        permission_classes=[AllowAny],
+        authentication_classes=[SessionAuthentication],
+    )
     def me(self, request):
         response = {
             "perms": [],

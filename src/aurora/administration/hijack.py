@@ -1,4 +1,5 @@
 from django.contrib.auth import login
+
 from hijack import signals
 from hijack.templatetags.hijack import can_hijack
 from hijack.views import get_used_backend, keep_session_age

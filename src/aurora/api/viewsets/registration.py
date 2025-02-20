@@ -5,8 +5,9 @@ import os
 from collections import OrderedDict
 from urllib import parse
 
-from django.http import HttpResponse, HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.utils.cache import get_conditional_response
+
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -17,7 +18,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
-from ...core.utils import get_etag, get_session_id, build_dict
+from ...core.utils import build_dict, get_etag, get_session_id
 from ...registration.models import Record, Registration
 from ..serializers import RegistrationDetailSerializer, RegistrationListSerializer
 from ..serializers.record import DataTableRecordSerializer
@@ -56,25 +57,16 @@ class RegistrationViewSet(SmartViewSet):
     def get_permissions(self):
         return [permission() for permission in self.permission_classes]
 
-    # def get_object(self):
-    #     queryset = self.filter_queryset(self.get_queryset())
-    #     if self.kwargs["attr"].isnumeric():
-    #         filter_field = "pk"
-    #     else:
-    #         filter_field = "slug"
-    #     obj = get_object_or_404(queryset, **{filter_field: self.kwargs["attr"]})
-    #
-    #     # May raise a permission denied
-    #     self.check_object_permissions(self.request, obj)
-    #
-    #     return obj
-
     @action(detail=True, permission_classes=[AllowAny])
     def metadata(self, request, pk=None):
         reg: Registration = self.get_object()
         return Response(reg.metadata)
 
-    @action(detail=True, permission_classes=[AllowAny], url_path="((?P<language>[a-z-]*)/)*version")
+    @action(
+        detail=True,
+        permission_classes=[AllowAny],
+        url_path="((?P<language>[a-z-]*)/)*version",
+    )
     def version1(self, request, pk, language=""):
         reg: Registration = self.get_object()
         return Response(
@@ -122,21 +114,23 @@ class RegistrationViewSet(SmartViewSet):
 
             if page is None:
                 serializer = DataTableRecordSerializer(
-                    queryset, many=True, context={"request": request}, metadata=obj.metadata
+                    queryset,
+                    many=True,
+                    context={"request": request},
+                    metadata=obj.metadata,
                 )
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                serializer = DataTableRecordSerializer(
-                    page, many=True, context={"request": request}, metadata=obj.metadata
-                )
-                response = self.get_paginated_response(serializer.data)
+            serializer = DataTableRecordSerializer(page, many=True, context={"request": request}, metadata=obj.metadata)
+            response = self.get_paginated_response(serializer.data)
         response.headers.setdefault("ETag", self.res_etag)
         response.headers.setdefault("Cache-Control", "private, max-age=120")
         return response
 
     @action(detail=True)
     def csv(self, request: HttpRequest, pk):
-        """
+        r"""
+        Return a CSV json for registration information.
+
         "form": {
             "filters": "({}, {})",
             "include": "['']",
@@ -161,9 +155,8 @@ class RegistrationViewSet(SmartViewSet):
         }
         """
         reg: Registration = self.get_object()
+        from aurora.core.forms import CSVOptionsForm, DateFormatsForm
         from aurora.registration.forms import RegistrationExportForm
-        from aurora.core.forms import CSVOptionsForm
-        from aurora.core.forms import DateFormatsForm
 
         try:
             form = RegistrationExportForm(request.GET, initial=RegistrationExportForm.defaults)
@@ -171,7 +164,7 @@ class RegistrationViewSet(SmartViewSet):
             fmt_form = DateFormatsForm(request.GET, prefix="fmt", initial=DateFormatsForm.defaults)
             if form.is_valid() and opts_form.is_valid() and fmt_form.is_valid():
                 for frm in [form, fmt_form, opts_form]:
-                    for k, f in frm.defaults.items():
+                    for k in frm.defaults:
                         if not frm.cleaned_data.get(k):
                             frm.cleaned_data[k] = frm.defaults[k]
                 filters, exclude = form.cleaned_data["filters"]
@@ -194,7 +187,7 @@ class RegistrationViewSet(SmartViewSet):
                 all_fields = []
                 records = [build_dict(r, **fmt_form.cleaned_data) for r in qs]
                 for r in records:
-                    for field_name in r.keys():
+                    for field_name in r:
                         if field_name not in skipped and field_name in exclude_fields:
                             skipped.append(field_name)
                         elif field_name not in all_fields and field_name in include_fields:
@@ -229,41 +222,38 @@ class RegistrationViewSet(SmartViewSet):
                         headers=headers,
                         content_type="text/plain",
                     )
-                else:
-
-                    return Response(
-                        {
-                            "reg": {
-                                "name": reg.name,
-                                "slug": reg.slug,
-                            },
-                            "data": {
-                                "download": request.build_absolute_uri(
-                                    "?download=1&" + parse.urlencode(request.GET.dict(), doseq=False)
-                                ),
-                                "preview": request.build_absolute_uri(
-                                    "?preview=1&" + parse.urlencode(request.GET.dict(), doseq=False)
-                                ),
-                                "count": qs.count(),
-                                "filters": filters,
-                                "exclude": exclude,
-                                "include_fields": [r.pattern for r in include_fields],
-                                "fieldnames": all_fields,
-                                "skipped": skipped,
-                            },
-                            "form": {k: str(v) for k, v in form.cleaned_data.items()},
-                            "fmt": {k: str(v) for k, v in fmt_form.cleaned_data.items()},
-                            "csv": {k: str(v) for k, v in opts_form.cleaned_data.items()},
-                        }
-                    )
-            else:
                 return Response(
                     {
-                        "form": form.errors,
-                        "fmt": fmt_form.errors,
-                        "csv": opts_form.errors,
+                        "reg": {
+                            "name": reg.name,
+                            "slug": reg.slug,
+                        },
+                        "data": {
+                            "download": request.build_absolute_uri(
+                                "?download=1&" + parse.urlencode(request.GET.dict(), doseq=False)
+                            ),
+                            "preview": request.build_absolute_uri(
+                                "?preview=1&" + parse.urlencode(request.GET.dict(), doseq=False)
+                            ),
+                            "count": qs.count(),
+                            "filters": filters,
+                            "exclude": exclude,
+                            "include_fields": [r.pattern for r in include_fields],
+                            "fieldnames": all_fields,
+                            "skipped": skipped,
+                        },
+                        "form": {k: str(v) for k, v in form.cleaned_data.items()},
+                        "fmt": {k: str(v) for k, v in fmt_form.cleaned_data.items()},
+                        "csv": {k: str(v) for k, v in opts_form.cleaned_data.items()},
                     }
                 )
+            return Response(
+                {
+                    "form": form.errors,
+                    "fmt": fmt_form.errors,
+                    "csv": opts_form.errors,
+                }
+            )
         except Exception as e:
             logger.exception(e)
             return Response({"message": "Error"}, status=500)

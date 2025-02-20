@@ -5,7 +5,6 @@ from django.template.base import TokenType, render_value_in_context
 from django.template.defaulttags import token_kwargs
 from django.templatetags.static import static
 from django.utils import translation
-from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
 
 from ..engine import translator
@@ -33,9 +32,6 @@ class TranslateNode(Node):
         # Restore percent signs. Percent signs in template text are doubled
         # so they are not interpreted as string format flags.
 
-        # is_safe = isinstance(value, SafeData)
-        # value1 = value.replace("%%", "%")
-        # value = mark_safe(value1) if is_safe else value1
         current_locale = get_language()
         if self.filter_expression.var.literal:
             msgid = self.filter_expression.var.literal
@@ -45,11 +41,10 @@ class TranslateNode(Node):
         value = translator[current_locale][msgid]
 
         if self.asvar:
-            context[self.asvar] = value
+            context[self.asvar] = str(value)
             context[f"{self.asvar}_msgid"] = msgid
             return ""
-        else:
-            return value
+        return str(value)
 
 
 class BlockTranslateNode(Node):
@@ -77,17 +72,17 @@ class BlockTranslateNode(Node):
 
     def render_token_list(self, tokens):
         result = []
-        vars = []
+        variables = []
         for token in tokens:
             if token.token_type == TokenType.TEXT:
                 result.append(token.contents.replace("%", "%%"))
             elif token.token_type == TokenType.VAR:
                 result.append("%%(%s)s" % token.contents)
-                vars.append(token.contents)
+                variables.append(token.contents)
         msg = "".join(result)
         if self.trimmed:
             msg = translation.trim_whitespace(msg)
-        return msg, vars
+        return msg, variables
 
     def render(self, context, nested=False):
         if self.message_context:
@@ -97,10 +92,10 @@ class BlockTranslateNode(Node):
         # Update() works like a push(), so corresponding context.pop() is at
         # the end of function
         context.update({var: val.resolve(context) for var, val in self.extra_context.items()})
-        singular, vars = self.render_token_list(self.singular)
+        singular, variables = self.render_token_list(self.singular)
         if self.plural and self.countervar and self.counter:
             count = self.counter.resolve(context)
-            if not isinstance(count, (Decimal, float, int)):
+            if not isinstance(count, Decimal | float | int):
                 raise TemplateSyntaxError("%r argument to %r tag must be a number." % (self.countervar, self.tag_name))
             context[self.countervar] = count
             plural, plural_vars = self.render_token_list(self.plural)
@@ -108,12 +103,11 @@ class BlockTranslateNode(Node):
                 result = translation.npgettext(message_context, singular, plural, count)
             else:
                 result = translation.ngettext(singular, plural, count)
-            vars.extend(plural_vars)
+            variables.extend(plural_vars)
+        elif message_context:
+            result = translation.pgettext(message_context, singular)
         else:
-            if message_context:
-                result = translation.pgettext(message_context, singular)
-            else:
-                result = translation.gettext(singular)
+            result = translation.gettext(singular)
         default_value = context.template.engine.string_if_invalid
 
         def render_value(key):
@@ -131,15 +125,14 @@ class BlockTranslateNode(Node):
             if nested:
                 # Either string is malformed, or it's a bug
                 raise TemplateSyntaxError(
-                    "%r is unable to format string returned by gettext: %r " "using %r" % (self.tag_name, result, data)
+                    "%r is unable to format string returned by gettext: %r using %r" % (self.tag_name, result, data)
                 )
             with translation.override(None):
                 result = self.render(context, nested=True)
         if self.asvar:
-            context[self.asvar] = result
+            context[self.asvar] = str(result)
             return ""
-        else:
-            return result
+        return str(result)
 
 
 @register.tag("translate")
@@ -163,7 +156,7 @@ def do_translate(parser, token):
             raise TemplateSyntaxError(
                 "The '%s' option was specified more than once." % option,
             )
-        elif option == "noop":
+        if option == "noop":
             noop = True
         elif option == "context":
             try:
@@ -172,7 +165,7 @@ def do_translate(parser, token):
                 raise TemplateSyntaxError("No argument provided to the '%s' tag for the context option." % bits[0])
             if value in invalid_context:
                 raise TemplateSyntaxError(
-                    "Invalid argument '%s' provided to the '%s' tag for the context " "option" % (value, bits[0]),
+                    "Invalid argument '%s' provided to the '%s' tag for the context option" % (value, bits[0]),
                 )
             message_context = parser.compile_filter(value)
         elif option == "as":
@@ -246,15 +239,15 @@ def do_block_translate(parser, token):  # noqa
     while remaining_bits:
         option = remaining_bits.pop(0)
         if option in options:
-            raise TemplateSyntaxError("The %r option was specified more " "than once." % option)
+            raise TemplateSyntaxError("The %r option was specified more than once." % option)
         if option == "with":
             value = token_kwargs(remaining_bits, parser, support_legacy=True)
             if not value:
-                raise TemplateSyntaxError('"with" in %r tag needs at least ' "one keyword argument." % bits[0])
+                raise TemplateSyntaxError('"with" in %r tag needs at least one keyword argument.' % bits[0])
         elif option == "count":
             value = token_kwargs(remaining_bits, parser, support_legacy=True)
             if len(value) != 1:
-                raise TemplateSyntaxError('"count" in %r tag expected exactly ' "one keyword argument." % bits[0])
+                raise TemplateSyntaxError('"count" in %r tag expected exactly one keyword argument.' % bits[0])
         elif option == "context":
             try:
                 value = remaining_bits.pop(0)
@@ -277,10 +270,7 @@ def do_block_translate(parser, token):  # noqa
         countervar, counter = next(iter(options["count"].items()))
     else:
         countervar, counter = None, None
-    if "context" in options:
-        message_context = options["context"]
-    else:
-        message_context = None
+    message_context = options.get("context")
     extra_context = options.get("with", {})
 
     trimmed = options.get("trimmed", False)
@@ -324,7 +314,6 @@ def md5(value, lang):
     from aurora.i18n.models import Message
 
     return Message.get_md5(value, lang)
-    # return hashlib.md5((lang + "__" + str(value)).encode()).hexdigest()
 
 
 @register.filter()
@@ -345,4 +334,4 @@ def bool_icon(value):
         img = static("admin/img/icon-yes.svg")
     else:
         img = static("admin/img/icon-no.svg")
-    return mark_safe(f'<img src="{img}" alt="{str(bool(value))}">')
+    return f'<img src="{img}" alt="{str(bool(value))}">'

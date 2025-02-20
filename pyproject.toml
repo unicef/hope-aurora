@@ -1,117 +1,162 @@
-[tool.poetry]
-name = "aurora"
-version = "0.1.0"
+[project]
+name = "Aurora"
+version = "2.0"
 description = ""
-authors = ["sax <s.apostolico@gmail.com>"]
-packages = [
-    { include = "aurora", from = "src" },
+readme = "README.md"
+license = {text = "MIT"}
+
+authors = [
+    {name = "sax", email = "s.apostolico@gmail.com"},
+    {name = "Domenico DiNicola", email = "dom.dinicola@gmail.com"},
+]
+requires-python = ">=3.12"
+dependencies = [
+    "Faker",
+    "Markdown",
+    "Pillow",
+    "beautifulsoup4",
+    "celery",
+    "channels-redis",
+    "channels[daphne]",
+    "cryptography",
+    "django-admin-extra-buttons",
+    "django-admin-ordering",
+    "django-admin-sync",
+    "django-adminactions",
+    "django-adminfilters",
+    "django-anymail[mailjet]",
+    "django-appconf",
+    "django-bitfield",
+    "django-click",
+    "django-concurrency",
+    "django-constance",
+    "django-cors-headers",
+    "django-csp",
+    "django-debug-toolbar",
+    "django-environ",
+    "django-filter",
+    "django-flags",
+    "django-front-door",
+    "django-hijack",
+    "django-import-export",
+    "django-jsoneditor",
+    "django-mdeditor",
+    "django-mptt",
+    "django-picklefield",
+    "django-pwa",
+    "django-redis",
+    "django-regex",
+    "django-reversion",
+    "django-reversion-compare",
+    "django-simple-captcha",
+    "django-simple-math-captcha",
+    "django-smart-admin",
+    "django-smart-env",
+    "django-strategy-field",
+    "django-sysinfo",
+    "django-tinymce",
+    "django<5.1",
+    "djangorestframework",
+    "djangorestframework-datatables",
+    "htmlmin",
+    "jmespath",
+    "jsonpickle",
+    "mini-racer",
+    "natural-keys",
+    "psycopg2-binary",
+    "py-mini-racer",
+    "pycryptodome",
+    "pygments",
+    "pyquery",
+    "qrcode",
+    "sentry-sdk",
+    "setuptools>=75.6.0",
+    "social-auth-app-django",
+    "soupsieve",
+    "sqlparse",
+    "uwsgi",
 ]
 
-[tool.poetry.dependencies]
-Faker = "^14.0.0"
-Markdown = "^3.3.6"
-Pillow = "^9.0.1"
-celery = "^5.2.6"
-cryptography = "*"
-django = "^3"
-django-admin-extra-buttons = ">=1.5.6"
-django-admin-ordering = "*"
-django-admin-sync = ">=0.7.1"
-django-adminactions = "^2"
-django-adminfilters = "^2"
-django-appconf = "^1.0.5"
-django-bitfield = "^2.1"
-django-click = "^2.3"
-django-concurrency = "^2.4"
-django-constance = "^2.8"
-django-cors-headers = "^3.11.0"
-django-csp = "^3.7"
-django-environ = "^0.9"
-django-flags = "^5"
-django-import-export = "*"
-django-jsoneditor = "^0.2"
-django-picklefield = "^3.0"
-django-redis = "^5.2.0"
-django-regex = "^0.5"
-django-reversion = "^5.0"
-django-reversion-compare = "^0.15"
-django-simple-captcha = "^0.5.17"
-django-simple-math-captcha = "^2"
-django-smart-admin = ">=2"
-django-strategy-field = "^3"
-django-sysinfo = "^2"
-django_regex = "*"
-djangorestframework = "^3"
-htmlmin = "^0.1"
-jmespath = "^1.0"
-jsonpickle="^2.1"
-natural-keys = "^2.0.0"
-psycopg2-binary = "^2.9.3"
-py-mini-racer = "^0.6.0"
-pycryptodome = "^3.14.1"
-#pyduktape2 = "^0.4.3"
-python = "^3.9"
-qrcode = "^7.3.1"
-sentry-sdk = "^1.5"
-setuptools = "^65.5.0"
-social-auth-app-django = "^5.0.0"
-sqlparse = "^0.4.2"
-django-tinymce = "^3.5.0"
-django-pwa = "^1.0.10"
-django-mptt = "^0.14.0"
-django-hijack = "^3.2.6"
-channels = {extras = ["daphne"], version = "^4.0.0"}
-channels-redis = "^4.0.0"
-django-mdeditor = "^0.1.20"
-djangorestframework-datatables = "^0.7.0"
-django-filter = "^22.1"
-django-front-door = "^0.10.0"
-django-debug-toolbar = "^3"
-pygments = "^2.14.0"
-soupsieve = "^2.4"
-pyquery = "^2.0.0"
-beautifulsoup4 = "^4.12.0"
+[uv]
+package = true
 
-[tool.poetry.dev-dependencies]
-black = "^22.1.0"
-coverage = "*"
-django-webtest = "^1.9.7"
-factory_boy = "*"
-flake8 = "*"
-freezegun = "^1.2.2"
-ipython = "*"
-isort = "^5.6.4"
-pdbpp = "*"
-pre-commit = "*"
-pyflakes = "*"
-pytest = "*"
-pytest-asyncio = "*"
-pytest-coverage = "^0.0"
-pytest-django = "^4.1.0"
-pytest-echo = "*"
-pytest-pythonpath = "^0.7.3"
-pytest-selenium = "^2.0"
-tox = "*"
-watchdog = "^2.1.6"
-django-stubs = {extras = ["compatible-mypy"], version = "^1.16.0"}
+[project.optional-dependencies]
+docs = [
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocs-awesome-pages-plugin",
+    "mkdocstrings-python",
+    "mkdocs-gen-files",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "black",
+    "coverage",
+    "django-stubs[compatible-mypy]",
+    "django-webtest",
+    "factory-boy",
+    "flake8",
+    "flake8-html",
+    "freezegun",
+    "ipython",
+    "isort",
+    "pdbpp",
+    "pre-commit",
+    "pyflakes",
+    "pytest-asyncio",
+    "pytest-coverage",
+    "pytest-django",
+    "pytest-echo",
+    "pytest-html",
+    "pytest-pythonpath",
+    "pytest-selenium",
+    "pytest-variables",
+    "pytest-xdist",
+    "pytest",
+    "tox",
+    "watchdog",
+]
 
 [build-system]
-requires = ["poetry-core>=1.1.4"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
 
-[tool.isort]
-profile = "black"
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools]
+packages = ["aurora", "dbtemplates"]
 
 [tool.black]
 line-length = 120
-target-version = ['py39']
 include = '\.pyi?$'
 exclude = '''
 /(
-  \.toml
-  |\.sh
-  |\.git
-  |\.ini
-  |Dockerfile
+    \.git
+  | \.pytest_cache
+  | \.tox
+  | \.venv
+  | ~build
+  | build
+  | ops
+  | migrations
 )/
 '''
+
+[tool.isort]
+profile = "black"
+line_length = 120
+default_section = "THIRDPARTY"
+known_first_party = []
+known_django = "django"
+sections = ["FUTURE","STDLIB","DJANGO","THIRDPARTY","FIRSTPARTY","LOCALFOLDER"]
+include_trailing_comma = true
+skip = ["migrations", "snapshots", ".venv"]
+
+
+[tool.nitpick]
+    style = [
+        "github://unicef/hope-code-conventions@main/django/django.toml"
+    ]
+    cache = "1 day"

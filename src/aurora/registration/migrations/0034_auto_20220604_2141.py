@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0046_alter_validator_target"),
         ("registration", "0033_auto_20220604_1314"),

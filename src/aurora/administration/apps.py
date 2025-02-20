@@ -8,6 +8,7 @@ class AuroraAdminConfig(AppConfig):
     def ready(self):
         super().ready()
         from django.contrib.admin import site
+
         from smart_admin.console import (
             panel_email,
             panel_error_page,

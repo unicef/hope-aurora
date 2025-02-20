@@ -1,4 +1,4 @@
-FROM python:3.9.2-slim-buster
+FROM python:3.12-slim-bookworm
 ARG BUILD_DATE
 ARG VERSION
 
@@ -51,14 +51,10 @@ ENV PATH="${PATH}:/root/.local/bin" \
     VERSION=${VERSION} \
     POETRY_VERSION=${POETRY_VERSION}
 
-RUN pip install "poetry==1.2.2"
+RUN pip install pdm==2.9.3
 
-ADD poetry.lock pyproject.toml /code/
-
-RUN poetry config virtualenvs.create false \
-    && mkdir -p /var/nginx/system \
-    && poetry install --no-interaction --no-ansi --no-root \
-    && pip install uwsgi
+ADD pdm.toml pdm.lock /code/
+RUN pdm sync --prod --no-editable --no-self
 
 ADD . /code/
 ADD ./docker/conf/nginx/* /var/nginx/

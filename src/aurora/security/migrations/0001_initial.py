@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -19,13 +18,33 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="RegistrationRole",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 (
                     "registration",
-                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="registration.registration"),
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="registration.registration",
+                    ),
                 ),
-                ("role", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="auth.group")),
-                ("user", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "role",
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="auth.group"),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
                 "unique_together": {("registration", "user", "role")},

@@ -1,19 +1,14 @@
 import os
-
 from itertools import chain
 
 from django import forms
-from django.utils.html import html_safe, format_html
+from django.utils.html import format_html, html_safe
 
 
 @html_safe
 class VersionMedia(forms.Media):
     def __str__(self):
         return self.render()
-
-    # def render_js(self):
-    #     version = os.environ.get("VERSION", "<dev>")
-    #     return [format_html('<script src="{}?{}"></script>', self.absolute_path(path), version) for path in self._js]
 
     def render_css(self):
         # To keep rendering order consistent, we can't just iterate over items().

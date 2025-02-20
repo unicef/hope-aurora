@@ -3,12 +3,13 @@ import json
 import tempfile
 from pathlib import Path
 
-from admin_extra_buttons.decorators import button
-from admin_extra_buttons.mixins import ExtraButtonsMixin
-from concurrency.api import disable_concurrency
 from django.contrib import messages
 from django.core.management import call_command
 from django.http import JsonResponse
+
+from admin_extra_buttons.decorators import button
+from admin_extra_buttons.mixins import ExtraButtonsMixin
+from concurrency.api import disable_concurrency
 
 from aurora.core.utils import render
 
@@ -54,7 +55,11 @@ class LoadDumpMixin(ExtraButtonsMixin):
                         finally:
                             fixture.unlink()
                 except Exception as e:
-                    self.message_user(request, f"{e.__class__.__name__}: {e} {out.getvalue()}", messages.ERROR)
+                    self.message_user(
+                        request,
+                        f"{e.__class__.__name__}: {e} {out.getvalue()}",
+                        messages.ERROR,
+                    )
             else:
                 ctx["form"] = form
         else:

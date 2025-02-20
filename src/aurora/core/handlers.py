@@ -15,13 +15,9 @@ def update_cache(sender, instance, **kwargs):
             for r in instance.registration_set.all():
                 r.save()
 
-    # elif isinstance(instance, FormSet):
-    #     instance.flex_form.save()
     elif isinstance(instance, FlexFormField):
         instance.flex_form.save()
     elif isinstance(instance, FlexForm):
-        # for r in instance.formset_set.all():
-        #     r.parent.save()
         for r in instance.registration_set.all():
             r.save()
 

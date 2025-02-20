@@ -2,18 +2,18 @@ import base64
 import json
 import logging
 
-import jmespath
-from concurrency.fields import AutoIncVersionField
-from Crypto.PublicKey import RSA
 from django.conf import settings
 from django.contrib.flatpages.models import FlatPage
-from django.contrib.postgres.fields import CICharField
 from django.db import models
 from django.utils import timezone, translation
 from django.utils.functional import cached_property
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
-from natural_keys import NaturalKeyModel
+
+import jmespath
+from concurrency.fields import AutoIncVersionField
+from Crypto.PublicKey import RSA
+from natural_keys import NaturalKeyModel, NaturalKeyModelManager
 from strategy_field.fields import StrategyField
 from strategy_field.utils import fqn
 
@@ -39,8 +39,13 @@ logger = logging.getLogger(__name__)
 undefined = object()
 
 
+class RegistrationManager(NaturalKeyModelManager):
+    def get_queryset(self):
+        return super().get_queryset().select_related("project", "project__organization")
+
+
 class Registration(NaturalKeyModel, I18NModel, models.Model):
-    _natural_key = ("slug",)
+    _natural_key = ("slug", "project")
 
     ADVANCED_DEFAULT_ATTRS = {
         "smart": {
@@ -55,26 +60,35 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
 
-    name = CICharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255, db_collation="_")
     title = models.CharField(max_length=500, blank=True, null=True)
     slug = models.SlugField(max_length=500, blank=True, null=True, unique=True)
-    project = models.ForeignKey(Project, null=True, on_delete=models.SET_NULL)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="registrations")
 
     flex_form = models.ForeignKey(FlexForm, on_delete=models.PROTECT)
     start = models.DateField(default=timezone.now, editable=True)
     end = models.DateField(blank=True, null=True)
     active = models.BooleanField(default=False)
     archived = models.BooleanField(
-        default=False, null=False, help_text=_("Archived/Terminated registration cannot be activated/reopened")
+        default=False,
+        null=False,
+        help_text=_("Archived/Terminated registration cannot be activated/reopened"),
     )
     locale = models.CharField(
-        verbose_name="Default locale", max_length=10, choices=settings.LANGUAGES, default=settings.LANGUAGE_CODE
+        verbose_name="Default locale",
+        max_length=10,
+        choices=settings.LANGUAGES,
+        default=settings.LANGUAGE_CODE,
     )
     dry_run = models.BooleanField(default=False)
     handler = StrategyField(registry=strategies, default=None, blank=True, null=True)
     show_in_homepage = models.BooleanField(default=False)
     welcome_page = models.ForeignKey(FlatPage, blank=True, null=True, on_delete=models.SET_NULL)
-    locales = ChoiceArrayField(models.CharField(max_length=10, choices=settings.LANGUAGES), blank=True, null=True)
+    locales = ChoiceArrayField(
+        models.CharField(max_length=10, choices=settings.LANGUAGES),
+        blank=True,
+        null=True,
+    )
     intro = models.TextField(blank=True, null=True, default="")
     footer = models.TextField(blank=True, null=True, default="")
     client_validation = models.BooleanField(blank=True, null=False, default=False)
@@ -88,14 +102,23 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
     )
 
     scripts = models.ManyToManyField(
-        Validator, related_name="script_for", limit_choices_to={"target": Validator.SCRIPT}, blank=True
+        Validator,
+        related_name="script_for",
+        limit_choices_to={"target": Validator.SCRIPT},
+        blank=True,
     )
 
     unique_field_path = models.CharField(
-        max_length=1000, blank=True, null=True, help_text="JMESPath expression to retrieve unique field"
+        max_length=1000,
+        blank=True,
+        null=True,
+        help_text="JMESPath expression to retrieve unique field",
     )
     unique_field_error = models.CharField(
-        max_length=255, blank=True, null=True, help_text="Error message in case of duplicate 'unique_field'"
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Error message in case of duplicate 'unique_field'",
     )
     public_key = models.TextField(
         blank=True,
@@ -110,8 +133,11 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
     is_pwa_enabled = models.BooleanField(default=False)
     export_allowed = models.BooleanField(default=False)
 
+    objects = RegistrationManager()
+
     class Meta:
         get_latest_by = "start"
+        unique_together = ("name", "project")
         permissions = (
             ("can_manage_registration", _("Can manage Registration")),
             ("register", _("Can use Registration")),
@@ -121,25 +147,8 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
         )
         ordering = ("name", "title")
 
-    @property
-    def media(self):
-        return VersionMedia(js=[script.get_script_url() for script in self.scripts.all()])
-
     def __str__(self):
         return self.name
-
-    def get_absolute_url(self):
-        return cache_aware_reverse("register", args=[self.slug, self.version])
-
-    def get_i18n_url(self, lang=None):
-        translation.activate(language=lang or self.locale)
-        return cache_aware_reverse("register", args=[self.slug, self.version])
-
-    def get_welcome_url(self):
-        if self.welcome_page:
-            return self.welcome_page.get_absolute_url()
-        else:
-            return self.get_absolute_url()
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not self.slug:
@@ -148,6 +157,32 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
             self.title = self.name
         dict_setdefault(self.advanced, self.ADVANCED_DEFAULT_ATTRS)
         super().save(force_insert, force_update, using, update_fields)
+
+    def get_absolute_url(self):
+        return cache_aware_reverse("register", args=[self.slug, self.version])
+
+    @property
+    def media(self):
+        return VersionMedia(js=[script.get_script_url() for script in self.scripts.all()])
+
+    @cached_property
+    def organization(self):
+        return self.project.organization
+
+    def is_running(self) -> bool:
+        today = timezone.now().today().date()
+        if not self.end:
+            return True
+        return self.start <= today <= self.end
+
+    def get_i18n_url(self, lang=None):
+        translation.activate(language=lang or self.locale)
+        return cache_aware_reverse("register", args=[self.slug, self.version])
+
+    def get_welcome_url(self):
+        if self.welcome_page:
+            return self.welcome_page.get_absolute_url()
+        return self.get_absolute_url()
 
     def setup_encryption_keys(self):
         key = RSA.generate(2048)
@@ -167,47 +202,9 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
     def add_record(self, fields_data):
         if not self.handler:
             return SaveToDB(self).save(fields_data)
+        if not self.is_running():
+            raise Exception("Registration  is expired")
         return self.handler.save(fields_data)
-
-    #
-    # def _add_record(self, fields_data):
-    #     fields, files = router.decompress(fields_data)
-    #     crypter = Crypto()
-    #     if self.public_key:
-    #         kwargs = {
-    #             # "storage": self.encrypt(fields_data),
-    #             "files": self.encrypt(files),
-    #             "fields": base64.b64encode(self.encrypt(fields)).decode(),
-    #         }
-    #     elif self.encrypt_data:
-    #         kwargs = {
-    #             # "storage": Crypto().encrypt(fields_data).encode(),
-    #             "files": crypter.encrypt(files).encode(),
-    #             "fields": crypter.encrypt(fields),
-    #         }
-    #     else:
-    #         kwargs = {
-    #             # "storage": safe_json(fields_data).encode(),
-    #             "files": safe_json(files).encode(),
-    #             "fields": jsonfy(fields),
-    #         }
-    #     if self.unique_field_path and not kwargs.get("unique_field", None):
-    #         unique_value = self.get_unique_value(fields)
-    #         kwargs["unique_field"] = unique_value
-    #     if state.request and state.request.user.is_authenticated:
-    #         registrar = state.request.user
-    #     else:
-    #         registrar = None
-    #     kwargs.update(
-    #         {
-    #             "registrar": registrar,
-    #             "size": total_size(fields) + total_size(files),
-    #             "counters": fields_data.get("counters", {}),
-    #             "index1": fields_data.get("index1", None),
-    #         }
-    #     )
-    #
-    #     return Record.objects.create(registration=self, **kwargs)
 
     def get_unique_value(self, cleaned_data):
         unique_value = None
@@ -231,11 +228,12 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
 
     @property
     def option_set_links(self):
-        links = []
-        for field in self.flex_form.fields.all():
-            if field.field_type == AjaxSelectField:
-                links.append(f"/en-us/options/{field.choices}/")  # TODO: is en-us always valid?
-        return links
+        # TODO: is en-us always valid?
+        return [
+            f"/en-us/options/{field.choices}/"
+            for field in self.flex_form.fields.all()
+            if field.field_type == AjaxSelectField
+        ]
 
     @cached_property
     def metadata(self):
@@ -249,7 +247,7 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
         def _get_field_details(flex_field: FlexFormField):
             kwargs = flex_field.get_field_kwargs()
             return {
-                "type": fqn(flex_field.field_type),
+                "type": fqn(flex_field.field_type) if flex_field.field_type else None,
                 "label": flex_field.label,
                 "name": flex_field.name,
                 "smart_attrs": kwargs["smart_attrs"],
@@ -302,8 +300,6 @@ class Record(models.Model):
     ignored = models.BooleanField(default=False, blank=True, null=True)
     size = models.IntegerField(blank=True, null=True)
     counters = models.JSONField(blank=True, null=True)
-    # cleared = models.BooleanField(default=True, blank=True,
-    #                               help_text="Not cleared Records will not be fetched by HOPE")
     fields = models.JSONField(null=True, blank=True)
     files = models.BinaryField(null=True, blank=True)
 
@@ -314,29 +310,29 @@ class Record(models.Model):
     is_offline = models.BooleanField(default=False)
     registrar = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.SET_NULL)
 
-    @property
-    def fields_data(self):
-        if self.is_offline and len(self.fields) > 12_000:
-            return "String too long to display..."
-        else:
-            return self.fields
-
     class Meta:
         unique_together = ("registration", "unique_field")
+
+    def __str__(self):
+        return f"{self.registration} - {self.pk}"
+
+    @property
+    def fields_data(self):
+        return "String too long to display..." if self.is_offline and len(self.fields) > 12_000 else self.fields
 
     def decrypt(self, private_key=undefined, secret=undefined):
         if self.is_offline:
             fields = json.loads(decrypt_offline(self.fields, private_key))
             return router.compress(fields, {})
-        else:
-            if private_key != undefined:
-                files = json.loads(decrypt(self.files, private_key))
-                fields = json.loads(decrypt(base64.b64decode(self.fields), private_key))
-                return router.compress(fields, files)
-            elif secret != undefined:
-                files = json.loads(Crypto(secret).decrypt(self.files))
-                fields = json.loads(Crypto(secret).decrypt(self.fields))
-                return router.compress(fields, files)
+        if private_key != undefined:
+            files = json.loads(decrypt(self.files, private_key))
+            fields = json.loads(decrypt(base64.b64decode(self.fields), private_key))
+            return router.compress(fields, files)
+        if secret != undefined:
+            files = json.loads(Crypto(secret).decrypt(self.files))
+            fields = json.loads(Crypto(secret).decrypt(self.fields))
+            return router.compress(fields, files)
+        return None
 
     @property
     def unicef_id(self):
@@ -346,20 +342,19 @@ class Record(models.Model):
     def data(self):
         if self.registration.public_key:
             return {"Forbidden": "Cannot access encrypted data"}
-        elif self.registration.encrypt_data:
+        if self.registration.encrypt_data:
             return self.decrypt(secret=None)
-        else:
-            files = {}
-            f = self.files
-            if f:
-                if not isinstance(f, bytes):
-                    f = self.files.tobytes()
-                files = json.loads(f.decode())
-            return merge(files, self.fields or {})
+        files = {}
+        f = self.files
+        if f:
+            if not isinstance(f, bytes):
+                f = self.files.tobytes()
+            files = json.loads(f.decode())
+        return merge(files, self.fields or {})
 
 
 def merge(a, b, path=None, update=True):
-    """merges b into a"""
+    """Merge b into a."""
     if path is None:
         path = []
     for key in b:
@@ -369,8 +364,13 @@ def merge(a, b, path=None, update=True):
             elif a[key] == b[key]:
                 pass  # same leaf value
             elif isinstance(a[key], list) and isinstance(b[key], list):
-                for idx, val in enumerate(b[key]):
-                    a[key][idx] = merge(a[key][idx], b[key][idx], path + [str(key), str(idx)], update=update)
+                for idx, _ in enumerate(b[key]):
+                    a[key][idx] = merge(
+                        a[key][idx],
+                        b[key][idx],
+                        path + [str(key), str(idx)],
+                        update=update,
+                    )
             elif update:
                 a[key] = b[key]
             else:

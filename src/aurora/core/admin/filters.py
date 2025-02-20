@@ -1,12 +1,13 @@
 import logging
 
-from adminfilters.autocomplete import AutoCompleteFilter
-from adminfilters.combo import ChoicesFieldComboFilter, RelatedFieldComboFilter
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.core.cache import caches
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.urls import reverse
+
+from adminfilters.autocomplete import AutoCompleteFilter
+from adminfilters.combo import ChoicesFieldComboFilter, RelatedFieldComboFilter
 
 from ...administration.filters import BaseAutoCompleteFilter
 
@@ -26,7 +27,7 @@ class Select2RelatedFieldComboFilter(RelatedFieldComboFilter):
 class ProjectFilter(AutoCompleteFilter):
     fk_name = "project__organization__exact"
 
-    def __init__(self, field, request, params, model, model_admin, field_path):
+    def __init__(self, field, request, params, model, model_admin, field_path):  # noqa
         self.request = request
         super().__init__(field, request, params, model, model_admin, field_path)
 
@@ -46,7 +47,6 @@ class UsedByRegistration(BaseAutoCompleteFilter):
         return "project__exact" in self.request.GET
 
     def queryset(self, request, queryset):
-        # {'registration__exact': '30'}
         if not self.used_parameters:
             return queryset
         try:

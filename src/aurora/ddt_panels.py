@@ -1,9 +1,10 @@
 import io
 
-from debug_toolbar.panels import Panel
 from django.core.management import call_command
 from django.template import Context, Template
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
+
+from debug_toolbar.panels import Panel
 
 from aurora.state import state
 

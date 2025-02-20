@@ -1,6 +1,7 @@
 import logging
 
 from django.contrib.auth import get_user_model
+
 from social_core.exceptions import InvalidEmail
 from social_core.pipeline import social_auth
 from social_core.pipeline import user as social_core_user
@@ -41,7 +42,7 @@ def user_details(strategy, details, backend, user=None, *args, **kwargs):
 def require_email(strategy, details, user=None, is_new=False, *args, **kwargs):
     if user and user.email:
         return
-    elif is_new and not details.get("email"):
+    if is_new and not details.get("email"):
         logger.error("Email couldn't be validated")
         raise InvalidEmail(strategy)
 

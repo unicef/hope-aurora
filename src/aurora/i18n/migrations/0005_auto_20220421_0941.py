@@ -6,7 +6,6 @@ import aurora.i18n.fields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("i18n", "0004_auto_20220412_1242"),
     ]

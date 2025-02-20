@@ -1,0 +1,5 @@
+nav:
+  - Home: index.md
+  - contributing.md
+  - run
+  - settings.md

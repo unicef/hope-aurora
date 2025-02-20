@@ -2,9 +2,10 @@ import logging
 import re
 from enum import IntFlag, unique
 
+from django.utils.functional import cached_property
+
 from constance import config
 from constance.signals import config_updated
-from django.utils.functional import cached_property
 from htmlmin import Minifier
 
 logger = logging.getLogger(__name__)
@@ -31,12 +32,11 @@ class HtmlMinMiddleware:
 
     @cached_property
     def config_value(self):
-        return int(config.MINIFY_RESPONSE)
+        return int(config.MINIFY_RESPONSE or "0")
 
     @cached_property
     def ignore_regex(self):
-        if config.MINIFY_IGNORE_PATH:
-            return re.compile(config.MINIFY_IGNORE_PATH)
+        return re.compile(config.MINIFY_IGNORE_PATH) if config.MINIFY_IGNORE_PATH else None
 
     def update_config(self, sender, key, old_value, new_value, **kwargs):
         if hasattr(self, "config_value"):
@@ -46,8 +46,7 @@ class HtmlMinMiddleware:
             del self.ignore_regex
 
     def ignore_path(self, path):
-        if self.ignore_regex:
-            return self.ignore_regex.match(path)
+        return self.ignore_regex.match(path) if self.ignore_regex else None
 
     def can_minify(self, request, response):
         return (

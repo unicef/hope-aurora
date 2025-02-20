@@ -2,11 +2,12 @@ import logging
 import re
 from datetime import datetime, timedelta
 
-from adminfilters.numbers import NumberFilter
 from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.urls import reverse
 from django.utils.translation import gettext as _
+
+from adminfilters.numbers import NumberFilter
 
 from ...administration.filters import BaseAutoCompleteFilter
 
@@ -18,10 +19,10 @@ class OrganizationFilter(BaseAutoCompleteFilter):
 
 
 class RegistrationProjectFilter(BaseAutoCompleteFilter):
-    fk_name = "flex_form__project__organization__exact"
+    fk_name = "project__organization__exact"
 
     def has_output(self):
-        return "flex_form__project__organization__exact" in self.request.GET
+        return "project__organization__exact" in self.request.GET
 
     def get_url(self):
         url = reverse("%s:autocomplete" % self.admin_site.name)
@@ -79,15 +80,14 @@ class DateRangeFilter(NumberFilter):
                     self.filters = {match: value}
                 elif m_range and m_range.groups():
                     start, end = self.re_range.match(raw_value).groups()
-                    self.filters = {f"{self.field.name}__date__gte": start, f"{self.field.name}__date__lte": end}
+                    self.filters = {
+                        f"{self.field.name}__date__gte": start,
+                        f"{self.field.name}__date__lte": end,
+                    }
                 elif m_list and m_list.groups():
                     value = raw_value.split(",")
                     match = "%s__date__in" % self.field.name
                     self.filters = {match: value}
-                # elif m_unlike and m_unlike.groups():
-                #     match = '%s__exact' % self.field.name
-                #     op, value = self.re_unlike.match(raw).groups()
-                #     queryset = queryset.exclude(**{match: value})
                 else:  # pragma: no cover
                     raise IncorrectLookupParameters()
                 try:

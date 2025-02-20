@@ -1,9 +1,10 @@
 import base64
 import time
 
+from django.urls import reverse
+
 import pytest
 from Crypto.PublicKey import RSA
-from django.urls import reverse
 
 from aurora.core.crypto import decrypt
 
@@ -46,7 +47,7 @@ btcA1UFpS9TFL++uMmwbcMzykITUTxhHp0QWEg1cpj8HFakPBZ4=
 -----END RSA PRIVATE KEY-----"""
 
 
-@pytest.fixture()
+@pytest.fixture
 def registration(simple_form):
     from testutils.factories import RegistrationFactory
 
@@ -97,7 +98,6 @@ def test_api(django_app, registration, monkeypatch):
     assert res.status_code == 200
     records = res.json["data"]
     for r in records:
-        # storage = r["storage"]
         storage = str(r["fields"]).encode()
         data = base64.urlsafe_b64decode(storage)
         decrypt(data, registration._private_pem)

@@ -1,9 +1,10 @@
 import logging
 
-from adminfilters.autocomplete import AutoCompleteFilter
 from django.contrib.admin import register
 from django.core.cache import caches
 from django.db.models import JSONField
+
+from adminfilters.autocomplete import AutoCompleteFilter
 from jsoneditor.forms import JSONEditor
 from smart_admin.modeladmin import SmartModelAdmin
 

@@ -1,8 +1,9 @@
-from admin_extra_buttons.utils import handle_basic_auth
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic.list import ListView
+
+from admin_extra_buttons.utils import handle_basic_auth
 
 from aurora.core.utils import JSONEncoder
 from aurora.registration.models import Record, Registration
@@ -28,4 +29,7 @@ class RegistrationDataApi(ListView):
                 "id", "remote_ip", "timestamp", "files", "fields", "storage"
             )[:1000]
         )
-        return JsonResponse({"reg": reg.pk, "start": start, "end": end, "data": data}, encoder=JSONEncoder)
+        return JsonResponse(
+            {"reg": reg.pk, "start": start, "end": end, "data": data},
+            encoder=JSONEncoder,
+        )

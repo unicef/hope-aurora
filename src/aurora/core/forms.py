@@ -1,12 +1,13 @@
 import csv
 
-from adminactions.api import delimiters, quotes
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.forms import BaseFormSet
 from django.utils import formats
 from django.utils.translation import gettext as _
+
+from adminactions.api import delimiters, quotes
 
 from .fields.widgets import JavascriptEditor
 from .version_media import VersionMedia
@@ -157,13 +158,13 @@ class CSVOptionsForm(forms.Form):
     delimiter = forms.ChoiceField(
         label=_("Delimiter"),
         required=False,
-        choices=list(zip(delimiters, delimiters)),
+        choices=list(zip(delimiters, delimiters, strict=True)),
         help_text=_("A one-character string used to separate fields"),
     )
     quotechar = forms.ChoiceField(
         label=_("Quotechar"),
         required=False,
-        choices=list(zip(quotes, quotes)),
+        choices=list(zip(quotes, quotes, strict=True)),
         help_text=_(
             "A one-character string used to quote fields containing special characters, "
             "such as the delimiter or quotechar, or which contain new-line characters"

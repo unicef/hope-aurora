@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0008_auto_20220310_0517"),
     ]
@@ -12,7 +11,11 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name="formset",
-            options={"ordering": ["ordering"], "verbose_name": "FormSet", "verbose_name_plural": "FormSets"},
+            options={
+                "ordering": ["ordering"],
+                "verbose_name": "FormSet",
+                "verbose_name_plural": "FormSets",
+            },
         ),
         migrations.AddField(
             model_name="formset",

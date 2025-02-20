@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
@@ -8,16 +9,37 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views import View
 
+from aurora.core.models import Organization, Project
 from aurora.core.utils import get_session_id, last_day_of_month, render
 from aurora.counters.models import Counter
 from aurora.registration.models import Registration
 
+User = get_user_model()
+
 
 @login_required()
-def index(request):
-    regs = Registration.objects.filter(roles__user=request.user, roles__role__permissions__codename="view_counter")
-    context = {"registrations": regs}
+def index(request, org):
+    o: Organization = Organization.objects.get(slug=org)
+    if not request.user.has_perm("counters.view_counter", o):
+        raise PermissionDenied("----")
+    context = {
+        "organization": o,
+        "projects": o.projects.filter(members__user=request.user),
+    }
     return render(request, "counters/index.html", context)
+
+
+@login_required()
+def project_index(request, org, prj):
+    o: Organization = Organization.objects.get(slug=org)
+    p: Project = Project.objects.get(organization=o, pk=prj)
+    if not request.user.has_perm("counters.view_counter", p):
+        raise PermissionDenied("----")
+    context = {
+        "project": p,
+        "registrations": p.registrations.filter(members__user=request.user),
+    }
+    return render(request, "counters/project.html", context)
 
 
 class ChartView(UserPassesTestMixin, View):
@@ -27,9 +49,9 @@ class ChartView(UserPassesTestMixin, View):
     def test_func(self):
         return self.request.user.is_authenticated
 
-    def get_registration(self, request, pk) -> Registration:
-        reg = get_object_or_404(Registration, id=pk)
-        if not request.user.has_perm("view_counter", reg):
+    def get_registration(self, request, org, prj, reg_pk) -> Registration:
+        reg = get_object_or_404(Registration, project__organization__slug=org, project_id=prj, id=reg_pk)
+        if not request.user.has_perm("counters.view_counter", reg):
             raise PermissionDenied("----")
         return reg
 
@@ -38,8 +60,8 @@ class ChartView(UserPassesTestMixin, View):
 
 
 class MonthlyDataView(ChartView):
-    def get(self, request, registration_id):
-        registration = self.get_registration(request, registration_id)
+    def get(self, request, org, prj, registration_id):
+        registration = self.get_registration(request, org, prj, registration_id)
         qs = Counter.objects.filter(registration_id=registration_id).order_by("day")
         param_month = request.GET.get("m", None)
         total = 0
@@ -62,7 +84,7 @@ class MonthlyDataView(ChartView):
             total += record.records
 
         if not labels:
-            labels = [d.strftime("%-d, %a") for d in values.keys()]
+            labels = [d.strftime("%-d, %a") for d in values]
         period = date.strftime("%B %Y")
         data = {
             "datapoints": qs.all().count(),
@@ -72,11 +94,7 @@ class MonthlyDataView(ChartView):
             "labels": labels,
             "data": list(values.values()),
         }
-        response = JsonResponse(data)
-        # response["Cache-Control"] = "max-age=315360000"
-        # response["Last-Modified"] = "max-age=315360000"
-        # response["ETag"] = etag
-        return response
+        return JsonResponse(data)
 
 
 def daily_data(request, registration, record):
@@ -84,8 +102,8 @@ def daily_data(request, registration, record):
 
 
 class MonthlyChartView(ChartView):
-    def get(self, request, registration):
-        reg: Registration = self.get_registration(request, registration)
+    def get(self, request, org, prj, registration):
+        reg: Registration = self.get_registration(request, org, prj, registration)
         first: [Counter] = reg.counters.first()
         latest: [Counter] = reg.counters.last()
         if not latest:

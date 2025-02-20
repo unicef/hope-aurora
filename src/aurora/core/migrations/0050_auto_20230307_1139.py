@@ -9,7 +9,6 @@ import aurora.core.models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0049_auto_20230214_1915"),
     ]
@@ -19,14 +18,18 @@ class Migration(migrations.Migration):
             model_name="flexformfield",
             name="name",
             field=django.contrib.postgres.fields.citext.CICharField(
-                blank=True, max_length=100, validators=[django.core.validators.RegexValidator("^[a-z_0-9]*$")]
+                blank=True,
+                max_length=100,
+                validators=[django.core.validators.RegexValidator("^[a-z_0-9]*$")],
             ),
         ),
         migrations.AlterField(
             model_name="flexformfield",
             name="regex",
             field=aurora.core.compat.RegexField(
-                blank=True, null=True, validators=[aurora.core.models.RegexPatternValidator()]
+                blank=True,
+                null=True,
+                validators=[aurora.core.models.RegexPatternValidator()],
             ),
         ),
     ]

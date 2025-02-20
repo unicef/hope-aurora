@@ -6,7 +6,6 @@ import aurora.i18n.fields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("i18n", "0011_alter_message_locale"),
     ]

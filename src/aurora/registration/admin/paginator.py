@@ -1,10 +1,15 @@
+import logging
 from django.core.paginator import Paginator
 from django.db import OperationalError, connection, transaction
 from django.utils.functional import cached_property
 
+logger = logging.getLogger(__name__)
+
 
 class LargeTablePaginator(Paginator):
     """
+    Override the count method of QuerySet objects to avoid timeouts.
+
     Combination of ideas from:
      - https://gist.github.com/safar/3bbf96678f3e479b6cb683083d35cb4d
      - https://medium.com/@hakibenita/optimizing-django-admin-paginator-53c4eb6bfca3
@@ -19,9 +24,7 @@ class LargeTablePaginator(Paginator):
 
     @cached_property
     def count(self):
-        """
-        Returns an estimated number of objects, across all pages.
-        """
+        """Return an estimated number of objects, across all pages."""
         try:
             with transaction.atomic(), connection.cursor() as cursor:
                 # Limit to 150 ms
@@ -38,9 +41,8 @@ class LargeTablePaginator(Paginator):
                         "SELECT reltuples FROM pg_class WHERE relname = %s",
                         [self.object_list.query.model._meta.db_table],
                     )
-                    estimate = int(cursor.fetchone()[0])
-                    return estimate
-            except Exception:
+                    return int(cursor.fetchone()[0])
+            except Exception as e:
                 # If any other exception occurred fall back to default behaviour
-                pass
+                logger.exception(e)
         return super().count

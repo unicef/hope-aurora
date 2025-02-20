@@ -15,7 +15,7 @@ class YesNoMixin:
             if len(choices) != 2:
                 raise ValueError("YesNo accept only 2 choice label")
             for el in choices:
-                if not isinstance(el, (list, tuple)) and el[0] not in ["y", "n"]:
+                if not isinstance(el, list | tuple) and el[0] not in ["y", "n"]:
                     raise ValueError(f"Choice value must be 'y' or 'n' not '{el[0]}' ")
 
         super().__init__(choices=choices, **kwargs)
