@@ -1,0 +1,5 @@
+{% for widget in widget.subwidgets %}
+    <div>
+    {% include widget.template_name %}{% if forloop.first %}{% endif %}
+    </div>
+{% endfor %}

@@ -107,7 +107,7 @@ field_registry.register(fields.CompilationTimeField)
 field_registry.register(fields.HiddenField)
 field_registry.register(MathCaptchaField)
 field_registry.register(fields.CaptchaField)
-field_registry.register(fields.IMTONameEnquiryField)
+field_registry.register(fields.UBANameEnquiryField)
 
 form_registry = Registry(forms.BaseForm)
 
