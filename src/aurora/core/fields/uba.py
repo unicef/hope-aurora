@@ -1339,7 +1339,7 @@ class UBANameEnquiryField(forms.MultiValueField):
         super().__init__(fields, *args, **kwargs)
 
     def compress(self, values):
-        return dict(zip([], values, strict=True))
+        return dict(zip(["institution_code", "account_number", "account_holder"], values, strict=True))
 
     def validate(self, value):
         super().validate(value)
