@@ -16,7 +16,6 @@ from aurora.core.version_media import VersionMedia
 
 FALSE = "false"
 
-
 STERLING_BANK = "000001"
 KEYSTONE_BANK = "000002"
 FCMB = "000003"
@@ -1327,6 +1326,10 @@ class UBANameEnquiryMultiWidget(MultiValueWidgetMixin, MultiWidget):
         )
 
 
+class AccountNameMismatch(ValidationError):
+    pass
+
+
 class UBANameEnquiryField(forms.MultiValueField):
     widget = UBANameEnquiryMultiWidget
 
@@ -1336,6 +1339,7 @@ class UBANameEnquiryField(forms.MultiValueField):
             forms.CharField(),
             forms.CharField(),
         ]
+        kwargs["template_name"] = "django/forms/uba.html"
         super().__init__(fields, *args, **kwargs)
 
     def compress(self, values):
@@ -1343,6 +1347,11 @@ class UBANameEnquiryField(forms.MultiValueField):
 
     def validate(self, value):
         super().validate(value)
+        self.AAA = id(self)
+        raise ValidationError("Account holder name doesn't match: WWW",
+                              code="name_mismatch",
+                              params={"name": "ssss"}
+                              )
 
         try:
             bank_code, account_number, account_full_name = value.rsplit("|")
