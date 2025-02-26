@@ -43,14 +43,6 @@ def test_uba_name_enquiry_ko_invalid_input():
 @pytest.mark.django_db
 @override_config(UBA_TOKEN_URL="https://token")
 @override_config(UBA_NAME_ENQUIRY_URL="https://nameenquiry")
-@override_config(UBA_USERNAME="BET9JAUSR")
-@override_config(UBA_PASSWORD="waterfall")
-@override_config(UBA_SECRET_KEY="0000003234393832")
-@override_config(UBA_APPL_CODE="QkVUOUpB")
-@override_config(UBA_CONSUMER_KEY="wb4ftFJ7mlEELmtir067Ofm0as4a")
-@override_config(UBA_CONSUMER_SECRET="B4zAi07hufckczkI2NBtf3aa8AGonzTfQrffZ6HsqJ8a")
-@override_config(UBA_CLIENT_NO="24982")
-@override_config(UBA_X_AUTH_CRED="GJ6IGU+wauGeEUUIqsTINHAGgR06q16hP+BolzN18QE=")
 @responses.activate
 @pytest.mark.django_db
 def test_uba_name_enquiry_ko_invalid_account():
@@ -63,14 +55,6 @@ def test_uba_name_enquiry_ko_invalid_account():
 @pytest.mark.django_db
 @override_config(UBA_TOKEN_URL="https://token")
 @override_config(UBA_NAME_ENQUIRY_URL="https://nameenquiry")
-@override_config(UBA_USERNAME="BET9JAUSR")
-@override_config(UBA_PASSWORD="waterfall")
-@override_config(UBA_SECRET_KEY="0000003234393832")
-@override_config(UBA_APPL_CODE="QkVUOUpB")
-@override_config(UBA_CONSUMER_KEY="wb4ftFJ7mlEELmtir067Ofm0as4a")
-@override_config(UBA_CONSUMER_SECRET="B4zAi07hufckczkI2NBtf3aa8AGonzTfQrffZ6HsqJ8a")
-@override_config(UBA_CLIENT_NO="24982")
-@override_config(UBA_X_AUTH_CRED="GJ6IGU+wauGeEUUIqsTINHAGgR06q16hP+BolzN18QE=")
 @responses.activate
 @pytest.mark.django_db
 def test_uba_name_enquiry_generic_invalid():

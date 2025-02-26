@@ -3,7 +3,7 @@ import json
 import pytest
 from Crypto.PublicKey import RSA
 
-from aurora.core.encypt.rsa import RSACrypto, crypt, decrypt
+from aurora.core.crypto.rsa import RSACrypto, crypt, decrypt
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:

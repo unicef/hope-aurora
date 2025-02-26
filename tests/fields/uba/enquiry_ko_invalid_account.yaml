@@ -31,7 +31,7 @@ responses:
       x-azure-ref: 20250226T222049Z-176f6b566d7dsfqwhC1MAD7ps40000000etg000000008r9c
     method: POST
     status: 200
-    url: https:/token
+    url: https://token
 - response:
     auto_calculate_content_length: false
     body: '{"errorFlag":"true","statusCode":"4","statusMsg":"Account not valid","customerName":""}'
