@@ -101,19 +101,17 @@ class MultiValueWidgetMixin:
                 widget.is_localized = self.is_localized
         # value is a list/tuple of values, each corresponding to a widget
         # in self.widgets.
-        if not isinstance(value, (list, tuple)):
+        if not isinstance(value, list | tuple):
             value = self.decompress(value)
 
         final_attrs = context["widget"]["attrs"]
         input_type = final_attrs.pop("type", None)
         id_ = final_attrs.get("id")
         subwidgets = []
-        for i, (widget_name, widget) in enumerate(
-                zip(self.widgets_names, self.widgets)
-        ):
+        for i, (widget_name, widget) in enumerate(zip(self.widgets_names, self.widgets, strict=True)):
             if input_type is not None:
                 widget.input_type = input_type
-            widget_name = name + widget_name
+            new_widget_name = name + widget_name
             try:
                 widget_value = value[i]
             except IndexError:
@@ -125,8 +123,6 @@ class MultiValueWidgetMixin:
                 widget_attrs = final_attrs
             widget.flex_field = self.flex_field
             widget.smart_attrs = self.smart_attrs
-            subwidgets.append(
-                widget.get_context(widget_name, widget_value, widget_attrs)["widget"]
-            )
+            subwidgets.append(widget.get_context(new_widget_name, widget_value, widget_attrs)["widget"])
         context["widget"]["subwidgets"] = subwidgets
         return context

@@ -1,149 +1,93 @@
-from unittest.mock import Mock, patch
+from unittest.mock import patch, Mock
 
 import pytest
 import responses
+from constance.test.unittest import override_config
 from django.core.exceptions import ValidationError
-from responses import _recorder
 
 from aurora.core.fields import UBANameEnquiryField
 
 
 @pytest.mark.django_db
-# @patch("aurora.core.fields.uba.requests.post")
-@_recorder.record(file_path="tests/fields/uba/responses/enquire_ok.yaml")
+@override_config(UBA_TOKEN_URL="https://token")
+@override_config(UBA_NAME_ENQUIRY_URL="https://nameenquiry")
 @responses.activate
 def test_uba_name_enquiry_ok():
-    # mock_post.return_value = Mock(
-    #     status_code=200,
-    #     json=lambda: {
-    #         "message": "operation successful",
-    #         "data": {
-    #             "lookupParam": "100001241210170958777131925463_DANIEL ADEBAYO ADEDOYIN_22000000051_3",
-    #             "beneficiaryAccountNumber": "8168208035",
-    #             "beneficiaryBankCode": "100004",
-    #             "beneficiaryAccountName": "DANIEL ADEBAYO ADEDOYIN",
-    #         },
-    #         "code": "00",
-    #         "error": "",
-    #     },
-    # )
-    # responses._add_from_file(file_path="tests/fields/uba/responses/enquire_ok.yaml")
+    responses._add_from_file(file_path="tests/fields/uba/enquiry_ok.yaml")
     fld = UBANameEnquiryField()
-    assert fld.validate("bank|account|xxxx") is None
+    assert (
+        fld.validate({"institution_code": "000004", "account_number": "2087008012", "account_holder": "xxxx"}) is None
+    )
 
 
-# @pytest.mark.django_db
-# @patch("aurora.core.fields.uba.requests.post")
-# def test_uba_name_enquiry_ko_not_matching_name(mock_post):
-#     mock_post.return_value = Mock(
-#         status_code=200,
-#         json=lambda: {
-#             "message": "operation successful",
-#             "data": {
-#                 "lookupParam": "100001241210170958777131925463_DANIEL ADEBAYO ADEDOYIN_22000000051_3",
-#                 "beneficiaryAccountNumber": "8168208035",
-#                 "beneficiaryBankCode": "100004",
-#                 "beneficiaryAccountName": "DANIEL ADEBAYO ADEDOYIN",
-#             },
-#             "code": "00",
-#             "error": "",
-#         },
-#     )
-#     fld = UBANameEnquiryField()
-#     with pytest.raises(ValidationError, match="Wrong account holder mimmo"):
-#         assert fld.validate("bank|account|mimmo") is None
-#
-#
-# @pytest.mark.django_db
-# @patch("aurora.core.fields.uba.requests.post")
-# @pytest.mark.override_config()
-# def test_uba_name_enquiry_ok_not_matching_name(mock_post):
-#     mock_post.return_value = Mock(
-#         status_code=200,
-#         json=lambda: {
-#             "message": "operation successful",
-#             "data": {
-#                 "lookupParam": "100001241210170958777131925463_DANIEL ADEBAYO ADEDOYIN_22000000051_3",
-#                 "beneficiaryAccountNumber": "8168208035",
-#                 "beneficiaryBankCode": "100004",
-#                 "beneficiaryAccountName": "DANIEL ADEBAYO ADEDOYIN",
-#             },
-#             "code": "00",
-#             "error": "",
-#         },
-#     )
-#     fld = UBANameEnquiryField()
-#     assert fld.validate("bank|account|mimmo") is None
-#
-#
-# def test_uba_name_enquiry_ko_value_error():
-#     fld = UBANameEnquiryField()
-#     with pytest.raises(ValidationError, match="ValueError: not enough values to unpack"):
-#         fld.validate("only_one_value")
-#
-#
-# @pytest.mark.django_db
-# @patch("aurora.core.fields.uba.requests.post")
-# def test_uba_name_enquiry_error_status_code(mock_post):
-#     mock_post.return_value = Mock(
-#         status_code=400,
-#         json=lambda: {
-#             "message": "operation successful",
-#             "data": {
-#                 "lookupParam": "100001241210170958777131925463_DANIEL ADEBAYO ADEDOYIN_22000000051_3",
-#                 "beneficiaryAccountNumber": "8168208035",
-#                 "beneficiaryBankCode": "100004",
-#                 "beneficiaryAccountName": "DANIEL ADEBAYO ADEDOYIN",
-#             },
-#             "code": "00",
-#             "error": "",
-#         },
-#     )
-#     fld = UBANameEnquiryField()
-#     with pytest.raises(ValidationError, match="Error 400"):
-#         assert fld.validate("bank|account|mimmo") is None
-#
-#
-# @pytest.mark.django_db
-# @patch("aurora.core.fields.uba.requests.post")
-# def test_uba_name_enquiry_error_500(mock_post):
-#     mock_post.return_value = Mock(
-#         status_code=500,
-#         reason="Internal Server Error",
-#         json=lambda: {
-#             "message": "operation successful",
-#             "data": {
-#                 "lookupParam": "100001241210170958777131925463_DANIEL ADEBAYO ADEDOYIN_22000000051_3",
-#                 "beneficiaryAccountNumber": "8168208035",
-#                 "beneficiaryBankCode": "100004",
-#                 "beneficiaryAccountName": "DANIEL ADEBAYO ADEDOYIN",
-#             },
-#             "code": "00",
-#             "error": "",
-#         },
-#     )
-#     fld = UBANameEnquiryField()
-#     with pytest.raises(ValidationError, match="Internal Server Error"):
-#         assert fld.validate("bank|account|mimmo") is None
-#
-#
-# @pytest.mark.django_db
-# @patch("aurora.core.fields.uba.requests.post")
-# def test_uba_name_enquiry_error_error(mock_post):
-#     mock_post.return_value = Mock(
-#         status_code=400,
-#         json=lambda: {
-#             "message": "operation successful",
-#             "data": {
-#                 "lookupParam": "100001241210170958777131925463_DANIEL ADEBAYO ADEDOYIN_22000000051_3",
-#                 "beneficiaryAccountNumber": "8168208035",
-#                 "beneficiaryBankCode": "100004",
-#                 "beneficiaryAccountName": "DANIEL ADEBAYO ADEDOYIN",
-#             },
-#             "code": "00",
-#             "error": "Bad Request",
-#         },
-#     )
-#     fld = UBANameEnquiryField()
-#     with pytest.raises(ValidationError, match="Bad Request"):
-#         assert fld.validate("bank|account|mimmo") is None
+@pytest.mark.django_db
+@override_config(UBA_TOKEN_URL="https://token")
+@override_config(UBA_NAME_ENQUIRY_URL="https://nameenquiry")
+@responses.activate
+@pytest.mark.django_db
+def test_uba_name_enquiry_ko_not_matching_name():
+    responses._add_from_file(file_path="tests/fields/uba/enquiry_ko_not_matching_name.yaml")
+    fld = UBANameEnquiryField()
+    with pytest.raises(ValidationError, match="['Account holder name does not match: (xxxx)']"):
+        assert fld.validate({"institution_code": "000004", "account_number": "2087008012", "account_holder": "wrong"})
+
+
+@pytest.mark.django_db
+@pytest.mark.django_db
+def test_uba_name_enquiry_ko_invalid_input():
+    fld = UBANameEnquiryField()
+    with pytest.raises(ValidationError, match="ValueError: not enough values to unpack"):
+        fld.validate({"institution_code": "000004"})
+
+
+@pytest.mark.django_db
+@override_config(UBA_TOKEN_URL="https://token")
+@override_config(UBA_NAME_ENQUIRY_URL="https://nameenquiry")
+@override_config(UBA_USERNAME="BET9JAUSR")
+@override_config(UBA_PASSWORD="waterfall")
+@override_config(UBA_SECRET_KEY="0000003234393832")
+@override_config(UBA_APPL_CODE="QkVUOUpB")
+@override_config(UBA_CONSUMER_KEY="wb4ftFJ7mlEELmtir067Ofm0as4a")
+@override_config(UBA_CONSUMER_SECRET="B4zAi07hufckczkI2NBtf3aa8AGonzTfQrffZ6HsqJ8a")
+@override_config(UBA_CLIENT_NO="24982")
+@override_config(UBA_X_AUTH_CRED="GJ6IGU+wauGeEUUIqsTINHAGgR06q16hP+BolzN18QE=")
+@responses.activate
+@pytest.mark.django_db
+def test_uba_name_enquiry_ko_invalid_account():
+    responses._add_from_file(file_path="tests/fields/uba/enquiry_ko_invalid_account.yaml")
+    fld = UBANameEnquiryField()
+    with pytest.raises(ValidationError, match="Invalid account number"):
+        assert fld.validate({"institution_code": "000004", "account_number": "account", "account_holder": "xxxx"})
+
+
+@pytest.mark.django_db
+@override_config(UBA_TOKEN_URL="https://token")
+@override_config(UBA_NAME_ENQUIRY_URL="https://nameenquiry")
+@override_config(UBA_USERNAME="BET9JAUSR")
+@override_config(UBA_PASSWORD="waterfall")
+@override_config(UBA_SECRET_KEY="0000003234393832")
+@override_config(UBA_APPL_CODE="QkVUOUpB")
+@override_config(UBA_CONSUMER_KEY="wb4ftFJ7mlEELmtir067Ofm0as4a")
+@override_config(UBA_CONSUMER_SECRET="B4zAi07hufckczkI2NBtf3aa8AGonzTfQrffZ6HsqJ8a")
+@override_config(UBA_CLIENT_NO="24982")
+@override_config(UBA_X_AUTH_CRED="GJ6IGU+wauGeEUUIqsTINHAGgR06q16hP+BolzN18QE=")
+@responses.activate
+@pytest.mark.django_db
+def test_uba_name_enquiry_generic_invalid():
+    responses._add_from_file(file_path="tests/fields/uba/enquiry_generic_invalid.yaml")
+    fld = UBANameEnquiryField()
+    with pytest.raises(ValidationError, match="['SYSTEM MALFUNCTION: (error 96)']"):
+        assert fld.validate({"institution_code": "invalid_bank", "account_number": "account", "account_holder": "xxxx"})
+
+
+@pytest.mark.django_db
+@patch("aurora.core.fields.uba.requests.post")
+@pytest.mark.django_db
+def test_uba_name_enquiry_cannot_reach_server(mock_post):
+    mock_post.return_value = Mock(
+        status_code=401,
+        json=dict,
+    )
+    fld = UBANameEnquiryField()
+    with pytest.raises(ValidationError, match="Cannot reach UBA server"):
+        assert fld.validate({"institution_code": "bank", "account_number": "account", "account_holder": "mimmo"})

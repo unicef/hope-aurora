@@ -6,7 +6,7 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.forms import MultiWidget
 from requests.auth import HTTPBasicAuth
-from urllib3.exceptions import ReadTimeoutError
+from requests.exceptions import ReadTimeout
 from django.utils.translation import gettext as _
 
 from aurora.core.fields.mixins import MultiValueWidgetMixin
@@ -1302,7 +1302,7 @@ class UBANameEnquiryMultiWidget(MultiValueWidgetMixin, MultiWidget):
         super().__init__(widgets, attrs)
 
     def decompress(self, value):
-        return value.rsplit("|") if value else [None, None, None]
+        return list(value.values()) if value else [None, None, None]
 
     @property
     def media(self):
@@ -1339,13 +1339,13 @@ class UBANameEnquiryField(forms.MultiValueField):
         super().__init__(fields, *args, **kwargs)
 
     def compress(self, values):
-        return "|".join(values)
+        return dict(zip([], values, strict=True))
 
     def validate(self, value):
         super().validate(value)
 
         try:
-            bank_code, account_number, account_full_name = value.rsplit("|")
+            bank_code, account_number, account_full_name = value.values()
         except ValueError:
             raise ValidationError("ValueError: not enough values to unpack")
 
@@ -1368,18 +1368,16 @@ class UBANameEnquiryField(forms.MultiValueField):
             }
             try:
                 response = requests.post(config.UBA_NAME_ENQUIRY_URL, headers=headers, json=body, timeout=60)
-            except (ReadTimeoutError, ConnectionError):
-                message = "Cannot reach UBA server"
-                raise ValidationError(message)
-            except BaseException as e:
-                raise ValidationError(str(e))
+            except (ReadTimeout, ConnectionError):
+                i += 1
+                continue
             jresponse = response.json()
             if response.status_code == 200:
                 if jresponse.get("errorFlag") == FALSE and jresponse.get("statusCode") == "0":
                     if jresponse.get("customerName") != account_full_name:
                         valid_name = jresponse.get("customerName")
                         raise ValidationError(
-                            f"Account holder name doesn't match: ({valid_name})",
+                            f"Account holder name does not match: ({valid_name})",
                             code="name_mismatch",
                             params={"name": valid_name},
                         )
@@ -1392,15 +1390,25 @@ class UBANameEnquiryField(forms.MultiValueField):
                 raise ValidationError(f"{error_message}: (error {error_code})")
             generate = True
             i += 1
+        raise ValidationError("Cannot reach UBA server")
 
-    def get_token(self, generate):
+    def get_token(self, generate) -> str:
         token = cache.get("uba-token")
         if generate or not token:
-            headers = {"Content-Type": "application/x-www-form-urlencoded"}
-            auth = HTTPBasicAuth(config.UBA_CONSUMER_KEY, config.UBA_CONSUMER_SECRET)
-            form_data = {"grant_type": "client_credentials"}
-            response = requests.post(config.UBA_TOKEN_URL, data=form_data, headers=headers, auth=auth, timeout=60)
-            jresponse = response.json()
-            token = f"{jresponse['token_type']} {jresponse['access_token']}"
-            cache.set("uba-token", token)
+            i = 0
+            while i < 3:
+                headers = {"Content-Type": "application/x-www-form-urlencoded"}
+                auth = HTTPBasicAuth(config.UBA_CONSUMER_KEY, config.UBA_CONSUMER_SECRET)
+                form_data = {"grant_type": "client_credentials"}
+                try:
+                    response = requests.post(
+                        config.UBA_TOKEN_URL, data=form_data, headers=headers, auth=auth, timeout=60
+                    )
+                    jresponse = response.json()
+                    token = f"{jresponse['token_type']} {jresponse['access_token']}"
+                except (ReadTimeout, ConnectionError, KeyError):
+                    i += 1
+                    continue
+                cache.set("uba-token", token)
+                return token
         return token
