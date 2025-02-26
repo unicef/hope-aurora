@@ -1,0 +1,38 @@
+responses:
+- response:
+    auto_calculate_content_length: false
+    body: '{"access_token":"eyJ4NXQiOiJ6Z2FVSG9vRlBJTGRzSFk4NUJmam8wOTRRSGMiLCJraWQiOiJNR1prTjJZek5UZzBZVFE1Wm1ZMU0yVmlObVk1TVdFek9EQmpNVEE0TkRSbFl6UXlNRFpoWmpRelpESmlaV00zT0RobE4yRmlZMkppWmpFM05qZGxZUV9SUzI1NiIsInR5cCI6ImF0K2p3dCIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiJ3YjRmdEZKN21sRUVMbXRpcjA2N09mbTBhczRhIiwiYXV0IjoiQVBQTElDQVRJT04iLCJhdWQiOlsid2I0ZnRGSjdtbEVFTG10aXIwNjdPZm0wYXM0YSIsImNob3JlbzpkZXBsb3ltZW50OnNhbmRib3giXSwibmJmIjoxNzQwNjA2NDg0LCJhenAiOiJ3YjRmdEZKN21sRUVMbXRpcjA2N09mbTBhczRhIiwib3JnX2lkIjoiNTQ0NTkyYTgtZjcxYS00NDFiLTkxZGQtYjNmNTk5MDdkODYzIiwiaXNzIjoiaHR0cHM6XC9cL2FwaS5hc2dhcmRlby5pb1wvdFwvdW5pdGVkYmFua2ZvcmFmcmljYVwvb2F1dGgyXC90b2tlbiIsImV4cCI6MTc0MDYwNzM4NCwib3JnX25hbWUiOiJ1bml0ZWRiYW5rZm9yYWZyaWNhIiwiaWF0IjoxNzQwNjA2NDg0LCJqdGkiOiJiODE1Mjg2OC0xOWQ5LTRlMDUtODBjOS02ODA2ODllMzdjMmEiLCJjbGllbnRfaWQiOiJ3YjRmdEZKN21sRUVMbXRpcjA2N09mbTBhczRhIn0.lF72u7e46ce2-p5X39Jrl1A5EBUDj1piEkSB9g8wbNu499hqOaqMl04VDtTpVg5Po9aJZo1XcwmxzlRO3NIzYgCbWMLjGt2o_thNp1VP269mGrNW7HHuj3UCVU5wNncfFpB8bIZ0GGhW08JY_113aTGgmBvxub3iZDH4egZEvjSq49xSToB73yWddnxQk8A0bBrUENgRMa9hgDwnt0Ck5ozdpLzHRB77aSEDG-GW8p_nPYAWklWKRcMTahCZ1rvzpZCrOMDQMeVcFDNqLhBrCe4S3d8tZDCSWMjB6c_-FgPgOT5g-D14MTz__--gLET-DrnUaL3tguc2iU6VOj34ow","token_type":"Bearer","expires_in":900}'
+    content_type: text/plain
+    headers:
+      Accept-Ranges: bytes
+      Cache-Control: no-store
+      Pragma: no-cache
+      Set-Cookie: wpaf=1740606485.494.40.746413|71acb898e1e9604d7bd8c41e308eb24e;
+        Path=/; Secure; HttpOnly; SameSite=None
+      Strict-Transport-Security: max-age=31536000; includeSubDomains
+      X-Cache: CONFIG_NOCACHE
+      X-Robots-Tag: none
+      X-asgardeo-traceId: 20250226T214804Z-176f6b566d7w7tvshC1MADa9480000000eg0000000005pwy
+      x-azure-ref: 20250226T214804Z-176f6b566d7w7tvshC1MADa9480000000eg0000000005pwy
+    method: POST
+    status: 200
+    url: https://token
+- response:
+    auto_calculate_content_length: false
+    body: '{"errorFlag":"false","statusMsg":"","statusCode":"0","customerName":"xxxx"}'
+    content_type: text/plain
+    headers:
+      Set-Cookie: route=1740606485.948.34620.712751|d4d40829238dd45ac36230e5b0d2984e;
+        Path=/zorn/ne-staging/v1.1(/|$)(.*); Secure; HttpOnly
+      cross-origin-referrer-policy: same-origin
+      referrer-policy: same-origin no-referrer-when-downgrad
+      strict-transport-security: max-age=31536000; includeSubDomains
+      x-content-type-options: nosniff
+      x-frame-option: deny
+      x-ratelimit-limit: 1000, 1000;w=60
+      x-ratelimit-remaining: '999'
+      x-ratelimit-reset: '56'
+      x-xss-protection: 1; mode=block
+    method: POST
+    status: 200
+    url: https://nameenquiry/

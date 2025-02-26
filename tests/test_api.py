@@ -6,7 +6,7 @@ from django.urls import reverse
 import pytest
 from Crypto.PublicKey import RSA
 
-from aurora.core.crypto import decrypt
+from aurora.core.crypto.rsa import decrypt
 
 PUBLIC = b"""-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxPyACSP38j/kB9jR8QPZ

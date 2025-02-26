@@ -114,6 +114,7 @@ dev-dependencies = [
     "pytest-variables",
     "pytest-xdist",
     "pytest",
+    "responses",
     "tox",
     "watchdog",
 ]

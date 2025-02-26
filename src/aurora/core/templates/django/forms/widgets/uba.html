@@ -1,0 +1,9 @@
+{% for widget in widget.subwidgets %}
+    <div>
+    {% include widget.template_name %}{% if forloop.first %}{% endif %}
+    </div>
+{% endfor %}
+
+<script>
+    django.jQuery("select[name={{ widget.subwidgets.0.name }}").select2();
+</script>
