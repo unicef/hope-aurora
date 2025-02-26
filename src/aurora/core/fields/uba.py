@@ -1343,8 +1343,6 @@ class UBANameEnquiryField(forms.MultiValueField):
 
     def validate(self, value):
         super().validate(value)
-        self.AAA = id(self)
-        raise ValidationError("Account holder name doesn't match: WWW", code="name_mismatch", params={"name": "ssss"})
 
         try:
             bank_code, account_number, account_full_name = value.rsplit("|")
