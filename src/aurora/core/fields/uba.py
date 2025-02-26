@@ -1326,10 +1326,6 @@ class UBANameEnquiryMultiWidget(MultiValueWidgetMixin, MultiWidget):
         )
 
 
-class AccountNameMismatch(ValidationError):
-    pass
-
-
 class UBANameEnquiryField(forms.MultiValueField):
     widget = UBANameEnquiryMultiWidget
 
@@ -1348,10 +1344,7 @@ class UBANameEnquiryField(forms.MultiValueField):
     def validate(self, value):
         super().validate(value)
         self.AAA = id(self)
-        raise ValidationError("Account holder name doesn't match: WWW",
-                              code="name_mismatch",
-                              params={"name": "ssss"}
-                              )
+        raise ValidationError("Account holder name doesn't match: WWW", code="name_mismatch", params={"name": "ssss"})
 
         try:
             bank_code, account_number, account_full_name = value.rsplit("|")
@@ -1386,7 +1379,12 @@ class UBANameEnquiryField(forms.MultiValueField):
             if response.status_code == 200:
                 if jresponse.get("errorFlag") == FALSE and jresponse.get("statusCode") == "0":
                     if jresponse.get("customerName") != account_full_name:
-                        raise ValidationError(f"Account holder name doesn't match: {jresponse.get('customerName')}")
+                        valid_name = jresponse.get("customerName")
+                        raise ValidationError(
+                            f"Account holder name doesn't match: ({valid_name})",
+                            code="name_mismatch",
+                            params={"name": valid_name},
+                        )
                     return
 
                 error_message = jresponse.get("statusMsg") or jresponse.get("errDesc")
