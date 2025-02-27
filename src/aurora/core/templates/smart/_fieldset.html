@@ -1,4 +1,4 @@
-{% load itrans aurora %}{% with field.field.flex_field.advanced as ADV %}
+{% load aurora itrans %}{% with ADV=field.field.flex_field.advanced %}
     {% if can_edit_inpage %}{% include "registration/_staff_edit_field.html" %}{% endif %}
     <fieldset data-fpk="{{ field.field.flex_field.pk }}" data-fname="{{ field.name }}" data-fid="{{ field.auto_id }}"  class="{{ field.name }} {{ field.field.flex_field.advanced.widget_kwargs.fieldset }}">
     {% if field.field.flex_field.validator and registration.client_validation %}
@@ -13,30 +13,34 @@
                        data-target="field-container-{{ field.name }}"
                        {% if field.errors %} checked {% endif %}
                        type="checkbox">
-{#                {% if can_translate %}{% include "i18n/_staff_edit_i18n.html" with original=field.field.flex_field.advanced.smart.question %}{% endif %}#}
+{# {% if can_translate %}{% include "i18n/_staff_edit_i18n.html" with original=field.field.flex_field.advanced.smart.question %}{% endif %} #}
                 <span data-i18n-Type="Question" data-msgid="{{ field|smart:"question,0" }}">{{ field|smart:"question,1"|md }}</span>
             </label>
     {% endif %}
     <div class="mb-4 field-container field-container-{{ field.name }} mb-5{% if field.field.required or field.field.smart_attrs.required_by_question %} required{% endif %}">
         <label data-msgid="{{ field.label }}" data-i18n-Type="FieldLabel"
                 class="itrans  {{ ADV.css.label|default:"block uppercase tracking-wide text-gray-700 font-bold mb-2" }}" for="{{ field.auto_id }}">
-{#            {% if can_translate %}{% include "i18n/_staff_edit_i18n.html" with original=field.label %}{% endif %}#}
-            {% trans field.label|md %}
-{#            {% if field.field.required  or field.field.smart_attrs.required_by_question %}#}
+{# {% if can_translate %}{% include "i18n/_staff_edit_i18n.html" with original=field.label %}{% endif %} #}
+            {% translate field.label|md %}
+{# {% if field.field.required  or field.field.smart_attrs.required_by_question %} #}
                 <span data-msgid="required"
-                      class="required-label hidden itrans lowercase font-thin required text-xs">({% trans "required" %})</span>
-{#            {% endif %}#}
+                      class="required-label hidden itrans lowercase font-thin required text-xs">({% translate "required" %})</span>
+{# {% endif %} #}
         </label>
         <div class="itrans text-sm description" data-msgid="{{ ADV.smart.description }}">
-        {% if ADV.smart.description %}{% trans ADV.smart.description %}{% endif %}
+        {% if ADV.smart.description %}{% translate ADV.smart.description %}{% endif %}
         </div>
-{#        -- {{ field.field.flex_field.advanced.events.validation }} --#}
+{# -- {{ field.field.flex_field.advanced.events.validation }} -- #}
 
-        <span class="errors">{{ field.errors }}</span>
-        {{ field }}
+        {% if field.template_name %}
+            {{ field.render }}
+        {% else %}
+            <span class="errors">{{ field.errors }}</span>
+            {{ field }}
+        {% endif %}
         <div class="text-xs	italic hint" data-msgid="{{ ADV.smart.hint }}">
-{#            {% if user.is_staff %}{% include "i18n/_staff_edit_i18n.html" with original=field|smart:"hint,0" %}{% endif %}#}
-            {% trans ADV.smart.hint %}
+{# {% if user.is_staff %}{% include "i18n/_staff_edit_i18n.html" with original=field|smart:"hint,0" %}{% endif %} #}
+            {% translate ADV.smart.hint %}
         </div>
     </div>
     {% if ADV.events.init %}

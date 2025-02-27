@@ -5,7 +5,6 @@ from django.db.models import signals
 from django.template import TemplateDoesNotExist
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
-
 from natural_keys import NaturalKeyModel, NaturalKeyModelManager
 
 from dbtemplates.conf import settings
