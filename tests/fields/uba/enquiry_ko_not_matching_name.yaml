@@ -1,0 +1,20 @@
+responses:
+- response:
+    auto_calculate_content_length: false
+    body: '{"errorFlag":"false","statusMsg":"","statusCode":"0","customerName":"xxxx"}'
+    content_type: text/plain
+    headers:
+      Set-Cookie: route=1740608305.55.19660.680407|d4d40829238dd45ac36230e5b0d2984e;
+        Path=/zorn/ne-staging/v1.1(/|$)(.*); Secure; HttpOnly
+      cross-origin-referrer-policy: same-origin
+      referrer-policy: same-origin no-referrer-when-downgrad
+      strict-transport-security: max-age=31536000; includeSubDomains
+      x-content-type-options: nosniff
+      x-frame-option: deny
+      x-ratelimit-limit: 1000, 1000;w=60
+      x-ratelimit-remaining: '999'
+      x-ratelimit-reset: '36'
+      x-xss-protection: 1; mode=block
+    method: POST
+    status: 200
+    url: https://nameenquiry/

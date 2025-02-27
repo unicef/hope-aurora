@@ -11,6 +11,13 @@ CONSTANCE_ADDITIONAL_FIELDS = {
             "choices": (("html", "HTML"), ("line", "NEWLINE"), ("space", "SPACES")),
         },
     ],
+    "write_only_input": [
+        "django.forms.fields.CharField",
+        {
+            "required": False,
+            "widget": "aurora.core.constance.WriteOnlyInput",
+        },
+    ],
 }
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 CONSTANCE_DATABASE_CACHE_BACKEND = env("CONSTANCE_DATABASE_CACHE_BACKEND")
@@ -42,6 +49,16 @@ CONSTANCE_CONFIG = OrderedDict(
             "public website hostname (regex)",
             str,
         ),
-        "WAF_ADMIN_ALLOWED_HOSTNAMES": ("", "admin website hostname (regex)", str),
+        "WAF_ADMIN_ALLOWED_HOSTNAMES": ("", "admin website hostname (regex)", "write_only_input"),
+        "UBA_TOKEN_URL": ("", "UBA Token URL", str),
+        "UBA_NAME_ENQUIRY_URL": ("", "UBA Name Enquiry Service URL", str),
+        "UBA_USERNAME": ("", "UBA Username", str),
+        "UBA_PASSWORD": ("", "UBA Password", "write_only_input"),
+        "UBA_SECRET_KEY": ("", "UBA Secret Key", "write_only_input"),
+        "UBA_APPL_CODE": ("", "UBA Application Code", str),
+        "UBA_CLIENT_NO": ("", "UBA Client Number", str),
+        "UBA_X_AUTH_CRED": ("", "UBA X Auth Credential", "write_only_input"),
+        "UBA_CONSUMER_KEY": ("", "UBA Service Token", str),
+        "UBA_CONSUMER_SECRET": ("", "UBA Service Token", "write_only_input"),
     }
 )

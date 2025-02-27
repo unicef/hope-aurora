@@ -1,4 +1,4 @@
-{% load static feature_flags  %}<!DOCTYPE html>
+{% load feature_flags static %}<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,18 +6,18 @@
     <meta name="date" content="{{ project.build_date }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    {% block meta %}{% endblock meta %}
+    {% block meta %}{% endblock %}
     <title>{% block title %}Registration{% endblock %}</title>
     <link href="https://unpkg.com/tailwindcss@1.9.6/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static "base.css" %}">
     <link href="{% static "staff-toolbar.css" %}" type="text/css" media="all" rel="stylesheet">
     <link rel="stylesheet" href="{% static "admin/debug.css" %}">
 
-{#    <script src="https://code.jquery.com/jquery-3.6.0.min.js"#}
-{#            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>#}
-    {% block cache %}{#<script src="{% static "cache.min.js" %}"></script>#}{% endblock %}
+{# <script src="https://code.jquery.com/jquery-3.6.0.min.js" #}
+{# integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script> #}
+    {% block cache %}{# <script src="{% static "cache.min.js" %}"></script> #}{% endblock %}
 
-    {% block head %}{% endblock head %}
+    {% block head %}{% endblock %}
 </head>
 <body class="min-h-screen">
 <script>
@@ -56,29 +56,30 @@
                 {% block logo %}
                     <a class="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0" href="/">
                     </a>
-                {% endblock %}
+                {% endblock logo %}
             </div>
             <div class="flex-grow">{% block header-title %}{% endblock %}</div>
             {% block hope-logo %}
                 <div>
                     <img alt="hope logo" src="{% static "hope1.webp" %}" height="40">
                 </div>
-            {% endblock %}
+            {% endblock hope-logo %}
         </div>
     </header>
-{% endblock %}
+{% endblock header %}
 {% block body_top %}{% endblock %}
 
-{% block body %}{% endblock body %}
+{% block body %}{% endblock %}
 {% block body_bottom %}{% endblock %}
 
 {% block footer %}
-{#    <div class="flex justify-center text-xs footer m-auto pt-1 pb-2 border-t-2 text-gray-400 border-gray-400">#}
-        {% include "_footer.html" %}
-{#    </div>#}
-{#    {% include "_matomo.html" %}#}
+    {% include "_footer.html" %}
 {% endblock footer %}
-{% include "_matomo.html" %}
+{% block bottom_scripts %}
+{% endblock bottom_scripts %}
+{% block matomo %}
+    {% include "_matomo.html" %}
+{% endblock matomo %}
 
 </body>
 </html>

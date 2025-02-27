@@ -120,7 +120,7 @@ class RegisterRouter(FormView):
         return HttpResponseRedirect(url)
 
 
-class AdminAccesMixin:
+class AdminAccessMixin:
     def is_admin_site(self):
         return is_admin_site(self.request)
 
@@ -172,7 +172,7 @@ def check_access(view_func):
 
 
 @method_decorator(csrf_exempt, name="dispatch")
-class RegisterView(RegistrationMixin, AdminAccesMixin, FormView):
+class RegisterView(RegistrationMixin, AdminAccessMixin, FormView):
     template_name = "registration/register.html"
 
     def get_template_names(self):
