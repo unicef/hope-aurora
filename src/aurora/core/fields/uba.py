@@ -1258,7 +1258,7 @@ BANKS_CHOICE = (
     (AKUCHUKWU_MFB, "Akuchukwu MFB"),
 )
 
-SORTED_CHOICES = sorted(BANKS_CHOICE, key=lambda x: x[1])
+BANKS_SORTED_CHOICES = sorted(BANKS_CHOICE, key=lambda x: x[1])
 
 
 class AccountNumberUBATextInput(SmartTextWidget):
@@ -1284,7 +1284,7 @@ class UBASelect(forms.Select):
 
     def __init__(self, attrs=None):
         attrs = {
-            "choices": SORTED_CHOICES,
+            "choices": BANKS_SORTED_CHOICES,
             **(attrs or {}),
         }
         super().__init__(attrs)
@@ -1331,7 +1331,7 @@ class UBANameEnquiryField(forms.MultiValueField):
 
     def __init__(self, *args, **kwargs):
         fields = [
-            forms.ChoiceField(choices=SORTED_CHOICES),
+            forms.ChoiceField(choices=BANKS_SORTED_CHOICES),
             forms.CharField(),
             forms.CharField(),
         ]
@@ -1339,13 +1339,14 @@ class UBANameEnquiryField(forms.MultiValueField):
         super().__init__(fields, *args, **kwargs)
 
     def compress(self, values):
-        return dict(zip(["institution_code", "account_number", "account_holder"], values, strict=True))
+        values.insert(0, dict(BANKS_CHOICE)[values[0]])
+        return dict(zip(["name", "code", "number", "holder_name"], values, strict=True))
 
     def validate(self, value):
         super().validate(value)
 
         try:
-            bank_code, account_number, account_full_name = value.values()
+            _, bank_code, account_number, account_full_name = value.values()
         except ValueError:
             raise ValidationError("ValueError: not enough values to unpack")
 

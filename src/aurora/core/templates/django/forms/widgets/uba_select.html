@@ -2,7 +2,4 @@
 {% for x in widget.attrs.choices %}
     <option {% if x.0 in widget.value %} selected {% endif %}value="{{ x.0 }}">{{ x.1 }}</option>
 {% endfor %}
-    {# <optgroup label="{{ group_name }}">{% endif %}{% for option in group_choices %} #}
-{# {% include option.template_name with widget=option %}{% endfor %}{% if group_name %} #}
-{# </optgroup>{% endif %}{% endfor %} #}
 </select>
