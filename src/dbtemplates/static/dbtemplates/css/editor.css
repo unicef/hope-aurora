@@ -6,6 +6,10 @@
     height: 40.2em;
     width: 85%;
 }
+.CodeMirror-wrapping{
+    width: 100%;
+
+}
 .CodeMirror-line-numbers {
   width: 2.2em;
   text-align: right;
