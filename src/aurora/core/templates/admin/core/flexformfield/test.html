@@ -1,4 +1,4 @@
-{% extends "admin_extra_buttons/action_page.html" %}{% load static itrans aurora %}
+{% extends "admin_extra_buttons/action_page.html" %}{% load aurora itrans static %}
 {% block action-content %}
     <link href="https://unpkg.com/tailwindcss@1.9.6/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static "base.css" %}">
@@ -38,9 +38,7 @@
 
         <form method="post" id="registrationForm">
             {% csrf_token %}
-            {% for field in form %}
-                {% include "smart/_fieldset.html" %}
-            {% endfor %}
+                {{ form }}
         <div lass="submit-row">
             <input style="background-color: cornflowerblue" type="submit" value="Submit">
         </div>

@@ -8,7 +8,7 @@
 {{ field.errors }}
 {% for err in field.errors.as_data %}
     {% if err.code == "name_mismatch" %}
-        <a id="{{ field.auto_id }}_uba_accept" href="#">Accept value</a>
+        <a class="button"  id="{{ field.auto_id }}_uba_accept" href="#">Accept value</a>
         <script>
             $("#{{ field.auto_id }}_uba_accept").on("click", function (){
                 $("#{{ field.auto_id }}_2").val("{{ err.params.name }}")
