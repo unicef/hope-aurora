@@ -3,15 +3,11 @@ import io
 import json
 import logging
 
-from django.conf import settings
-
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Util.Padding import unpad
-from cryptography.fernet import Fernet
 
-from aurora.core.utils import safe_json
 
 BLOCK_SIZE = 16
 CHUNK_SIZE = BLOCK_SIZE * 1024 * 1024 + BLOCK_SIZE
@@ -20,34 +16,6 @@ CIPHERTXT_SIZE = CHUNK_SIZE - TAG_SIZE
 NONCE_SIZE = BLOCK_SIZE
 
 logger = logging.getLogger(__name__)
-
-
-class Crypto:
-    def __init__(self, key=None):
-        self.key = key or settings.FERNET_KEY
-
-    def encrypt(self, v):
-        try:
-            if isinstance(v, str):
-                value = v
-            else:
-                value = safe_json(v)
-
-            cipher_suite = Fernet(self.key)  # key should be byte
-            encrypted_text = cipher_suite.encrypt(value.encode("ascii"))
-            return base64.urlsafe_b64encode(encrypted_text).decode("ascii")
-        except Exception as e:
-            logger.exception(e)
-        return value
-
-    def decrypt(self, value):
-        try:
-            txt = base64.urlsafe_b64decode(value)
-            cipher_suite = Fernet(self.key)
-            return cipher_suite.decrypt(txt).decode("ascii")
-        except Exception as e:
-            logger.exception(e)
-        return value
 
 
 class RSACrypto:

@@ -1,14 +1,6 @@
 import logging
 import posixpath
 
-from django import forms
-from django.contrib import admin
-from django.core.exceptions import ImproperlyConfigured
-from django.http import HttpResponse
-from django.shortcuts import render
-from django.utils.translation import gettext_lazy as _
-from django.utils.translation import ngettext
-
 from admin_extra_buttons.decorators import button, view
 
 # Check if django-reversion is installed and use reversions' VersionAdmin
@@ -16,6 +8,14 @@ from admin_extra_buttons.decorators import button, view
 from admin_sync.mixin import PublishMixin, SyncMixin
 from adminfilters.mixin import AdminFiltersMixin
 from adminfilters.value import ValueFilter
+from django import forms
+from django.contrib import admin
+from django.core.exceptions import ImproperlyConfigured
+from django.http import HttpResponse
+from django.shortcuts import render
+from django.utils.safestring import mark_safe
+from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext
 
 from dbtemplates.conf import settings
 from dbtemplates.models import Template, add_template_to_cache, remove_cached_template
@@ -40,23 +40,21 @@ class CodeMirrorTextArea(forms.Textarea):
         result = []
         result.append(super().render(name, value, attrs))
         result.append(
-            """
-<script type="text/javascript">
-  var editor = CodeMirror.fromTextArea('id_%(name)s', {
-    path: "%(media_prefix)sjs/",
+            f"""<script type="text/javascript">
+  var editor = CodeMirror.fromTextArea(document.getElementById('id_{name}'), {{
+    path: "{settings.DBTEMPLATES_MEDIA_PREFIX}js/",
     parserfile: "parsedjango.js",
-    stylesheet: "%(media_prefix)scss/django.css",
+    stylesheet: "{settings.DBTEMPLATES_MEDIA_PREFIX}css/django.css",
     continuousScanning: 500,
     height: "40.2em",
     tabMode: "shift",
     indentUnit: 4,
     lineNumbers: true
-  });
+  }});
 </script>
 """
-            % {"media_prefix": settings.DBTEMPLATES_MEDIA_PREFIX, "name": name}
         )
-        return "".join(result)
+        return mark_safe("".join(result))  # noqa: S308
 
 
 if settings.DBTEMPLATES_USE_CODEMIRROR:
@@ -142,6 +140,7 @@ class TemplateAdmin(SyncMixin, AdminFiltersMixin, PublishMixin, TemplateModelAdm
     save_as = True
     search_fields = ("name", "content")
     actions = ["invalidate_cache", "repopulate_cache", "check_syntax"]
+    change_form_template = "admin/dbtemplates/template/change_form.html"
 
     def invalidate_cache(self, request, queryset):
         for template in queryset:

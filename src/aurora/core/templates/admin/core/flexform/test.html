@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+
 {% block body %}
     {{ form.media }}
     {% block messages %}
@@ -20,4 +21,14 @@
                    type="submit">
         </form>
     </div>
-{% endblock %}
+    <script type="text/javascript">
+        $(document).bind("contextmenu", function (e) {
+            return false;
+        });
+        $(document).ready(function () {
+            $('body').bind('cut copy paste', function (event) {
+                event.preventDefault();
+            });
+        });
+    </script>
+{% endblock body %}
