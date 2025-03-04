@@ -1,11 +1,12 @@
 from unittest.mock import patch, Mock
-
 import pytest
 import responses
 from constance.test.unittest import override_config
 from django.core.exceptions import ValidationError
+from strategy_field.utils import fqn
 
 from aurora.core.fields import UBANameEnquiryField
+from testutils.factories import FlexFormFieldFactory
 
 
 @pytest.mark.django_db
@@ -93,7 +94,8 @@ def test_uba_name_enquiry_cannot_reach_server(mock_post):
         status_code=500,
         json=dict,
     )
-    fld = UBANameEnquiryField()
+    fld_c = FlexFormFieldFactory(field_type=fqn(UBANameEnquiryField))
+    fld = fld_c.get_instance()
     with pytest.raises(ValidationError, match="Cannot reach UBA server"):
         assert fld.validate(
             {"name": "bank UBA", "code": "bank", "number": "account", "holder_name": "mimmo", "ignore_error": False}
