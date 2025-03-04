@@ -102,7 +102,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "aurora.web.middlewares.admin.AdminSiteMiddleware",
+    # "aurora.web.middlewares.admin.AdminSiteMiddleware",
     # "aurora.web.middlewares.http2.HTTP2Middleware",
     "aurora.web.middlewares.minify.HtmlMinMiddleware",
     "django.middleware.gzip.GZipMiddleware",
