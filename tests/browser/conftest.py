@@ -1,22 +1,16 @@
 import contextlib
 from collections import namedtuple
+from typing import TYPE_CHECKING
 
 import pytest
 from selenium.webdriver.common.by import By
 from testutils.utils import wait_for
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from selenium.webdriver.common.timeouts import Timeouts
 
 
 Proxy = namedtuple("Proxy", "host,port")
-
-
-def pytest_configure(config):
-    if not config.option.driver:
-        config.option.driver = "chrome"
 
 
 SELENIUM_DEFAULT_PAGE_LOAD_TIMEOUT = 3

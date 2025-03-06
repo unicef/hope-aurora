@@ -1,10 +1,9 @@
 import logging
 
+from adminfilters.mixin import AdminAutoCompleteSearchMixin
 from django.contrib.admin import register
 from django.core.cache import caches
 from django.db.models.functions import Collate
-
-from adminfilters.mixin import AdminAutoCompleteSearchMixin
 from mptt.admin import MPTTModelAdmin
 from smart_admin.mixins import LinkedObjectsMixin
 

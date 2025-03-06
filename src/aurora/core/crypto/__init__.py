@@ -1,11 +1,10 @@
+import base64
 import logging
 
 from cryptography.fernet import Fernet
-import base64
-from aurora.core.utils import safe_json
-
 from django.conf import settings
 
+from aurora.core.utils import safe_json
 
 logger = logging.getLogger(__name__)
 

@@ -1,4 +1,5 @@
 import binascii
+
 from constance import config
 
 

@@ -6,6 +6,8 @@ from inspect import isclass
 from json import JSONDecodeError
 from pathlib import Path
 
+from admin_ordering.models import OrderableModel
+from concurrency.fields import AutoIncVersionField
 from django import forms
 from django.contrib.admin.templatetags.admin_urls import admin_urlname
 from django.core.cache import caches
@@ -18,15 +20,10 @@ from django.urls import reverse
 from django.utils.deconstruct import deconstructible
 from django.utils.functional import cached_property
 from django.utils.translation import get_language
-
-from admin_ordering.models import OrderableModel
-from concurrency.fields import AutoIncVersionField
 from mptt.fields import TreeForeignKey
 from mptt.managers import TreeManager
 from mptt.models import MPTTModel
 from natural_keys import NaturalKeyModel, NaturalKeyModelManager
-from py_mini_racer._types import JSUndefined
-from py_mini_racer.py_mini_racer import MiniRacerBaseException
 from sentry_sdk import set_tag
 from strategy_field.utils import fqn
 
@@ -218,14 +215,16 @@ _.is_adult = function(d) { return !_.is_child(d)};
         cache.set(f"validator-{state.request.user.pk}-{self.pk}-payload", self.jspickle(value))
 
     def validate(self, value, registration=None):
-        from py_mini_racer import MiniRacer
-
         set_tag("validator", self.name)
 
         status = self.STATUS_UNKNOWN if self.active else self.STATUS_INACTIVE
         self.monitor(status, value)
 
-        if self.active or (self.draft and state.request.user.is_staff):
+        if value and (self.active or (self.draft and state.request.user.is_staff)):
+            from py_mini_racer import MiniRacer
+            from py_mini_racer._types import JSUndefined
+            from py_mini_racer.py_mini_racer import MiniRacerBaseException
+
             ctx = MiniRacer()
             try:
                 pickled = self.jspickle(value or "")

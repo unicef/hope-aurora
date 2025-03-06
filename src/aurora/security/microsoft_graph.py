@@ -1,10 +1,9 @@
 import logging
 from typing import Any
 
+import requests
 from django.conf import settings
 from django.http import Http404
-
-import requests
 
 logger = logging.getLogger(__name__)
 

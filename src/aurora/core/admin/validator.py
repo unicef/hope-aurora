@@ -1,11 +1,10 @@
 import json
 import logging
 
+from admin_extra_buttons.decorators import button
 from django import forms
 from django.contrib.admin import register
 from django.core.cache import caches
-
-from admin_extra_buttons.decorators import button
 from smart_admin.modeladmin import SmartModelAdmin
 
 from ...administration.mixin import LoadDumpMixin

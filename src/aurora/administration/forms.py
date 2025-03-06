@@ -1,10 +1,9 @@
 import base64
 import urllib.parse
 
+import sqlparse
 from django import forms
 from django.core.exceptions import ValidationError
-
-import sqlparse
 
 
 class ImportForm(forms.Form):

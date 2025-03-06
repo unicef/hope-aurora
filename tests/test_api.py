@@ -1,10 +1,9 @@
 import base64
 import time
 
-from django.urls import reverse
-
 import pytest
 from Crypto.PublicKey import RSA
+from django.urls import reverse
 
 from aurora.core.crypto.rsa import decrypt
 
@@ -73,6 +72,7 @@ def public_pem(key) -> str:
 
 
 @pytest.mark.django_db
+@pytest.mark.mini_racer
 def test_api(django_app, registration, monkeypatch):
     import aurora.registration.views.registration
 

@@ -1,9 +1,9 @@
+import factory.fuzzy
 from django import forms
 from django.contrib.admin.models import LogEntry
 from django.contrib.auth.models import Group, User
 from django.utils import timezone
-
-import factory.fuzzy
+from factory import PostGenerationMethodCall
 from factory.base import FactoryMetaClass
 from rest_framework.authtoken.models import TokenProxy
 from social_django.models import Association, Nonce, UserSocialAuth
@@ -78,6 +78,7 @@ class UserFactory(AutoRegisterModelFactory):
     email = factory.Faker("email")
     first_name = factory.Faker("name")
     last_name = factory.Faker("last_name")
+    password = PostGenerationMethodCall("set_password", "password")
 
     class Meta:
         model = User

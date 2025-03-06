@@ -3,7 +3,12 @@ import io
 import json
 import logging
 from hashlib import md5
+from typing import TYPE_CHECKING
 
+from admin_extra_buttons.decorators import button, choice, view
+from admin_sync.mixin import SyncMixin
+from adminfilters.mixin import AdminAutoCompleteSearchMixin
+from dateutil.utils import today
 from django import forms
 from django.conf import settings
 from django.contrib import messages
@@ -18,11 +23,6 @@ from django.template.loader import select_template
 from django.urls import reverse, translate_url
 from django.utils.module_loading import import_string
 from django.utils.text import slugify
-
-from admin_extra_buttons.decorators import button, choice, view
-from admin_sync.mixin import SyncMixin
-from adminfilters.mixin import AdminAutoCompleteSearchMixin
-from dateutil.utils import today
 from django_redis import get_redis_connection
 from jsoneditor.forms import JSONEditor
 from smart_admin.modeladmin import SmartModelAdmin
@@ -38,7 +38,6 @@ from aurora.core.utils import (
     is_root,
     namify,
 )
-from typing import TYPE_CHECKING
 from aurora.i18n.forms import TemplateForm, TranslationForm
 from aurora.registration.admin.filters import (
     OrganizationFilter,
@@ -58,8 +57,9 @@ logger = logging.getLogger(__name__)
 
 
 if TYPE_CHECKING:
-    from aurora.i18n.translate import Translator
     from django.template import Template
+
+    from aurora.i18n.translate import Translator
 
 
 def can_export_data(request, obj, handler=None):

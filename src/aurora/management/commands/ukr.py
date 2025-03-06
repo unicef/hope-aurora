@@ -1,8 +1,7 @@
 import logging
 
-from django.db.transaction import atomic
-
 import djclick as click
+from django.db.transaction import atomic
 
 from aurora.core import registry
 from aurora.core.models import CustomFieldType, FlexForm, OptionSet

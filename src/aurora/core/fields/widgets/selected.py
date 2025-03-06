@@ -1,5 +1,5 @@
-from django.conf import settings
 from django import forms
+from django.conf import settings
 
 from aurora.core.fields.mixins import TailWindMixin
 from aurora.core.version_media import VersionMedia

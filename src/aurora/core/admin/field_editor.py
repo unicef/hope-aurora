@@ -8,6 +8,7 @@ from django.shortcuts import render
 from django.template import Context, Template
 from django.utils.functional import cached_property
 
+from aurora.core.admin.editor import FlexEditor
 from aurora.core.fields.widgets import JavascriptEditor
 from aurora.core.forms import FlexFormBaseForm, VersionMedia
 from aurora.core.models import FlexFormField, OptionSet
@@ -16,7 +17,7 @@ from aurora.core.utils import merge_data
 cache = caches["default"]
 
 
-class AdvancendAttrsMixin:
+class AdvancendAttrsMixin(FlexEditor):
     def __init__(self, *args, **kwargs):
         self.field = kwargs.pop("field", None)
         self.prefix = kwargs.get("prefix")
@@ -166,8 +167,7 @@ class FieldEditor:
         return HttpResponse(rendered, content_type="text/plain")
 
     def get_code(self):
-        from bs4 import BeautifulSoup
-        from bs4 import formatter
+        from bs4 import BeautifulSoup, formatter
         from pygments import highlight
         from pygments.formatters.html import HtmlFormatter
         from pygments.lexers import HtmlLexer
@@ -260,7 +260,12 @@ class FieldEditor:
                 "smart_validation%s.js" % extra,
                 "smart%s.js" % extra,
                 "smart_field%s.js" % extra,
-            ]
+            ],
+            css={
+                "all": [
+                    "admin/field_editor/field_editor.css",
+                ]
+            },
         )
         for prefix, frm in self.get_forms().items():
             ctx[f"form_{prefix}"] = frm

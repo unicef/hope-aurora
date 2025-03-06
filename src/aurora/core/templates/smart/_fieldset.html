@@ -35,8 +35,8 @@
         {% if field.template_name %}
             {{ field.render }}
         {% else %}
-            <span class="errors">{{ field.errors }}</span>
-            {{ field }}
+{# <span class="errors">{{ field.errors }}</span> #}
+          {{ field.render }}
         {% endif %}
         <div class="text-xs	italic hint" data-msgid="{{ ADV.smart.hint }}">
 {# {% if user.is_staff %}{% include "i18n/_staff_edit_i18n.html" with original=field|smart:"hint,0" %}{% endif %} #}

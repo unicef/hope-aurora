@@ -2,9 +2,8 @@ import io
 import tempfile
 from pathlib import Path
 
-from django.core.management import call_command
-
 import pytest
+from django.core.management import call_command
 
 
 @pytest.fixture

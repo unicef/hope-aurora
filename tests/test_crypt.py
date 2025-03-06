@@ -1,10 +1,10 @@
 import json
+from typing import TYPE_CHECKING
 
 import pytest
 from Crypto.PublicKey import RSA
 
 from aurora.core.crypto.rsa import RSACrypto, crypt, decrypt
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from aurora.registration.models import Record

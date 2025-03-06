@@ -1,8 +1,7 @@
-from django.conf import settings
-from django.shortcuts import render
-
 from admin_extra_buttons.decorators import button, view
 from admin_sync.mixin import SyncMixin
+from django.conf import settings
+from django.shortcuts import render
 from smart_admin.modeladmin import SmartModelAdmin
 
 from .forms import FlatPageForm

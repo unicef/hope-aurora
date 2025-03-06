@@ -2,12 +2,11 @@ import logging
 import re
 from datetime import datetime, timedelta
 
+from adminfilters.numbers import NumberFilter
 from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.urls import reverse
 from django.utils.translation import gettext as _
-
-from adminfilters.numbers import NumberFilter
 
 from ...administration.filters import BaseAutoCompleteFilter
 

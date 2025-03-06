@@ -3,9 +3,8 @@ import io
 import logging
 import re
 
-from django.template import Library, Node
-
 from PIL import Image, UnidentifiedImageError
+from django.template import Library, Node
 
 logger = logging.getLogger(__name__)
 register = Library()

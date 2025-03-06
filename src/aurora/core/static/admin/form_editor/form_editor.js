@@ -41,10 +41,6 @@
                     for (const property in fieldErrors) {
                         $(`#id_field-${property}`).before(`<div class="field-error">${fieldErrors[property]}</div>`);
                     }
-                    ;
-                    // for (const property in kwargsErrors) {
-                    //     console.log(`${property}: ${kwargsErrors[property]}`);
-                    // }
                 })
         }
 
@@ -83,8 +79,8 @@
         })
         $(".tabs th").on("click", function () {
             const targetName = $(this).data('target');
-            $(`.tabs th`).removeClass('selected');
-            $(`table.cfg-form`).addClass('collapsed');
+            $('.tabs th').removeClass('selected');
+            $('.cfg-form').addClass('collapsed');
             $(this).addClass('selected');
             $(`#${targetName}`).toggleClass('collapsed');
             $('textarea.js-editor').each(function (i, e) {

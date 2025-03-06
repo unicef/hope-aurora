@@ -10,10 +10,10 @@ from .hidden import HiddenField  # noqa
 from .label import LabelOnlyField  # noqa
 from .mixins import SmartFieldMixin  # noqa
 from .multi_checkbox import MultiCheckboxField  # noqa
-from .uba import UBANameEnquiryField  # noqa
 from .radio import RadioField, YesNoChoice, YesNoRadio  # noqa
 from .remote_ip import RemoteIpField  # noqa
 from .selected import AjaxSelectField, SelectField, SmartSelectWidget  # noqa
+from .uba import UBANameEnquiryField  # noqa
 from .webcam import WebcamField  # noqa
 
 WIDGET_FOR_FORMFIELD_DEFAULTS = {

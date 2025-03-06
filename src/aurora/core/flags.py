@@ -1,7 +1,6 @@
+from adminactions.utils import get_attr
 from django.conf import settings
 from django.core.exceptions import ValidationError
-
-from adminactions.utils import get_attr
 from flags import conditions
 from flags.conditions import validate_parameter
 

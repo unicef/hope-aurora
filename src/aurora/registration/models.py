@@ -2,6 +2,9 @@ import base64
 import json
 import logging
 
+import jmespath
+from Crypto.PublicKey import RSA
+from concurrency.fields import AutoIncVersionField
 from django.conf import settings
 from django.contrib.flatpages.models import FlatPage
 from django.db import models
@@ -9,10 +12,6 @@ from django.utils import timezone, translation
 from django.utils.functional import cached_property
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
-
-import jmespath
-from concurrency.fields import AutoIncVersionField
-from Crypto.PublicKey import RSA
 from natural_keys import NaturalKeyModel, NaturalKeyModelManager
 from strategy_field.fields import StrategyField
 from strategy_field.utils import fqn

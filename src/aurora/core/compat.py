@@ -1,5 +1,4 @@
 from django import forms
-
 from django_regex.fields import RegexField as RegexField_
 from django_regex.utils import Regex
 from strategy_field.fields import StrategyClassField as StrategyClassField_

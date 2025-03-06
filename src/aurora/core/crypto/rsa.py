@@ -8,7 +8,6 @@ from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Util.Padding import unpad
 
-
 BLOCK_SIZE = 16
 CHUNK_SIZE = BLOCK_SIZE * 1024 * 1024 + BLOCK_SIZE
 TAG_SIZE = BLOCK_SIZE

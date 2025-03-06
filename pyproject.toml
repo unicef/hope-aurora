@@ -11,6 +11,7 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "django-stubs[compatible-mypy]",
     "Faker",
     "Markdown",
     "Pillow",
@@ -64,7 +65,6 @@ dependencies = [
     "mini-racer",
     "natural-keys",
     "psycopg2-binary",
-    "py-mini-racer",
     "pycryptodome",
     "pygments",
     "pyquery",
@@ -74,7 +74,6 @@ dependencies = [
     "social-auth-app-django",
     "soupsieve",
     "sqlparse",
-    "uwsgi",
 ]
 
 [uv]
@@ -91,30 +90,30 @@ docs = [
 
 [tool.uv]
 dev-dependencies = [
-    "black",
+#    "black",
     "coverage",
-    "django-stubs[compatible-mypy]",
     "django-webtest",
     "factory-boy",
-    "flake8",
-    "flake8-html",
+#    "flake8",
+#    "flake8-html",
     "freezegun",
-    "ipython",
-    "isort",
+#    "ipython",
+#    "isort",
     "pdbpp",
     "pre-commit",
-    "pyflakes",
-    "pytest-asyncio",
+#    "pyflakes",
+    "pytest",
+#    "pytest-asyncio",
     "pytest-coverage",
     "pytest-django",
     "pytest-echo",
-    "pytest-html",
-    "pytest-pythonpath",
-    "pytest-selenium",
-    "pytest-variables",
+#    "pytest-html",
+#    "pytest-pythonpath",
+#    "pytest-selenium",
+#    "pytest-variables",
     "pytest-xdist",
-    "pytest",
     "responses",
+    "seleniumbase>=4.35.2",
     "tox",
     "watchdog",
 ]
@@ -128,33 +127,6 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 packages = ["aurora", "dbtemplates"]
-
-[tool.black]
-line-length = 120
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.pytest_cache
-  | \.tox
-  | \.venv
-  | ~build
-  | build
-  | ops
-  | migrations
-)/
-'''
-
-[tool.isort]
-profile = "black"
-line_length = 120
-default_section = "THIRDPARTY"
-known_first_party = []
-known_django = "django"
-sections = ["FUTURE","STDLIB","DJANGO","THIRDPARTY","FIRSTPARTY","LOCALFOLDER"]
-include_trailing_comma = true
-skip = ["migrations", "snapshots", ".venv"]
-
 
 [tool.nitpick]
     style = [

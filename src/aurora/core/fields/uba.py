@@ -5,13 +5,12 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.forms import MultiWidget
+from django.utils.translation import gettext as _
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import ReadTimeout
-from django.utils.translation import gettext as _
 
 from aurora.core.fields.mixins import MultiValueWidgetMixin
 from aurora.core.fields.widgets import SmartTextWidget
-
 from aurora.core.version_media import VersionMedia
 
 FALSE = "false"

@@ -1,6 +1,5 @@
-from django import forms
-
 import pytest
+from django import forms
 
 from aurora.core.models import CustomFieldType
 

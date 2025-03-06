@@ -2,7 +2,6 @@ import json
 import logging
 
 from django.template import Library
-
 from pygments import highlight, lexers
 from pygments.formatters import HtmlFormatter
 

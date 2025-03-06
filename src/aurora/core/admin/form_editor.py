@@ -8,13 +8,14 @@ from django.shortcuts import render
 from django.template.loader import get_template
 from django.utils.functional import cached_property
 
+from aurora.core.admin.editor import FlexEditor
 from aurora.core.fields.widgets import JavascriptEditor
 from aurora.core.models import FlexForm
 
 cache = caches["default"]
 
 
-class AdvancendAttrsMixin:
+class AdvancendAttrsMixin(FlexEditor):
     def __init__(self, *args, **kwargs):
         self.form = kwargs.pop("form", None)
         super().__init__(*args, **kwargs)
@@ -71,8 +72,7 @@ class FormEditor:
         return HttpResponse(rendered, content_type="text/plain")
 
     def get_code(self):
-        from bs4 import BeautifulSoup
-        from bs4 import formatter
+        from bs4 import BeautifulSoup, formatter
         from pygments import highlight
         from pygments.formatters.html import HtmlFormatter
         from pygments.lexers import HtmlLexer
