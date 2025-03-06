@@ -1,9 +1,9 @@
-{% if field.use_fieldset %}
-  <fieldset>
-  {% if field.label %}{{ field.legend_tag }}{% endif %}
-{% else %}
-  {% if field.label %}{{ field.label_tag }}{% endif %}
-{% endif %}
+{# {% if field.use_fieldset %} #}
+{# fieldset> #}
+{# {% if field.label %}{{ field.legend_tag }}{% endif %} #}
+{# {% else %} #}
+{# {% if field.label %}{{ field.label_tag }}{% endif %} #}
+{# {% endif %} #}
 {% if field.help_text %}<div class="helptext"{% if field.auto_id %} id="{{ field.auto_id }}_helptext"{% endif %}>{{ field.help_text|safe }}</div>{% endif %}
 {{ field.errors }}
 {% for err in field.errors.as_data %}
@@ -17,4 +17,4 @@
     {% endif %}
 {% endfor %}
 {{ field }}
-{% if field.use_fieldset %}</fieldset>{% endif %}
+{# {% if field.use_fieldset %}/fieldset>{% endif %} #}

@@ -11,6 +11,7 @@ coverage.xml
 node_modules
 package-lock.json
 package.json
+latest_logs
 !tests/.coveragerc
 !.gitignore
 !.dockerignore

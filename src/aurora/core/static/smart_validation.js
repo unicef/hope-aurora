@@ -180,7 +180,7 @@ smart = {
         if ((inputType === "radio") || (inputType === "checkbox")) {
             $sender.is(":checked");
         } else {
-            return $sender.val().trim() !== '';
+            return  $sender.val() ? $sender.val().trim() !== '': false;
         }
     },
     getField: function ($sender) {

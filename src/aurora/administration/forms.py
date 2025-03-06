@@ -38,5 +38,5 @@ class SQLForm(forms.Form):
         except ValidationError:
             raise
         except Exception as e:
-            raise ValidationError(e)
+            raise ValidationError(e) from e
         return value

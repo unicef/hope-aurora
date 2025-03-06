@@ -126,7 +126,7 @@ class BlockTranslateNode(Node):
                 # Either string is malformed, or it's a bug
                 raise TemplateSyntaxError(
                     "%r is unable to format string returned by gettext: %r using %r" % (self.tag_name, result, data)
-                )
+                ) from None
             with translation.override(None):
                 result = self.render(context, nested=True)
         if self.asvar:
@@ -162,7 +162,9 @@ def do_translate(parser, token):
             try:
                 value = remaining.pop(0)
             except IndexError:
-                raise TemplateSyntaxError("No argument provided to the '%s' tag for the context option." % bits[0])
+                raise TemplateSyntaxError(
+                    "No argument provided to the '%s' tag for the context option." % bits[0]
+                ) from None
             if value in invalid_context:
                 raise TemplateSyntaxError(
                     "Invalid argument '%s' provided to the '%s' tag for the context option" % (value, bits[0]),
@@ -172,7 +174,7 @@ def do_translate(parser, token):
             try:
                 value = remaining.pop(0)
             except IndexError:
-                raise TemplateSyntaxError("No argument provided to the '%s' tag for the as option." % bits[0])
+                raise TemplateSyntaxError("No argument provided to the '%s' tag for the as option." % bits[0]) from None
             asvar = value
         else:
             raise TemplateSyntaxError(
@@ -253,14 +255,16 @@ def do_block_translate(parser, token):  # noqa
                 value = remaining_bits.pop(0)
                 value = parser.compile_filter(value)
             except Exception:
-                raise TemplateSyntaxError('"context" in %r tag expected exactly one argument.' % bits[0])
+                raise TemplateSyntaxError('"context" in %r tag expected exactly one argument.' % bits[0]) from None
         elif option == "trimmed":
             value = True
         elif option == "asvar":
             try:
                 value = remaining_bits.pop(0)
             except IndexError:
-                raise TemplateSyntaxError("No argument provided to the '%s' tag for the asvar option." % bits[0])
+                raise TemplateSyntaxError(
+                    "No argument provided to the '%s' tag for the asvar option." % bits[0]
+                ) from None
             asvar = value
         else:
             raise TemplateSyntaxError("Unknown argument for %r tag: %r." % (bits[0], option))

@@ -67,9 +67,9 @@ class MicrosoftGraphAPI:
             else:
                 logger.error("You must provide 'uuid' or 'email' argument.")
                 raise ValueError("You must provide 'uuid' or 'email' argument.")
-        except IndexError:
+        except IndexError as e:
             logger.error(f"User not found using email={email},uuid={uuid}")
-            raise Http404("User not found")
+            raise Http404("User not found") from e
         if not value:
             logger.error(f"User not found using email={email},uuid={uuid}")
             raise Http404("User not found")

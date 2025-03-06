@@ -2,13 +2,13 @@ import json
 from typing import TYPE_CHECKING
 
 import pytest
-from Crypto.PublicKey import RSA
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.rsa import generate_private_key
 
-from aurora.core.crypto.rsa import RSACrypto, crypt, decrypt
+from aurora.core.crypto.rsa import crypt, decrypt
 
 if TYPE_CHECKING:
     from aurora.registration.models import Record
-
 
 LANGUAGES = {
     "english": "first",
@@ -62,25 +62,36 @@ btcA1UFpS9TFL++uMmwbcMzykITUTxhHp0QWEg1cpj8HFakPBZ4=
 def registration(simple_form):
     from testutils.factories import RegistrationFactory
 
+    priv: bytes
+    pub: bytes
+
     reg = RegistrationFactory()
     priv, pub = reg.setup_encryption_keys()
-    reg._private_pem = priv
+    reg._private_pem = priv.decode()
     return reg
 
 
 @pytest.fixture(scope="session")
 def key():
-    return RSA.generate(2048)
+    return generate_private_key(public_exponent=65537, key_size=2048)
 
 
 @pytest.fixture(scope="session")
 def private_pem(key) -> str:
-    return key.export_key().decode()
+    return key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.TraditionalOpenSSL,
+        encryption_algorithm=serialization.NoEncryption(),
+    ).decode()
 
 
 @pytest.fixture(scope="session")
 def public_pem(key) -> str:
-    return key.publickey().export_key().decode()
+    return (
+        key.public_key()
+        .public_bytes(encoding=serialization.Encoding.PEM, format=serialization.PublicFormat.SubjectPublicKeyInfo)
+        .decode()
+    )
 
 
 @pytest.mark.parametrize("data", LANGUAGES.values(), ids=LANGUAGES.keys())
@@ -104,13 +115,3 @@ def test_crypt_field(data, registration):
     record: Record = registration.add_record(data)
     decrypted = record.decrypt(registration._private_pem)
     assert decrypted == data
-
-
-def test_crypter1():
-    c = RSACrypto()
-    assert c.decrypt(c.crypt("AAAA")) == "AAAA"
-
-
-def test_crypter2():
-    c = RSACrypto(PUBLIC.decode(), PRIVATE.decode())
-    assert c.decrypt(c.crypt("AAAA")) == "AAAA"

@@ -37,4 +37,4 @@ class RegistrationDataView(PermissionRequiredMixin, TemplateView):
             set_tag("registration.slug", reg.name)
             return reg
         except Registration.DoesNotExist:  # pragma: no coalidateer
-            raise Http404
+            raise Http404 from None

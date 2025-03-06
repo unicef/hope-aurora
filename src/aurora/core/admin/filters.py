@@ -54,7 +54,7 @@ class UsedByRegistration(BaseAutoCompleteFilter):
         except (ValueError, ValidationError) as e:
             # Fields may raise a ValueError or ValidationError when converting
             # the parameters to the correct type.
-            raise IncorrectLookupParameters(e)
+            raise IncorrectLookupParameters(e) from e
 
 
 class UsedInRFormset(BaseAutoCompleteFilter):

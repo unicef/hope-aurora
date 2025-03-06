@@ -1349,7 +1349,7 @@ class UBANameEnquiryField(forms.MultiValueField):
         try:
             _, bank_code, account_number, account_full_name, _ = value.values()
         except ValueError:
-            raise ValidationError("ValueError: not enough values to unpack")
+            raise ValidationError("ValueError: not enough values to unpack") from None
 
         i = 0
         generate = False

@@ -74,7 +74,7 @@ class FlexFormBaseForm(forms.Form):
             try:
                 self.flex_form.validator.validate(cleaned_data)
             except ValidationError as e:
-                raise ValidationError(e)
+                raise ValidationError(e) from None
         return cleaned_data
 
 
@@ -93,7 +93,7 @@ class SmartBaseFormSet(BaseFormSet):
             try:
                 self.fs.validator.validate(data)
             except ValidationError as e:
-                raise ValidationError([e])
+                raise ValidationError([e]) from None
 
     @property
     def media(self):

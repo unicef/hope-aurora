@@ -27,7 +27,7 @@ class JMESPathFormField(forms.CharField):
             try:
                 jmespath.compile(value)
             except Exception as e:
-                raise ValidationError(str(e))
+                raise ValidationError(str(e)) from None
 
 
 def as_link(param):
@@ -118,13 +118,13 @@ class RegistrationExportForm(forms.Form):
             patterns = [p for p in self.cleaned_data.get("include", ".*").split("\n") if p.strip()]
             return RegexList([re.compile(rule) for rule in patterns] or [".*"])
         except Exception as e:
-            raise ValidationError(e)
+            raise ValidationError(e) from e
 
     def clean_exclude(self):
         try:
             return RegexList([re.compile(rule) for rule in self.cleaned_data["exclude"].split("\n")])
         except Exception as e:
-            raise ValidationError(e)
+            raise ValidationError(e) from None
 
 
 class JamesForm(forms.ModelForm):

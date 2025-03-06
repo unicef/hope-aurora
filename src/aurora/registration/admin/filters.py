@@ -92,5 +92,5 @@ class DateRangeFilter(NumberFilter):
                 try:
                     queryset = queryset.filter(**self.filters)
                 except Exception:
-                    raise IncorrectLookupParameters(self.value())
+                    raise IncorrectLookupParameters(self.value()) from None
         return queryset

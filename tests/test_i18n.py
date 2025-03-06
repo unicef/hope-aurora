@@ -19,6 +19,7 @@ def simple_registration(simple_form):
 
 
 @pytest.mark.django_db
+@pytest.mark.mini_racer
 def test_register_simple(app, simple_registration):
     url = reverse("register", args=[simple_registration.slug, simple_registration.version])
     assert url == f"/en-us/register/{simple_registration.slug}/{simple_registration.version}/"

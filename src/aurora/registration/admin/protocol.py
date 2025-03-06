@@ -36,7 +36,7 @@ class AuroraSyncRegistrationProtocol(LoadDumpProtocol):
                     )
         except Exception as e:
             logger.exception(e)
-            raise ProtocolError(e)
+            raise ProtocolError(e) from None
         return processed
 
     def collect(self, data: Sequence, collect_related=True):

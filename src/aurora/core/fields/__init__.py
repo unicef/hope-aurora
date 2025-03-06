@@ -23,6 +23,7 @@ WIDGET_FOR_FORMFIELD_DEFAULTS = {
         "max_length": 200,
         "strip": True,
     },
+    forms.EmailField: {"widget": widgets.EmailWidget},
     forms.IntegerField: {"widget": widgets.NumberWidget},
     forms.FloatField: {"widget": widgets.NumberWidget},
     forms.ChoiceField: {"widget": SmartSelectWidget},

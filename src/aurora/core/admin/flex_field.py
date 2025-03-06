@@ -10,6 +10,7 @@ from django.contrib.admin import register
 from django.core.cache import caches
 from django.db.models import JSONField
 from django.db.models.functions import Collate
+from django.http import HttpResponse, JsonResponse
 from jsoneditor.forms import JSONEditor
 from smart_admin.modeladmin import SmartModelAdmin
 
@@ -56,7 +57,7 @@ class FlexFormFieldForm(forms.ModelForm):
 @register(FlexFormField)
 class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, OrderableAdmin, SmartModelAdmin):
     search_fields = ("name_deterministic", "label")
-    list_display = ("label", "name", "flex_form", "field_type", "required", "enabled")
+    list_display = ("label", "name", "flex_form", "field_type_name", "required", "enabled")
     list_editable = ["required", "enabled"]
     list_filter = (
         ("flex_form", AutoCompleteFilter),
@@ -84,7 +85,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
     def get_readonly_fields(self, request, obj=None):
         return super().get_readonly_fields(request, obj) if is_root(request) else []
 
-    def field_type(self, obj):
+    def field_type_name(self, obj):
         return obj.field_type.__name__ if obj.field_type else "[[ removed ]]"
 
     def formfield_for_dbfield(self, db_field, request, **kwargs):
@@ -113,24 +114,36 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
         return self.editor.get(request, pk)
 
     @view()
-    def widget_attrs(self, request, pk):
-        editor = FieldEditor(self, request, pk)
-        return editor.get_configuration()
+    def widget_attrs(self, request, pk) -> HttpResponse:
+        try:
+            editor = FieldEditor(self, request, pk)
+            return editor.get_configuration()
+        except Exception as e:
+            return HttpResponse(str(e))
 
     @view()
-    def widget_refresh(self, request, pk):
-        editor = FieldEditor(self, request, pk)
-        return editor.refresh()
+    def widget_refresh(self, request, pk) -> JsonResponse:
+        try:
+            editor = FieldEditor(self, request, pk)
+            return editor.refresh()
+        except Exception as e:
+            return JsonResponse({"Error": str(e)})
 
     @view()
-    def widget_code(self, request, pk):
-        editor = FieldEditor(self, request, pk)
-        return editor.get_code()
+    def widget_code(self, request, pk) -> HttpResponse:
+        try:
+            editor = FieldEditor(self, request, pk)
+            return editor.get_code()
+        except Exception as e:
+            return HttpResponse(str(e))
 
     @view()
-    def widget_display(self, request, pk):
-        editor = FieldEditor(self, request, pk)
-        return editor.render()
+    def widget_display(self, request, pk) -> HttpResponse:
+        try:
+            editor = FieldEditor(self, request, pk)
+            return editor.render()
+        except Exception as e:
+            return HttpResponse(str(e))
 
     @button()
     def test(self, request, pk):

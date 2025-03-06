@@ -1,10 +1,12 @@
 import base64
 import json
 import logging
+from typing import TYPE_CHECKING, TypeVar
 
 import jmespath
-from Crypto.PublicKey import RSA
 from concurrency.fields import AutoIncVersionField
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from django.conf import settings
 from django.contrib.flatpages.models import FlatPage
 from django.db import models
@@ -16,8 +18,8 @@ from natural_keys import NaturalKeyModel, NaturalKeyModelManager
 from strategy_field.fields import StrategyField
 from strategy_field.utils import fqn
 
-from aurora.core.crypto import Crypto
 from aurora.core.crypto.rsa import crypt, decrypt, decrypt_offline
+from aurora.core.crypto.symmetric import Symmetric
 from aurora.core.fields import AjaxSelectField, LabelOnlyField
 from aurora.core.forms import VersionMedia
 from aurora.core.models import FlexForm, FlexFormField, Project, Validator
@@ -31,12 +33,15 @@ from aurora.core.utils import (
 from aurora.i18n.models import I18NModel
 from aurora.registration.fields import ChoiceArrayField
 from aurora.registration.storage import router
-from aurora.registration.strategies import SaveToDB, strategies
+from aurora.registration.strategies import RegistrationStrategy, SaveToDB, strategies
 from aurora.state import state
+
+if TYPE_CHECKING:
+    Undefined = TypeVar("Undefined")
 
 logger = logging.getLogger(__name__)
 
-undefined = object()
+undefined: "Undefined" = object()
 
 
 class RegistrationManager(NaturalKeyModelManager):
@@ -81,7 +86,7 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
         default=settings.LANGUAGE_CODE,
     )
     dry_run = models.BooleanField(default=False)
-    handler = StrategyField(registry=strategies, default=None, blank=True, null=True)
+    handler: RegistrationStrategy = StrategyField(registry=strategies, default=None, blank=True, null=True)
     show_in_homepage = models.BooleanField(default=False)
     welcome_page = models.ForeignKey(FlatPage, blank=True, null=True, on_delete=models.SET_NULL)
     locales = ChoiceArrayField(
@@ -184,13 +189,17 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
             return self.welcome_page.get_absolute_url()
         return self.get_absolute_url()
 
-    def setup_encryption_keys(self):
-        key = RSA.generate(2048)
-        private_pem = key.export_key()
-        public_pem: bytes = key.publickey().export_key()
-
+    def setup_encryption_keys(self) -> tuple[bytes, bytes]:
+        key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        private_pem: bytes = key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
+        public_pem: bytes = key.public_key().public_bytes(
+            encoding=serialization.Encoding.PEM, format=serialization.PublicFormat.SubjectPublicKeyInfo
+        )
         self.public_key: str = public_pem.decode()
-        self.public_key2 = public_pem
         self.save()
         return private_pem, public_pem
 
@@ -320,17 +329,17 @@ class Record(models.Model):
     def fields_data(self):
         return "String too long to display..." if self.is_offline and len(self.fields) > 12_000 else self.fields
 
-    def decrypt(self, private_key=undefined, secret=undefined):
+    def decrypt(self, private_key: "bytes|None" = None, secret: "str|None" = None):
         if self.is_offline:
             fields = json.loads(decrypt_offline(self.fields, private_key))
             return router.compress(fields, {})
-        if private_key != undefined:
+        if private_key is not None:
             files = json.loads(decrypt(self.files, private_key))
             fields = json.loads(decrypt(base64.b64decode(self.fields), private_key))
             return router.compress(fields, files)
-        if secret != undefined:
-            files = json.loads(Crypto(secret).decrypt(self.files))
-            fields = json.loads(Crypto(secret).decrypt(self.fields))
+        if secret is not None:
+            files = json.loads(Symmetric(secret).decrypt(self.files))
+            fields = json.loads(Symmetric(secret).decrypt(self.fields))
             return router.compress(fields, files)
         return None
 

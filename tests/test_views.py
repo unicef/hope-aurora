@@ -113,6 +113,7 @@ def protected_registration(simple_form):
 
 
 @pytest.mark.django_db
+@pytest.mark.mini_racer
 def test_register_simple(django_app, simple_registration):
     url = simple_registration.get_absolute_url()
     res = django_app.get(url)
@@ -138,6 +139,7 @@ def test_register_simple(django_app, simple_registration):
 
 
 @pytest.mark.django_db
+@pytest.mark.mini_racer
 def test_register_indexed(django_app, simple_registration):
     url = simple_registration.get_absolute_url()
     res = django_app.get(url)
@@ -153,6 +155,7 @@ def test_register_indexed(django_app, simple_registration):
 
 
 @pytest.mark.django_db
+@pytest.mark.mini_racer
 def test_register_unique(django_app, unique_last_name_registration):
     url = unique_last_name_registration.get_absolute_url()
     res = django_app.get(url)
@@ -173,6 +176,7 @@ def test_register_unique(django_app, unique_last_name_registration):
 
 
 @pytest.mark.django_db
+@pytest.mark.mini_racer
 def test_register_unique_nested(django_app, james_registration):
     url = james_registration.get_absolute_url()
     res = django_app.get(url)
@@ -231,6 +235,7 @@ def add_extra_form_to_formset_with_data(form, prefix, field_names_and_values):
 
 
 @pytest.mark.django_db
+@pytest.mark.mini_racer
 def test_register_complex(django_app, complex_registration):
     url = complex_registration.get_absolute_url()
     res = django_app.get(url)
@@ -268,6 +273,7 @@ def test_register_complex(django_app, complex_registration):
 
 
 @pytest.mark.parametrize("first_name", LANGUAGES.values(), ids=LANGUAGES.keys())
+@pytest.mark.mini_racer
 def test_register_encrypted(django_app, first_name, rsa_encrypted_registration):
     url = rsa_encrypted_registration.get_absolute_url()
     res = django_app.get(url)
@@ -284,6 +290,7 @@ def test_register_encrypted(django_app, first_name, rsa_encrypted_registration):
 
 
 @pytest.mark.django_db
+@pytest.mark.mini_racer
 def test_upload_image(django_app, complex_registration, mock_storage):
     url = complex_registration.get_absolute_url()
     res = django_app.get(url)
@@ -315,6 +322,7 @@ def test_upload_image(django_app, complex_registration, mock_storage):
 
 
 @pytest.mark.django_db
+@pytest.mark.mini_racer
 def test_upload_image_register_rsa_encrypted(django_app, rsa_encrypted_registration, mock_storage):
     url = rsa_encrypted_registration.get_absolute_url()
     content = Path("tests/data/image.png").read_bytes()
@@ -334,6 +342,7 @@ def test_upload_image_register_rsa_encrypted(django_app, rsa_encrypted_registrat
 
 
 @pytest.mark.django_db
+@pytest.mark.mini_racer
 def test_upload_image_register_fernet_encrypted(django_app, fernet_encrypted_registration, mock_storage):
     url = fernet_encrypted_registration.get_absolute_url()
     content = Path("tests/data/image.png").read_bytes()
@@ -356,6 +365,7 @@ def test_upload_image_register_fernet_encrypted(django_app, fernet_encrypted_reg
 
 
 @pytest.mark.django_db
+@pytest.mark.mini_racer
 def test_register_protected_registration(django_app, user, protected_registration):
     from testutils.perms import user_grant_permissions
 

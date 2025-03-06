@@ -1,69 +1,43 @@
-import contextlib
-from collections import namedtuple
-from typing import TYPE_CHECKING
+from typing import Generator
 
 import pytest
-from selenium.webdriver.common.by import By
-from testutils.utils import wait_for
-
-if TYPE_CHECKING:
-    from selenium.webdriver.common.timeouts import Timeouts
-
-
-Proxy = namedtuple("Proxy", "host,port")
-
-
-SELENIUM_DEFAULT_PAGE_LOAD_TIMEOUT = 3
-SELENIUM_DEFAULT_IMPLICITLY_WAIT = 1
-SELENIUM_DEFAULT_SCRIPT_TIMEOUT = 1
-
-
-@contextlib.contextmanager
-def timeouts(driver, wait=None, page=None, script=None):
-    _current: Timeouts = driver.timeouts
-    if wait:
-        driver.implicitly_wait(wait)
-    if page:
-        driver.set_page_load_timeout(page)
-    if script:
-        driver.set_script_timeout(script)
-    yield
-    driver.timeouts = _current
-
-
-def set_input_value(driver, *args):
-    rules = args[:-1]
-    el = driver.find_element(*rules)
-    el.clear()
-    el.send_keys(args[-1])
-
-
-def find_by_css(selenium, *args):
-    return wait_for(selenium, By.CSS_SELECTOR, *args)
+from seleniumbase import config as sb_config
+from seleniumbase.core import session_helper
+from testutils.selenium import AuroraSeleniumTC
 
 
 @pytest.fixture
-def chrome_options(request):
-    from selenium.webdriver.chrome.options import Options
+def browser(live_server, request) -> Generator[AuroraSeleniumTC, None, None]:
+    """SeleniumBase as a pytest fixture.
+    Usage example: "def test_one(sb):"
+    You may need to use this for tests that use other pytest fixtures."""
 
-    chrome_options = Options()
-    if not request.config.getvalue("show_browser"):
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-
-    return chrome_options
-
-
-@pytest.fixture
-def selenium(monkeypatch, settings, driver):
-    settings.CAPTCHA_TEST_MODE = True
-    monkeypatch.setattr("django.conf.settings.CAPTCHA_TEST_MODE", True)
-    monkeypatch.setattr("captcha.conf.settings.CAPTCHA_TEST_MODE", True)
-    driver.with_timeouts = timeouts.__get__(driver)
-    driver.set_input_value = set_input_value.__get__(driver)
-
-    driver.wait_for = wait_for.__get__(driver)
-    driver.find_by_css = find_by_css.__get__(driver)
-
-    return driver
+    if request.cls:
+        if sb_config.reuse_class_session:
+            the_class = str(request.cls).split(".")[-1].split("'")[0]
+            if the_class != sb_config._sb_class:
+                session_helper.end_reused_class_session_as_needed()
+                sb_config._sb_class = the_class
+        request.cls.sb = AuroraSeleniumTC("base_method")
+        request.cls.sb.live_server_url = str(live_server)
+        request.cls.sb.setUp()
+        request.cls.sb._needs_tearDown = True
+        request.cls.sb._using_sb_fixture = True
+        request.cls.sb._using_sb_fixture_class = True
+        sb_config._sb_node[request.node.nodeid] = request.cls.sb
+        yield request.cls.sb
+        if request.cls.sb._needs_tearDown:
+            request.cls.sb.tearDown()
+            request.cls.sb._needs_tearDown = False
+    else:
+        sb = AuroraSeleniumTC("base_method")
+        sb.live_server_url = str(live_server)
+        sb.setUp()
+        sb._needs_tearDown = True
+        sb._using_sb_fixture = True
+        sb._using_sb_fixture_no_class = True
+        sb_config._sb_node[request.node.nodeid] = sb
+        yield sb
+        if sb._needs_tearDown:
+            sb.tearDown()
+            sb._needs_tearDown = False

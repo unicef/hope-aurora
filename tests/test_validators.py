@@ -35,6 +35,7 @@ def mock_state():
     state.request = Mock(user=AnonymousUser())
 
 
+@pytest.mark.mini_racer
 def test_error_message(db):
     v = Validator(code='"Error"', active=True)
     with pytest.raises(ValidationError) as e:
@@ -42,6 +43,7 @@ def test_error_message(db):
     assert e.value.messages == ["Error"]
 
 
+@pytest.mark.mini_racer
 def test_error_dict(db):
     v = Validator(code='{first_name:"Mandatory"}', active=True)
     with pytest.raises(ValidationError) as e:
@@ -49,6 +51,7 @@ def test_error_dict(db):
     assert e.value.message == "Mandatory"
 
 
+@pytest.mark.mini_racer
 def test_default_error(db):
     v = Validator(code="var a=1;", active=True)
     with pytest.raises(ValidationError) as e:
@@ -56,16 +59,19 @@ def test_default_error(db):
     assert e.value.message == "Please insert a valid value"
 
 
+@pytest.mark.mini_racer
 def test_success_true(db):
     v = Validator(code="true", active=True)
     v.validate(22)
 
 
+@pytest.mark.mini_racer
 def test_form_valid(db):
     v = Validator(code="true", active=True)
     v.validate({"last_name": "Last"})
 
 
+@pytest.mark.mini_racer
 def test_form_simple(db):
     v = Validator(code="value.last_name.length==3 ? true: 'wrong length';", active=True)
     with pytest.raises(ValidationError) as e:
@@ -73,6 +79,7 @@ def test_form_simple(db):
     assert e.value.messages == ["wrong length"]
 
 
+@pytest.mark.mini_racer
 def test_form_complex(db):
     v = Validator(code='JSON.stringify({last_name: "Invalid"})', active=True)
     with pytest.raises(ValidationError) as e:
@@ -87,6 +94,8 @@ def test_form_complex(db):
         '(value.last_name.length==3) ? "": "Error"',
     ],
 )
+@pytest.mark.skip_on_darwin
+@pytest.mark.mini_racer
 def test_form_fail_custom_message(db, code):
     v = Validator(code=code, active=True)
     with pytest.raises(ValidationError) as e:
@@ -101,6 +110,7 @@ def test_form_fail_custom_message(db, code):
         '(value.last_name.length==3) ? "": "wrong length"',
     ],
 )
+@pytest.mark.mini_racer
 def test_form_fail_default_message(db, code):
     v = Validator(code=code, active=True)
     with pytest.raises(ValidationError) as e:
@@ -115,6 +125,7 @@ def test_form_fail_default_message(db, code):
         '(value.last_name.length==3) ? true: "Error"',
     ],
 )
+@pytest.mark.mini_racer
 def test_form_success_custom_message(db, code):
     v = Validator(code=code, active=True)
     v.validate({"last_name": "ABC"})

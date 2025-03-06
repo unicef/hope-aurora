@@ -33,6 +33,7 @@ from ..state import state
 from . import fields
 from .compat import RegexField, StrategyClassField
 from .fields import WIDGET_FOR_FORMFIELD_DEFAULTS, SmartFieldMixin
+from .fields.mixins import TailWindMixin
 from .forms import CustomFieldMixin, FlexFormBaseForm, SmartBaseFormSet
 from .registry import field_registry, form_registry, import_custom_field
 from .utils import JSONEncoder, dict_setdefault, jsonfy, namify, underscore_to_camelcase
@@ -525,7 +526,7 @@ class RegexPatternValidator:
         try:
             re.compile(value)
         except Exception as e:
-            raise ValidationError(e)
+            raise ValidationError(e) from None
 
 
 class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableModel):
@@ -663,6 +664,11 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
 
         if field_type in WIDGET_FOR_FORMFIELD_DEFAULTS:
             field_kwargs = {**WIDGET_FOR_FORMFIELD_DEFAULTS[field_type], **field_kwargs}
+        elif issubclass(self.field_type.widget, TailWindMixin):
+            field_kwargs = {"widget": self.field_type.widget, **field_kwargs}
+        else:
+            field_kwargs = {"widget": type("ss", (TailWindMixin, self.field_type.widget), {}), **field_kwargs}
+
         if "datasource" in smart_attrs:
             field_kwargs["datasource"] = smart_attrs["datasource"]
         elif "datasource" in self.advanced:
@@ -710,7 +716,7 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
                 self.get_instance()
             except Exception as e:
                 logger.exception(e)
-                raise ValidationError(e)
+                raise ValidationError(e) from None
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not self.name.strip():
@@ -724,8 +730,8 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
             {
                 "type": "Form",
                 "obj": self.flex_form,
-                "editor_url": reverse("admin:registration_registration_change", args=[self.flex_form.pk]),
-                "change_url": reverse("admin:registration_registration_change", args=[self.flex_form.pk]),
+                "editor_url": reverse("admin:core_flexform_form_editor", args=[self.flex_form.pk]),
+                "change_url": reverse("admin:core_flexform_change", args=[self.flex_form.pk]),
             }
         )
         return ret
@@ -784,7 +790,7 @@ class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
         try:
             self.languages.split(",")
         except ValueError:
-            raise ValidationError("Languages must be a comma separated list of locales")
+            raise ValidationError("Languages must be a comma separated list of locales") from None
 
     def get_cache_key(self, requested_language):
         return f"options-{self.pk}-{requested_language}-{self.version}"
@@ -893,13 +899,13 @@ class CustomFieldType(AdminReverseMixin, NaturalKeyModel, models.Model):
         try:
             class_ = self.get_class()
         except Exception as e:
-            raise ValidationError(f"Error instantiating class: {e}")
+            raise ValidationError(f"Error instantiating class: {e}") from None
 
         try:
             kwargs = self.attrs.copy()
             class_(**kwargs)
         except Exception as e:
-            raise ValidationError(f"Error instantiating {fqn(class_)}: {e}")
+            raise ValidationError(f"Error instantiating {fqn(class_)}: {e}") from None
 
     def get_class(self):
         attrs = self.attrs.copy()
