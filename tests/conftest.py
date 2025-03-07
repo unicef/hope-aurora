@@ -28,6 +28,8 @@ def pytest_configure(config):
     os.environ["SESSION_COOKIE_DOMAIN"] = "http://testserver/"
     os.environ["SESSION_COOKIE_SECURE"] = "false"
     os.environ["SOCIAL_AUTH_REDIRECT_IS_HTTPS"] = "false"
+    os.environ["LOG_LEVEL"] = "CRITICAL"
+    os.environ["LOGGING_HANDLERS"] = "null"
 
     if config.option.markexpr:
         if "selenium" not in config.option.markexpr:

@@ -68,6 +68,7 @@ OPTIONS = {
     "JWT_LEEWAY": (int, 0),
     "LANGUAGE_CODE": (str, "en-us"),
     "LOG_LEVEL": (str, "ERROR"),
+    "LOG_HANDLER": (list, "console"),
     "MAILJET_API_KEY": (str, ""),
     "MAILJET_SECRET_KEY": (str, ""),
     "MATOMO_ID": (str, "", "", False),

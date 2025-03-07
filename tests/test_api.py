@@ -1,11 +1,19 @@
 import base64
 import time
+from typing import TYPE_CHECKING
 
 import pytest
 from Crypto.PublicKey import RSA
 from django.urls import reverse
 
 from aurora.core.crypto.rsa import decrypt
+
+if TYPE_CHECKING:
+    from aurora.registration.models import Registration
+
+    class TestRegistration(Registration):
+        _private_pem: bytes
+
 
 PUBLIC = b"""-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxPyACSP38j/kB9jR8QPZ
@@ -47,7 +55,7 @@ btcA1UFpS9TFL++uMmwbcMzykITUTxhHp0QWEg1cpj8HFakPBZ4=
 
 
 @pytest.fixture
-def registration(simple_form):
+def registration(simple_form) -> "TestRegistration":
     from testutils.factories import RegistrationFactory
 
     reg = RegistrationFactory(name="registration #1", flex_form=simple_form, intro="intro", footer="footer")
@@ -73,7 +81,7 @@ def public_pem(key) -> str:
 
 @pytest.mark.django_db
 @pytest.mark.mini_racer
-def test_api(django_app, registration, monkeypatch):
+def test_api(django_app, registration: "TestRegistration", monkeypatch):
     import aurora.registration.views.registration
 
     monkeypatch.setattr(aurora.registration.views.registration, "get_etag", lambda *a: time.time())
@@ -100,7 +108,7 @@ def test_api(django_app, registration, monkeypatch):
     for r in records:
         storage = str(r["fields"]).encode()
         data = base64.urlsafe_b64decode(storage)
-        decrypt(data, registration._private_pem)
+        decrypt(data, registration._private_pem.decode())
 
 
 @pytest.mark.django_db

@@ -35,8 +35,9 @@ from .compat import RegexField, StrategyClassField
 from .fields import WIDGET_FOR_FORMFIELD_DEFAULTS, SmartFieldMixin
 from .fields.mixins import TailWindMixin
 from .forms import CustomFieldMixin, FlexFormBaseForm, SmartBaseFormSet
+from .js import DukPYValidator
 from .registry import field_registry, form_registry, import_custom_field
-from .utils import JSONEncoder, dict_setdefault, jsonfy, namify, underscore_to_camelcase
+from .utils import dict_setdefault, jsonfy, namify, underscore_to_camelcase
 
 logger = logging.getLogger(__name__)
 
@@ -197,9 +198,6 @@ _.is_adult = function(d) { return !_.is_child(d)};
             return jsonfy(value)
         return value
 
-    def jspickle(self, value):
-        return json.dumps(value, cls=JSONEncoder, skip_files=True)
-
     def monitor(self, status, value, exc: Exception = None):
         cache.set(f"validator-{state.request.user.pk}-{self.pk}-status", status)
         error = None
@@ -216,6 +214,11 @@ _.is_adult = function(d) { return !_.is_child(d)};
         cache.set(f"validator-{state.request.user.pk}-{self.pk}-payload", self.jspickle(value))
 
     def validate(self, value, registration=None):
+        if value and (self.active or (self.draft and state.request.user.is_staff)):
+            engine = DukPYValidator(self.code)
+            engine.validate(value)
+
+    def validate_old(self, value, registration=None):
         set_tag("validator", self.name)
 
         status = self.STATUS_UNKNOWN if self.active else self.STATUS_INACTIVE

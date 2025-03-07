@@ -1,7 +1,7 @@
 import base64
 import json
 import logging
-from typing import TYPE_CHECKING, TypeVar
+import typing
 
 import jmespath
 from concurrency.fields import AutoIncVersionField
@@ -36,12 +36,12 @@ from aurora.registration.storage import router
 from aurora.registration.strategies import RegistrationStrategy, SaveToDB, strategies
 from aurora.state import state
 
-if TYPE_CHECKING:
-    Undefined = TypeVar("Undefined")
-
 logger = logging.getLogger(__name__)
 
-undefined: "Undefined" = object()
+Undefined = typing.NewType("Undefined", str)
+
+UndefinedStr = str | Undefined
+undef = Undefined("undefined")
 
 
 class RegistrationManager(NaturalKeyModelManager):
@@ -199,7 +199,7 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
         public_pem: bytes = key.public_key().public_bytes(
             encoding=serialization.Encoding.PEM, format=serialization.PublicFormat.SubjectPublicKeyInfo
         )
-        self.public_key: str = public_pem.decode()
+        self.public_key = public_pem.decode()
         self.save()
         return private_pem, public_pem
 
@@ -329,15 +329,18 @@ class Record(models.Model):
     def fields_data(self):
         return "String too long to display..." if self.is_offline and len(self.fields) > 12_000 else self.fields
 
-    def decrypt(self, private_key: "bytes|None" = None, secret: "str|None" = None):
+    def decrypt(self, private_key: UndefinedStr = undef, secret: UndefinedStr = undef):
+        if isinstance(private_key, bytes):
+            private_key = private_key.decode()
+
         if self.is_offline:
             fields = json.loads(decrypt_offline(self.fields, private_key))
             return router.compress(fields, {})
-        if private_key is not None:
+        if private_key != undef:
             files = json.loads(decrypt(self.files, private_key))
             fields = json.loads(decrypt(base64.b64decode(self.fields), private_key))
             return router.compress(fields, files)
-        if secret is not None:
+        if secret != undef:
             files = json.loads(Symmetric(secret).decrypt(self.files))
             fields = json.loads(Symmetric(secret).decrypt(self.fields))
             return router.compress(fields, files)

@@ -119,7 +119,8 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             editor = FieldEditor(self, request, pk)
             return editor.get_configuration()
         except Exception as e:
-            return HttpResponse(str(e))
+            logger.exception(e)
+            return HttpResponse("An internal error has occurred.")
 
     @view()
     def widget_refresh(self, request, pk) -> JsonResponse:
@@ -127,7 +128,8 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             editor = FieldEditor(self, request, pk)
             return editor.refresh()
         except Exception as e:
-            return JsonResponse({"Error": str(e)})
+            logger.exception(e)
+            return JsonResponse({"Error": "An internal error has occurred."})
 
     @view()
     def widget_code(self, request, pk) -> HttpResponse:
@@ -135,7 +137,8 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             editor = FieldEditor(self, request, pk)
             return editor.get_code()
         except Exception as e:
-            return HttpResponse(str(e))
+            logger.exception(e)
+            return HttpResponse("An internal error has occurred.")
 
     @view()
     def widget_display(self, request, pk) -> HttpResponse:
@@ -143,7 +146,8 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             editor = FieldEditor(self, request, pk)
             return editor.render()
         except Exception as e:
-            return HttpResponse(str(e))
+            logger.exception(e)
+            return HttpResponse("An internal error has occurred.")
 
     @button()
     def test(self, request, pk):

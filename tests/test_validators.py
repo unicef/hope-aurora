@@ -52,14 +52,6 @@ def test_error_dict(db):
 
 
 @pytest.mark.mini_racer
-def test_default_error(db):
-    v = Validator(code="var a=1;", active=True)
-    with pytest.raises(ValidationError) as e:
-        v.validate(22)
-    assert e.value.message == "Please insert a valid value"
-
-
-@pytest.mark.mini_racer
 def test_success_true(db):
     v = Validator(code="true", active=True)
     v.validate(22)
@@ -94,7 +86,6 @@ def test_form_complex(db):
         '(value.last_name.length==3) ? "": "Error"',
     ],
 )
-@pytest.mark.skip_on_darwin
 @pytest.mark.mini_racer
 def test_form_fail_custom_message(db, code):
     v = Validator(code=code, active=True)

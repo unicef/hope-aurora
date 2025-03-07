@@ -5,11 +5,18 @@ dateutil = {
     years2: new Date(new Date().setDate(TODAY.getDate() - (365 * 2))),
     getAge(date2, date1) {
         // use today's date if ageAtDate is not provided
-        if (typeof date1 == "undefined")
-            date1 = new Date();
-        let years = new Date(date1).getFullYear() - new Date(date2).getFullYear();
-        let month = new Date(date1).getMonth() - new Date(date2).getMonth();
-        let dateDiff = new Date(date1).getDay() - new Date(date2).getDay();
+        var objDate1;
+        if (typeof date1 == 'undefined') {
+            objDate1 = new Date();
+        }else{
+            objDate1 =  new Date(date1)
+        }
+        var objDate2 =  new Date(date2)
+
+        var years = objDate1.getFullYear() - objDate2.getFullYear();
+        var month = objDate1.getMonth() - objDate2.getMonth();
+        var dateDiff = objDate1.getDay() - objDate2.getDay();
+
         if (dateDiff < 0) {
             month -= 1;
         }
@@ -36,7 +43,7 @@ _.is_adult = function (d) {
 
 smart_fs = {
     getCollector: function (cd) {
-        var collectors = cd.filter(e => e.role_i_c === "y");
+        var collectors = cd.filter( function(e){return e.role_i_c === "y"});
         if (collectors.length === 1) {
             return collectors[0]
         }

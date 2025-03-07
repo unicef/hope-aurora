@@ -284,7 +284,7 @@ def test_register_encrypted(django_app, first_name, rsa_encrypted_registration):
     res.form["first_name"] = first_name
     res.form["last_name"] = "last"
     res = res.form.submit().follow()
-    record = res.context["record"]
+    record: Record = res.context["record"]
     data = record.decrypt(rsa_encrypted_registration._private_pem)
     assert data["first_name"] == first_name
 

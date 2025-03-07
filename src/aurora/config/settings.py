@@ -303,6 +303,8 @@ EMAIL_USE_TLS = env("EMAIL_USE_TLS")
 LOGIN_REDIRECT_URL = "index"
 LOGOUT_REDIRECT_URL = "index"
 
+LOGGING_HANDLERS = os.environ.get("LOG_HANDLER")
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -314,32 +316,32 @@ LOGGING = {
         },
     },
     "root": {
-        "handlers": ["console"],
+        "handlers": LOGGING_HANDLERS,
         "level": "ERROR",
     },
     "loggers": {
         "selector_events": {
-            "handlers": ["console"],
+            "handlers": LOGGING_HANDLERS,
             "level": "ERROR",
         },
         "flags": {
-            "handlers": ["console"],
+            "handlers": LOGGING_HANDLERS,
             "level": "ERROR",
         },
         "front_door": {
-            "handlers": ["console"],
+            "handlers": LOGGING_HANDLERS,
             "level": "ERROR",
         },
         "front_door.middleware": {
-            "handlers": ["console"],
+            "handlers": LOGGING_HANDLERS,
             "level": "CRITICAL",
         },
         "django": {
-            "handlers": ["console"],
+            "handlers": LOGGING_HANDLERS,
             "level": "ERROR",
         },
         "aurora": {
-            "handlers": ["console"],
+            "handlers": LOGGING_HANDLERS,
             "level": env("LOG_LEVEL"),
         },
     },
