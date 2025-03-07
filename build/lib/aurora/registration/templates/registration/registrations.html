@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+
+  <form method="post" action="{% url 'registrations' %}" id="registerForm">
+    {% csrf_token %}
+    <p>
+      <label for="id_registration_id_0">
+        Choose registration to be PWA enabled
+      </label>
+    </p>
+    {% if registrations %}
+      <ul>
+        {% for registration in registrations %}
+          <li>
+            <label for="id_registration_id_0" data-msgid="{{ registration.name }}">
+              <input
+                type="radio"
+                id="{{ registration.slug }}"
+                value="{{ registration.slug }}"
+                name="slug"
+                {% if registration.is_pwa_enabled %} checked {% endif %}
+              >
+              {{ registration.name }}
+            </label>
+            <input type="hidden" name="{{ registration.slug }}_version" value="{{ registration.version }}">
+            <input type="hidden" name="{{ registration.slug }}_public_key" value="{{ registration.public_key }}">
+            <input type="hidden" name="{{ registration.slug }}_ajax_urls" value="{{ registration.option_set_links }}">
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <h3>There is no active registrations right now...</h3>
+    {% endif %}
+    <button type="submit">Send</button>
+  </form>
+
+<script>
+  const version = 1;
+  let internalCache = `internalCache-${version}`;
+
+  const button = document.querySelector("button");
+  button.addEventListener("click", event => {
+      event.preventDefault();
+
+      const slug = document.querySelector('input[name="slug"]:checked').id;
+      if (slug) {
+          caches.open(internalCache).then(cache => {
+            cache.keys().then(keys => {
+                keys.forEach(key => {
+                    if (key.url.match(/\/register\//)) {
+                        cache.delete(key).then(() => `Key ${key} deleted from cache`)
+                    }
+                })
+            })
+            .then(() => {
+                const version = document.querySelector("input[name=" + `${slug}_version` + "]").value;
+                const url = `/en-us/register/${slug}/${version}/`;
+                cache.add(url);
+
+                console.log(`Form url=${url} added to cache`);
+            })
+            .then(() => {
+                const publicKey = document.querySelector("input[name=" + `${slug}_public_key` + "]").value;
+                localStorage.setItem("publicKey", publicKey);
+
+                console.log("PublicKey saved in localStorage");
+            })
+            .then(() => {
+                const ajaxLinks = document.querySelector("input[name=" + `${slug}_ajax_urls` + "]").value;
+                ajaxLinks.slice(1, -1).split(",").forEach(link => {
+                    let ajaxLink = `${window.location.origin}${link.trim().replaceAll("'", "")}`;
+                    cache.add(ajaxLink);
+                })
+            })
+            .catch(err => console.log(`Sorry, we couldn't update cache or localStorage of this error: ${err}`));
+        })
+      }
+
+      document.getElementById("registerForm").submit();
+  });
+</script>
+</body>
+</html>

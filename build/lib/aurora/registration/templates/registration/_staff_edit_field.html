@@ -1,0 +1,18 @@
+<span class="staff-editor staff-tooltip">
+    <span class="tooltiptext">
+        <p><span class="label">Field</span>{{ field.field.flex_field.name }}</p>
+        <p><span class="label">Type</span>{{ field.field.flex_field.type_name }}</p>
+        <p><span class="label">Default Required</span>{{ field.field.flex_field.required }}</p>
+        <p><span class="label">Version</span>{{ field.field.flex_field.version }}</p>
+        <p><span class="label">Validator</span>{{ field.field.flex_field.validator|default_if_none:"" }}</p>
+        <p><span class="label">Regex</span>{{ field.field.flex_field.regex.pattern|default_if_none:""|truncatechars:30 }}</p>
+    </span>
+    <label aria-label="Edit">
+        <a target="_edit" class="field"
+           href="{% url "admin:core_flexformfield_field_editor" field.field.flex_field.pk %}">
+        </a>
+    </label>
+</span>
+{% if field.field.flex_field.validator %}
+    {% include "registration/_staff_edit_validator.html" with validator=field.field.flex_field.validator %}
+{% endif %}

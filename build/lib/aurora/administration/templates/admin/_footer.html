@@ -1,0 +1,17 @@
+{% load static %}
+<div style="text-align: center;margin-bottom: 30px">
+    Aurora {{ project.version }} - {{ project.build_date }} - {{ project.commit }} - {% include "i18n/_select_language.html" with languages=project.languages %}
+    {% csrf_token %}
+    <script>
+        (function ($) {
+            $("#set_language").on("change", function () {
+                var url = $(this).find("option:selected").data("url");
+                $("<form action=\"" + $(this).data("url") + "\" method=\"post\">" +
+                    "<input type=\"hidden\" name=\"next\" value=\"" + url + "\">" +
+                    "<input type=\"hidden\" name=\"language\" value=\"" + $(this).val() + "\">" +
+                    "<input type=\"hidden\" name=\"csrfmiddlewaretoken\" value=\"" + $("input[name=csrfmiddlewaretoken]").val() + "\">" +
+                    "</form>").appendTo("body").submit().remove();
+            });
+        })(django.jQuery);
+    </script>
+</div>

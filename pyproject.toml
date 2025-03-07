@@ -80,7 +80,7 @@ dependencies = [
 [uv]
 package = true
 
-[project.optional-dependencies]
+[dependency-groups]
 docs = [
     "mkdocs",
     "mkdocs-material",
@@ -88,9 +88,7 @@ docs = [
     "mkdocstrings-python",
     "mkdocs-gen-files",
 ]
-
-[tool.uv]
-dev-dependencies = [
+dev = [
     #    "black",
     "coverage",
     "django-webtest",

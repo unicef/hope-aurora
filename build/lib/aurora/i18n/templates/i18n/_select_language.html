@@ -1,0 +1,4 @@
+{% load hreflang %}<select id="set_language" data-url="{% url "set_language" %}">
+{% for k,v in languages %}
+    <option data-url="{% translate_url k %}" value="{{ k }}" {% if k == LANGUAGE_CODE %}selected{% endif %}>{{ v }}</option>{% endfor %}
+</select>

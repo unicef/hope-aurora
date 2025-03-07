@@ -1,0 +1,33 @@
+{% extends "admin_extra_buttons/action_page.html" %}{% load aurora %}
+{% block action-content %}
+    {% if decrypted %}
+        {% dump_dict decrypted %}
+    {% else %}
+        <form method="post">
+            {% csrf_token %}
+            <table>
+                {{ form }}
+            </table>
+            <input type="submit" value="Decrypt">
+        </form>
+    {% endif %}
+<script type="text/javascript">
+  const contentTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/svg+xml"
+  ];
+
+  const tds = document.getElementById("content-main").getElementsByTagName("td");
+
+  for (let td of tds) {
+      let tdValue = td.innerText;
+      if (tdValue.startsWith("data:")) {
+          const contentType = tdValue.substring(5, tdValue.indexOf(";"))
+          if (contentTypes.includes(contentType)) {
+              td.innerHTML = `<img src="${tdValue}" />`
+          }
+      }
+  }
+</script>
+{% endblock action-content %}

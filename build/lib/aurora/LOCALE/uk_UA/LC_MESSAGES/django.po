@@ -1,0 +1,173 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-04-07 16:31+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: aurora/core/fields/document.py:10
+msgid "Document country..."
+msgstr ""
+
+#: aurora/core/fields/document.py:19
+msgid "Document number..."
+msgstr ""
+
+#: aurora/core/templates/admin/login.html:24
+#: aurora/registration/templates/admin/registration/record/change_list.html:50
+msgid "Please correct the error below."
+msgstr "Будь ласка, вкажіть обов’язкові дані"
+
+#: aurora/core/templates/admin/login.html:25
+#: aurora/registration/templates/admin/registration/record/change_list.html:50
+msgid "Please correct the errors below."
+msgstr "Будь ласка, вкажіть обов’язкові дані"
+
+#: aurora/core/templates/admin/login.html:41
+#, python-format
+msgid ""
+"You are authenticated as %(username)s, but are not authorized to access this "
+"page. Would you like to login to a different account?"
+msgstr ""
+
+#: aurora/core/templates/admin/login.html:61
+msgid "Forgotten your password or username?"
+msgstr ""
+
+#: aurora/core/templates/admin/login.html:65
+msgid "Log in"
+msgstr ""
+
+#: aurora/core/templates/adminfilters/select2.html:2
+#, python-format
+msgid " By %(filter_title)s "
+msgstr ""
+
+#: aurora/core/templates/captcha/widgets/captcha.html:4
+msgid "Play CAPTCHA as audio file"
+msgstr ""
+
+#: aurora/core/templates/captcha/widgets/captcha.html:13
+msgid "refresh"
+msgstr "oновити"
+
+#: aurora/registration/admin.py:262
+msgid "30 min"
+msgstr ""
+
+#: aurora/registration/admin.py:263
+msgid "1 hour"
+msgstr ""
+
+#: aurora/registration/admin.py:264
+msgid "4 hour"
+msgstr ""
+
+#: aurora/registration/admin.py:265
+msgid "6 hour"
+msgstr ""
+
+#: aurora/registration/admin.py:266
+msgid "8 hour"
+msgstr ""
+
+#: aurora/registration/admin.py:267
+msgid "12 hour"
+msgstr ""
+
+#: aurora/registration/admin.py:268
+msgid "24 hour"
+msgstr ""
+
+#: aurora/registration/templates/admin/registration/record/change_list.html:30
+msgid "Home"
+msgstr ""
+
+#: aurora/registration/templates/admin/registration/record/change_list.html:75
+msgid "Filter"
+msgstr ""
+
+#: aurora/registration/templates/admin/registration/record/change_list.html:77
+msgid "Clear all filters"
+msgstr ""
+
+#: aurora/web/templates/admin/base_site.html:8
+msgid "Django site admin"
+msgstr ""
+
+#: aurora/web/templates/admin/base_site.html:24
+msgid "Django administration"
+msgstr ""
+
+#: aurora/web/templates/admin/smart_index.html:48
+msgid "You don't have permission to view or edit anything."
+msgstr ""
+
+#: aurora/web/templates/admin/smart_index.html:56
+msgid "Quick Links"
+msgstr ""
+
+#: aurora/web/templates/admin/smart_index.html:64
+msgid "Recent actions"
+msgstr ""
+
+#: aurora/web/templates/admin/smart_index.html:67
+msgid "Actions"
+msgstr ""
+
+#: aurora/web/templates/admin/smart_index.html:70
+msgid "My actions"
+msgstr ""
+
+#: aurora/web/templates/admin/smart_index.html:74
+msgid "None available"
+msgstr ""
+
+#: aurora/web/templates/admin/smart_index.html:89
+msgid "Unknown content"
+msgstr ""
+
+#: aurora/web/templates/registration/_fieldset.html:20
+msgid "required"
+msgstr "обов’язкове"
+
+#: aurora/web/templates/registration/register.html:30
+msgid "please fix the errors below"
+msgstr "Будь ласка, вкажіть обов’язкові дані"
+
+#: aurora/web/templates/registration/register.html:121
+msgid "Save"
+msgstr "Зберегти"
+
+#: aurora/web/templates/registration/register_done.html:5
+msgid "Registration successful"
+msgstr "Реєстрація успішна"
+
+#: aurora/web/templates/registration/register_done.html:15
+msgid "Please save your registration ID or take a screenshot of this QR code."
+msgstr "Будь ласка, збережіть ID-номер або зробіть скріншот QR-кода."
+
+#: aurora/web/templates/registration/register_done.html:19
+msgid "Please save your registration ID."
+msgstr "Будь ласка, збережіть ID-номер"
+
+#: aurora/web/templates/registration/register_done.html:23
+msgid "This info will allow faster follow up in case of support request."
+msgstr ""
+"Ця інформація буде обов’язкова для подальшої комунікації щодо вашої заявки."
+
+#: aurora/web/templates/registration/register_done.html:29
+msgid "register another household"
+msgstr "Зареєструвати нове домогосподарство."

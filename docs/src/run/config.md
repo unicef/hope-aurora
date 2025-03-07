@@ -4,4 +4,4 @@
 - Add aurora_server in the Constance Config
 - Fetch data from Aurora
 - Associate Organizations to Business Areas
-- Associate Projects to Programmes 
+- Associate Projects to Programmes

@@ -1,0 +1,220 @@
+.CodeMirror-wrapping textarea {
+  background-color: white;
+}
+
+.select2.select2-container.select2-container--default {
+  width: 100% !important;
+}
+
+.fs-counter-container {
+  display: flex;
+  width: 100%;
+}
+.fs-counter-container .fs-counter {
+  display: flex;
+  width: 100%;
+}
+.fs-counter-container .fs-counter .pages {
+  flex-grow: 3;
+}
+.fs-counter-container .fs-counter .nav {
+  flex-shrink: 1;
+}
+.fs-counter-container .fs-counter .nav * {
+  height: 32px;
+  width: 32px;
+  display: inline-block;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.fs-counter-container .fs-counter .nav *.remove {
+  background-image: url("delete-25.png");
+  height: 25px;
+  width: 25px;
+  margin-top: 2px;
+}
+.fs-counter-container .fs-counter .nav *.next {
+  background-image: url("next.webp");
+}
+.fs-counter-container .fs-counter .nav *.prev {
+  background-image: url("previous.webp");
+}
+.fs-counter-container .fs-counter .nav *.disabled {
+  filter: opacity(30%);
+}
+
+.aname::before {
+  content: "";
+  display: block;
+  height: 15px;
+  margin-top: -15px;
+  visibility: hidden;
+}
+
+.charting .button {
+  color: #0da7e6;
+  font-weight: bold;
+  border-radius: 2px;
+  border-color: #092c3a;
+  background-color: #01ADF1;
+  color: white;
+  padding: 2px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.button {
+  font-weight: bold;
+  background-color: #01ADF1;
+  color: white;
+  display: inline-block;
+  margin: 2px;
+}
+
+.landing .button {
+  font-weight: bold;
+  background-color: #01ADF1;
+  color: white;
+}
+.intro h1, .editormd-preview-container h1, .editormd-html-preview h1 {
+  font-size: 18pt;
+  font-weight: bold;
+  margin-bottom: 2px;
+  text-align: center;
+}
+.intro h2, .editormd-preview-container h2, .editormd-html-preview h2 {
+  font-size: 16pt;
+  font-weight: bold;
+  margin-bottom: 2px;
+  text-align: center;
+}
+.intro h3, .editormd-preview-container h3, .editormd-html-preview h3 {
+  font-size: 13pt;
+  font-weight: bold;
+  margin-bottom: 2px;
+  text-align: center;
+}
+.intro h4, .editormd-preview-container h4, .editormd-html-preview h4 {
+  font-size: larger;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+.intro h5, .editormd-preview-container h5, .editormd-html-preview h5 {
+  font-size: 1em;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+.intro p, .editormd-preview-container p, .editormd-html-preview p {
+  margin: 10px 0 10px 0;
+}
+.intro ul li, .editormd-preview-container ul li, .editormd-html-preview ul li {
+  list-style-type: disc;
+  list-style-position: inside;
+}
+.intro ul li li, .editormd-preview-container ul li li, .editormd-html-preview ul li li {
+  list-style-type: circle;
+  list-style-position: inside;
+}
+
+body {
+  font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+  font-size: 10pt;
+}
+body header.header {
+  background-color: white;
+  width: 100%;
+  z-index: 900;
+}
+
+.bg-red {
+  background-color: #ff9898;
+}
+
+.alert-message {
+  background-color: #ff9898;
+}
+
+span.required {
+  color: #c90a0a;
+}
+
+ul.errorlist li {
+  background-color: #ff9898;
+  color: black !important;
+  padding: 2px !important;
+}
+
+fieldset label {
+  cursor: pointer;
+}
+
+ul.errorlist {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+ul.errorlist li {
+  color: #c90a0a;
+}
+
+#formContainer input[type=submit], #formContainer input[type=button] {
+  color: rgba(255, 255, 255, var(--text-opacity));
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  margin-top: 1rem;
+  font-weight: 700;
+  border-radius: 0.25rem;
+  background-color: rgba(66, 153, 225, var(--bg-opacity));
+  cursor: pointer;
+}
+#formContainer input[type=submit]:hover, #formContainer input[type=submit]:active, #formContainer input[type=button]:hover, #formContainer input[type=button]:active {
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+#formContainer input[type=submit]:disabled, #formContainer input[type=button]:disabled {
+  cursor: not-allowed;
+  background-color: rgba(124, 124, 124, 0.67);
+  color: black;
+}
+#formContainer .formset .formset-add-row .formset-add-button {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-width: 1px;
+  border-radius: 0.25rem;
+  --border-opacity: 1;
+  font-weight: 600;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  color: rgba(45, 55, 72, var(--text-opacity));
+  border-color: rgba(203, 213, 224, var(--border-opacity));
+}
+#formContainer .formset .formset-add-row .formset-add-button:hover, #formContainer .formset .formset-add-row .formset-add-button:active {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+#formContainer .formset .formset-add-row .formset-delete-row .formset-delete-button {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-width: 1px;
+  border-radius: 0.25rem;
+  --border-opacity: 1;
+  font-weight: 600;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --text-opacity: 1;
+  color: rgba(252, 129, 129, var(--text-opacity));
+  border-color: rgba(252, 129, 129, var(--border-opacity));
+}
+#formContainer .formset .formset-add-row .formset-delete-row .formset-delete-button:hover, #formContainer .formset .formset-add-row .formset-delete-row .formset-delete-button:active {
+  box-shadow: 0 1px 3px 0 #fc8181, 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+/*# sourceMappingURL=base.css.map */

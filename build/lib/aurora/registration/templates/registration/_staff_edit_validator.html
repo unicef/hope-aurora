@@ -1,0 +1,13 @@
+{% load validator %}<span class="staff-editor staff-tooltip status-{{ validator|validator_status }}">
+    {% validator_error validator as errs %}
+    <span class="tooltiptext text-lower">
+        <p><span class="label">Validator</span> {{ validator }}</p>
+        <p><span class="label">Errors</span></p>
+        {% for k,v in errs.items %}
+            <p><span class="label field-name">{{ k }}</span>{% for m in v %}<span>{{ m|truncatechars:40 }}</span>{% endfor %}</p>
+        {% endfor %}
+    </span>
+    <a target="_edit" class="validator"
+       href="{% url "admin:core_validator_test" validator.pk %}">
+    </a>
+</span>

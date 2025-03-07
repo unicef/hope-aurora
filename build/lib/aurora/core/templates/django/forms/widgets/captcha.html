@@ -1,0 +1,11 @@
+<div id="captcha">
+    <div class="flex w-100 ">
+        <div class="flex-1 "></div>
+        <div id="captcha0" class="inline"></div>
+        <div class="text-4xl font-bold inline mx-2">+</div>
+        <div id="captcha1" class="inline"></div>
+        <div class="flex-1 "></div>
+    </div>
+    <input type="text" name="{{ widget.name }}"{% if widget.value != None %}
+           value="{{ widget.value|stringformat:'s' }}"{% endif %}{% include "django/forms/widgets/attrs.html" %}>
+</div>

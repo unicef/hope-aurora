@@ -1,0 +1,323 @@
+$base-color: #0da7e6;
+$color-error: #ff9898;
+
+* {
+
+}
+
+.CodeMirror-wrapping {
+  textarea {
+    background-color: white;
+  }
+}
+
+.select2 {
+  &.select2-container {
+    &.select2-container--default {
+      width: 100% !important;
+    }
+  }
+}
+
+.fs-counter-container {
+  display: flex;
+  width: 100%;
+
+  .fs-counter {
+    display: flex;
+    width: 100%;
+
+    .pages {
+      flex-grow: 3;
+    }
+
+    .nav {
+      flex-shrink: 1;
+
+      * {
+        height: 32px;
+        width: 32px;
+        display: inline-block;
+        background-repeat: no-repeat;
+        background-size: cover;
+
+        &.remove {
+          background-image: url('delete-25.png');
+          height: 25px;
+          width: 25px;
+          margin-top: 2px;
+        }
+
+        &.next {
+          //background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAA0dJREFUWEfF11fotnMcx/HXYz2S9TwZoSiR9RxQtqzkwMgmeShPlAOr7L2yxwGRFFH2HhkHyN6UAzNSFDKyk00ffS/d/6v7uu/rvh38f4fX9ft+f+/fd//mmOU1Z5bPNynAXGyLLbEu5tcFvsEHeBnP4de+F+sLsBaOxyFYcYzy73ALLsfH40DGASyJ03AKli5lv+FVvIUv69sqWIDNsVR9+wUX40L83gUyCmAl3Fcmj/yHuAx34IcOhcvjQJyIdWrP89gbXw+T6QJYGU9jQ/yB83AJcvs+K5aL1c7CEngHO+CrtvAwgJjwKWyNn7APHu9z6pA9O5cVl8WL2LF9iWEAF5Tf47dd8OSUhzdiO+ExxCqJh9MH9bUB4re3K5Biwph92FoB308AdnIFZFy4UcXTv+JtgOtxWEFsXP5vn3NCBeP5OLMnROLgzTr8BhzeyA0CxE9fYBksxG0dypvb5HfcdUZPiOhMffgZq1Z8zbDAXrgfPyJ5nTzuypxrcUT97AuROpK6sVyl5QNtF1xa+fsIdh9zq1huGoiHsVu58KQ2wIPYAxdVFoyz7DQQyYJT8RD2bAO8ULl/LK4ad3r9b0MchWtGyB6DK6smbNMGSKHYCkfj6p4A2ZYmlcaTlYp59gjZ6M7lXqrLzgjC+H5XnItzegIchytq7504uCN1G3XRnfL8aMXCDICQhfAe7N8DYNLDo/Ju7FdWiKtnADR5moaxGv4cATHN4Yvjc6TR/VdnBgtR2u9nVbOTKjHTsHUobpzA7I2OuDduTo9ZvWnP7VJ8b3W/Z7F9B0D6Q3K4j88HVURnxrnMGPs2P9oAm+GVck0C6tYhEOlqm+CNMW4aFI2um/E3tsBrXQD5HvPGzJl6kpYZJv7PylCTtMu0dBMWDSobNg+k1b5eI9WnyFDx7pQEG9Qws0a14E3bbbxrJFsP8VmaUqbcNJ67JoQ4ANfVFJ0mtB3eb+sYNZSuX1G7dgllLEstf6Z8OYwn+hK8maRjuayPqui81yUw6mLzqiwfNLDpEzzRMZZn/Mobolm340h823XIuHdBI5f0ySyXWy02xhV/ld8zJ+SVNHL1BWiUrFnmTHZ0Pc3S82OlXmtSgF5KJ9k06wD/AJGGsSGiBG1uAAAAAElFTkSuQmCC');
+          background-image: url('next.webp');
+          //filter: opacity(10%);
+        }
+
+        &.prev {
+          //height: 32px;
+          //width: 32px;
+          //display: inline-block;
+          //background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAA0hJREFUWEfF11fof3MYB/DX3052RihKZF4om6zkAtkzo4hCwoVsyd4pckNEmdlkXEj2VlyYkaKQkZ1seus5/76/0znfc34/6vdcns/n8zzvZ7/PAvMsC+bZvtkCWBLbY2ush5XKgW/wAV7Gc/h1rGNjAayNU3AEVhhQ/h1uw1X4eAjIEIDFcRbOwFKl7De8irfwZX1bFZtgSyxR337BZbgEv/cBmQZgZdxfIc/7D3El7sIPPQqXwyE4FevWneexL77uetMHYBU8jY3wBy7A5Yj3YySRS9TOxWJ4Bzvhq/bjLgAJ4VPYFj9hPzwxxmrHnV0risvgRezcdqILwMWV9+RtNzw5R+PNs13wOBKV1MPZk/raAJK3t6uQTscVszC+PL7vuR9dKcikcOOqp3+vtgHciKMLxKaV/zEYLsQ5VXxpv7akDt4s4zfhmObCJIDk6QssjcNwxxjLuGgirCm8FGuXRGfmw89YreprRgT2wQP4Eenr9PGQTBq/Acfh755HmSOZG8tWWz7YTkHynf59BHsOWW55PmS8URfde9Q8Oa0N4CHshUurC6ZhmI3nk3rSBWfiYezdBvBC9f7JuHaK9RNwXZ1fj+OnhL2t5iRcUzNhuzaADIptcOKEgS4c59eEy1lS1lX1ffijO869VM7OKMJHsTti4LwpEUhLpZoPrjvZklePqJlcacA/VrUwA0CQBeG9OHBA4VxB3IMDKgpJ9QwATZ9mYayOP/9nEIvic2TRLZwzk4Mo6/ezmtlplYRpSNqROAq39DxKepPm7Jg1mvXcHsX31fZ7FjsOWa/zSRCZJZn7XRKdoXPhGPs3F9oAtsArlZrDcftIEAnvZnijh/1E163VrlvhtT4A+X4zjizWk7YMmfgvElKTtgtbSnqSpoXSxQeyVl8vSvUpQirenSOCDYvMrFkrePP2yu6jZOsjOctSCss9FnfPEsRByKQMi84S2gHvt3VMI6UbVNWuU49CyzLLn5kyeqMvxRsmnchFPqqh816XA0O0fMUay4dOPA7XD03rouWhX/mHaOROZHd82xe9IQDNu7RPuFy8WmQgFX9V3sMt85c0VcYCaJSsVeFMd/T9mmXnfzJkuDmfLYCxekffm3cA/wDSxrAh5RhZVQAAAABJRU5ErkJggg==');
+          background-image: url('previous.webp');
+        }
+
+        &.disabled {
+          filter: opacity(30%);
+        }
+      }
+    }
+  }
+}
+
+.aname::before {
+  content: '';
+  display: block;
+  height: 15px;
+  margin-top: -15px;
+  visibility: hidden;
+}
+
+.charting {
+  .button {
+    color: $base-color;
+    font-weight: bold;
+    border-radius: 2px;
+    border-color: #092c3a;
+    background-color: #01ADF1;
+    color: white;
+    padding: 2px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+.button {
+  font-weight: bold;
+  background-color: #01ADF1;
+  color: white;
+  display: inline-block;
+  margin: 2px;
+}
+
+.landing {
+  .button {
+    font-weight: bold;
+    background-color: #01ADF1;
+    color: white;
+  }
+
+  ul {
+    li {
+
+    }
+  }
+}
+
+.intro, .editormd-preview-container, .editormd-html-preview {
+  h1 {
+    font-size: 18pt;
+    font-weight: bold;
+    margin-bottom: 2px;
+    text-align: center;
+  }
+
+  h2 {
+    font-size: 16pt;
+    font-weight: bold;
+    margin-bottom: 2px;
+    text-align: center;
+  }
+
+  h3 {
+    font-size: 13pt;
+    font-weight: bold;
+    margin-bottom: 2px;
+    text-align: center;
+  }
+
+  h4 {
+    font-size: larger;
+    font-weight: bold;
+    margin-bottom: 2px;
+  }
+
+  h5 {
+    font-size: 1em;
+    font-weight: bold;
+    margin-bottom: 2px;
+  }
+
+  p {
+    margin: 10px 0 10px 0;
+  }
+
+  ul {
+    li {
+      list-style-type: disc;
+      list-style-position: inside;
+
+      li {
+        list-style-type: circle;
+        list-style-position: inside;
+      }
+    }
+  }
+}
+
+body {
+  font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+  font-size: 10pt;
+
+  header.header {
+    //position: fixed;
+    background-color: white;
+    width: 100%;
+    z-index: 900;
+    //margin-bottom: 30px;
+  }
+}
+
+.btn {
+
+}
+
+.bg-red {
+  background-color: $color-error;
+}
+
+.alert-message {
+  background-color: $color-error;
+}
+
+span.required {
+  color: #c90a0a;
+}
+
+ul.errorlist {
+  li {
+    background-color: $color-error;
+    color: black !important;
+    padding: 2px !important;
+  }
+}
+
+fieldset label {
+  cursor: pointer;
+}
+
+ul.errorlist {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    color: #c90a0a;
+  }
+}
+
+#formContainer {
+  input[type=submit], input[type=button], {
+    color: rgba(255, 255, 255, var(--text-opacity));
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin-top: 1rem;
+    font-weight: 700;
+    border-radius: 0.25rem;
+    background-color: rgba(66, 153, 225, var(--bg-opacity));
+    //color: white;
+    cursor: pointer;
+
+    &:hover, &:active {
+      box-shadow: 0 0 0 3px rgb(66 153 225 / 50%);
+      //box-shadow: 0 1px 3px 0 rgb(66 153 225 / 50%), 0 1px 2px 0 rgb(0 0 0 / 6%);
+
+      //background-color: rgba(43, 108, 176, var(--bg-opacity));
+      outline: 2px solid transparent;
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      background-color: rgba(124, 124, 124, 0.67);
+      color: black;
+
+    }
+  }
+
+  #registrationForm {
+    //input[type=submit] {
+    //  color: rgba(255, 255, 255, var(--text-opacity));
+    //  padding-left: 1rem;
+    //  padding-right: 1rem;
+    //  padding-top: 0.5rem;
+    //  padding-bottom: 0.5rem;
+    //  margin-top: 1rem;
+    //  font-weight: 700;
+    //  border-radius: 0.25rem;
+    //  background-color: rgba(66, 153, 225, var(--bg-opacity));
+    //  color: white;
+    //  cursor: pointer;
+    //
+    //  &:hover, &:active {
+    //    box-shadow: 0 0 0 3px rgb(66 153 225 / 50%);
+    //    outline: 2px solid transparent;
+    //    outline-offset: 2px;
+    //  }
+    //
+    //  &:disabled {
+    //    background-color: rgba(124, 124, 124, 0.67);
+    //    cursor: not-allowed;
+    //    color: black;
+    //  }
+  }
+
+  .formset {
+    @mixin formset-button {
+      padding-left: 1rem;
+      padding-right: 1rem;
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-width: 1px;
+      border-radius: 0.25rem;
+      --border-opacity: 1;
+      font-weight: 600;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px 0 rgb(0 0 0 / 6%);
+
+    }
+
+    .formset-add-row {
+      .formset-add-button {
+        @include formset-button;
+        color: rgba(45, 55, 72, var(--text-opacity));
+        border-color: rgba(203, 213, 224, var(--border-opacity));
+
+        &:hover, &:active {
+          box-shadow: 0 1px 3px 0 rgb(0 0 0 / 50%), 0 1px 2px 0 rgb(0 0 0 / 6%);
+          outline: 2px solid transparent;
+          outline-offset: 2px;
+        }
+      }
+
+      .formset-delete-row {
+        .formset-delete-button {
+          @include formset-button;
+          --text-opacity: 1;
+          color: rgba(252, 129, 129, var(--text-opacity));
+          border-color: rgba(252, 129, 129, var(--border-opacity));
+          //background-color: rgba(255, 255, 255, var(--bg-opacity));
+
+          &:hover, &:active {
+            box-shadow: 0 1px 3px 0 rgb(252 129 129 / 100%), 0 1px 2px 0 rgb(0 0 0 / 6%);
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+          }
+        }
+      }
+    }
+
+  }
+
+}

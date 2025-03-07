@@ -3,7 +3,8 @@ import time
 from typing import TYPE_CHECKING
 
 import pytest
-from Crypto.PublicKey import RSA
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from django.urls import reverse
 
 from aurora.core.crypto.rsa import decrypt
@@ -66,17 +67,25 @@ def registration(simple_form) -> "TestRegistration":
 
 @pytest.fixture(scope="session")
 def key():
-    return RSA.generate(2048)
+    return rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
 
 @pytest.fixture(scope="session")
 def private_pem(key) -> str:
-    return key.export_key().decode()
+    return key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.TraditionalOpenSSL,
+        encryption_algorithm=serialization.NoEncryption(),
+    ).decode()
 
 
 @pytest.fixture(scope="session")
 def public_pem(key) -> str:
-    return key.publickey().export_key().decode()
+    return (
+        key.public_key()
+        .public_bytes(encoding=serialization.Encoding.PEM, format=serialization.PublicFormat.SubjectPublicKeyInfo)
+        .decode()
+    )
 
 
 @pytest.mark.django_db

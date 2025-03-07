@@ -1,0 +1,14 @@
+<span class="staff-editor staff-tooltip">
+    <span class="tooltiptext text-lower">
+        <p><span class="label">FormSet</span>{{ formset.fs.name }}</p>
+        <p><span class="label">Version</span>{{ formset.fs.version }}</p>
+        <p><span class="label">Title</span>{{ formset.fs.title|default_if_none:"<no title set>"|truncatechars:"20" }}</p>
+        <p><span class="label">Validator</span> {{ formset.fs.validator }}</p>
+    </span>
+    <a target="_edit" class="formset"
+       href="{% url "admin:core_formset_change" formset.fs.pk %}">
+    </a>
+</span>
+{% if formset.fs.validator %}
+    {% include "registration/_staff_edit_validator.html" with validator=formset.fs.validator %}
+{% endif %}
