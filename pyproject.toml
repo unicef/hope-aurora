@@ -1,137 +1,145 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+
+requires = [ "setuptools" ]
+
 [project]
-name = "Aurora"
+name = "aurora"
 version = "2.0"
 description = ""
 readme = "README.md"
-license = {text = "MIT"}
+license = { text = "MIT" }
 
 authors = [
-    {name = "sax", email = "s.apostolico@gmail.com"},
-    {name = "Domenico DiNicola", email = "dom.dinicola@gmail.com"},
+  { name = "sax", email = "s.apostolico@gmail.com" },
+  { name = "Domenico DiNicola", email = "dom.dinicola@gmail.com" },
 ]
 requires-python = ">=3.12"
-dependencies = [
-    "django-stubs[compatible-mypy]",
-    "Faker",
-    "Markdown",
-    "Pillow",
-    "beautifulsoup4",
-    "celery",
-    "channels-redis",
-    "channels[daphne]",
-    "cryptography",
-    "django-admin-extra-buttons",
-    "django-admin-ordering",
-    "django-admin-sync",
-    "django-adminactions",
-    "django-adminfilters",
-    "django-anymail[mailjet]",
-    "django-appconf",
-    "django-bitfield",
-    "django-click",
-    "django-concurrency",
-    "django-constance",
-    "django-cors-headers",
-    "django-csp",
-    "django-debug-toolbar",
-    "django-environ",
-    "django-filter",
-    "django-flags",
-    "django-front-door",
-    "django-hijack",
-    "django-import-export",
-    "django-jsoneditor",
-    "django-mdeditor",
-    "django-mptt",
-    "django-picklefield",
-    "django-pwa",
-    "django-redis",
-    "django-regex",
-    "django-reversion",
-    "django-reversion-compare",
-    "django-simple-captcha",
-    "django-simple-math-captcha",
-    "django-smart-admin",
-    "django-smart-env",
-    "django-strategy-field",
-    "django-sysinfo",
-    "django-tinymce",
-    "django<5.1",
-    "djangorestframework",
-    "djangorestframework-datatables",
-    "htmlmin",
-    "jmespath",
-    "jsonpickle",
-    "mini-racer",
-    "natural-keys",
-    "psycopg2-binary",
-    "pygments",
-    "pyquery",
-    "qrcode",
-    "sentry-sdk",
-    "setuptools>=75.6.0",
-    "social-auth-app-django",
-    "soupsieve",
-    "sqlparse",
-    "django-stubs-ext>=5.1.3",
-    "dukpy>=0.5.0",
+classifiers = [
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
 ]
-
-[uv]
-package = true
+dependencies = [
+  "beautifulsoup4",
+  "celery",
+  "channels[daphne]",
+  "channels-redis",
+  "cryptography",
+  "django<5.1",
+  "django-admin-extra-buttons",
+  "django-admin-ordering",
+  "django-admin-sync",
+  "django-adminactions",
+  "django-adminfilters",
+  "django-anymail[mailjet]",
+  "django-appconf",
+  "django-bitfield",
+  "django-click",
+  "django-concurrency",
+  "django-constance",
+  "django-cors-headers",
+  "django-csp",
+  "django-debug-toolbar",
+  "django-environ",
+  "django-filter",
+  "django-flags",
+  "django-front-door",
+  "django-hijack",
+  "django-import-export",
+  "django-jsoneditor",
+  "django-mdeditor",
+  "django-mptt",
+  "django-picklefield",
+  "django-pwa",
+  "django-redis",
+  "django-regex",
+  "django-reversion",
+  "django-reversion-compare",
+  "django-simple-captcha",
+  "django-simple-math-captcha",
+  "django-smart-admin",
+  "django-smart-env",
+  "django-strategy-field",
+  "django-stubs[compatible-mypy]",
+  "django-stubs-ext>=5.1.3",
+  "django-sysinfo",
+  "django-tinymce",
+  "djangorestframework",
+  "djangorestframework-datatables",
+  "dukpy>=0.5",
+  "faker",
+  "htmlmin",
+  "jmespath",
+  "jsonpickle",
+  "markdown",
+  "mini-racer",
+  "natural-keys",
+  "pillow",
+  "psycopg2-binary",
+  "pygments",
+  "pyquery",
+  "qrcode",
+  "sentry-sdk",
+  "setuptools>=75.6",
+  "social-auth-app-django",
+  "soupsieve",
+  "sqlparse",
+]
 
 [dependency-groups]
-docs = [
-    "mkdocs",
-    "mkdocs-material",
-    "mkdocs-awesome-pages-plugin",
-    "mkdocstrings-python",
-    "mkdocs-gen-files",
-]
 dev = [
-    #    "black",
-    "coverage",
-    "django-webtest",
-    "factory-boy",
-    #    "flake8",
-    #    "flake8-html",
-    "freezegun",
-    "licensecheck>=2020",
-    #    "ipython",
-    #    "isort",
-    "pdbpp",
-    "pip-licenses>=5.0.0",
-    "pre-commit",
-    #    "pyflakes",
-    "pytest",
-    #    "pytest-asyncio",
-    "pytest-coverage",
-    "pytest-django",
-    "pytest-echo",
-    #    "pytest-html",
-    #    "pytest-pythonpath",
-    #    "pytest-selenium",
-    #    "pytest-variables",
-    "pytest-xdist",
-    "responses",
-    "seleniumbase>=4.35.2",
-    "tox",
-    "types-jmespath>=1.0.2.20240106",
-    "watchdog",
+  "check-wheel-contents>=0.6.1",
+  #    "black",
+  "coverage",
+  "django-webtest",
+  "factory-boy",
+  #    "flake8",
+  #    "flake8-html",
+  "freezegun",
+  "licensecheck>=2020",
+  #    "ipython",
+  #    "isort",
+  "pdbpp",
+  "pip-licenses>=5",
+  "pre-commit",
+  #    "pyflakes",
+  "pytest",
+  #    "pytest-asyncio",
+  "pytest-coverage",
+  "pytest-django",
+  "pytest-echo",
+  #    "pytest-html",
+  #    "pytest-pythonpath",
+  #    "pytest-selenium",
+  #    "pytest-variables",
+  "pytest-xdist",
+  "responses",
+  "seleniumbase>=4.35.2",
+  "tox",
+  "types-jmespath>=1.0.2.20240106",
+  "watchdog",
 ]
 
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+docs = [
+  "mkdocs",
+  "mkdocs-awesome-pages-plugin",
+  "mkdocs-gen-files",
+  "mkdocs-material",
+  "mkdocstrings-python",
+]
+
+[tool.setuptools]
+packages = [ "aurora", "dbtemplates" ]
 
 [tool.setuptools.package-dir]
 "" = "src"
 
-[tool.setuptools]
-packages = ["aurora", "dbtemplates"]
+[uv]
+package = true
 
 [tool.nitpick]
-    style = [
-        "github://unicef/hope-code-conventions@main/django/django.toml"
-    ]
-    cache = "1 day"
+style = [
+  "github://unicef/hope-code-conventions@main/django/django.toml",
+]
+cache = "1 day"

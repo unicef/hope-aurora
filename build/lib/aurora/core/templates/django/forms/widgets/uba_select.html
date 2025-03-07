@@ -1,5 +1,0 @@
-<select name="{{ widget.name }}" {% include "django/forms/widgets/attrs.html" %}>
-{% for x in widget.attrs.choices %}
-    <option {% if x.0 in widget.value %} selected {% endif %}value="{{ x.0 }}">{{ x.1 }}</option>
-{% endfor %}
-</select>

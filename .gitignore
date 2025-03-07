@@ -6,6 +6,7 @@
 *.db
 *.egg-info
 dist/
+build/
 __pycache__
 coverage.xml
 node_modules
@@ -26,5 +27,3 @@ __packages__
 docker/conf/nginx.conf
 docker/conf/redis.conf
 src/aurora/staticfiles
-
-.pdm-python

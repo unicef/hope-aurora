@@ -75,8 +75,8 @@ class Loader(BaseLoader):
                 notfound = cache.get(cache_notfound_key)
                 if notfound:
                     raise TemplateDoesNotExist(template_name)
-            except Exception:
-                raise TemplateDoesNotExist(template_name)
+            except Exception as e:
+                raise TemplateDoesNotExist(template_name) from e
 
         # Not marked as not-found, move on...
 

@@ -26,6 +26,8 @@ exclude_lines =
     #if 0:
     if __name__ == .__main__.:
     if DEBUG:
+    if settings.DEBUG:
+    if TYPE_CHECKING:
     except NoReverseMatch:
 
 ignore_errors = True
