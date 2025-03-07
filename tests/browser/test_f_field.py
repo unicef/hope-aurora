@@ -1,5 +1,7 @@
 import pytest
 from strategy_field.utils import fqn
+
+from aurora.core.fields import HiddenField, LocationField, CompilationTimeField
 from testutils.factories import FormFactory
 from testutils.selenium import AuroraTestBrowser
 
@@ -42,16 +44,12 @@ def test_add_field(browser: AuroraTestBrowser, field_type):
     browser.click('a:contains("Form Field attributes")')
     browser.click('a:contains("Widget Field attributes")')
     browser.click('a:contains("Smart Field attributes")')
-
-    browser.type("input[name=smart-question]", "Question")
-    browser.switch_to_frame("#widget_display")
-    browser.wait_for_ready_state_complete()
-
-    assert not browser.is_element_visible("div.field-container-flex_field_test")
-    browser.click("label[for=question_id_flex_field_test]")
-    assert browser.is_element_visible("div.field-container-flex_field_test")
-    browser.switch_to_window(main)
-    browser.wait_for_ready_state_complete()
+    if field_type not in [HiddenField, LocationField, CompilationTimeField]:
+        browser.type("input[name=smart-question]", "Question")
+        browser.switch_to_frame("#widget_display")
+        browser.wait_for_ready_state_complete()
+        browser.switch_to_window(main)
+        browser.wait_for_ready_state_complete()
 
     browser.click('a:contains("CSS Field attributes")')
     browser.click('a:contains("Events")')

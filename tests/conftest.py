@@ -31,12 +31,6 @@ def pytest_configure(config):
     os.environ["LOG_LEVEL"] = "CRITICAL"
     os.environ["LOGGING_HANDLERS"] = "null"
 
-    if config.option.markexpr:
-        if "selenium" not in config.option.markexpr:
-            config.option.markexpr += " and not selenium"
-    else:
-        config.option.markexpr += " not selenium"
-
     from django.conf import global_settings, settings
 
     settings.STORAGES = global_settings.STORAGES

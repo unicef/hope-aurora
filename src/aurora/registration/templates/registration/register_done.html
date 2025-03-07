@@ -14,7 +14,7 @@
             {% with msg="Registration successful" %}
             <span data-msgid="{{ msg }}">{% translate msg %}</span>
             {% endwith %}
-            <pre class="text-2xl p-5 registration-id">{{ record.unicef_id }}</pre>
+            <pre id="registration-id" class="text-2xl p-5 registration-id">{{ record.unicef_id }}</pre>
         </div>
         {% if record.registration.advanced.qrcode %}
             <div class="flex flex-row justify-center items-center">
