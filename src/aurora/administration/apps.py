@@ -1,5 +1,10 @@
 from django.apps import AppConfig
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from smart_admin.site import SmartAdminSite
+
 
 class AuroraAdminConfig(AppConfig):
     default = False
@@ -16,6 +21,8 @@ class AuroraAdminConfig(AppConfig):
             panel_sentry,
             panel_sysinfo,
         )
+
+        site: SmartAdminSite
 
         from .panels import panel_dumpdata, panel_loaddata, panel_sql
 

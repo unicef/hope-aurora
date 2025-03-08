@@ -149,3 +149,10 @@ def user():
     from testutils.factories import UserFactory
 
     return UserFactory()
+
+
+@pytest.fixture
+def staff_user():
+    from testutils.factories import UserFactory
+
+    return UserFactory(is_staff=True)

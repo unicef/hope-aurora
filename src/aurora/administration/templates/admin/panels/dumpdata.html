@@ -1,7 +1,7 @@
 {% extends "smart_admin/console.html" %}{% load i18n static %}
 {% block left %}
     {% if form %}
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" id="dumpForm">
             {% csrf_token %}
             <table>
                 {{ form }}

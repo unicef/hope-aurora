@@ -16,7 +16,8 @@ RUN apt-get update \
                 python3-gdal \
                 python3-psycopg2 \
     && locale-gen --no-purge uk_UA.UTF-8 \
-    && apt-get clean
+    && apt-get clean \
+    && pip install uv uwsgi
 
 
 FROM base AS builder
@@ -40,8 +41,7 @@ zlib1g-dev  \
     && apt-get update \
     && apt-get install -y --no-install-recommends $buildDeps \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && pip install uv uwsgi
+    && rm -rf /var/lib/apt/lists/*
 
 
 # ------- tests -------
@@ -53,6 +53,10 @@ ARG GIT_SHA
 LABEL distro="tests"
 LABEL org.opencontainers.image.created="$BUILD_DATE"
 LABEL org.opencontainers.image.version="$VERSION"
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+               ./google-chrome-stable_current_amd64.deb
 
 ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin \
     DJANGO_SETTINGS_MODULE=aurora.config.settings \
