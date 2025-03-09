@@ -8,6 +8,8 @@ RUN apt-get update \
                 gdal-bin \
                 gettext \
                 git-core \
+                libmagic1 \
+                libxml2 \
                 locales \
                 locales-all \
                 nginx \
@@ -16,9 +18,11 @@ RUN apt-get update \
                 python3-gdal \
                 python3-psycopg2 \
     && locale-gen --no-purge uk_UA.UTF-8 \
-    && apt-get clean \
-    && pip install uv uwsgi
+    && apt-get clean
 
+
+RUN groupadd --gid 1024 bitcaster-io \
+    && adduser --disabled-login --disabled-password --no-create-home --ingroup unicef-io -q hope
 
 FROM base AS builder
 RUN set -x \
@@ -43,6 +47,7 @@ zlib1g-dev  \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+RUN pip install uv uwsgi
 
 # ------- tests -------
 FROM builder AS tests
