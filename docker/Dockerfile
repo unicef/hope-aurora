@@ -22,7 +22,7 @@ RUN apt-get update \
 
 
 RUN groupadd --gid 1024 unicef \
-    && adduser --disabled-login --disabled-password --no-create-home --ingroup unicef-io -q hope
+    && adduser --disabled-login --disabled-password --no-create-home --ingroup unicef -q hope
 
 FROM base AS builder
 RUN set -x \
