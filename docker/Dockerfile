@@ -21,7 +21,7 @@ RUN apt-get update \
     && apt-get clean
 
 
-RUN groupadd --gid 1024 bitcaster-io \
+RUN groupadd --gid 1024 unicef \
     && adduser --disabled-login --disabled-password --no-create-home --ingroup unicef-io -q hope
 
 FROM base AS builder
