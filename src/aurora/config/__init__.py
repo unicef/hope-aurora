@@ -46,7 +46,7 @@ OPTIONS = {
     "DEBUG": (bool, False),
     "DEBUG_PROPAGATE_EXCEPTIONS": (bool, False),
     "DEFAULT_FILE_STORAGE": (str, "django.core.files.storage.FileSystemStorage"),
-    "DJANGO_ADMIN_URL": (str, f"{uuid.uuid4().hex}/", True),
+    "DJANGO_ADMIN_URL": (str, f"{uuid.uuid4().hex}", True),
     "EMAIL_BACKEND": (str, "anymail.backends.mailjet.EmailBackend"),
     "EMAIL_FROM_EMAIL": (str, ""),
     "EMAIL_HOST": (str, ""),

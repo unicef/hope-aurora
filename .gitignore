@@ -13,6 +13,7 @@ node_modules
 package-lock.json
 package.json
 latest_logs
+archived_logs
 !tests/.coveragerc
 !.gitignore
 !.dockerignore

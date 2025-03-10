@@ -158,7 +158,7 @@
                 if ((inputType === "radio") || (inputType === "checkbox")) {
                     return $input.is(":checked");
                 } else {
-                    return $input.val() ? $input.val().trim() !== '': false;
+                    return $input.val() ? ("" + $input.val()).trim() !== '': false;
                 }
             };
             self.setError = function (text) {
