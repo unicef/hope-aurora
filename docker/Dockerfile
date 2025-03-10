@@ -58,10 +58,7 @@ ARG GIT_SHA
 LABEL distro="tests"
 LABEL org.opencontainers.image.created="$BUILD_DATE"
 LABEL org.opencontainers.image.version="$VERSION"
-RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \
-               ./google-chrome-stable_current_amd64.deb
+
 
 ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin \
     DJANGO_SETTINGS_MODULE=aurora.config.settings \
