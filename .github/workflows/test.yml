@@ -131,7 +131,7 @@ jobs:
 
       - name: Run Test suite
         run: |
-            mkdir output
+            mkdir output latest_logs
             docker run --rm \
               --network host \
               -e PYTHONPATH=/app/src \
@@ -140,6 +140,7 @@ jobs:
               -e CACHE_URL=${CACHE_URL} \
               -e SECRET_KEY=super-secret-key-just-for-testing \
               -v "./output/:/app/output" \
+              -v "./latest_logs/:/app/latest_logs" \
               -v "./src/:/app/src" \
               -v "./tests:/app/tests" \
               -v "./pytest.ini:/app/pytest.ini" \
