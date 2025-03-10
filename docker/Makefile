@@ -6,6 +6,9 @@ SOURCE_COMMIT=$(shell git rev-parse --short HEAD)
 STAGE?=dist
 TAG?=${VERSION}
 
+help:
+	@echo "Docke"
+
 .build:
 	DOCKER_BUILDKIT=1 cd .. && docker build \
 			--build-arg BUILDKIT_INLINE_CACHE=1 \
@@ -62,11 +65,11 @@ step5: dist
 			-e ADMIN_EMAIL="${ADMIN_EMAIL}" \
 			-e ADMIN_PASSWORD="${ADMIN_PASSWORD}" \
 			-e ALLOWED_HOSTS="*" \
-			-e CACHE_DEFAULT="redis://192.168.66.66:6379/0" \
-			-e CELERY_BROKER_URL=redis://192.168.66.66:6379/0 \
+			-e CACHE_DEFAULT="redis://host.docker.internal:6379/0" \
+			-e CELERY_BROKER_URL=redis://host.docker.internal:6379/0 \
 			-e CSRF_COOKIE_SECURE=False \
 			-e CSRF_TRUSTED_ORIGINS=http://localhost \
-			-e DATABASE_URL="${DATABASE_URL}" \
+			-e DATABASE_URL="postgres://postgres:@host.docker.internal:5432/aurora" \
 			-e DEBUG="1" \
 			-e DJANGO_ADMIN_URL=admin/ \
 			-e DJANGO_SETTINGS_MODULE=aurora.config.settings \
@@ -90,4 +93,15 @@ shell:
 	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${TAG} \
 	RUN_OPTIONS="-it" \
  	CMD='/bin/bash' \
+	$(MAKE) .run
+
+
+run-tests:
+	CMD='pytest tests/ -x -n auto -v --maxfail=5 --migrations' \
+	RUN_OPTIONS="-it -v ./output/:/app/output \
+              -v ./src/:/app/src \
+              -v ./tests:/app/tests \
+              -v ./pytest.ini:/app/pytest.ini" \
+	TAG="tests" \
+	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION}-tests \
 	$(MAKE) .run
