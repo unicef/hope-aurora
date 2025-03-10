@@ -146,6 +146,14 @@ jobs:
               -t ${{env.IMAGE}} \
               pytest tests/ -n auto -v --maxfail=5 --migrations --cov-report xml:./output/coverage.xml
 
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-log-report
+          path: latest_logs
+          retention-days: 5
+
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         continue-on-error: true
