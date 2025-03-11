@@ -44,6 +44,7 @@ class AuroraSeleniumTC(BaseCase):
         pass
 
     def open(self, url: str):
+        self.maximize_window()
         return super().open(f"{self.live_server_url}{url}")
 
     def select2_select(self, element_id: str, value: str):
