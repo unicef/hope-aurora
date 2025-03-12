@@ -5,3 +5,4 @@ from .mail import EmailWidget  # noqa
 from .number import NumberWidget  # noqa
 from .radio import RadioWidget, YesNoRadioWidget  # noqa
 from .text import SmartTextWidget  # noqa
+from .boolen import BooleanWidget  # noqa

@@ -309,7 +309,9 @@ def merge_data(d1, d2):
     if isinstance(d2, dict):
         ret = {} or d1.copy()
         for k, v in d2.items():
-            if isinstance(v, list):
+            if k == "choices":
+                ret["choices"] = d2["choices"]
+            elif isinstance(v, list):
                 if k not in d1:
                     d1[k] = [None for e in v]
                 ret[k] = [merge_data(d1[k][i], e) for i, e in enumerate(v)]

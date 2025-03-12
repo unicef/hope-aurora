@@ -16,7 +16,8 @@
 {{ form.media }}
 {% if request.method == "POST" %}
     {% if valid %}
-        <div class="mb-10 w-full text-capitalize m-auto text-center text-xl border rounded">Success</div>
+        <div class="w-full text-capitalize m-auto text-center text-xl border rounded bg-green-200">Success</div>
+        <pre class="p-2 border m-2 bg-gray-200">{{ data }}</pre>
     {% elif error %}
         <div class="mb-10 w-full text-capitalize m-auto text-center alert-message text-xl border rounded">please fix the
             errors below

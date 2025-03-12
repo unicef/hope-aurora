@@ -1,6 +1,6 @@
-from django.apps import AppConfig
-
 from typing import TYPE_CHECKING
+
+from django.apps import AppConfig
 
 if TYPE_CHECKING:
     from smart_admin.site import SmartAdminSite

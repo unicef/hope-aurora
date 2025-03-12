@@ -207,6 +207,7 @@ class FieldEditor:
         if self.request.method == "POST":
             form = form_class(self.request.POST)
             ctx["valid"] = form.is_valid()
+            ctx["data"] = json.dumps(form.cleaned_data)
         else:
             form = form_class(initial={self.field.name: self.patched_field.get_default_value()})
             ctx["valid"] = None
