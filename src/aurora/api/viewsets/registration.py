@@ -7,7 +7,6 @@ from urllib import parse
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.cache import get_conditional_response
-
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status

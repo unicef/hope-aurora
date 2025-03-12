@@ -1,10 +1,9 @@
+from adminfilters.autocomplete import get_real_field
+from adminfilters.mixin import MediaDefinitionFilter, SmartFieldListFilter
 from django.conf import settings
 from django.contrib.admin.widgets import SELECT2_TRANSLATIONS
 from django.urls import reverse
 from django.utils.translation import get_language
-
-from adminfilters.autocomplete import get_real_field
-from adminfilters.mixin import MediaDefinitionFilter, SmartFieldListFilter
 
 from aurora.core.version_media import VersionMedia
 

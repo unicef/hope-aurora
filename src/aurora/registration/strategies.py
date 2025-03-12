@@ -3,10 +3,9 @@ import base64
 from django.db.transaction import atomic
 from django.shortcuts import render
 from django.urls import reverse
-
 from strategy_field.registry import Registry
 
-from aurora.core.crypto import Crypto
+from aurora.core.crypto.symmetric import Symmetric
 from aurora.core.utils import jsonfy, safe_json, total_size
 from aurora.registration.storage import router
 from aurora.state import state
@@ -27,13 +26,13 @@ class SaveToDB(RegistrationStrategy):
         from aurora.registration.models import Record
 
         fields, files = router.decompress(fields_data)
-        crypter = Crypto()
         if self.registration.public_key:
             kwargs = {
                 "files": self.registration.encrypt(files),
                 "fields": base64.b64encode(self.registration.encrypt(fields)).decode(),
             }
         elif self.registration.encrypt_data:
+            crypter = Symmetric()
             kwargs = {
                 "files": crypter.encrypt(files).encode(),
                 "fields": crypter.encrypt(fields),

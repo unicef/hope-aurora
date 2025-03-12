@@ -1,12 +1,20 @@
 import base64
 import time
-
-from django.urls import reverse
+from typing import TYPE_CHECKING
 
 import pytest
-from Crypto.PublicKey import RSA
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from django.urls import reverse
 
 from aurora.core.crypto.rsa import decrypt
+
+if TYPE_CHECKING:
+    from aurora.registration.models import Registration
+
+    class TestRegistration(Registration):
+        _private_pem: bytes
+
 
 PUBLIC = b"""-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxPyACSP38j/kB9jR8QPZ
@@ -48,7 +56,7 @@ btcA1UFpS9TFL++uMmwbcMzykITUTxhHp0QWEg1cpj8HFakPBZ4=
 
 
 @pytest.fixture
-def registration(simple_form):
+def registration(simple_form) -> "TestRegistration":
     from testutils.factories import RegistrationFactory
 
     reg = RegistrationFactory(name="registration #1", flex_form=simple_form, intro="intro", footer="footer")
@@ -59,21 +67,30 @@ def registration(simple_form):
 
 @pytest.fixture(scope="session")
 def key():
-    return RSA.generate(2048)
+    return rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
 
 @pytest.fixture(scope="session")
 def private_pem(key) -> str:
-    return key.export_key().decode()
+    return key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.TraditionalOpenSSL,
+        encryption_algorithm=serialization.NoEncryption(),
+    ).decode()
 
 
 @pytest.fixture(scope="session")
 def public_pem(key) -> str:
-    return key.publickey().export_key().decode()
+    return (
+        key.public_key()
+        .public_bytes(encoding=serialization.Encoding.PEM, format=serialization.PublicFormat.SubjectPublicKeyInfo)
+        .decode()
+    )
 
 
 @pytest.mark.django_db
-def test_api(django_app, registration, monkeypatch):
+@pytest.mark.mini_racer
+def test_api(django_app, registration: "TestRegistration", monkeypatch):
     import aurora.registration.views.registration
 
     monkeypatch.setattr(aurora.registration.views.registration, "get_etag", lambda *a: time.time())
@@ -100,7 +117,7 @@ def test_api(django_app, registration, monkeypatch):
     for r in records:
         storage = str(r["fields"]).encode()
         data = base64.urlsafe_b64decode(storage)
-        decrypt(data, registration._private_pem)
+        decrypt(data, registration._private_pem.decode())
 
 
 @pytest.mark.django_db

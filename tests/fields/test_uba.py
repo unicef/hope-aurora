@@ -1,12 +1,13 @@
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
+
 import pytest
 import responses
 from constance.test.unittest import override_config
 from django.core.exceptions import ValidationError
 from strategy_field.utils import fqn
+from testutils.factories import FlexFormFieldFactory
 
 from aurora.core.fields import UBANameEnquiryField
-from testutils.factories import FlexFormFieldFactory
 
 
 @pytest.mark.django_db

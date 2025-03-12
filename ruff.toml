@@ -43,8 +43,8 @@ select = [
 ]
 extend-select = ["UP", ]
 ignore = [
-    "ANN401",
-    "B904",  # raise-without-from-inside-except: syntax not compatible with py2
+#    "ANN401",
+#    "B904",  # raise-without-from-inside-except: syntax not compatible with py2
     "COM812",
     "D100", # Missing docstring in public module
     "D101", # Missing docstring in public class

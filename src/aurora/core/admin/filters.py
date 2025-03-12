@@ -1,13 +1,12 @@
 import logging
 
+from adminfilters.autocomplete import AutoCompleteFilter
+from adminfilters.combo import ChoicesFieldComboFilter, RelatedFieldComboFilter
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.core.cache import caches
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.urls import reverse
-
-from adminfilters.autocomplete import AutoCompleteFilter
-from adminfilters.combo import ChoicesFieldComboFilter, RelatedFieldComboFilter
 
 from ...administration.filters import BaseAutoCompleteFilter
 
@@ -55,7 +54,7 @@ class UsedByRegistration(BaseAutoCompleteFilter):
         except (ValueError, ValidationError) as e:
             # Fields may raise a ValueError or ValidationError when converting
             # the parameters to the correct type.
-            raise IncorrectLookupParameters(e)
+            raise IncorrectLookupParameters(e) from e
 
 
 class UsedInRFormset(BaseAutoCompleteFilter):

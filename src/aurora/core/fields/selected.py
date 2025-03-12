@@ -1,7 +1,6 @@
 import logging
 
 from django import forms
-
 from django.forms import BoundField
 from django.urls import NoReverseMatch, reverse
 from django.utils.translation import get_language

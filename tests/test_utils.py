@@ -1,8 +1,7 @@
 import base64
 
-from django.core.files.uploadedfile import SimpleUploadedFile
-
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from aurora.core.utils import (
     apply_nested,

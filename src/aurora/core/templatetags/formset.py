@@ -1,8 +1,7 @@
 import logging
 
-from django.template import Library
-
 import markdown as md
+from django.template import Library
 
 from aurora.i18n.get_text import gettext as _
 

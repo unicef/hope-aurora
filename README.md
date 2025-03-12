@@ -8,8 +8,8 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/unicef/hope-aurora)](https://hub.docker.com/repository/docker/unicef/hope-aurora/tags)
 
 
-Aurora is the official HOPE online registration tool, it is released as open source project, feel free to contribute and use it. 
+Aurora is the official HOPE online registration tool, it is released as open source project, feel free to contribute and use it.
 
-It has be development taking performance and security as main key points 
+It has be development taking performance and security as main key points
 
-Please read more about Aurora and HOPE in the [official documentation](https://unicef.github.io/hope-documentation/) 
+Please read more about Aurora and HOPE in the [official documentation](https://unicef.github.io/hope-documentation/)

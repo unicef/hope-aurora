@@ -1,10 +1,9 @@
 import logging
 from pathlib import Path
 
+import djclick as click
 from django.core.cache import cache
 from django.core.management import CommandError, call_command
-
-import djclick as click
 from redis.exceptions import LockError
 
 from aurora import VERSION

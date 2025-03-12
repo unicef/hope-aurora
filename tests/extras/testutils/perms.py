@@ -2,7 +2,6 @@ from contextlib import ContextDecorator
 from random import choice
 
 from django.contrib.auth.models import Permission
-
 from faker import Faker
 
 from aurora.core.models import Organization
@@ -41,11 +40,11 @@ def get_group(name=None, permissions=None):
         try:
             app_label, codename = permission_name.split(".")
         except ValueError:
-            raise ValueError("Invalid permission name `{0}`".format(permission_name))
+            raise ValueError("Invalid permission name `{0}`".format(permission_name)) from None
         try:
             permission = Permission.objects.get(content_type__app_label=app_label, codename=codename)
         except Permission.DoesNotExist:
-            raise Permission.DoesNotExist("Permission `{0}` does not exists", permission_name)
+            raise Permission.DoesNotExist("Permission `{0}` does not exists", permission_name) from None
 
         group.permissions.add(permission)
     return group

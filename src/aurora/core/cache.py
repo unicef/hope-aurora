@@ -27,7 +27,7 @@ class Cache(OrderedDict):
             self.popitem(last=False)
 
 
-cache = Cache(size=100)
+cache: Cache = Cache(size=100)
 
 
 def cache_form(f):

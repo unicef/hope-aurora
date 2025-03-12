@@ -1,7 +1,8 @@
 {% extends "admin_extra_buttons/action_page.html" %}
+
 {% block action-content %}
     {% if custom_template %}
-        <a href="{% url "admin:dbtemplates_template_change" custom_template.pk%}">{{ custom_template }}</a> from {{ source }}
+        <a href="{% url "admin:dbtemplates_template_change" custom_template.pk %}">{{ custom_template }}</a> from {{ source }}
     {% elif form %}
         <form method="post">
             {% csrf_token %}

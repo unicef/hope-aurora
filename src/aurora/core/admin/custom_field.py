@@ -1,12 +1,11 @@
 import logging
 
+from admin_extra_buttons.decorators import button
 from django import forms
 from django.contrib.admin import register
 from django.core.cache import caches
 from django.db.models import JSONField
 from django.db.models.functions import Collate
-
-from admin_extra_buttons.decorators import button
 from jsoneditor.forms import JSONEditor
 from smart_admin.modeladmin import SmartModelAdmin
 

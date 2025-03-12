@@ -2,10 +2,9 @@ import logging
 import re
 from enum import IntFlag, unique
 
-from django.utils.functional import cached_property
-
 from constance import config
 from constance.signals import config_updated
+from django.utils.functional import cached_property
 from htmlmin import Minifier
 
 logger = logging.getLogger(__name__)

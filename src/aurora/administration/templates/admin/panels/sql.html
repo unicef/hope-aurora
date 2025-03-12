@@ -1,8 +1,9 @@
-{% extends "smart_admin/console.html" %}{% load static i18n %}
+{% extends "smart_admin/console.html" %}{% load i18n static %}
 {% block extrastyle %}
     {{ block.super }}
     <script src="/static/admin/js/jquery.init.js"></script>
-{% endblock %}
+{% endblock extrastyle %}
+
 {% block content %}
     <div class="redis-cli" id="changelist">
         <div class="changelist-form-container">
@@ -15,7 +16,7 @@
                     <input type="submit" value="Execute">
                 </div>
             </form>
-{#            <div id="stm"></div>#}
+{# <div id="stm"></div> #}
             <div class="error" id="errorMessage"></div>
             <pre class="code" id="output" style="padding: 10px;"></pre>
         </div>

@@ -7,5 +7,5 @@
         {% if widget.value != None %}value="{{ widget.value|stringformat:'s' }}"{% endif %}
         {% include "django/forms/widgets/attrs.html" %}
 >
-{#{% if can_translate %}{% include "i18n/_staff_edit_i18n.html" with original=widget.label %}{% endif %}#}
-{% if widget.wrap_label %} {% trans widget.label as aa %}{{ aa|md }} </label>{% endif %}
+{# {% if can_translate %}{% include "i18n/_staff_edit_i18n.html" with original=widget.label %}{% endif %} #}
+{% if widget.wrap_label %} {% translate widget.label as aa %}{{ aa|md }} </label>{% endif %}

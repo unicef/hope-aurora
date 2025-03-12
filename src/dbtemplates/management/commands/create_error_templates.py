@@ -43,7 +43,9 @@ class Command(BaseCommand):
         try:
             site = Site.objects.get_current()
         except Site.DoesNotExist:
-            raise CommandError("Please make sure to have the sites contrib app installed and setup with a site object")
+            raise CommandError(
+                "Please make sure to have the sites contrib app installed and setup with a site object"
+            ) from None
 
         verbosity = int(options.get("verbosity", 1))
         for error_code in (404, 500):

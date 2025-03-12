@@ -131,20 +131,34 @@ jobs:
 
       - name: Run Test suite
         run: |
-            mkdir output
+            mkdir output latest_logs
             docker run --rm \
               --network host \
               -e PYTHONPATH=/app/src \
               -e DATABASE_URL=${DATABASE_URL} \
               -e CELERY_BROKER_URL=${CELERY_BROKER_URL} \
               -e CACHE_URL=${CACHE_URL} \
+              -e DJANGO_ADMIN_URL=admin \
+              -e GITHUB_ACTIONS=1 \
               -e SECRET_KEY=super-secret-key-just-for-testing \
               -v "./output/:/app/output" \
+              -v "./latest_logs/:/app/latest_logs" \
               -v "./src/:/app/src" \
               -v "./tests:/app/tests" \
               -v "./pytest.ini:/app/pytest.ini" \
               -t ${{env.IMAGE}} \
-              pytest tests/ -n auto -v --maxfail=5 --migrations --cov-report xml:./output/coverage.xml
+              pytest tests/ -n auto -v --maxfail=5 --migrations \
+                      --cov-report xml:./output/coverage.xml \
+                      --headless --time_limit 20
+
+      - name: Archive selenium results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: selenium-log-report
+          path: latest_logs
+          retention-days: 5
+
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4

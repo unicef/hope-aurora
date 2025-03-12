@@ -1,11 +1,11 @@
-{% extends "admin_extra_buttons/action_page.html" %}{% load static itrans aurora %}
+{% extends "admin_extra_buttons/action_page.html" %}{% load aurora itrans static %}
 {% block extrahead %}
     <link rel="stylesheet" href="{% static "admin/field_editor/field_editor.css" %}">
     <script src="/static/admin/js/vendor/jquery/jquery.js"></script>
     <script src="/static/admin/js/jquery.init.js"></script>
     <script src="{% static "smart_field.js" %}"></script>
     {{ forms_media }}
-{% endblock %}
+{% endblock extrahead %}
 
 {% block action-content %}
     <form method="post" id="fieldAttrForm">
@@ -39,7 +39,7 @@
             </tr>
         </table>
         </div>
-{#        <div id="errors"></div>#}
+{# <div id="errors"></div> #}
         <table>
             <tr>
                 <td>

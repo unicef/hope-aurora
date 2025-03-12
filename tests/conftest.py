@@ -1,30 +1,12 @@
 import os
 
+import pytest
 from django import forms
 from django.core.files.storage import default_storage
 
-import pytest
-
 from aurora.core.fields import CompilationTimeField, SmartFileField
 
-
-def pytest_addoption(parser):
-    parser.addoption(
-        "--selenium",
-        action="store_true",
-        dest="enable_selenium",
-        default=False,
-        help="enable selenium tests",
-    )
-
-    parser.addoption(
-        "--show-browser",
-        "-S",
-        action="store_true",
-        dest="show_browser",
-        default=False,
-        help="will not start browsers in headless mode",
-    )
+ALL = set("darwin".split())
 
 
 @pytest.fixture(autouse=True)
@@ -46,12 +28,8 @@ def pytest_configure(config):
     os.environ["SESSION_COOKIE_DOMAIN"] = "http://testserver/"
     os.environ["SESSION_COOKIE_SECURE"] = "false"
     os.environ["SOCIAL_AUTH_REDIRECT_IS_HTTPS"] = "false"
-
-    if config.option.show_browser:
-        config.option.enable_selenium = True
-
-    if not config.option.enable_selenium:
-        config.option.markexpr = "not selenium"
+    os.environ["LOG_LEVEL"] = "CRITICAL"
+    os.environ["LOGGING_HANDLERS"] = "null"
 
     from django.conf import global_settings, settings
 
@@ -171,3 +149,10 @@ def user():
     from testutils.factories import UserFactory
 
     return UserFactory()
+
+
+@pytest.fixture
+def staff_user():
+    from testutils.factories import UserFactory
+
+    return UserFactory(is_staff=True)

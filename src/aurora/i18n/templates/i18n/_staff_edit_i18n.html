@@ -1,7 +1,7 @@
 {% load itrans %}
 {% if original|strip %}
     {% csrf_token %}
-    {% with original|msgcode as code %}
+    {% with code=original|msgcode %}
         <span class="inline-flex staff-editor staff-i18n staff-tooltip align-left ">
             <span class="tooltiptext">
                 <p><span class="label">Lang</span>{{ LANGUAGE_CODE }}</p>

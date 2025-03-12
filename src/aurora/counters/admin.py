@@ -1,13 +1,12 @@
 import logging
 
+from admin_extra_buttons.decorators import button
+from adminfilters.autocomplete import LinkedAutoCompleteFilter
 from django.contrib.admin import register
 from django.db.transaction import atomic
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-
-from admin_extra_buttons.decorators import button
-from adminfilters.autocomplete import LinkedAutoCompleteFilter
 from smart_admin.modeladmin import SmartModelAdmin
 
 from ..core.utils import is_root

@@ -33,7 +33,8 @@
             max-height: 300px;
         }
     </style>
-{% endblock %}
+{% endblock extrahead %}
+
 {% block action-content %}
     {% if is_validator %}
     <div class="message">
@@ -63,6 +64,7 @@
         <input type="submit">
     </form>
 {% endblock action-content %}
+
 {% block document_ready %}
     {{ block.super }}
     <script>
@@ -127,4 +129,4 @@
             })(django.jQuery);
         </script>
     {% endif %}
-{% endblock %}
+{% endblock document_ready %}

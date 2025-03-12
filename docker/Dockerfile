@@ -4,10 +4,13 @@ ARG VERSION
 ARG GIT_SHA
 
 RUN apt-get update \
+    && apt-get upgrade \
     && apt-get install -y --no-install-recommends \
                 gdal-bin \
                 gettext \
                 git-core \
+                libmagic1 \
+                libxml2 \
                 locales \
                 locales-all \
                 nginx \
@@ -18,6 +21,9 @@ RUN apt-get update \
     && locale-gen --no-purge uk_UA.UTF-8 \
     && apt-get clean
 
+
+RUN groupadd --gid 1024 unicef \
+    && adduser --disabled-login --disabled-password --no-create-home --ingroup unicef -q hope
 
 FROM base AS builder
 RUN set -x \
@@ -30,6 +36,7 @@ libfontconfig1 \
 libgconf-2-4 \
 libglib2.0-0 \
 libnss3 \
+libpcre2-dev \
 libssl-dev \
 libjpeg-dev \
 libpq-dev \
@@ -40,9 +47,22 @@ zlib1g-dev  \
     && apt-get update \
     && apt-get install -y --no-install-recommends $buildDeps \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && pip install uv uwsgi
+    && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gnupg wget curl unzip && \
+    wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    echo "deb http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google.list && \
+    apt-get update -y && \
+    apt-get install -y --no-install-recommends google-chrome-stable && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/* && \
+    CHROME_VERSION=$(google-chrome --product-version) && \
+    wget -q --continue -P /chromedriver "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$CHROME_VERSION/linux64/chromedriver-linux64.zip" && \
+    unzip /chromedriver/chromedriver* -d /usr/local/bin/ && \
+    rm -rf /chromedriver
+
+RUN pip install --no-cache-dir uv uwsgi
 
 # ------- tests -------
 FROM builder AS tests
@@ -53,6 +73,7 @@ ARG GIT_SHA
 LABEL distro="tests"
 LABEL org.opencontainers.image.created="$BUILD_DATE"
 LABEL org.opencontainers.image.version="$VERSION"
+
 
 ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin \
     DJANGO_SETTINGS_MODULE=aurora.config.settings \

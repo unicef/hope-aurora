@@ -1,13 +1,12 @@
 import logging
 from typing import Any, Iterable, Sequence
 
-from django.core.serializers.json import Deserializer as JsonDeserializer
-from django.db import connections, transaction
-from django.db.models import Q
-
 from admin_sync.collector import ForeignKeysCollector
 from admin_sync.exceptions import ProtocolError, SyncError
 from admin_sync.protocol import LoadDumpProtocol
+from django.core.serializers.json import Deserializer as JsonDeserializer
+from django.db import connections, transaction
+from django.db.models import Q
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +36,7 @@ class AuroraSyncRegistrationProtocol(LoadDumpProtocol):
                     )
         except Exception as e:
             logger.exception(e)
-            raise ProtocolError(e)
+            raise ProtocolError(e) from None
         return processed
 
     def collect(self, data: Sequence, collect_related=True):

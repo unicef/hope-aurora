@@ -1,7 +1,7 @@
 {% load i18n %}
 {% spaceless %}
     {% if audio %}
-        <a title="{% trans "Play CAPTCHA as audio file" %}" href="{{ audio }}">
+        <a title="{% translate "Play CAPTCHA as audio file" %}" href="{{ audio }}">
     {% endif %}
 <img src="{{ image }}" alt="captcha" class="captcha" />
 {% if audio %}</a>{% endif %}
@@ -10,7 +10,7 @@
 <script>
     $(function() {
         $('img.captcha').after(
-            $('<a href="#void" class="captcha-refresh">{% trans "refresh" %}</a>')
+            $('<a href="#void" class="captcha-refresh">{% translate "refresh" %}</a>')
         );
         $('.captcha-refresh').click(function(){
             var $form = $(this).parents('form');
