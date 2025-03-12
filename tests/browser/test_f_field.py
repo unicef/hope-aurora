@@ -24,7 +24,6 @@ def pytest_generate_tests(metafunc):
 
 def test_add_field(browser: AuroraTestBrowser, field_type):
     main = browser.driver.current_window_handle
-
     form = FormFactory()
     browser.open("/admin/")
     browser.login()

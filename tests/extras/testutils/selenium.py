@@ -27,7 +27,7 @@ def parent_element(obj, up=1):
 class AuroraSeleniumTC(BaseCase):
     live_server_url: str = ""
 
-    def setUp(self):
+    def setUp(self, masterqa_mode=False):
         super().setUp()
         from testutils.factories import SuperUserFactory
 

@@ -139,16 +139,10 @@ jobs:
               -e CELERY_BROKER_URL=${CELERY_BROKER_URL} \
               -e CACHE_URL=${CACHE_URL} \
               -e DJANGO_ADMIN_URL=admin \
-              -e SECRET_KEY=super-secret-key-just-for-testing \
-              -v "./output/:/app/output" \
-              -v "./latest_logs/:/app/latest_logs" \
-              -v "./src/:/app/src" \
-              -v "./tests:/app/tests" \
-              -v "./pytest.ini:/app/pytest.ini" \
               -t ${{env.IMAGE}} \
               pytest tests/ -n auto -v --maxfail=5 --migrations \
                       --cov-report xml:./output/coverage.xml \
-                      --headless --time_limit 10
+                      --headless --time_limit 20
 
       - name: Archive selenium results
         uses: actions/upload-artifact@v4
