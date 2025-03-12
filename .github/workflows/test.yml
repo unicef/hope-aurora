@@ -49,40 +49,13 @@ jobs:
 #          base: ${{ github.ref }}
 #          token: ${{ github.token }}
 #          filters: .github/file-filters.yml
-  test:
-#    needs: [ changes ]
-#    if: needs.changes.outputs.run_tests == 'true'
+  build_test_image:
     runs-on: ubuntu-latest
-    outputs:
-      image: ${{ env.IMAGE }}
-      commit: ${{env.sha_short}}
-      build_date: ${{env.BUILD_DATE}}
-      branch: ${{env.BRANCH}}
-    services:
-      redis:
-        image: redis
-        ports:
-          - 16379:6379
-      db:
-        image: postgres:14
-        env:
-          POSTGRES_DATABASE: aurora
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_USERNAME: postgres
-        ports:
-          - 15432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      DOCKER_DEFAULT_PLATFORM: linux/amd64
-      DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
-      DATABASE_URL: postgres://postgres:postgres@localhost:15432/aurora
-      CELERY_BROKER_URL: redis://localhost:16379/0"
-      CACHE_URL: redis://localhost:16379/0
-      DOCKER_BUILDKIT: 1
+#    outputs:
+#      image: ${{ env.IMAGE }}
+#      commit: ${{env.sha_short}}
+#      build_date: ${{env.BUILD_DATE}}
+#      branch: ${{env.BRANCH}}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -128,7 +101,41 @@ jobs:
                 --cache-from "type=gha" \
                 --cache-to "type=gha,mode=max" \
                 -f docker/Dockerfile .
-
+              docker push ${{env.IMAGE}}
+  test:
+    needs: [ build_test_image ]
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ env.IMAGE }}
+      commit: ${{env.sha_short}}
+      build_date: ${{env.BUILD_DATE}}
+      branch: ${{env.BRANCH}}
+    services:
+      redis:
+        image: redis
+        ports:
+          - 16379:6379
+      db:
+        image: postgres:14
+        env:
+          POSTGRES_DATABASE: aurora
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USERNAME: postgres
+        ports:
+          - 15432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DOCKER_DEFAULT_PLATFORM: linux/amd64
+      DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
+      DATABASE_URL: postgres://postgres:postgres@localhost:15432/aurora
+      CELERY_BROKER_URL: redis://localhost:16379/0"
+      CACHE_URL: redis://localhost:16379/0
+      DOCKER_BUILDKIT: 1
+    steps:
       - name: Run Test suite
         run: |
             mkdir output latest_logs
