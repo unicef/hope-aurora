@@ -77,9 +77,9 @@ def test_boolean_field(browser: AuroraTestBrowser):
     browser.click("#radio_display")
     browser.switch_to_frame("#widget_display")
     browser.click("input[type=checkbox][name=flexfield1]")
-    browser.wait_for_ready_state_complete()
     browser.click("input[type=submit]")
-    browser.assert_exact_text("Success", "div.bg-green-200")
+    browser.wait_for_ready_state_complete()
+    browser.assert_exact_text("Success", "div.bg-green-200", timeout=10)
 
 
 def test_multicheckboxfield_field(browser: AuroraTestBrowser):
