@@ -165,6 +165,7 @@ class RegistrationFactory(AutoRegisterModelFactory):
 
 class RecordFactory(AutoRegisterModelFactory):
     registration = factory.SubFactory(RegistrationFactory)
+    timestamp = timezone.now()
 
     class Meta:
         model = Record
@@ -182,6 +183,7 @@ class CounterFactory(AutoRegisterModelFactory):
 class LogEntryFactory(AutoRegisterModelFactory):
     action_flag = 1
     user = factory.SubFactory(UserFactory, username="admin")
+    action_time = timezone.now()
 
     class Meta:
         model = LogEntry

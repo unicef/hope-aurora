@@ -8,7 +8,6 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.urls import reverse
 
-from ...administration.filters import BaseAutoCompleteFilter
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +40,7 @@ class ProjectFilter(AutoCompleteFilter):
         return url
 
 
-class UsedByRegistration(BaseAutoCompleteFilter):
+class UsedByRegistration(AutoCompleteFilter):
     def has_output(self):
         return "project__exact" in self.request.GET
 
@@ -57,6 +56,6 @@ class UsedByRegistration(BaseAutoCompleteFilter):
             raise IncorrectLookupParameters(e) from e
 
 
-class UsedInRFormset(BaseAutoCompleteFilter):
+class UsedInRFormset(AutoCompleteFilter):
     def has_output(self):
         return "project__exact" in self.request.GET

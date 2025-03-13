@@ -406,6 +406,5 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SILENCED_SYSTEM_CHECKS = ["debug_toolbar.W006", "urls.W005", "admin_extra_buttons.PERM"]
 
 MIGRATION_LOCK_KEY = env("MIGRATION_LOCK_KEY")
-FORMS_URLFIELD_ASSUME_HTTPS = True
 
 from .fragments import *  # noqa

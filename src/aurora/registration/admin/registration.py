@@ -17,7 +17,7 @@ from django.db.models import JSONField
 from django.db.models.functions import Collate
 from django.db.models.signals import post_delete, post_save
 from django.db.transaction import atomic
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.template.loader import select_template
 from django.urls import reverse, translate_url
@@ -58,8 +58,6 @@ logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from django.template import Template
-
-    from aurora.i18n.translate import Translator
 
 
 def can_export_data(request, obj, handler=None):
@@ -182,7 +180,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
         )
 
     @view(permission=can_export_data)
-    def export_as_csv(self, request, pk):
+    def export_as_csv(self, request: HttpRequest, pk: str) -> HttpResponse:
         ctx = self.get_common_context(request, pk, title="Export")
         reg: Registration = ctx["original"]
         if request.method == "POST":
@@ -259,7 +257,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
         return render(request, "admin/registration/registration/export.html", ctx)
 
     @view(label="invalidate cache", html_attrs={"class": "aeb-warn"})
-    def invalidate_cache(self, request, pk):
+    def invalidate_cache(self, request: HttpRequest, pk: str) -> HttpResponse:
         obj = self.get_object(request, pk)
         obj.save()
 
@@ -512,10 +510,10 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
                     entries = list(Message.objects.filter(locale=locale).values_list("msgid", "msgstr"))
                     data = dict(entries)
                     if translate == "2":
-                        t: Translator = import_string(settings.TRANSLATOR_SERVICE)()
+                        t = import_string(settings.TRANSLATOR_SERVICE)()
                         func = lambda x: t.translate(locale, x)  # noqa
                     elif translate == "1":
-                        t: Translator = import_string(settings.TRANSLATOR_SERVICE)()
+                        t = import_string(settings.TRANSLATOR_SERVICE)()
                         func = (  # noqa
                             lambda x: x if data.get(x, "") == x else t.translate(locale, x)
                         )
