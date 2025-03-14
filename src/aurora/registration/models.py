@@ -248,13 +248,22 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
     def metadata(self):
         script: Validator
 
-        def _get_validator(owner):
+        def _get_validator(owner) -> dict[str, typing.Any]:
             if owner.validator:
                 return {}
             return {}
 
         def _get_field_details(flex_field: FlexFormField):
-            kwargs = flex_field.get_field_kwargs()
+            if flex_field.field_type is None:
+                kwargs = {
+                    "smart_attrs": {},
+                    "widget_kwargs": {},
+                    "choices": [],
+                    "validator": {},
+                }
+            else:
+                kwargs = flex_field.get_field_kwargs()
+
             return {
                 "type": fqn(flex_field.field_type) if flex_field.field_type else None,
                 "label": flex_field.label,

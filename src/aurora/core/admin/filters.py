@@ -8,7 +8,6 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.urls import reverse
 
-
 logger = logging.getLogger(__name__)
 
 cache = caches["default"]

@@ -1,3 +1,5 @@
+from typing import Any
+
 import json
 import logging
 import re
@@ -606,7 +608,7 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
     def get_default_value(self):
         return self.advanced.get("kwargs", {}).get("default_value", None)
 
-    def get_field_kwargs(self):
+    def get_field_kwargs(self) -> dict[str, Any]:
         if isclass(self.field_type) and issubclass(self.field_type, CustomFieldMixin):
             advanced = self.advanced.copy()
             smart_attrs = advanced.pop("smart", {}).copy()
