@@ -6,12 +6,14 @@ class Config(AppConfig):
 
     def ready(self):
         from django.contrib.contenttypes.models import ContentType
-
         from smart_admin.decorators import smart_register
         from smart_admin.smart_auth.admin import ContentTypeAdmin, PermissionAdmin
 
-        from . import handlers  # noqa
-        from . import admin, models
+        from . import (
+            admin,
+            handlers,  # noqa
+            models,
+        )
 
         smart_register(models.AuroraPermission)(PermissionAdmin)
         smart_register(models.Permission)(PermissionAdmin)

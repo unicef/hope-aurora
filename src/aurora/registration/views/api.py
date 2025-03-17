@@ -1,9 +1,8 @@
+from admin_extra_buttons.utils import handle_basic_auth
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic.list import ListView
-
-from admin_extra_buttons.utils import handle_basic_auth
 
 from aurora.core.utils import JSONEncoder
 from aurora.registration.models import Record, Registration

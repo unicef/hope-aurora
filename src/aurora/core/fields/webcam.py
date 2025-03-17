@@ -13,11 +13,7 @@ class WebcamWidget(forms.Textarea):
             js=[
                 "webcam/webcam%s.js" % extra,
             ],
-            css={
-                "all": [
-                    "webcam/webcam%s.css",
-                ]
-            },
+            css={"all": ["webcam/webcam.css"]},
         )
 
     def __init__(self, attrs=None):

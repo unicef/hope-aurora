@@ -18,6 +18,10 @@ from itertools import chain
 from pathlib import Path
 from sys import getsizeof, stderr
 
+import faker
+import qrcode
+from constance import config
+from dateutil.relativedelta import relativedelta
 from django import forms
 from django.conf import settings
 from django.core.files.utils import FileProxyMixin
@@ -32,11 +36,6 @@ from django.utils.functional import keep_lazy_text
 from django.utils.html import format_html
 from django.utils.text import slugify
 from django.utils.timezone import is_aware
-
-import faker
-import qrcode
-from constance import config
-from dateutil.relativedelta import relativedelta
 
 from aurora import VERSION
 from aurora.state import state
@@ -310,7 +309,9 @@ def merge_data(d1, d2):
     if isinstance(d2, dict):
         ret = {} or d1.copy()
         for k, v in d2.items():
-            if isinstance(v, list):
+            if k == "choices":
+                ret["choices"] = d2["choices"]
+            elif isinstance(v, list):
                 if k not in d1:
                     d1[k] = [None for e in v]
                 ret[k] = [merge_data(d1[k][i], e) for i, e in enumerate(v)]

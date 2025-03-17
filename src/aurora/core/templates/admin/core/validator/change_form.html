@@ -1,4 +1,5 @@
 {% extends "admin_extra_buttons/change_form.html" %}
+
 {% block submit_buttons_bottom %}
     <fieldset class="module aligned {{ fieldset.classes }}">
     <label>Used By {{ original.target }}</label>
@@ -26,4 +27,4 @@
         </table>
     </fieldset>
     {{ block.super }}
-{% endblock %}
+{% endblock submit_buttons_bottom %}

@@ -1,6 +1,8 @@
 ;(function ($) {
     $(function () {
+        console.log(1111);
         if (window.navigator.geolocation) {
+        console.log(1111.2);
             window.navigator.geolocation
                   .getCurrentPosition(function (res) {
                       var data = {
@@ -12,6 +14,7 @@
                           longitude: res.coords.longitude,
                           speed: res.coords.speed
                       };
+        console.log(1111.3, data);
 
                       $(".vLocationField").each(function () {
                           $(this).val(btoa(JSON.stringify(data)));
@@ -22,4 +25,4 @@
                   });
         }
     });
-})(jQuery);
+})(jQuery || django.jQuery);

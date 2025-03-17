@@ -3,8 +3,6 @@ from inspect import isclass
 
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
-
-from simplemathcaptcha.fields import MathCaptchaField
 from strategy_field.exceptions import StrategyAttributeError
 from strategy_field.registry import Registry
 from strategy_field.utils import fqn, import_by_name
@@ -75,6 +73,21 @@ class FieldRegistry(Registry):
 
 field_registry = FieldRegistry(forms.Field)
 
+field_registry.register(fields.AjaxSelectField)
+field_registry.register(fields.CompilationTimeField)
+field_registry.register(fields.DocumentField)
+field_registry.register(fields.HiddenField)
+field_registry.register(fields.LabelOnlyField)
+field_registry.register(fields.LocationField)
+field_registry.register(fields.MultiCheckboxField)
+field_registry.register(fields.RadioField)
+field_registry.register(fields.RemoteIpField)
+field_registry.register(fields.SelectField)
+field_registry.register(fields.SmartFileField)
+field_registry.register(fields.UBANameEnquiryField)
+field_registry.register(fields.WebcamField)
+field_registry.register(fields.YesNoChoice)
+field_registry.register(fields.YesNoRadio)
 field_registry.register(forms.BooleanField)
 field_registry.register(forms.CharField)
 field_registry.register(forms.ChoiceField)
@@ -90,24 +103,6 @@ field_registry.register(forms.MultipleChoiceField)
 field_registry.register(forms.NullBooleanField)
 field_registry.register(forms.TimeField)
 field_registry.register(forms.URLField)
-
-field_registry.register(fields.AjaxSelectField)
-field_registry.register(fields.DocumentField)
-field_registry.register(fields.MultiCheckboxField)
-field_registry.register(fields.WebcamField)
-field_registry.register(fields.RadioField)
-field_registry.register(fields.SelectField)
-field_registry.register(fields.SmartFileField)
-field_registry.register(fields.YesNoChoice)
-field_registry.register(fields.YesNoRadio)
-field_registry.register(fields.LabelOnlyField)
-field_registry.register(fields.LocationField)
-field_registry.register(fields.RemoteIpField)
-field_registry.register(fields.CompilationTimeField)
-field_registry.register(fields.HiddenField)
-field_registry.register(MathCaptchaField)
-field_registry.register(fields.CaptchaField)
-field_registry.register(fields.UBANameEnquiryField)
 
 form_registry = Registry(forms.BaseForm)
 

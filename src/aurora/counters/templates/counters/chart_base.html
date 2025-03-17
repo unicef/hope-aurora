@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/1.4.0/chartjs-plugin-annotation.min.js"
             integrity="sha512-HrwQrg8S/xLPE6Qwe7XOghA/FOxX+tuVF4TxbvS73/zKJSs/b1gVl/P4MsdfTFWYFYg/ISVNYIINcg35Xvr6QQ=="
             crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-{% endblock %}
+{% endblock head %}
 
 {% block body %}
     <h1 class="text-lg mb-20">
@@ -31,9 +31,9 @@
                     <div class="chart-container">
                         <canvas id="myChart" style="width: 100%;height: 100%"></canvas>
                     </div>
-                {% endblock %}
+                {% endblock chart %}
             </div>
-        {% endblock %}
+        {% endblock info %}
         {% block data %}{% endblock %}
     </div>
-{% endblock %}
+{% endblock body %}

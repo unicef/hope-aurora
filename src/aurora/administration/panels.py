@@ -3,7 +3,10 @@ import json
 import logging
 import tempfile
 from pathlib import Path
+from typing import TYPE_CHECKING
 
+import sqlparse
+from concurrency.api import disable_concurrency
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.core.management import call_command
@@ -11,14 +14,9 @@ from django.db import DEFAULT_DB_ALIAS, connections
 from django.http import JsonResponse
 from django.shortcuts import render
 
-import sqlparse
-from concurrency.api import disable_concurrency
-
 from .. import VERSION
 from ..core.utils import is_root
-
 from .forms import ExportForm, ImportForm, SQLForm
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..security.models import UserProfile

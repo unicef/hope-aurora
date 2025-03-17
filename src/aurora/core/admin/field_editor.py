@@ -3,20 +3,21 @@ import json
 from django import forms
 from django.conf import settings
 from django.core.cache import caches
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.template import Context, Template
 from django.utils.functional import cached_property
 
+from aurora.core.admin.editor import FlexEditor
 from aurora.core.fields.widgets import JavascriptEditor
 from aurora.core.forms import FlexFormBaseForm, VersionMedia
-from aurora.core.models import FlexFormField, OptionSet
+from aurora.core.models import FlexForm, FlexFormField, OptionSet
 from aurora.core.utils import merge_data
 
 cache = caches["default"]
 
 
-class AdvancendAttrsMixin:
+class AdvancendAttrsMixin(FlexEditor):
     def __init__(self, *args, **kwargs):
         self.field = kwargs.pop("field", None)
         self.prefix = kwargs.get("prefix")
@@ -136,7 +137,7 @@ class FieldEditor:
         self.modeladmin = modeladmin
         self.request = request
         self.pk = pk
-        self.cache_key = f"/editor/field/{self.request.user.pk}/{self.pk}/"
+        self.cache_key = f"/editor/field/{self.request.user.pk}/{self.pk}/{self.field.field_type}/"
 
     @cached_property
     def field(self):
@@ -160,14 +161,13 @@ class FieldEditor:
     def patch(self, request, pk):
         pass
 
-    def get_configuration(self):
+    def get_configuration(self) -> HttpResponse:
         self.patched_field.get_instance()
         rendered = json.dumps(self.field.advanced, indent=4)
         return HttpResponse(rendered, content_type="text/plain")
 
-    def get_code(self):
-        from bs4 import BeautifulSoup
-        from bs4 import formatter
+    def get_code(self) -> HttpResponse:
+        from bs4 import BeautifulSoup, formatter
         from pygments import highlight
         from pygments.formatters.html import HtmlFormatter
         from pygments.lexers import HtmlLexer
@@ -196,16 +196,18 @@ class FieldEditor:
             content_type="text/html",
         )
 
-    def render(self):
+    def render(self) -> HttpResponse:
         instance = self.patched_field.get_instance()
         form_class_attrs = {
             self.field.name: instance,
         }
         form_class = type(FlexFormBaseForm)("TestForm", (FlexFormBaseForm,), form_class_attrs)
+        form_class.flex_form = FlexForm()
         ctx = self.get_context(self.request)
         if self.request.method == "POST":
             form = form_class(self.request.POST)
             ctx["valid"] = form.is_valid()
+            ctx["data"] = json.dumps(form.cleaned_data)
         else:
             form = form_class(initial={self.field.name: self.patched_field.get_default_value()})
             ctx["valid"] = None
@@ -215,7 +217,7 @@ class FieldEditor:
 
         return render(self.request, "admin/core/flexformfield/field_editor/preview.html", ctx)
 
-    def get_forms(self, data=None) -> dict:
+    def get_forms(self, data: dict[str, str] | None = None) -> dict[str, forms.Form]:
         if data:
             return {prefix: Form(data, prefix=prefix, field=self.field) for prefix, Form in self.FORMS.items()}
         if self.request.method == "POST":
@@ -233,14 +235,14 @@ class FieldEditor:
             for prefix, Form in self.FORMS.items()
         }
 
-    def refresh(self):
+    def refresh(self) -> JsonResponse:
         forms = self.get_forms()
         if all(f.is_valid() for f in forms.values()):
             data = self.request.POST.dict()
             data.pop("csrfmiddlewaretoken")
             cache.set(self.cache_key, data)
         else:
-            return JsonResponse({prefix: frm.errors for prefix, frm in forms.items()}, status=400)
+            return JsonResponse({prefix: frm.errors for prefix, frm in forms.items()}, status=200)
         return JsonResponse(data)
 
     def get_context(self, request, pk=None, **kwargs):
@@ -249,7 +251,7 @@ class FieldEditor:
             **kwargs,
         }
 
-    def get(self, request, pk):
+    def get(self, request: HttpRequest, pk: str) -> HttpResponse:
         ctx = self.get_context(request, pk)
         extra = "" if settings.DEBUG else ".min"
         ctx["media"] = VersionMedia(
@@ -260,16 +262,21 @@ class FieldEditor:
                 "smart_validation%s.js" % extra,
                 "smart%s.js" % extra,
                 "smart_field%s.js" % extra,
-            ]
+            ],
+            css={
+                "all": [
+                    "admin/field_editor/field_editor.css",
+                ]
+            },
         )
         for prefix, frm in self.get_forms().items():
             ctx[f"form_{prefix}"] = frm
             ctx["media"] += frm.media
         return render(request, "admin/core/flexformfield/field_editor/main.html", ctx)
 
-    def post(self, request, pk):
-        forms = self.get_forms()
-        if all(f.is_valid() for f in forms.values()):
+    def post(self, request: HttpRequest, pk: str) -> HttpResponseRedirect | None:
+        config_forms = self.get_forms()
+        if all(f.is_valid() for f in config_forms.values()):
             self.patched_field.save()
             return HttpResponseRedirect(".")
         return None

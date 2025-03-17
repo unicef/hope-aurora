@@ -5,13 +5,12 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.forms import MultiWidget
+from django.utils.translation import gettext as _
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import ReadTimeout
-from django.utils.translation import gettext as _
 
 from aurora.core.fields.mixins import MultiValueWidgetMixin
 from aurora.core.fields.widgets import SmartTextWidget
-
 from aurora.core.version_media import VersionMedia
 
 FALSE = "false"
@@ -1302,7 +1301,7 @@ class UBANameEnquiryMultiWidget(MultiValueWidgetMixin, MultiWidget):
         super().__init__(widgets, attrs)
 
     def decompress(self, value):
-        return list(value.values()) if value else [None, None, None]
+        return list(value.values()) if value else [None, None, None, None, None]
 
     @property
     def media(self):
@@ -1340,15 +1339,17 @@ class UBANameEnquiryField(forms.MultiValueField):
 
     def compress(self, values):
         values.insert(0, dict(BANKS_CHOICE)[values[0]])
-        return dict(zip(["name", "code", "number", "holder_name"], values, strict=True))
+
+        values.append(self.flex_field.advanced.get("ignore_error", False))
+        return dict(zip(["name", "code", "number", "holder_name", "ignore_error"], values, strict=True))
 
     def validate(self, value):
         super().validate(value)
 
         try:
-            _, bank_code, account_number, account_full_name = value.values()
+            _, bank_code, account_number, account_full_name, _ = value.values()
         except ValueError:
-            raise ValidationError("ValueError: not enough values to unpack")
+            raise ValidationError("ValueError: not enough values to unpack") from None
 
         i = 0
         generate = False
@@ -1361,19 +1362,20 @@ class UBANameEnquiryField(forms.MultiValueField):
                 "X-Auth-Cred": config.UBA_X_AUTH_CRED,
             }
 
-            body = {
+            payload = {
                 "receiverBankCode": bank_code,
                 "receiverAccountNumber": account_number,
                 "countryCode": "NG",
                 "tranType": "nameenquiry",
             }
             try:
-                response = requests.post(config.UBA_NAME_ENQUIRY_URL, headers=headers, json=body, timeout=60)
+                response = requests.post(config.UBA_NAME_ENQUIRY_URL, headers=headers, json=payload, timeout=60)
             except (ReadTimeout, ConnectionError):
                 i += 1
                 continue
-            jresponse = response.json()
+
             if response.status_code == 200:
+                jresponse = response.json()
                 if jresponse.get("errorFlag") == FALSE and jresponse.get("statusCode") == "0":
                     if jresponse.get("customerName") != account_full_name:
                         valid_name = jresponse.get("customerName")
@@ -1391,13 +1393,18 @@ class UBANameEnquiryField(forms.MultiValueField):
                 raise ValidationError(f"{error_message}: (error {error_code})")
             generate = True
             i += 1
-        raise ValidationError("Cannot reach UBA server")
+
+        if not self.flex_field.advanced.get("ignore_error", False):
+            raise ValidationError(
+                "Cannot reach UBA server",
+                code="uba_error",
+            )
 
     def get_token(self, generate) -> str:
         token = cache.get("uba-token")
         if generate or not token:
             i = 0
-            while i < 3:
+            while i < 2:
                 headers = {"Content-Type": "application/x-www-form-urlencoded"}
                 auth = HTTPBasicAuth(config.UBA_CONSUMER_KEY, config.UBA_CONSUMER_SECRET)
                 form_data = {"grant_type": "client_credentials"}

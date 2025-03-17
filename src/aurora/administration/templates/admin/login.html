@@ -4,7 +4,7 @@
 {% block extrastyle %}{{ block.super }}
     <link rel="stylesheet" href="{% static "admin/css/login.css" %}">
     {{ form.media }}
-{% endblock %}
+{% endblock extrastyle %}
 
 {% block bodyclass %}{{ block.super }} login{% endblock %}
 
@@ -76,9 +76,9 @@
             </div>
         </div>
     </div>
-{% endblock %}
-{#{% block footer %}#}
-{#<div style="text-align: center;border-top: 1px solid grey;margin: 10px 10px 20px; padding-top: 10px">#}
-{#{{ project.build_date }} - {{ project.version }}#}
-{#</div>#}
-{#{% endblock %}#}
+{% endblock content %}
+{# {% block footer %} #}
+{# <div style="text-align: center;border-top: 1px solid grey;margin: 10px 10px 20px; padding-top: 10px"> #}
+{# {{ project.build_date }} - {{ project.version }} #}
+{# </div> #}
+{# {% endblock %} #}

@@ -1,12 +1,11 @@
 import logging
 
+from admin_extra_buttons.decorators import button, link
+from adminfilters.value import ValueFilter
 from django.contrib.admin import register
 from django.core.cache import caches
 from django.db.models.functions import Collate
 from django.urls import NoReverseMatch
-
-from admin_extra_buttons.decorators import button, link
-from adminfilters.value import ValueFilter
 from smart_admin.modeladmin import SmartModelAdmin
 
 from ...administration.mixin import LoadDumpMixin

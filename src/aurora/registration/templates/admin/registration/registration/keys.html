@@ -1,4 +1,5 @@
 {% extends "admin_extra_buttons/action_page.html" %}
+
 {% block action-content %}
     {% if public_key %}
         <table>
@@ -29,10 +30,10 @@
     {% endif %}
     <script>
 
-{#        #}
-{#        document.querySelector("#copy").onclick = function () {#}
-{#            var result = copyToClipboard(new Date().toString());#}
-{#            console.log("copied?", result);#}
-{#        };#}
+{#  #}
+{# document.querySelector("#copy").onclick = function () { #}
+{# var result = copyToClipboard(new Date().toString()); #}
+{# console.log("copied?", result); #}
+{# }; #}
     </script>
 {% endblock action-content %}

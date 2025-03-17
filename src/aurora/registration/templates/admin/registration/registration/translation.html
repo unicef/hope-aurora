@@ -1,6 +1,9 @@
 {% extends "admin_extra_buttons/action_page.html" %}
+
 {% block breadcrumbs-active %}&rsaquo; <a href=".">{{ title }}</a>{% endblock %}
+
 {% block content_title %}<h1>{{ title }}{% if language_code %} ({{ language_code }}){% endif %}</h1>{% endblock %}
+
 {% block action-content %}
     <form method="post" id="translation-form">
         {% csrf_token %}

@@ -1,3 +1,5 @@
+from typing import Any
+
 import json
 import logging
 import re
@@ -6,6 +8,8 @@ from inspect import isclass
 from json import JSONDecodeError
 from pathlib import Path
 
+from admin_ordering.models import OrderableModel
+from concurrency.fields import AutoIncVersionField
 from django import forms
 from django.contrib.admin.templatetags.admin_urls import admin_urlname
 from django.core.cache import caches
@@ -18,15 +22,10 @@ from django.urls import reverse
 from django.utils.deconstruct import deconstructible
 from django.utils.functional import cached_property
 from django.utils.translation import get_language
-
-from admin_ordering.models import OrderableModel
-from concurrency.fields import AutoIncVersionField
 from mptt.fields import TreeForeignKey
 from mptt.managers import TreeManager
 from mptt.models import MPTTModel
 from natural_keys import NaturalKeyModel, NaturalKeyModelManager
-from py_mini_racer._types import JSUndefined
-from py_mini_racer.py_mini_racer import MiniRacerBaseException
 from sentry_sdk import set_tag
 from strategy_field.utils import fqn
 
@@ -36,9 +35,11 @@ from ..state import state
 from . import fields
 from .compat import RegexField, StrategyClassField
 from .fields import WIDGET_FOR_FORMFIELD_DEFAULTS, SmartFieldMixin
+from .fields.mixins import TailWindMixin
 from .forms import CustomFieldMixin, FlexFormBaseForm, SmartBaseFormSet
+from .js import DukPYValidator
 from .registry import field_registry, form_registry, import_custom_field
-from .utils import JSONEncoder, dict_setdefault, jsonfy, namify, underscore_to_camelcase
+from .utils import dict_setdefault, jsonfy, namify, underscore_to_camelcase
 
 logger = logging.getLogger(__name__)
 
@@ -199,9 +200,6 @@ _.is_adult = function(d) { return !_.is_child(d)};
             return jsonfy(value)
         return value
 
-    def jspickle(self, value):
-        return json.dumps(value, cls=JSONEncoder, skip_files=True)
-
     def monitor(self, status, value, exc: Exception = None):
         cache.set(f"validator-{state.request.user.pk}-{self.pk}-status", status)
         error = None
@@ -218,14 +216,21 @@ _.is_adult = function(d) { return !_.is_child(d)};
         cache.set(f"validator-{state.request.user.pk}-{self.pk}-payload", self.jspickle(value))
 
     def validate(self, value, registration=None):
-        from py_mini_racer import MiniRacer
+        if value and (self.active or (self.draft and state.request.user.is_staff)):
+            engine = DukPYValidator(self.code)
+            engine.validate(value)
 
+    def validate_old(self, value, registration=None):
         set_tag("validator", self.name)
 
         status = self.STATUS_UNKNOWN if self.active else self.STATUS_INACTIVE
         self.monitor(status, value)
 
-        if self.active or (self.draft and state.request.user.is_staff):
+        if value and (self.active or (self.draft and state.request.user.is_staff)):
+            from py_mini_racer import MiniRacer
+            from py_mini_racer._types import JSUndefined
+            from py_mini_racer.py_mini_racer import MiniRacerBaseException
+
             ctx = MiniRacer()
             try:
                 pickled = self.jspickle(value or "")
@@ -526,7 +531,7 @@ class RegexPatternValidator:
         try:
             re.compile(value)
         except Exception as e:
-            raise ValidationError(e)
+            raise ValidationError(e) from None
 
 
 class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableModel):
@@ -603,7 +608,7 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
     def get_default_value(self):
         return self.advanced.get("kwargs", {}).get("default_value", None)
 
-    def get_field_kwargs(self):
+    def get_field_kwargs(self) -> dict[str, Any]:
         if isclass(self.field_type) and issubclass(self.field_type, CustomFieldMixin):
             advanced = self.advanced.copy()
             smart_attrs = advanced.pop("smart", {}).copy()
@@ -664,6 +669,11 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
 
         if field_type in WIDGET_FOR_FORMFIELD_DEFAULTS:
             field_kwargs = {**WIDGET_FOR_FORMFIELD_DEFAULTS[field_type], **field_kwargs}
+        elif issubclass(self.field_type.widget, TailWindMixin):
+            field_kwargs = {"widget": self.field_type.widget, **field_kwargs}
+        else:
+            field_kwargs = {"widget": type("ss", (TailWindMixin, self.field_type.widget), {}), **field_kwargs}
+
         if "datasource" in smart_attrs:
             field_kwargs["datasource"] = smart_attrs["datasource"]
         elif "datasource" in self.advanced:
@@ -711,7 +721,7 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
                 self.get_instance()
             except Exception as e:
                 logger.exception(e)
-                raise ValidationError(e)
+                raise ValidationError(e) from None
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not self.name.strip():
@@ -725,8 +735,8 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
             {
                 "type": "Form",
                 "obj": self.flex_form,
-                "editor_url": reverse("admin:registration_registration_change", args=[self.flex_form.pk]),
-                "change_url": reverse("admin:registration_registration_change", args=[self.flex_form.pk]),
+                "editor_url": reverse("admin:core_flexform_form_editor", args=[self.flex_form.pk]),
+                "change_url": reverse("admin:core_flexform_change", args=[self.flex_form.pk]),
             }
         )
         return ret
@@ -785,7 +795,7 @@ class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
         try:
             self.languages.split(",")
         except ValueError:
-            raise ValidationError("Languages must be a comma separated list of locales")
+            raise ValidationError("Languages must be a comma separated list of locales") from None
 
     def get_cache_key(self, requested_language):
         return f"options-{self.pk}-{requested_language}-{self.version}"
@@ -894,13 +904,13 @@ class CustomFieldType(AdminReverseMixin, NaturalKeyModel, models.Model):
         try:
             class_ = self.get_class()
         except Exception as e:
-            raise ValidationError(f"Error instantiating class: {e}")
+            raise ValidationError(f"Error instantiating class: {e}") from None
 
         try:
             kwargs = self.attrs.copy()
             class_(**kwargs)
         except Exception as e:
-            raise ValidationError(f"Error instantiating {fqn(class_)}: {e}")
+            raise ValidationError(f"Error instantiating {fqn(class_)}: {e}") from None
 
     def get_class(self):
         attrs = self.attrs.copy()

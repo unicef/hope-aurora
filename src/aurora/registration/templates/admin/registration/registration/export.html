@@ -4,8 +4,10 @@
     <script src="/static/admin/js/jquery.init.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 
-{% endblock %}
+{% endblock extrahead %}
+
 {% block breadcrumbs-active %}&rsaquo; <a href=".">{{ title }}</a>{% endblock %}
+
 {% block action-content %}
     <style>
         table {
@@ -67,7 +69,7 @@
                 {% endfor %}
             </table>
             <input type="submit" name="export" value="Export">
-{#        {% else %}#}
+{# {% else %} #}
 
         {% endif %}
     </form>
@@ -78,4 +80,4 @@
             });
         }(django.jQuery))
     </script>
-{% endblock %}
+{% endblock action-content %}

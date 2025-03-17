@@ -2,23 +2,21 @@ import logging
 import re
 from datetime import datetime, timedelta
 
+from adminfilters.autocomplete import AutoCompleteFilter
+from adminfilters.numbers import NumberFilter
 from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
-from adminfilters.numbers import NumberFilter
-
-from ...administration.filters import BaseAutoCompleteFilter
-
 logger = logging.getLogger(__name__)
 
 
-class OrganizationFilter(BaseAutoCompleteFilter):
+class OrganizationFilter(AutoCompleteFilter):
     pass
 
 
-class RegistrationProjectFilter(BaseAutoCompleteFilter):
+class RegistrationProjectFilter(AutoCompleteFilter):
     fk_name = "project__organization__exact"
 
     def has_output(self):
@@ -93,5 +91,5 @@ class DateRangeFilter(NumberFilter):
                 try:
                     queryset = queryset.filter(**self.filters)
                 except Exception:
-                    raise IncorrectLookupParameters(self.value())
+                    raise IncorrectLookupParameters(self.value()) from None
         return queryset

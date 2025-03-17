@@ -5,8 +5,10 @@
     {% elif is_root %}
         {% dump original.data "" original %}
     {% endif %}
-{% endblock %}
+{% endblock after_field_sets %}
+
 {% block inline_field_sets %}{% endblock %}
+
 {% block admin_change_form_document_ready %}
     {{ block.super }}
     <script>
@@ -20,4 +22,4 @@
             });
         })(django.jQuery);
     </script>
-{% endblock %}
+{% endblock admin_change_form_document_ready %}

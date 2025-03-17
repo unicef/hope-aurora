@@ -7,7 +7,6 @@ from django.core.exceptions import ValidationError
 from django.template.context_processors import static
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
-
 from tinymce.widgets import AdminTinyMCE
 
 

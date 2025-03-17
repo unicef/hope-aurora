@@ -23,7 +23,8 @@
             color: black;
         }
     </style>
-{% endblock %}
+{% endblock extrahead %}
+
 {% block messages %}
     <ul class="messagelist">
         {% if original.encrypt_data %}
@@ -37,21 +38,21 @@
     {{ block.super }}
 {% endblock messages %}
 
-{#{% block after_field_sets %}#}
-{#    <div class="submit-row key">#}
-{#        <div class="label">Public/Private RSA encryption</div>#}
-{#        <div>#}
-{#            {% if original.public_key %}#}
-{#                <a class="deletelink" href="{% url "admin:registration_registration_removekey" original.pk %}">#}
-{#                    Remove Key#}
-{#                </a>#}
-{#            {% elif original.pk %}#}
-{#                <a class="aeb-green generate"#}
-{#                   href="{% url "admin:registration_registration_generate_keys" original.pk %}">#}
-{#                    Generate Key#}
-{#                </a>#}
-{#            {% endif %}#}
-{#        </div>#}
-{#    </div>#}
-{#{% endblock %}#}
+{# {% block after_field_sets %} #}
+{# <div class="submit-row key"> #}
+{# <div class="label">Public/Private RSA encryption</div> #}
+{# <div> #}
+{# {% if original.public_key %} #}
+{# <a class="deletelink" href="{% url "admin:registration_registration_removekey" original.pk %}"> #}
+{# Remove Key #}
+{# </a> #}
+{# {% elif original.pk %} #}
+{# <a class="aeb-green generate" #}
+{# href="{% url "admin:registration_registration_generate_keys" original.pk %}"> #}
+{# Generate Key #}
+{# </a> #}
+{# {% endif %} #}
+{# </div> #}
+{# </div> #}
+{# {% endblock %} #}
 {% block inline_field_sets %}{% endblock %}

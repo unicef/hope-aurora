@@ -11,7 +11,8 @@
             background-color: #417690;
         }
     </style>
-{% endblock %}
+{% endblock extrahead %}
+
 {% block action-content %}
     {{ form.media }}
     <form method="post">
@@ -59,7 +60,7 @@
                     resultTxt.val("");
                     $.get("{% url "admin:registration_registration_james_fake_data" original.pk %}",
                         function (data) {
-                            {#var formatted = JSON.stringify(data, null, " ");#}
+                            {# var formatted = JSON.stringify(data, null, " "); #}
                             sampleDataTxt.val(data);
                             formatJson();
                             parse();
@@ -74,4 +75,4 @@
         })(django.jQuery);
 
     </script>
-{% endblock %}
+{% endblock action-content %}

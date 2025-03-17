@@ -9,7 +9,9 @@ class LocationWidget(forms.HiddenInput):
     template_name = "django/forms/widgets/location.html"
 
     def __init__(self, attrs=None):
-        attrs = {"class": "vLocationField", **(attrs or {})}
+        attrs = attrs or {}
+        attrs.setdefault("class", "vLocationField")
+        attrs["class"] += " vLocationField "
         super().__init__(attrs=attrs)
 
     @property

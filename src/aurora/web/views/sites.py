@@ -1,6 +1,7 @@
 import logging
 import os
 
+from constance import config
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
@@ -10,8 +11,6 @@ from django.utils.translation import get_language
 from django.views import View
 from django.views.decorators.cache import cache_control
 from django.views.generic import TemplateView
-
-from constance import config
 
 from aurora.core.utils import get_etag, get_qrcode, render
 from aurora.registration.models import Registration

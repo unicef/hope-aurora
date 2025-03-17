@@ -3,10 +3,9 @@ import logging
 import secrets
 import sys
 
-from django import forms
-
 import djclick as click
 import pytz
+from django import forms
 
 from aurora.core import fields
 from aurora.core.models import OptionSet

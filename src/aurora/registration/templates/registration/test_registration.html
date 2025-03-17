@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% load static json dump_record %}
+{% extends "base.html" %}{% load dump_record jsonfy static %}
 {% block body %}
     <style>
         th {
@@ -17,7 +17,7 @@
                 <td>ID</td>
                 <td><a target="_new" href="{{ admin_url }}">{{ record.id }}</a></td>
             </tr>
-            {%  endif %}
+            {% endif %}
             <tr>
                 <th>project</th>
                 <td>{{ record.registration.project }}</td>

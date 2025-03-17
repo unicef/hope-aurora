@@ -1,7 +1,12 @@
 import base64
 import json
 import logging
+import typing
 
+import jmespath
+from concurrency.fields import AutoIncVersionField
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from django.conf import settings
 from django.contrib.flatpages.models import FlatPage
 from django.db import models
@@ -9,16 +14,12 @@ from django.utils import timezone, translation
 from django.utils.functional import cached_property
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
-
-import jmespath
-from concurrency.fields import AutoIncVersionField
-from Crypto.PublicKey import RSA
 from natural_keys import NaturalKeyModel, NaturalKeyModelManager
 from strategy_field.fields import StrategyField
 from strategy_field.utils import fqn
 
-from aurora.core.crypto import Crypto
 from aurora.core.crypto.rsa import crypt, decrypt, decrypt_offline
+from aurora.core.crypto.symmetric import Symmetric
 from aurora.core.fields import AjaxSelectField, LabelOnlyField
 from aurora.core.forms import VersionMedia
 from aurora.core.models import FlexForm, FlexFormField, Project, Validator
@@ -32,12 +33,15 @@ from aurora.core.utils import (
 from aurora.i18n.models import I18NModel
 from aurora.registration.fields import ChoiceArrayField
 from aurora.registration.storage import router
-from aurora.registration.strategies import SaveToDB, strategies
+from aurora.registration.strategies import RegistrationStrategy, SaveToDB, strategies
 from aurora.state import state
 
 logger = logging.getLogger(__name__)
 
-undefined = object()
+Undefined = typing.NewType("Undefined", str)
+
+UndefinedStr = str | Undefined
+undef = Undefined("undefined")
 
 
 class RegistrationManager(NaturalKeyModelManager):
@@ -82,7 +86,7 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
         default=settings.LANGUAGE_CODE,
     )
     dry_run = models.BooleanField(default=False)
-    handler = StrategyField(registry=strategies, default=None, blank=True, null=True)
+    handler: RegistrationStrategy = StrategyField(registry=strategies, default=None, blank=True, null=True)
     show_in_homepage = models.BooleanField(default=False)
     welcome_page = models.ForeignKey(FlatPage, blank=True, null=True, on_delete=models.SET_NULL)
     locales = ChoiceArrayField(
@@ -185,13 +189,17 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
             return self.welcome_page.get_absolute_url()
         return self.get_absolute_url()
 
-    def setup_encryption_keys(self):
-        key = RSA.generate(2048)
-        private_pem = key.export_key()
-        public_pem: bytes = key.publickey().export_key()
-
-        self.public_key: str = public_pem.decode()
-        self.public_key2 = public_pem
+    def setup_encryption_keys(self) -> tuple[bytes, bytes]:
+        key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        private_pem: bytes = key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
+        public_pem: bytes = key.public_key().public_bytes(
+            encoding=serialization.Encoding.PEM, format=serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+        self.public_key = public_pem.decode()
         self.save()
         return private_pem, public_pem
 
@@ -240,13 +248,22 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
     def metadata(self):
         script: Validator
 
-        def _get_validator(owner):
+        def _get_validator(owner) -> dict[str, typing.Any]:
             if owner.validator:
                 return {}
             return {}
 
         def _get_field_details(flex_field: FlexFormField):
-            kwargs = flex_field.get_field_kwargs()
+            if flex_field.field_type is None:
+                kwargs = {
+                    "smart_attrs": {},
+                    "widget_kwargs": {},
+                    "choices": [],
+                    "validator": {},
+                }
+            else:
+                kwargs = flex_field.get_field_kwargs()
+
             return {
                 "type": fqn(flex_field.field_type) if flex_field.field_type else None,
                 "label": flex_field.label,
@@ -321,17 +338,20 @@ class Record(models.Model):
     def fields_data(self):
         return "String too long to display..." if self.is_offline and len(self.fields) > 12_000 else self.fields
 
-    def decrypt(self, private_key=undefined, secret=undefined):
+    def decrypt(self, private_key: UndefinedStr = undef, secret: UndefinedStr = undef):
+        if isinstance(private_key, bytes):
+            private_key = private_key.decode()
+
         if self.is_offline:
             fields = json.loads(decrypt_offline(self.fields, private_key))
             return router.compress(fields, {})
-        if private_key != undefined:
+        if private_key != undef:
             files = json.loads(decrypt(self.files, private_key))
             fields = json.loads(decrypt(base64.b64decode(self.fields), private_key))
             return router.compress(fields, files)
-        if secret != undefined:
-            files = json.loads(Crypto(secret).decrypt(self.files))
-            fields = json.loads(Crypto(secret).decrypt(self.fields))
+        if secret != undef:
+            files = json.loads(Symmetric(secret).decrypt(self.files))
+            fields = json.loads(Symmetric(secret).decrypt(self.fields))
             return router.compress(fields, files)
         return None
 

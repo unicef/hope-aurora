@@ -2,7 +2,6 @@ import logging
 
 from django.core.cache import caches
 from django.utils import timezone
-
 from django_redis import get_redis_connection
 
 from ..state import state

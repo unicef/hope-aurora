@@ -37,29 +37,29 @@
                         </a>
                     </div>
                 {% endif %}
-                {#            </div>#}
+                {# </div> #}
             </div>
         </div>
-        {#        <div class="flex justify-center bg-gray-100">#}
-        {#            <div class="mx-10">#}
-        {#                <form method="post">#}
-        {#                    {% csrf_token %}#}
-        {#                    <div class="form-container" data-page="0">#}
-        {#                        <fieldset class="fieldset">#}
-        {#                            {% for field in form %}#}
-        {#                                <div class="mb-4 field-container field-container-{{ field.name }} mb-5 ">#}
-        {#                                    <label class="uppercase tracking-wide text-gray-700 font-bold mb-2"#}
-        {#                                           for="{{ field.auto_id }}">{% trans field.label %}#}
-        {#                                            <span class="lowercase font-thin required text-xs">*</span>#}
-        {#                                    </label>#}
-        {#                                    <span class="errors">{{ field.errors }}</span>#}
-        {#                                    {{ field }}#}
-        {#                                </div>#}
-        {#                            {% endfor %}#}
-        {#                        </fieldset>#}
-        {#                        <input type="submit" class="button btn-default" value="Login">#}
-        {#                    </div>#}
-        {#                </form>#}
-        {#            </div>#}
+        {# <div class="flex justify-center bg-gray-100"> #}
+        {# <div class="mx-10"> #}
+        {# <form method="post"> #}
+        {# {% csrf_token %} #}
+        {# <div class="form-container" data-page="0"> #}
+        {# <fieldset class="fieldset"> #}
+        {# {% for field in form %} #}
+        {# <div class="mb-4 field-container field-container-{{ field.name }} mb-5 "> #}
+        {# <label class="uppercase tracking-wide text-gray-700 font-bold mb-2" #}
+        {# for="{{ field.auto_id }}">{% trans field.label %} #}
+        {# <span class="lowercase font-thin required text-xs">*</span> #}
+        {# </label> #}
+        {# <span class="errors">{{ field.errors }}</span> #}
+        {# {{ field }} #}
+        {# </div> #}
+        {# {% endfor %} #}
+        {# </fieldset> #}
+        {# <input type="submit" class="button btn-default" value="Login"> #}
+        {# </div> #}
+        {# </form> #}
+        {# </div> #}
     </section>
-{% endblock %}
+{% endblock body %}

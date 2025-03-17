@@ -6,6 +6,8 @@ from functools import wraps
 from hashlib import md5
 from json import JSONDecodeError
 
+import sentry_sdk
+from constance import config
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -22,9 +24,6 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 from django.views.generic.edit import FormView
-
-import sentry_sdk
-from constance import config
 from sentry_sdk import set_tag
 
 from aurora.core.models import FormSet
@@ -74,7 +73,7 @@ class RegisterCompleteView(TemplateView):
         except Record.DoesNotExist:
             if state.collect_messages:
                 Record.objects.first()
-            raise Http404
+            raise Http404 from None
 
     def get_qrcode(self, record):
         h = md5(str(record.fields).encode()).hexdigest()
@@ -146,7 +145,7 @@ class RegistrationMixin:
             set_tag("registration.slug", reg.name)
             return reg
         except Registration.DoesNotExist:  # pragma: no coalidateer
-            raise Http404
+            raise Http404 from None
 
 
 def check_access(view_func):

@@ -1,7 +1,6 @@
 import logging
 
 from django.contrib.auth import get_user_model
-
 from social_core.exceptions import InvalidEmail
 from social_core.pipeline import social_auth
 from social_core.pipeline import user as social_core_user
@@ -10,8 +9,6 @@ logger = logging.getLogger(__name__)
 
 
 def social_details(backend, details, response, *args, **kwargs):
-    logger.debug(f"social_details response:\n{response}")
-    logger.debug(f"user_data:\n{backend.user_data(None, response=response)}")
     r = social_auth.social_details(backend, details, response, *args, **kwargs)
 
     if not r["details"].get("email"):
@@ -47,7 +44,7 @@ def require_email(strategy, details, user=None, is_new=False, *args, **kwargs):
         raise InvalidEmail(strategy)
 
 
-def create_user(strategy, details, backend, user=None, *args, **kwargs):
+def create_user(strategy, details, user=None, *args, **kwargs):
     if user:
         return {"is_new": False}
 
@@ -55,7 +52,9 @@ def create_user(strategy, details, backend, user=None, *args, **kwargs):
         email=details["email"],
         username=details["email"],
         first_name=details.get("first_name"),
-        last_name=details.get("last_name"),
+        last_name=details.get(
+            "last_name",
+        ),
     )
     user.set_unusable_password()
     user.save()

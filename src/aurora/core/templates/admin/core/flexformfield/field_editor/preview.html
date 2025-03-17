@@ -1,4 +1,4 @@
-{% load static aurora %}
+{% load aurora static %}
 <style>
     body {
         background-color: white;
@@ -7,17 +7,17 @@
 <link href="https://unpkg.com/tailwindcss@1.9.6/dist/tailwind.min.css" rel="stylesheet">
 <link rel="stylesheet" href="{% static "base.css" %}">
 <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
-{#<script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>#}
-{#<script src="{% static "admin/js/jquery.init.js" %}"></script>#}
-{#<script src="{% static "jquery.compat.js" %}"></script>#}
-{#<script src="{% static "smart_validation.js" %}"></script>#}
-{#<script src="{% static "smart.js" %}"></script>#}
-{#<script src="{% static "smart_field.js" %}"></script>#}
+{# <script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script> #}
+{# <script src="{% static "admin/js/jquery.init.js" %}"></script> #}
+{# <script src="{% static "jquery.compat.js" %}"></script> #}
+{# <script src="{% static "smart_validation.js" %}"></script> #}
+{# <script src="{% static "smart.js" %}"></script> #}
+{# <script src="{% static "smart_field.js" %}"></script> #}
 {{ form.media }}
-
 {% if request.method == "POST" %}
     {% if valid %}
-        <div class="mb-10 w-full text-capitalize m-auto text-center text-xl border rounded">Success</div>
+        <div class="w-full text-capitalize m-auto text-center text-xl border rounded bg-green-200">Success</div>
+        <pre class="p-2 border m-2 bg-gray-200">{{ data }}</pre>
     {% elif error %}
         <div class="mb-10 w-full text-capitalize m-auto text-center alert-message text-xl border rounded">please fix the
             errors below

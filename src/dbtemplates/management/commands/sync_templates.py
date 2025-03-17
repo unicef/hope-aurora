@@ -75,7 +75,9 @@ class Command(BaseCommand):
         try:
             site = Site.objects.get_current()
         except Exception:
-            raise CommandError("Please make sure to have the sites contrib app installed and setup with a site object")
+            raise CommandError(
+                "Please make sure to have the sites contrib app installed and setup with a site object"
+            ) from None
 
         if app_first:
             tpl_dirs = app_template_dirs + DIRS
@@ -124,7 +126,7 @@ class Command(BaseCommand):
                                         try:
                                             os.remove(path)
                                         except OSError:
-                                            raise CommandError("Couldn't delete %s" % path)
+                                            raise CommandError("Couldn't delete %s" % path) from None
                                 elif confirm == DATABASE_TO_FILES:
                                     with open(path, "w", encoding="utf-8") as f3:
                                         f3.write(t.content)

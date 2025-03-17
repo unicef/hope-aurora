@@ -40,10 +40,9 @@
                     for (const property in fieldErrors) {
                         $(`#id_field-${property}`).before(`<div class="field-error">${fieldErrors[property]}</div>`);
                     }
-                    ;
-                    // for (const property in kwargsErrors) {
-                    //     console.log(`${property}: ${kwargsErrors[property]}`);
-                    // }
+                    for (const property in kwargsErrors) {
+                        console.log(`${property}: ${kwargsErrors[property]}`);
+                    }
                 })
         }
 
@@ -82,15 +81,21 @@
         })
         $(".tabs th").on("click", function () {
             const targetName = $(this).data('target');
-            $(`.tabs th`).removeClass('selected');
-            $(`table.cfg-form`).addClass('collapsed');
+            $('.tabs th').removeClass('selected');
+            $('.cfg-form').addClass('collapsed');
             $(this).addClass('selected');
             $(`#${targetName}`).toggleClass('collapsed');
             $('textarea.js-editor').each(function (i, e) {
                 var editor = $(e).data("CodeMirror");
-                editor.refresh();
+                if (editor) editor.refresh();
             });
         });
         $radioRender.trigger("click");
+        setTimeout(() => {
+            document.getElementById( $iFrame1.attr("id")).src =  $iFrame1.attr("src");
+            document.getElementById( $iFrame2.attr("id")).src =  $iFrame2.attr("src");
+            document.getElementById( $iFrame3.attr("id")).src =  $iFrame3.attr("src");
+
+        }, "1000");
     })
 })(django.jQuery);
