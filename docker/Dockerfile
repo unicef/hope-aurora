@@ -4,7 +4,7 @@ ARG VERSION
 ARG GIT_SHA
 
 RUN apt-get update \
-    && apt-get upgrade \
+#    && apt-get upgrade \
     && apt-get install -y --no-install-recommends \
                 gdal-bin \
                 gettext \
