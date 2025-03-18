@@ -126,3 +126,7 @@ stages:
                             -SENTRY_DSN $(SENTRY_DSN)
                             -SENTRY_ENVIRONMENT $(SENTRY_ENVIRONMENT)
                             -MATOMO_ID $(MATOMO_ID)"
+          - script: |
+              curl -X POST -H 'Content-type: application/json' --data '$SLACK_NOTIFICATION_PAYLOAD' $SLACK_WEBHOOK_URL
+            displayName: "Slack notification"
+            condition: and(succeeded(), or(eq(variables['Build.SourceBranchName'], 'staging'), eq(variables['Build.SourceBranchName'], 'master')))
