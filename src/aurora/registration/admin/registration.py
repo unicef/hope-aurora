@@ -605,6 +605,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
             self.inspect_data,
             self.view_collected_data,
             self.collect,
+            self.records,
         ]
         if can_export_data(button.context["request"], button.original):
             button.choices.append(self.export_as_csv)
@@ -620,6 +621,11 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
     def inspect_data(self, request, pk):
         obj = self.get_object(request, pk)
         return HttpResponseRedirect(reverse("register-data", args=[obj.slug]))
+
+    @view(permission=is_root)
+    def records(self, request, pk):
+        obj = self.get_object(request, pk)
+        return HttpResponseRedirect(reverse("api:registration-records", args=[obj.pk]))
 
     @view(change_form=True, html_attrs={"target": "_new"})
     def charts(self, request, pk):
