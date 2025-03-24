@@ -65,7 +65,7 @@ class Organization(AdminReverseMixin, NaturalKeyModel, MPTTModel):
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
 
-    name = models.CharField(max_length=100, unique=True, db_collation="_")
+    name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=100, unique=True, blank=True, null=True)
     parent = TreeForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="children")
 
@@ -94,7 +94,7 @@ class Project(AdminReverseMixin, NaturalKeyModel, MPTTModel):
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
 
-    name = models.CharField(max_length=100, unique=True, db_collation="_")
+    name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=100, blank=True)
     organization = models.ForeignKey(Organization, related_name="projects", on_delete=models.CASCADE)
     parent = TreeForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="children")
@@ -155,14 +155,13 @@ _.is_adult = function(d) { return !_.is_child(d)};
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
 
-    label = models.CharField(max_length=255, db_collation="_")
+    label = models.CharField(max_length=255)
     name = models.CharField(
         verbose_name=_("Function Name"),
         max_length=255,
         unique=True,
         blank=True,
         null=True,
-        db_collation="_",
     )
     code = models.TextField(blank=True, null=True)
     target = models.CharField(
@@ -188,6 +187,10 @@ _.is_adult = function(d) { return !_.is_child(d)};
         help_text="Testing purposes: draft validator are enabled only for staff users.",
     )
     _natural_key = ["name"]
+
+    class Meta:
+        verbose_name = "Validator"
+        verbose_name_plural = "Validators"
 
     def __str__(self):
         return f"{self.label} ({self.target})"
@@ -310,7 +313,7 @@ class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    name = models.CharField(max_length=255, unique=True, db_collation="_")
+    name = models.CharField(max_length=255, unique=True)
     base_type = StrategyClassField(registry=form_registry, default=FlexFormBaseForm)
     validator = models.ForeignKey(
         Validator,
@@ -571,7 +574,6 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
         max_length=100,
         blank=True,
         validators=[RegexValidator("^[a-z_0-9]*$")],
-        db_collation="_",
     )
     field_type = StrategyClassField(registry=field_registry, import_error=import_custom_field)
     choices = models.CharField(max_length=2000, blank=True, null=True)
@@ -759,7 +761,6 @@ class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
         max_length=100,
         unique=True,
         validators=[RegexValidator("[a-z0-9-_]")],
-        db_collation="_",
     )
     description = models.CharField(max_length=1000, blank=True, null=True)
     data = models.TextField(blank=True, null=True)
@@ -869,7 +870,6 @@ class CustomFieldType(AdminReverseMixin, NaturalKeyModel, models.Model):
         max_length=100,
         unique=True,
         validators=[RegexValidator("[A-Z][a-zA-Z0-9_]*")],
-        db_collation="_",
     )
     base_type = StrategyClassField(registry=field_registry, default=forms.CharField)
     attrs = models.JSONField(default=dict)

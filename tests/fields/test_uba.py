@@ -19,7 +19,13 @@ def test_uba_name_enquiry_ok():
     fld = UBANameEnquiryField()
     assert (
         fld.validate(
-            {"name": "bank UBA", "uba_code": "000004", "number": "2087008012", "holder_name": "xxxx", "ignore_error": False}
+            {
+                "name": "bank UBA",
+                "uba_code": "000004",
+                "number": "2087008012",
+                "holder_name": "xxxx",
+                "ignore_error": False,
+            }
         )
         is None
     )
@@ -63,7 +69,13 @@ def test_uba_name_enquiry_ko_invalid_account():
     fld = UBANameEnquiryField()
     with pytest.raises(ValidationError, match="Invalid account number"):
         assert fld.validate(
-            {"name": "bank UBA", "uba_code": "000004", "number": "account", "holder_name": "xxxx", "ignore_error": False}
+            {
+                "name": "bank UBA",
+                "uba_code": "000004",
+                "number": "account",
+                "holder_name": "xxxx",
+                "ignore_error": False,
+            }
         )
 
 
