@@ -65,7 +65,7 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
 
-    name = models.CharField(max_length=255, db_collation="_")
+    name = models.CharField(max_length=255)
     title = models.CharField(max_length=500, blank=True, null=True)
     slug = models.SlugField(max_length=500, blank=True, null=True, unique=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="registrations")
