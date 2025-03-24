@@ -1,3 +1,5 @@
+import binascii
+
 import requests
 from constance import config
 from django import forms
@@ -1260,6 +1262,10 @@ BANKS_CHOICE = (
 BANKS_SORTED_CHOICES = sorted(BANKS_CHOICE, key=lambda x: x[1])
 
 
+def get_x_auth_cred(client_no: str) -> bytes:
+    return binascii.hexlify(client_no.encode()).zfill(16)
+
+
 class AccountNumberUBATextInput(SmartTextWidget):
     def __init__(self, attrs=None):
         attrs = {
@@ -1341,7 +1347,7 @@ class UBANameEnquiryField(forms.MultiValueField):
         values.insert(0, dict(BANKS_CHOICE)[values[0]])
 
         values.append(self.flex_field.advanced.get("ignore_error", False))
-        return dict(zip(["name", "code", "number", "holder_name", "ignore_error"], values, strict=True))
+        return dict(zip(["name", "uba_code", "number", "holder_name", "ignore_error"], values, strict=True))
 
     def validate(self, value):
         super().validate(value)
@@ -1377,7 +1383,7 @@ class UBANameEnquiryField(forms.MultiValueField):
             if response.status_code == 200:
                 jresponse = response.json()
                 if jresponse.get("errorFlag") == FALSE and jresponse.get("statusCode") == "0":
-                    if jresponse.get("customerName") != account_full_name:
+                    if jresponse.get("customerName").lower() != account_full_name.lower():
                         valid_name = jresponse.get("customerName")
                         raise ValidationError(
                             f"Account holder name does not match: ({valid_name})",
