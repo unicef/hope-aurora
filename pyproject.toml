@@ -26,7 +26,7 @@ dependencies = [
   "channels[daphne]",
   "channels-redis",
   "cryptography",
-  "django<5.1",
+  "django",
   "django-admin-extra-buttons",
   "django-admin-ordering",
   "django-admin-sync",
@@ -81,7 +81,7 @@ dependencies = [
   "pyquery",
   "qrcode",
   "sentry-sdk",
-  "setuptools>=75.6",
+  "setuptools",
   "social-auth-app-django",
   "soupsieve",
   "sqlparse",
@@ -89,7 +89,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-  "check-wheel-contents>=0.6.1",
+  "check-wheel-contents",
   "coverage",
   "django-webtest",
   "factory-boy",
@@ -104,9 +104,9 @@ dev = [
   "pytest-echo",
   "pytest-xdist",
   "responses",
-  "seleniumbase>=4.35.2",
+  "seleniumbase",
   "tox",
-  "types-jmespath>=1.0.2.20240106",
+  "types-jmespath",
   "watchdog",
 ]
 

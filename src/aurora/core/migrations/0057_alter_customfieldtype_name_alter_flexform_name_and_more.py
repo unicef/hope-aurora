@@ -14,7 +14,6 @@ class Migration(migrations.Migration):
             model_name="customfieldtype",
             name="name",
             field=models.CharField(
-                db_collation="_",
                 max_length=100,
                 unique=True,
                 validators=[django.core.validators.RegexValidator("[A-Z][a-zA-Z0-9_]*")],
@@ -23,14 +22,13 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="flexform",
             name="name",
-            field=models.CharField(db_collation="_", max_length=255, unique=True),
+            field=models.CharField(max_length=255, unique=True),
         ),
         migrations.AlterField(
             model_name="flexformfield",
             name="name",
             field=models.CharField(
                 blank=True,
-                db_collation="_",
                 max_length=100,
                 validators=[django.core.validators.RegexValidator("^[a-z_0-9]*$")],
             ),
@@ -44,7 +42,6 @@ class Migration(migrations.Migration):
             model_name="optionset",
             name="name",
             field=models.CharField(
-                db_collation="_",
                 max_length=100,
                 unique=True,
                 validators=[django.core.validators.RegexValidator("[a-z0-9-_]")],
@@ -53,24 +50,23 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="organization",
             name="name",
-            field=models.CharField(db_collation="_", max_length=100, unique=True),
+            field=models.CharField(max_length=100, unique=True),
         ),
         migrations.AlterField(
             model_name="project",
             name="name",
-            field=models.CharField(db_collation="_", max_length=100, unique=True),
+            field=models.CharField(max_length=100, unique=True),
         ),
         migrations.AlterField(
             model_name="validator",
             name="label",
-            field=models.CharField(db_collation="_", max_length=255),
+            field=models.CharField(max_length=255),
         ),
         migrations.AlterField(
             model_name="validator",
             name="name",
             field=models.CharField(
                 blank=True,
-                db_collation="_",
                 max_length=255,
                 null=True,
                 unique=True,

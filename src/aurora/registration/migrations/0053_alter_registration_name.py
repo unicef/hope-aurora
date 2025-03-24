@@ -12,6 +12,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="registration",
             name="name",
-            field=models.CharField(db_collation="_", max_length=255),
+            field=models.CharField(max_length=255),
         ),
     ]
