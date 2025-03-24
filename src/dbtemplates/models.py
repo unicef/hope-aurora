@@ -37,6 +37,7 @@ class Template(NaturalKeyModel, models.Model):
     on_site = CurrentSiteManager("sites")
 
     class Meta:
+        app_label = "dbtemplates"
         db_table = "django_template"
         verbose_name = _("template")
         verbose_name_plural = _("templates")

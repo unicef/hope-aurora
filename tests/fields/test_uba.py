@@ -19,7 +19,7 @@ def test_uba_name_enquiry_ok():
     fld = UBANameEnquiryField()
     assert (
         fld.validate(
-            {"name": "bank UBA", "code": "000004", "number": "2087008012", "holder_name": "xxxx", "ignore_error": False}
+            {"name": "bank UBA", "uba_code": "000004", "number": "2087008012", "holder_name": "xxxx", "ignore_error": False}
         )
         is None
     )
@@ -37,7 +37,7 @@ def test_uba_name_enquiry_ko_not_matching_name():
         assert fld.validate(
             {
                 "name": "bank UBA",
-                "code": "000004",
+                "uba_code": "000004",
                 "number": "2087008012",
                 "holder_name": "wrong",
                 "ignore_error": False,
@@ -50,7 +50,7 @@ def test_uba_name_enquiry_ko_not_matching_name():
 def test_uba_name_enquiry_ko_invalid_input():
     fld = UBANameEnquiryField()
     with pytest.raises(ValidationError, match="ValueError: not enough values to unpack"):
-        fld.validate({"name": "bank UBA", "code": "000004", "ignore_error": False})
+        fld.validate({"name": "bank UBA", "uba_code": "000004", "ignore_error": False})
 
 
 @pytest.mark.django_db
@@ -63,7 +63,7 @@ def test_uba_name_enquiry_ko_invalid_account():
     fld = UBANameEnquiryField()
     with pytest.raises(ValidationError, match="Invalid account number"):
         assert fld.validate(
-            {"name": "bank UBA", "code": "000004", "number": "account", "holder_name": "xxxx", "ignore_error": False}
+            {"name": "bank UBA", "uba_code": "000004", "number": "account", "holder_name": "xxxx", "ignore_error": False}
         )
 
 
@@ -79,7 +79,7 @@ def test_uba_name_enquiry_generic_invalid():
         assert fld.validate(
             {
                 "name": "bank UBA",
-                "code": "invalid_bank",
+                "uba_code": "invalid_bank",
                 "number": "account",
                 "holder_name": "xxxx",
                 "ignore_error": False,
@@ -99,5 +99,5 @@ def test_uba_name_enquiry_cannot_reach_server(mock_post):
     fld = fld_c.get_instance()
     with pytest.raises(ValidationError, match="Cannot reach UBA server"):
         assert fld.validate(
-            {"name": "bank UBA", "code": "bank", "number": "account", "holder_name": "mimmo", "ignore_error": False}
+            {"name": "bank UBA", "uba_code": "bank", "number": "account", "holder_name": "mimmo", "ignore_error": False}
         )
