@@ -97,6 +97,10 @@ stages:
           vmImage: ubuntu-latest
         displayName: "Deploy app"
         steps:
+          - script: |
+              curl -X POST -H 'Content-type: application/json' --data '$SLACK_NOTIFICATION_START_PAYLOAD' $SLACK_WEBHOOK_URL
+            displayName: "Slack start notification"
+            condition: or(eq(variables['Build.SourceBranchName'], 'staging'), eq(variables['Build.SourceBranchName'], 'master'))
           - task: AzureWebAppContainer@1
             displayName: Azure Web App on Container Deploy
             inputs:
@@ -126,3 +130,7 @@ stages:
                             -SENTRY_DSN $(SENTRY_DSN)
                             -SENTRY_ENVIRONMENT $(SENTRY_ENVIRONMENT)
                             -MATOMO_ID $(MATOMO_ID)"
+          - script: |
+              curl -X POST -H 'Content-type: application/json' --data '$SLACK_NOTIFICATION_COMPLETE_PAYLOAD' $SLACK_WEBHOOK_URL
+            displayName: "Slack complete notification"
+            condition: and(succeeded(), or(eq(variables['Build.SourceBranchName'], 'staging'), eq(variables['Build.SourceBranchName'], 'master')))
