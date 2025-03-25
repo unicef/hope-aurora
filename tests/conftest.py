@@ -2,6 +2,7 @@ import os
 from typing import TYPE_CHECKING, Any
 
 import pytest
+import sys
 from django import forms
 from django.conf import settings as django_settings
 from django.core.files.storage import default_storage
@@ -14,6 +15,8 @@ if TYPE_CHECKING:
     from aurora.registration.models import Registration
 
 ALL = set("darwin".split())
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../extras")))
 
 
 @pytest.fixture(autouse=True)
@@ -101,7 +104,7 @@ def complex_form(db: Any) -> "FlexForm":
         },
     )
 
-    hh = FormFactory(name="Form2")
+    hh = FormFactory(name="Form1")
     hh.fields.get_or_create(
         label="Family Name",
         defaults={"field_type": forms.CharField(max_length=100, required=True), "required": True, "validator": v1},
@@ -130,7 +133,7 @@ def complex_form(db: Any) -> "FlexForm":
         field_type=SmartFileField(required=False),
     )
 
-    FormSetFactory(parent=hh, flex_form=ind, name="formset-0")
+    FormSetFactory(parent=hh, flex_form=ind, name="form2s")
 
     return hh
 

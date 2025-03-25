@@ -38,6 +38,8 @@ def browser(live_server, request) -> Generator[AuroraSeleniumTC, None, None]:
         sb._using_sb_fixture_no_class = True
         sb_config._sb_node[request.node.nodeid] = sb
         sb.maximize_window()
+        from time import sleep
+        sleep(0.2)  # TODO: added just for test in CI
         yield sb
         if sb._needs_tearDown:
             sb.tearDown()

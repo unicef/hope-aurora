@@ -45,16 +45,16 @@ def test_simple_form(simple_form: "FlexForm") -> None:
 
 @pytest.mark.django_db
 def test_complex_form(complex_form: "FlexForm") -> None:
-    assert complex_form.name == "Form2"
-    assert complex_form.fields.count() == 6
+    assert complex_form.name == "Form1"
+    assert complex_form.fields.count() == 1
     assert complex_form.fields.filter(label="Family Name").exists()
 
     formset = complex_form.formsets.first()
-    assert formset.name == "formset-0"
+    assert formset.name == "form2s"
 
     nested_form = formset.flex_form
     assert nested_form.name == "Form2"
-    assert nested_form.fields.count() == 6
+    assert nested_form.fields.count() == 5
     assert nested_form.fields.filter(label="First Name").exists()
     assert nested_form.fields.filter(label="Last Name").exists()
     assert nested_form.fields.filter(label="Date Of Birth").exists()
@@ -114,17 +114,17 @@ def test_complex__valid_data(complex_form: "FlexForm", mock_storage: None) -> No
         form = form_class(
             data={
                 "family_name": "Smith",
-                "formset-0-TOTAL_FORMS": 1,
-                "formset-0-INITIAL_FORMS": 0,
-                "formset-0-MIN_NUM_FORMS": 0,
-                "formset-0-MAX_NUM_FORMS": 1000,
-                "formset-0-0-first_name": "Jane",
-                "formset-0-0-last_name": "Smith",
-                "formset-0-0-date_of_birth": "1990-01-01",
+                "form2s-TOTAL_FORMS": 1,
+                "form2s-INITIAL_FORMS": 0,
+                "form2s-MIN_NUM_FORMS": 0,
+                "form2s-MAX_NUM_FORMS": 1000,
+                "form2s-0-first_name": "Jane",
+                "form2s-0-last_name": "Smith",
+                "form2s-0-date_of_birth": "1990-01-01",
             },
             files={
-                "formset-0-0-Image": SimpleUploadedFile("image.png", f.read()),
-                "formset-0-0-File": SimpleUploadedFile("file.txt", b"content"),
+                "form2s-0-Image": SimpleUploadedFile("image.png", f.read()),
+                "form2s-0-File": SimpleUploadedFile("file.txt", b"content"),
             },
         )
     assert form.is_valid(), form.errors
@@ -140,17 +140,17 @@ def test_complex__invalid_data(complex_form: "FlexForm", mock_storage: None) -> 
         form = form_class(
             data={
                 "family_name": "Smith",
-                "formset-0-TOTAL_FORMS": 1,
-                "formset-0-INITIAL_FORMS": 0,
-                "formset-0-MIN_NUM_FORMS": 0,
-                "formset-0-MAX_NUM_FORMS": 1000,
-                "formset-0-0-first_name": "Jane",
-                "formset-0-0-last_name": "S",  # This should cause an error
-                "formset-0-0-date_of_birth": "1990-01-01",
+                "form2s-TOTAL_FORMS": 1,
+                "form2s-INITIAL_FORMS": 0,
+                "form2s-MIN_NUM_FORMS": 0,
+                "form2s-MAX_NUM_FORMS": 1000,
+                "form2s-0-first_name": "Jane",
+                "form2s-0-last_name": "S",  # This should cause an error
+                "form2s-0-date_of_birth": "1990-01-01",
             },
             files={
-                "formset-0-0-Image": SimpleUploadedFile("image.png", f.read()),
-                "formset-0-0-File": SimpleUploadedFile("file.txt", b"content"),
+                "form2s-0-Image": SimpleUploadedFile("image.png", f.read()),
+                "form2s-0-File": SimpleUploadedFile("file.txt", b"content"),
             },
         )
 
@@ -159,17 +159,17 @@ def test_complex__invalid_data(complex_form: "FlexForm", mock_storage: None) -> 
     with open("tests/data/image.png", "rb") as f:
         form = form_class(
             data={
-                "formset-0-TOTAL_FORMS": 1,
-                "formset-0-INITIAL_FORMS": 0,
-                "formset-0-MIN_NUM_FORMS": 0,
-                "formset-0-MAX_NUM_FORMS": 1000,
-                "formset-0-0-first_name": "Jane",
-                "formset-0-0-last_name": "Smith",
-                "formset-0-0-date_of_birth": "1990-01-01",
+                "form2s-TOTAL_FORMS": 1,
+                "form2s-INITIAL_FORMS": 0,
+                "form2s-MIN_NUM_FORMS": 0,
+                "form2s-MAX_NUM_FORMS": 1000,
+                "form2s-0-first_name": "Jane",
+                "form2s-0-last_name": "Smith",
+                "form2s-0-date_of_birth": "1990-01-01",
             },
             files={
-                "formset-0-0-Image": SimpleUploadedFile("image.png", f.read()),
-                "formset-0-0-File": SimpleUploadedFile("file.txt", b"content"),
+                "form2s-0-Image": SimpleUploadedFile("image.png", f.read()),
+                "form2s-0-File": SimpleUploadedFile("file.txt", b"content"),
             },
         )
 
@@ -192,14 +192,14 @@ def test_registration_with_complex_form(complex_form: "FlexForm", complex_regist
     """Test a registration with a complex form as the flex_form."""
     rg = complex_registration
     assert rg.flex_form == complex_form
-    assert rg.flex_form.name == "Form2"
-    assert rg.flex_form.fields.count() == 6
+    assert rg.flex_form.name == "Form1"
+    assert rg.flex_form.fields.count() == 1
     assert rg.flex_form.fields.filter(label="Family Name").exists()
 
     formset = rg.flex_form.formsets.first()
-    assert formset.name == "formset-0"
+    assert formset.name == "form2s"
     assert formset.flex_form.name == "Form2"
-    assert formset.flex_form.fields.count() == 6
+    assert formset.flex_form.fields.count() == 5
     assert formset.flex_form.fields.filter(label="First Name").exists()
     assert formset.flex_form.fields.filter(label="Last Name").exists()
     assert formset.flex_form.fields.filter(label="Date Of Birth").exists()

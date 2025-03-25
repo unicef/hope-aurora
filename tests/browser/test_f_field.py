@@ -37,6 +37,7 @@ def test_add_field(browser: AuroraTestBrowser, field_type):
     browser.select2_select("id_field_type", field_type.__name__)
     browser.click('input[name="_save"]')
     browser.wait_for_ready_state_complete()
+    browser.wait_for_element_visible('a:contains("FlexField-Test")') 
     browser.click_link("FlexField-Test")
     browser.click('a:contains("editor")')
     browser.click("#radio_code")
