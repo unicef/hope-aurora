@@ -61,6 +61,17 @@ def simple_form():
     frm.fields.get_or_create(label="Image", defaults={"field_type": forms.ImageField, "required": False})
     frm.fields.get_or_create(label="File", defaults={"field_type": forms.FileField, "required": False})
     frm.fields.get_or_create(label="index_no", defaults={"field_type": forms.CharField, "required": False})
+    frm.fields.get_or_create(label="Date of Birth", defaults={"field_type": forms.DateField, "required": False})
+    frm.fields.get_or_create(label="Email", defaults={"field_type": forms.EmailField, "required": False})
+    frm.fields.get_or_create(
+        label="Gender",
+        defaults={
+            "field_type": forms.ChoiceField,
+            "required": False,
+            "choices": (("", "---------"), ("m", "Male"), ("f", "Female")),
+        },
+    )
+    frm.fields.get_or_create(label="Agree", defaults={"field_type": forms.BooleanField, "required": True})
     return frm
 
 
@@ -83,6 +94,11 @@ def test_register(mock_state, browser: AuroraTestBrowser, registration):
     browser.type("input[name=first_name]", "first_name")
     browser.type("input[name=last_name]", "last_name")
     browser.type("input[name=index_no]", "123456")
+    browser.type("input[name=date_of_birth]", "2000-01-01")
+    browser.type("input[name=email]", "test@example.com")
+    browser.choose("select[name=gender]", "m")
+    browser.check("input[name=agree]")
+
     browser.click("input[name=_save_form]")
     reg_id = browser.get_text("#registration-id")
     browser.click("a:contains('register another household')")
