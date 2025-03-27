@@ -1,7 +1,6 @@
 from concurrency.fields import AutoIncVersionField
 from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Group, Permission, AbstractUser
 from django.db import models
 from django.db.models import JSONField
 from django.utils import timezone
@@ -11,7 +10,11 @@ from natural_keys import NaturalKeyModel
 from aurora.core.models import Organization, Project
 from aurora.registration.models import Registration
 
-User = get_user_model()
+
+class User(AbstractUser):
+    class Meta:
+        app_label = "security"
+        db_table = "auth_user"
 
 
 class UserProfile(models.Model):
@@ -105,13 +108,6 @@ class AuroraRole(NaturalKeyModel, models.Model):
                 self.role.name,
             )
         return (None, None, None, self.user.username, self.role.name)
-
-
-class AuroraUser(User):
-    class Meta:
-        proxy = True
-        verbose_name = _("user")
-        verbose_name_plural = _("users")
 
 
 class AuroraGroup(Group):

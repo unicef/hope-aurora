@@ -18,7 +18,7 @@ class Config(AppConfig):
         smart_register(models.AuroraPermission)(PermissionAdmin)
         smart_register(models.Permission)(PermissionAdmin)
         smart_register(models.AuroraGroup)(admin.GroupAdmin)
-        smart_register(models.AuroraUser)(admin.UserAdmin)
+        smart_register(models.User)(admin.UserAdmin)
         smart_register(models.AuroraRole)(admin.AuroraRoleAdmin)
         smart_register(models.UserProfile)(admin.UserProfileAdmin)
 
