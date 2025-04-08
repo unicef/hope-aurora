@@ -1,4 +1,5 @@
 from django import forms
+from django.forms.fields import CharField, DateField
 
 from . import widgets  # noqa
 from .captcha import CaptchaField  # noqa
@@ -36,3 +37,5 @@ WIDGET_FOR_FORMFIELD_DEFAULTS = {
     YesNoChoice: {"widget": SmartSelectWidget},
     # MultiCheckboxField: {"widget": widgets.MultiCheckboxWidget},
 }
+
+__all__ = ["CharField", "DateField", "CompilationTimeField"]

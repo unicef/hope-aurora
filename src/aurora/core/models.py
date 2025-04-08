@@ -39,7 +39,7 @@ from .fields.mixins import TailWindMixin
 from .forms import CustomFieldMixin, FlexFormBaseForm, SmartBaseFormSet
 from .js import DukPYValidator
 from .registry import field_registry, form_registry, import_custom_field
-from .utils import dict_setdefault, jsonfy, namify, underscore_to_camelcase
+from .utils import dict_setdefault, jsonfy, namify, underscore_to_camelcase, JSONEncoder
 
 logger = logging.getLogger(__name__)
 
@@ -194,6 +194,9 @@ _.is_adult = function(d) { return !_.is_child(d)};
 
     def __str__(self):
         return f"{self.label} ({self.target})"
+
+    def jspickle(self, value):
+        return json.dumps(value, cls=JSONEncoder, skip_files=True)
 
     @staticmethod
     def js_type(value):

@@ -1,11 +1,10 @@
 import pytest
 from django.forms import BooleanField
 from strategy_field.utils import fqn
-
-from aurora.core.fields import HiddenField, LocationField, CompilationTimeField, MultiCheckboxField
-from testutils.factories import FormFactory, FlexFormFieldFactory
+from testutils.factories import FlexFormFieldFactory, FormFactory
 from testutils.selenium import AuroraTestBrowser
 
+from aurora.core.fields import CompilationTimeField, HiddenField, LocationField, MultiCheckboxField
 from aurora.core.models import FlexFormField
 
 pytestmark = pytest.mark.selenium

@@ -94,7 +94,8 @@ class SuperUserFactory(UserFactory):
 
 
 class ValidatorFactory(AutoRegisterModelFactory):
-    name = factory.Sequence(lambda d: "Form-%s" % d)
+    name = factory.Sequence(lambda d: "Validator-%s" % d)
+    label = factory.LazyAttribute(lambda o: o.name.replace("_", " ").title())
 
     class Meta:
         model = Validator
@@ -102,7 +103,7 @@ class ValidatorFactory(AutoRegisterModelFactory):
 
 
 class OptionSetFactory(AutoRegisterModelFactory):
-    name = factory.Sequence(lambda d: "Form-%s" % d)
+    name = factory.Sequence(lambda d: "OptionSet-%s" % d)
     separator = ";"
     data = "aa=1;bb=2"
 
@@ -122,9 +123,12 @@ class FormFactory(AutoRegisterModelFactory):
 
 class FlexFormFieldFactory(AutoRegisterModelFactory):
     flex_form = factory.SubFactory(FormFactory)
-    name = factory.Sequence(lambda d: "FormField-%s" % d)
+    name = factory.Sequence(lambda d: "field-%s" % d)
+    label = factory.LazyAttribute(lambda o: o.name.replace("_", " ").title())
+
     field_type = fqn(forms.CharField)
     validator = None
+    enabled = True
 
     class Meta:
         model = FlexFormField

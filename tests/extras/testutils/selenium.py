@@ -61,5 +61,12 @@ class AuroraSeleniumTC(BaseCase):
             self.submit('input[value="Log in"]')
             self.wait_for_ready_state_complete()
 
+    def is_required(self, element: str) -> bool:
+        el = self.wait_for_element_visible(element)
+        return el.parent.find_element("label>span").text == "(required)"
+
+    def get_field_error(self, element: str) -> bool:
+        return self.wait_for_element_visible(f"fieldset.{element} ul.errorlist").text
+
 
 AuroraTestBrowser = AuroraSeleniumTC

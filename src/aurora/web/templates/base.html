@@ -78,7 +78,9 @@
 {% block bottom_scripts %}
 {% endblock bottom_scripts %}
 {% block matomo %}
-    {% include "_matomo.html" %}
+    {% if settings.MATOMO_SITE %}
+        {% include "_matomo.html" %}
+    {% endif %}
 {% endblock matomo %}
 
 </body>
