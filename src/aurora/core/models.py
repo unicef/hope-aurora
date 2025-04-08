@@ -1,5 +1,3 @@
-from typing import Any
-
 import json
 import logging
 import re
@@ -7,6 +5,7 @@ from datetime import date, datetime, time
 from inspect import isclass
 from json import JSONDecodeError
 from pathlib import Path
+from typing import Any
 
 from admin_ordering.models import OrderableModel
 from concurrency.fields import AutoIncVersionField
@@ -39,7 +38,7 @@ from .fields.mixins import TailWindMixin
 from .forms import CustomFieldMixin, FlexFormBaseForm, SmartBaseFormSet
 from .js import DukPYValidator
 from .registry import field_registry, form_registry, import_custom_field
-from .utils import dict_setdefault, jsonfy, namify, underscore_to_camelcase, JSONEncoder
+from .utils import JSONEncoder, dict_setdefault, jsonfy, namify, underscore_to_camelcase
 
 logger = logging.getLogger(__name__)
 
@@ -604,8 +603,10 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
             return f"{self.name} {self.field_type.__name__}"
         return f"{self.name} <no type>"
 
-    def type_name(self):
-        return str(self.field_type.__name__)
+    def type_name(self) -> str:
+        if self.field_type:
+            return str(self.field_type.__name__)
+        return "[[ removed ]]"
 
     def fqn(self):
         return fqn(self.field_type)
@@ -771,9 +772,10 @@ class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
     comment = models.CharField(max_length=1, default="#", blank=True)
     columns = models.CharField(
         max_length=20,
-        default="0,0,-1",
+        default="",
         blank=True,
-        help_text="column order. Es: 'pk,parent,label' or 'pk,label'",
+        editable=False,
+        help_text="",
     )
 
     pk_col = models.IntegerField(default=0, help_text="ID column number")

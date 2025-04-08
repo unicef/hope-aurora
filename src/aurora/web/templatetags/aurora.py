@@ -7,6 +7,7 @@ import re
 import markdown as md
 from PIL import Image, UnidentifiedImageError
 from django.template import Library, Node
+from django.utils.safestring import mark_safe
 
 from aurora.i18n.get_text import gettext as _
 
@@ -127,15 +128,15 @@ def link(registration):
     }
 
 
-@register.filter()
-def markdown(value):
+@register.filter(name="markdown")
+def _markdown(value) -> str:
     if value:
-        return md.markdown(value, extensions=["markdown.extensions.fenced_code"])
+        return mark_safe(md.markdown(value, extensions=["markdown.extensions.fenced_code"]))  # noqa: S308
     return ""
 
 
 @register.filter(name="md")
-def _md(value):
+def _md(value) -> str:
     if value:
         p = md.markdown(value, extensions=["markdown.extensions.fenced_code"])
         return p.replace("<p>", "").replace("</p>", "")

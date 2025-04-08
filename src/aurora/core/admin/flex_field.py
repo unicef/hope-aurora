@@ -57,7 +57,7 @@ class FlexFormFieldForm(forms.ModelForm):
 @register(FlexFormField)
 class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, OrderableAdmin, SmartModelAdmin):
     search_fields = ("name_deterministic", "label")
-    list_display = ("label", "name", "flex_form", "field_type_name", "required", "enabled")
+    list_display = ("label", "name", "flex_form", "type_name", "required", "enabled")
     list_editable = ["required", "enabled"]
     list_filter = (
         ("flex_form", AutoCompleteFilter),
@@ -84,9 +84,6 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
 
     def get_readonly_fields(self, request, obj=None):
         return super().get_readonly_fields(request, obj) if is_root(request) else []
-
-    def field_type_name(self, obj):
-        return obj.field_type.__name__ if obj.field_type else "[[ removed ]]"
 
     def formfield_for_dbfield(self, db_field, request, **kwargs):
         if db_field.name == "advanced":

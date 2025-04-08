@@ -50,8 +50,8 @@ def test_jsonfy():
 
 
 def test_markdown():
-    assert aurora.markdown("**aa**") == "<p><strong>aa</strong></p>"
-    assert aurora.markdown("") == ""
+    assert aurora._markdown("**aa**") == "<p><strong>aa</strong></p>"
+    assert aurora._markdown("") == ""
 
 
 def test_md():

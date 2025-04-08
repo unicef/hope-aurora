@@ -86,13 +86,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Hack container for local development
-        if: ${{ env.ACT }}
-        run: |
-          echo /home/runner/externals/node20/bin >> $GITHUB_PATH
-      - name: Hack container for local development
-        run: |
-          echo BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_ENV
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5.5.1
@@ -104,11 +97,6 @@ jobs:
             type=ref,event=tag
             type=semver,pattern={{version}}
             type=semver,pattern={{raw}}
-      - name: DockerHub login
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - id: last_commit
         uses: ./.github/actions/last_commit
       - id: calc
@@ -119,7 +107,6 @@ jobs:
           echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
           echo "BUILD_DATE=$(date +"%Y-%m-%d %H:%M" )" >> $GITHUB_ENV
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
-
       - name: Build Test Image
         run: |
              docker build \
@@ -150,49 +137,3 @@ jobs:
               pytest tests/ -n auto -v --maxfail=5 --migrations \
                       --cov-report xml:./output/coverage.xml \
                       --headless --time_limit 20
-
-      - name: Archive selenium results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: selenium-log-report
-          path: latest_logs
-          retention-days: 5
-
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        continue-on-error: true
-        with:
-          env_vars: OS,PYTHON
-          fail_ci_if_error: true
-          files: /app/output/coverage.xml
-          token: ${{ secrets.CODECOV_TOKEN }}
-          verbose: false
-          name: codecov-${{env.GITHUB_REF_NAME}}
-
-  release:
-    needs: [ test ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: DockerHub login
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build Distro
-        run: |
-            docker build \
-                --target dist \
-                --cache-from "type=gha" \
-                --cache-to "type=gha,mode=max" \
-                --build-arg "VERSION=${{needs.test.outputs.commit}}" \
-                --build-arg "BUILD_DATE=${{needs.test.outputs.build_date}}" \
-                --build-arg "BRANCH=${{needs.test.outputs.branch}}" \
-                -t ${{needs.test.outputs.image}} \
-                -f docker/Dockerfile .
-            docker push ${{needs.test.outputs.image}}
-            docker inspect ${{needs.test.outputs.image}} | jq -r '.[0].Config.Labels'
-            echo "::notice::✅ Image ${{needs.test.outputs.image}} built and pushed"

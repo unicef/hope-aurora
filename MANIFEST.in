@@ -8,14 +8,15 @@ include *.py
 include uv.lock
 
 
-recursive-include src/aurora *
-recursive-include src/aurora *.html
-recursive-include src/dbtemplates *
-recursive-include src/dbtemplates *.html
+recursive-include src/aurora *.*
+recursive-include src/dbtemplates *.*
+
 
 recursive-exclude tests *
 
 prune **/~*
+prune docker
+prune docs
 
 global-exclude .*
 global-exclude *~

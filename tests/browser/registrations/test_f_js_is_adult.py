@@ -42,15 +42,14 @@ def registration(birth_after_1900):
             },
             "events": {
                 "onchange": """
-                                     var f = new aurora.Field(this);
-                                     var bd = f.sibling('date_of_birth');
-                                     console.log(11111, bd.getValue());
-                                     if (smart.is_adult(bd.getValue())){
-                                        f.sibling('verified_disability').setRequired(true);
-                                     }else{
-                                        f.sibling('verified_disability').setRequired(false).setValue('');
-                                     }
-                                    """
+var f = new aurora.Field(this);
+var bd = f.sibling('date_of_birth');
+if (smart.is_adult(bd.getValue())){
+    f.sibling('verified_disability').setRequired(true);
+}else{
+    f.sibling('verified_disability').setRequired(false).setValue('');
+}
+"""
             },
         },
     )

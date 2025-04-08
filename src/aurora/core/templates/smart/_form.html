@@ -23,7 +23,7 @@
 {# {% if can_translate %} #}
 {# {% include "i18n/_staff_edit_i18n.html" with original=registration.intro %}{% endif %} #}
                     {% translate registration.intro as intro %}
-                    {{ intro|default_if_none:""|markdown }}
+                    {{ intro|default_if_none:""|md }}
                 </div>
             </div>
         {% endif %}

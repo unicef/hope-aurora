@@ -9,7 +9,7 @@ from django.core.exceptions import ValidationError
 from django.forms import MultiWidget
 from django.utils.translation import gettext as _
 from requests.auth import HTTPBasicAuth
-from requests.exceptions import ReadTimeout
+from requests.exceptions import MissingSchema, ReadTimeout
 
 from aurora.core.fields.mixins import MultiValueWidgetMixin
 from aurora.core.fields.widgets import SmartTextWidget
@@ -1297,6 +1297,7 @@ class UBASelect(forms.Select):
 
 class UBANameEnquiryMultiWidget(MultiValueWidgetMixin, MultiWidget):
     template_name = "django/forms/widgets/uba.html"
+    custom_render = True
 
     def __init__(self, attrs=None):
         widgets = (
@@ -1420,6 +1421,8 @@ class UBANameEnquiryField(forms.MultiValueField):
                     )
                     jresponse = response.json()
                     token = f"{jresponse['token_type']} {jresponse['access_token']}"
+                except MissingSchema:
+                    raise ValidationError("Invalid Token") from None
                 except (ReadTimeout, ConnectionError, KeyError):
                     i += 1
                     continue

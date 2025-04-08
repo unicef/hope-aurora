@@ -125,6 +125,7 @@ class FlexFormFieldFactory(AutoRegisterModelFactory):
     flex_form = factory.SubFactory(FormFactory)
     name = factory.Sequence(lambda d: "field-%s" % d)
     label = factory.LazyAttribute(lambda o: o.name.replace("_", " ").title())
+    advanced = FlexFormField.FLEX_FIELD_DEFAULT_ATTRS
 
     field_type = fqn(forms.CharField)
     validator = None

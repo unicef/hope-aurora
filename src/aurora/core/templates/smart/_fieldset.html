@@ -20,21 +20,18 @@
     <div class="mb-4 field-container field-container-{{ field.name }} mb-5{% if field.field.required or field.field.smart_attrs.required_by_question %} required{% endif %}">
         <label data-msgid="{{ field.label }}" data-i18n-Type="FieldLabel"
                 class="itrans  {{ ADV.css.label|default:"block uppercase tracking-wide text-gray-700 font-bold mb-2" }}" for="{{ field.auto_id }}">
-{# {% if can_translate %}{% include "i18n/_staff_edit_i18n.html" with original=field.label %}{% endif %} #}
             {% translate field.label|md %}
-{# {% if field.field.required  or field.field.smart_attrs.required_by_question %} #}
                 <span data-msgid="required"
                       class="required-label hidden itrans lowercase font-thin required text-xs">({% translate "required" %})</span>
-{# {% endif %} #}
         </label>
         <div class="itrans text-sm description" data-msgid="{{ ADV.smart.description }}">
         {% if ADV.smart.description %}{% translate ADV.smart.description %}{% endif %}
         </div>
 {# -- {{ field.field.flex_field.advanced.events.validation }} -- #}
-        {% if field.template_name %}
+        {% if field.custom_render %}
             {{ field.render }}
         {% else %}
-{# <span class="errors">{{ field.errors }}</span> #}
+ <span class="errors">{{ field.errors }}</span>
           {{ field }}
         {% endif %}
         <div class="text-xs	italic hint" data-msgid="{{ ADV.smart.hint }}">

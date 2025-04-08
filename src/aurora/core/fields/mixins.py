@@ -1,3 +1,4 @@
+from django import forms
 from django.utils.translation import get_language
 
 from aurora.core.utils import oneline
@@ -14,7 +15,7 @@ class TailWindMixin:
         super().__init__(attrs=attrs, **kwargs)
 
 
-class SmartWidgetMixin:
+class SmartWidgetMixin(forms.Widget):
     def get_context(self, name, value, attrs):
         ret = super().get_context(name, value, attrs)
         ret["LANGUAGE_CODE"] = get_language()
@@ -23,7 +24,7 @@ class SmartWidgetMixin:
         return ret
 
 
-class SmartFieldMixin:
+class SmartFieldMixin(forms.Field):
     NONE = None
     PRIMARY = 1
     BLOB = 2
