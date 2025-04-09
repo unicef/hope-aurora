@@ -147,7 +147,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "constance.context_processors.config",
-                "aurora.i18n.context_processors.itrans",
+                # "aurora.i18n.context_processors.itrans",
                 "aurora.web.context_processors.smart",
                 "django.template.context_processors.i18n",
                 # Social auth context_processors

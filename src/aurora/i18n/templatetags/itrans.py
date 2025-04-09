@@ -91,6 +91,8 @@ class BlockTranslateNode(Node):
             message_context = None
         # Update() works like a push(), so corresponding context.pop() is at
         # the end of function
+        current_locale = get_language()
+
         context.update({var: val.resolve(context) for var, val in self.extra_context.items()})
         singular, variables = self.render_token_list(self.singular)
         if self.plural and self.countervar and self.counter:
@@ -102,12 +104,13 @@ class BlockTranslateNode(Node):
             if message_context:
                 result = translation.npgettext(message_context, singular, plural, count)
             else:
-                result = translation.ngettext(singular, plural, count)
+                result = translator[current_locale].ngettext(singular, plural, count)
             variables.extend(plural_vars)
         elif message_context:
-            result = translation.pgettext(message_context, singular)
+            result = translator[current_locale][singular]
         else:
-            result = translation.gettext(singular)
+            result = translator[current_locale][singular]
+
         default_value = context.template.engine.string_if_invalid
 
         def render_value(key):
@@ -117,7 +120,7 @@ class BlockTranslateNode(Node):
                 val = default_value % key if "%s" in default_value else default_value
             return render_value_in_context(val, context)
 
-        data = {v: render_value(v) for v in vars}
+        data = {v: translator[current_locale][render_value(v)] for v in variables}
         context.pop()
         try:
             result = result % data

@@ -42,7 +42,6 @@ from aurora.state import state
 
 UNDEFINED = object()
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -54,7 +53,9 @@ def has_token(request, *args, **kwargs):
 
 
 def is_root(request, *args, **kwargs):
-    return request.user.is_superuser and has_token(request)
+    if hasattr(request, "user"):
+        return request.user.is_superuser and has_token(request)
+    return False
 
 
 @keep_lazy_text

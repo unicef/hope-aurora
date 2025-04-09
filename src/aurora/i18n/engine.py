@@ -2,6 +2,7 @@ import logging
 
 from django.core.cache import caches
 from django.utils import timezone
+from django.utils.translation import activate
 from django_redis import get_redis_connection
 
 from ..state import state
@@ -26,6 +27,11 @@ class Dictionary:
         self.messages = {k["msgid"]: k["msgstr"] for k in entries}
         self._loaded = True
 
+    def ngettext(self, singular, plural, count):
+        if count > 1:
+            return self[plural]
+        return self[singular]
+
     def __getitem__(self, msgid):
         translation = msgid or ""
         if not msgid.strip():
@@ -35,8 +41,6 @@ class Dictionary:
                 session = state.request.headers["I18N_SESSION"]
                 con = get_redis_connection("default")
                 con.lpush(session, str(msgid).encode())
-            if getattr(self, "hit_messages", False):
-                raise KeyError("--")
             translation = self.messages[msgid]
         except KeyError:
             if state.collect_messages:
@@ -45,11 +49,6 @@ class Dictionary:
                     msg = Message.objects.get(locale=self.locale, msgid__iexact=str(msgid))
                     if not msg.draft:
                         translation = msg.msgstr
-                except Message.MultipleObjectsReturned as e:
-                    logger.exception(e)
-                    msg = Message.objects.filter(locale=self.locale, msgid__iexact=str(msgid)).first()
-                    if not msg.draft:
-                        translation = msg.msgstr or ""
                 except Message.DoesNotExist:
                     msg, __ = Message.objects.get_or_create(msgid=msgid, locale=self.locale, defaults={"msgstr": msgid})
                     translation = msg.msgstr
@@ -62,18 +61,21 @@ class Dictionary:
 
 class Cache:
     def __init__(self):
-        self.locales = {}
+        self.locales: dict[str, Dictionary] = {}
+        self.active_locale = None
 
     def reset(self):
         for locale in self.locales.values():
             locale.reset()
 
     def activate(self, locale):
+        self.active_locale = locale
+        activate(locale)
         e = self[locale]
         e.load_all()
         return e
 
-    def __getitem__(self, locale):
+    def __getitem__(self, locale) -> Dictionary:
         try:
             entry = self.locales[locale]
         except KeyError:
@@ -83,4 +85,4 @@ class Cache:
 
 
 translator = Cache()
-del Cache
+# del Cache

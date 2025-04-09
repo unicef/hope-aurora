@@ -1346,7 +1346,6 @@ class UBANameEnquiryField(forms.MultiValueField):
 
     def compress(self, values):
         values.insert(0, dict(BANKS_CHOICE)[values[0]])
-
         values.append(self.flex_field.advanced.get("ignore_error", False))
         return dict(zip(["name", "uba_code", "number", "holder_name", "ignore_error"], values, strict=True))
 

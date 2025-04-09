@@ -2,7 +2,7 @@
 
 {% block action-content %}
     {% if form %}
-        <form method="post">
+        <form method="post" id="check-form">
             {% csrf_token %}
             {{ form.errors }}
             <table>

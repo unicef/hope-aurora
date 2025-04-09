@@ -15,7 +15,6 @@ def gettext(message):
     if not message:
         return message
     eol_message = message.replace("\r\n", "\n").replace("\r", "\n")
-
     if eol_message:
         _default = _default or translation(settings.LANGUAGE_CODE)
         translation_object = getattr(_active, "value", _default)

@@ -10,7 +10,7 @@ from django.urls.base import resolve
 from django.utils.translation import get_language
 
 from aurora.core.utils import cache_aware_url
-from aurora.i18n.hreflang import get_hreflang_info, languages, reverse
+from aurora.i18n.hreflang import reverse, get_hreflang_info, languages
 
 register = template.Library()
 

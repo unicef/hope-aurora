@@ -21,6 +21,7 @@ from aurora.core.models import (
     Validator,
 )
 from aurora.counters.models import Counter
+from aurora.i18n.models import Message
 from aurora.registration.models import Record, Registration
 from aurora.security.models import AuroraRole
 
@@ -162,6 +163,8 @@ class RegistrationFactory(AutoRegisterModelFactory):
     flex_form = factory.SubFactory(FormFactory)
     project = factory.SubFactory(ProjectFactory)
     active = True
+    locale = "en-us"
+    locales = ["en-us", "it-it"]
 
     class Meta:
         model = Registration
@@ -238,3 +241,15 @@ class AuroraRoleFactory(AutoRegisterModelFactory):
 
     class Meta:
         model = AuroraRole
+
+
+class MessageFactory(AutoRegisterModelFactory):
+    msgstr = factory.Sequence(lambda d: "message-%s" % d)
+    msgid = factory.LazyAttribute(lambda o: o.msgstr)
+
+    locale = "en-us"
+    draft = False
+    auto = False
+
+    class Meta:
+        model = Message

@@ -257,16 +257,9 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
             form = LanguageForm(request.POST)
             if form.is_valid():
                 locale = form.cleaned_data["locale"]
-                original = ctx["original"]
+                original: Message = ctx["original"]
                 try:
-                    msg, created = Message.objects.get_or_create(
-                        msgid=original.msgid,
-                        locale=locale,
-                        defaults={
-                            "md5": Message.get_md5(locale, original.msgid),
-                            "draft": True,
-                        },
-                    )
+                    msg, created = original.update_or_create_translation(original.msgid, locale=locale, draft=True)
                     if created:
                         self.message_user(request, "Message created.")
                     else:
@@ -283,7 +276,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
         return render(request, "admin/i18n/message/translation.html", ctx)
 
     @button()
-    def create_translation(self, request):
+    def create_translations(self, request):
         ctx = self.get_common_context(
             request,
             media=self.media,

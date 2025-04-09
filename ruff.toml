@@ -86,7 +86,7 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [lint.per-file-ignores]
-"tests/**.py" = ["S101", "PLR2004", "S", "SIM117", "D", "UP", "PLR0913", "ANN", "N999"]
+"tests/**.py" = ["S101", "PLR2004", "S", "SIM117", "D", "UP", "PLR0913", "ANN", "N999", "PT006"]
 "src/dbtemplates/test**.py" = ["S101", "PLR2004", "S", "SIM117", "D", "UP", "PLR0913", "ANN", "N999", "PT009"]
 "src/**/versioning/**.py" = ["N999", ]
 "src/aurora/version.py" = ["ALL", ]

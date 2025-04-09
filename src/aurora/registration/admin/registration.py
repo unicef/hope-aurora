@@ -21,7 +21,6 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.template.loader import select_template
 from django.urls import reverse, translate_url
-from django.utils.module_loading import import_string
 from django.utils.text import slugify
 from django_redis import get_redis_connection
 from jsoneditor.forms import JSONEditor
@@ -477,13 +476,13 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
             ctx["form"] = TemplateForm()
         return render(request, "admin/registration/registration/create_template.html", ctx)
 
-    @view()
+    @view(label="Export translation file")
     def prepare_translation(self, request, pk):
         ctx = self.get_common_context(
             request,
             pk,
             media=self.media,
-            title="Prepare Translation File",
+            title="Export translation file",
         )
         instance: Registration = ctx["original"]
         if request.method == "POST":
@@ -494,7 +493,6 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
                     con = get_redis_connection("default")
                     con.delete(key)
                     locale = form.cleaned_data["locale"]
-                    translate = form.cleaned_data["translate"]
                     if locale not in instance.locales:
                         self.message_user(
                             request,
@@ -509,29 +507,22 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
 
                     entries = list(Message.objects.filter(locale=locale).values_list("msgid", "msgstr"))
                     data = dict(entries)
-                    if translate == "2":
-                        t = import_string(settings.TRANSLATOR_SERVICE)()
-                        func = lambda x: t.translate(locale, x)  # noqa
-                    elif translate == "1":
-                        t = import_string(settings.TRANSLATOR_SERVICE)()
-                        func = (  # noqa
-                            lambda x: x if data.get(x, "") == x else t.translate(locale, x)
-                        )
-                    else:
-                        func = lambda x: data.get(x, "")  # noqa
+
+                    func = lambda x: data.get(x, "")  # noqa
                     ctx["collected"] = {c: func(c) for c in collected}
                     ctx["language_code"] = locale
             elif "export" in request.POST:
                 selection = request.POST.getlist("selection")
                 language_code = request.POST.get("language_code")
                 msgids = [request.POST.get(f"msgid_{i}") for i in selection]
+                filename = slugify(f"{instance.name}_{language_code}")
                 response = HttpResponse(
                     content_type="text/csv",
-                    headers={"Content-Disposition": f'attachment; filename="{instance.name}_{language_code}.csv"'},
+                    headers={"Content-Disposition": f'attachment; filename="{filename}.csv"'},
                 )
                 writer = csv.writer(response, dialect="excel")
                 for i, msg in enumerate(msgids, 1):
-                    writer.writerow([str(i), msg, ""])
+                    writer.writerow([str(i), msg.replace("\n", "\\n"), ""])
                 return response
 
         else:

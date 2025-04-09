@@ -4,7 +4,9 @@ from django.conf import settings
 from django.urls.base import resolve
 from django.urls.base import reverse as lang_implied_reverse
 from django.urls.exceptions import NoReverseMatch
-from django.utils.translation import activate, deactivate, get_language, override
+from django.utils.translation import deactivate, get_language, override
+
+from aurora.i18n.engine import translator
 
 
 def reverse(view_name, lang=None, use_lang_prefix=True, *args, **kwargs):
@@ -24,7 +26,7 @@ def reverse(view_name, lang=None, use_lang_prefix=True, *args, **kwargs):
             return lang_implied_reverse(view_name, args=args, kwargs=kwargs)
     cur_language = get_language()
     if use_lang_prefix:
-        activate(lang)
+        translator.activate(lang)
     else:
         deactivate()
     url = lang_implied_reverse(view_name, args=args, kwargs=kwargs)
@@ -32,7 +34,7 @@ def reverse(view_name, lang=None, use_lang_prefix=True, *args, **kwargs):
         if not url.startswith(f"/{settings.LANGUAGE_CODE}"):
             raise NoReverseMatch(f'could not find reverse match for "{view_name}" with language "{lang}"')
         url = url[1 + len(settings.LANGUAGE_CODE):]  # fmt: skip
-    activate(cur_language)
+    translator.activate(cur_language)
     return url
 
 

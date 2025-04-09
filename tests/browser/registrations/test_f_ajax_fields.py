@@ -1,4 +1,5 @@
 import time
+from typing import TYPE_CHECKING
 from unittest.mock import Mock
 
 import pytest
@@ -7,8 +8,6 @@ from testutils.selenium import AuroraTestBrowser
 
 from aurora.core import fields
 from aurora.registration.models import Record
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from aurora.core.models import OptionSet
