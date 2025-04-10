@@ -162,10 +162,30 @@ def test_i18n_admin_import_translation_error(app, mock_state, record):
     assert message == "Error on line 1. Check import configuration"
 
 
-def test_i18n_admin_check_orphans(app, mock_state, record):
+def test_i18n_admin_check_orphans(app, mock_state, record, registration):
     url = reverse("admin:i18n_message_check_orphans")
     res = app.get(url)
     form = res.forms["check-form"]
     form["locale"] = "it-it"
     res = form.submit()
     assert res.status_code == 200
+
+
+def test_i18n_admin_action_approve(app, mock_state, record, registration):
+    url = reverse("admin:i18n_message_changelist")
+    res = app.get(url)
+    res.forms["changelist-form"]["action"] = "approve"
+    res.forms["changelist-form"].get("_selected_action", index=1).value = True
+    res = res.forms["changelist-form"].submit("index").follow()
+    message = PyQuery(res.text)("ul.messagelist").text()
+    assert message == "1 Messages have been approved"
+
+
+def test_i18n_admin_action_rehash(app, mock_state, record, registration):
+    url = reverse("admin:i18n_message_changelist")
+    res = app.get(url)
+    res.forms["changelist-form"]["action"] = "rehash"
+    res.forms["changelist-form"].get("_selected_action", index=1).value = True
+    res = res.forms["changelist-form"].submit("index").follow()
+    message = PyQuery(res.text)("ul.messagelist").text()
+    assert message == "1 Messages have been rehashed"

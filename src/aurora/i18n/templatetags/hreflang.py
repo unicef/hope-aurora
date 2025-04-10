@@ -9,7 +9,6 @@ from django.urls import NoReverseMatch
 from django.urls.base import resolve
 
 from aurora.core.utils import cache_aware_url
-
 from aurora.i18n.hreflang import reverse
 
 register = template.Library()

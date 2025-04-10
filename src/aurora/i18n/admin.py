@@ -71,7 +71,8 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
     actions = ["approve", "rehash", "publish_action"]
 
     def approve(self, request, queryset):
-        queryset.update(draft=False)
+        num = queryset.update(draft=False)
+        self.message_user(request, f"{num} Messages have been approved")
 
     def get_queryset(self, request):
         return (
@@ -241,8 +242,11 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
         return HttpResponseRedirect(cl)
 
     def rehash(self, request, queryset):
+        num = 0
         for m in queryset.all():
             m.save()
+            num += 1
+        self.message_user(request, f"{num} Messages have been rehashed")
 
     @button()
     def siblings(self, request, pk):

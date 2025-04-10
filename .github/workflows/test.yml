@@ -80,8 +80,8 @@ jobs:
       DOCKER_DEFAULT_PLATFORM: linux/amd64
       DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
       DATABASE_URL: postgres://postgres:postgres@localhost:15432/aurora
-      CELERY_BROKER_URL: redis://localhost:16379/0"
-      CACHE_URL: redis://localhost:16379/0
+      CACHE_DEFAULT: redis://localhost:16379/0
+      REDIS_CONNSTR: localhost:16379/2
       DOCKER_BUILDKIT: 1
     steps:
       - name: Checkout code
