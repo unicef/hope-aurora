@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "reversion_compare",  # https://github.com/jedie/django-reversion-compare
     "django_filters",
     # ---
+    "aurora.web",
     "smart_admin.apps.SmartLogsConfig",
     "smart_admin.apps.SmartTemplateConfig",
     "smart_admin.apps.SmartAuthConfig",
@@ -81,7 +82,6 @@ INSTALLED_APPS = [
     "aurora.apps.Config",
     "aurora.flatpages.apps.Config",
     "aurora.i18n",
-    "aurora.web",
     "aurora.security.apps.Config",
     "aurora.core",
     "aurora.registration",

@@ -1,11 +1,10 @@
-from typing import Generator
+from typing import TYPE_CHECKING, Generator
 from unittest.mock import Mock
 
 import pytest
 from testutils.factories import MessageFactory
 
 from aurora.i18n.engine import Cache
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from aurora.i18n.models import Message

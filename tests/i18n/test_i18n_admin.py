@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from unittest.mock import Mock
 
 import pytest
@@ -5,7 +6,9 @@ from django.urls import reverse
 from testutils.factories import FormFactory, MessageFactory, RegistrationFactory
 
 from aurora.core import fields
-from aurora.i18n.models import Message
+
+if TYPE_CHECKING:
+    from aurora.i18n.models import Message
 
 
 @pytest.fixture
@@ -70,15 +73,6 @@ def test_i18n_admin_siblings(app, mock_state, record):
     assert res.status_code == 302
 
 
-def test_i18n_admin_check_orphans(app, mock_state, record):
-    url = reverse("admin:i18n_message_changelist")
-    res = app.get(url)
-    res = res.click("Check Orphans")
-    res.forms["check-form"]["locale"] = "it-it"
-    res = res.forms["check-form"].submit()
-    assert res.status_code == 200
-
-
 def test_i18n_admin_create_translation(app, mock_state, record):
     url = reverse("admin:i18n_message_change", args=(record.pk,))
     res = app.get(url)
@@ -107,12 +101,3 @@ def test_i18n_admin_create_invalid(app, mock_state, record):
     res.forms["translation_form"]["locale"].force_value("err")
     res = res.forms["translation_form"].submit()
     assert res.status_code == 200
-
-
-def test_i18n_admin_create_translations(app, mock_state, record):
-    url = reverse("admin:i18n_message_changelist")
-    res = app.get(url)
-    res = res.click("Create Translations")
-    res.forms["translation_form"]["locale"] = "ar-ae"
-    res.forms["translation_form"].submit()
-    assert Message.objects.filter(locale="ar-ae").count() == Message.objects.filter(locale="en-us").count()

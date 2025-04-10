@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 import pytest
 from django.contrib.auth.models import AnonymousUser
 from django.template import Context, Template
@@ -5,7 +7,6 @@ from django.test import RequestFactory
 from testutils.factories import MessageFactory
 
 from aurora.i18n.engine import translator
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from aurora.i18n.models import Message

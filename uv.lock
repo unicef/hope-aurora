@@ -170,7 +170,7 @@ requires-dist = [
     { name = "channels", extras = ["daphne"] },
     { name = "channels-redis" },
     { name = "cryptography" },
-    { name = "django", specifier = "<5.1" },
+    { name = "django", specifier = "==5.2.*" },
     { name = "django-admin-extra-buttons" },
     { name = "django-admin-ordering" },
     { name = "django-admin-sync" },
@@ -236,7 +236,7 @@ dev = [
     { name = "check-manifest", specifier = ">=0.50" },
     { name = "check-wheel-contents", specifier = ">=0.6.1" },
     { name = "coverage" },
-    { name = "django-webtest" },
+    { name = "django-webtest", specifier = ">=1.9.13" },
     { name = "factory-boy" },
     { name = "freezegun" },
     { name = "licensecheck", specifier = ">=2020" },
@@ -265,13 +265,13 @@ docs = [
     { name = "mkdocs-embed-external-markdown", specifier = ">=3.0.2" },
     { name = "mkdocs-ezglossary-plugin", specifier = ">=1.6.10" },
     { name = "mkdocs-ezlinks-plugin", specifier = ">=0.1.14" },
-    { name = "mkdocs-gen-files", specifier = ">=0.5.0" },
-    { name = "mkdocs-get-deps", specifier = ">=0.2.0" },
+    { name = "mkdocs-gen-files", specifier = ">=0.5" },
+    { name = "mkdocs-get-deps", specifier = ">=0.2" },
     { name = "mkdocs-include-markdown-plugin", specifier = ">=6.2.2" },
     { name = "mkdocs-link-marker", specifier = ">=0.1.3" },
     { name = "mkdocs-macros-plugin", specifier = ">=1.0.5" },
     { name = "mkdocs-material", specifier = ">=9.5.36" },
-    { name = "mkdocs-minify-plugin", specifier = ">=0.8.0" },
+    { name = "mkdocs-minify-plugin", specifier = ">=0.8" },
     { name = "mkdocs-redirects", specifier = ">=1.2.1" },
     { name = "mkdocs-simple-hooks", specifier = ">=0.1.5" },
     { name = "mkdocstrings", extras = ["python"], specifier = ">=0.24.1" },
@@ -810,16 +810,16 @@ wheels = [
 
 [[package]]
 name = "django"
-version = "5.0.14"
+version = "5.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "asgiref" },
     { name = "sqlparse" },
     { name = "tzdata", marker = "sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9d/a4/cc0205045386b5be8eecb15a95f290383d103f0db5f7e34f93dcc340d5b0/Django-5.0.14.tar.gz", hash = "sha256:29019a5763dbd48da1720d687c3522ef40d1c61be6fb2fad27ed79e9f655bc11", size = 10644306 }
+sdist = { url = "https://files.pythonhosted.org/packages/4c/1b/c6da718c65228eb3a7ff7ba6a32d8e80fa840ca9057490504e099e4dd1ef/Django-5.2.tar.gz", hash = "sha256:1a47f7a7a3d43ce64570d350e008d2949abe8c7e21737b351b6a1611277c6d89", size = 10824891 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c0/93/eabde8789f41910845567ebbff5aacd52fd80e54c934ce15b83d5f552d2c/Django-5.0.14-py3-none-any.whl", hash = "sha256:e762bef8629ee704de215ebbd32062b84f4e56327eed412e5544f6f6eb1dfd74", size = 8185934 },
+    { url = "https://files.pythonhosted.org/packages/63/e0/6a5b5ea350c5bd63fe94b05e4c146c18facb51229d9dee42aa39f9fc2214/Django-5.2-py3-none-any.whl", hash = "sha256:91ceed4e3a6db5aedced65e3c8f963118ea9ba753fc620831c77074e620e7d83", size = 8301361 },
 ]
 
 [[package]]
@@ -1281,14 +1281,14 @@ wheels = [
 
 [[package]]
 name = "django-webtest"
-version = "1.9.12"
+version = "1.9.13"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "webtest" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/47/e3/e087630e62bcf29ed1c3560ae98b12c45e0ac07b4899ab3b8ef6a1967dde/django_webtest-1.9.12.tar.gz", hash = "sha256:5012c30665e7a6e585a1544eda75045d07d5b3f5ccccd4d0fe144c4555884095", size = 28848 }
+sdist = { url = "https://files.pythonhosted.org/packages/93/1f/5bbd6fc47dc82230f03f16eb1ddd6f3aa8865f38b52c4f90964a3001d2c7/django_webtest-1.9.13.tar.gz", hash = "sha256:97b2db843588128332326e4fc0a37bd825cf4d68f1ab0188c8cc00a9710e8279", size = 28901 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/97/0b/c7e6c3a59ea001ca51a966477eafd2746e63b6ff2fce7dcf3c3b3c0ad765/django_webtest-1.9.12-py3-none-any.whl", hash = "sha256:de5c988c20eef7abbb3d0508494d9e576af08087d0fb6109b1d54f15ef4d78fa", size = 16583 },
+    { url = "https://files.pythonhosted.org/packages/45/57/760a41e283f356a6aedb3b71b91a3ca9991b758482f01d31be9a5129ecd1/django_webtest-1.9.13-py3-none-any.whl", hash = "sha256:1903d35f429cbff54bd89d41ddc42376529d56e3c35bfe7cb83827b17fbf962d", size = 16638 },
 ]
 
 [[package]]
