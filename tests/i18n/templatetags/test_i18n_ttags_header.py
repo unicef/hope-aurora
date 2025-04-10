@@ -17,10 +17,11 @@ def test_translate_url():
     assert rendered == "/it-it"
 
 
+def test_translate_url_view_name(db):
+    rendered = render_template("""{% load hreflang %}{% translate_url k view_name='index' %}{{ k }}""")
+    assert rendered == "/it-it"
+
+
 def test_translate_url_error():
     with pytest.raises(Exception, match="translate_url needs request context"):
         render_template("""{% load hreflang %}{% translate_url k %}{{ k }}""", {"k": "it-it"})
-
-
-def test_translate_url_with_view(db):
-    render_template("""{% load hreflang %}{% translate_url k 'view_name' %}{{ k }}""")

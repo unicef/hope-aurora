@@ -18,3 +18,17 @@ def test_gettext(db):
 
     translator.activate("en-us")
     assert gettext("name") == m1.msgstr
+
+
+def test_gettext_edge(db):
+    class JustForTest:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def __str__(self):
+            return ""
+
+        def replace(self, *args):
+            return ""
+
+    assert gettext(JustForTest())

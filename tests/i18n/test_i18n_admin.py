@@ -1,14 +1,12 @@
 from pathlib import Path
-from pyquery import PyQuery
-
 from typing import TYPE_CHECKING
 from unittest.mock import Mock
 
 import pytest
 from django.urls import reverse
-from webtest import Upload
-
+from pyquery import PyQuery
 from testutils.factories import FormFactory, MessageFactory, RegistrationFactory
+from webtest import Upload
 
 from aurora.core import fields
 

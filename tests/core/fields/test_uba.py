@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import Mock, patch
 
 import pytest
@@ -12,7 +13,6 @@ from testutils.factories import FlexFormFieldFactory, FormFactory
 
 from aurora.core.fields import UBANameEnquiryField
 from aurora.core.fields.uba import BANKS_CHOICE
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from aurora.core.models import FlexForm

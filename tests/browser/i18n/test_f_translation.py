@@ -54,7 +54,7 @@ def test_export_translate(mock_state, browser: AuroraTestBrowser, registration):
     browser.click("input#select_all")
     browser.click("input[type=submit][name=export]")
 
-    exported = browser.get_downloaded_files()
+    exported = browser.get_browser_downloads_folder()
     time.sleep(1)
     assert len(exported)
     assert Path(browser.get_path_of_downloaded_file(exported[0])).exists()

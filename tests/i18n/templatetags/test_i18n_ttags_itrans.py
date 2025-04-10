@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from django.contrib.auth.models import AnonymousUser
-from django.template import Context, Template
+from django.template import Context, Template, TemplateSyntaxError
 from django.test import RequestFactory
 from testutils.factories import MessageFactory
 
@@ -41,6 +41,27 @@ def test_translate(data):
     assert rendered == "Nome"
 
 
+def test_translate_noop(data):
+    rendered = _render_template("""{% load itrans %}{% translate k noop %}""")
+    assert rendered == "First Name"
+
+
+def test_translate_error(data):
+    with pytest.raises(TemplateSyntaxError):
+        _render_template("""{% load itrans %}{% translate k noop noop %}""")
+    with pytest.raises(TemplateSyntaxError):
+        _render_template("""{% load itrans %}{% translate k uknown %}""")
+
+
+def test_translate_context(data):
+    rendered = _render_template("""{% load itrans %}{% translate "First Name" context "greeting" %}""")
+    assert rendered == "First Name"
+    with pytest.raises(TemplateSyntaxError):
+        _render_template("""{% load itrans %}{% translate "First Name" context  %}""")
+    with pytest.raises(TemplateSyntaxError):
+        _render_template("""{% load itrans %}{% translate "First Name" context noop %}""")
+
+
 def test_translate_expr(data):
     rendered = _render_template("""{% load itrans %}{% translate k %}""")
     assert rendered == "First Name"
@@ -55,6 +76,21 @@ def test_translate_as_var(data):
 
     rendered = _render_template("""{% load itrans %}{% translate "First Name" as var %}{{ var }}""", locale="it")
     assert rendered == "Nome"
+    with pytest.raises(TemplateSyntaxError):
+        _render_template("""{% load itrans %}{% translate "First Name" as  %}{{ var }}""", locale="it")
+
+
+def test_block_translate_error(data):
+    with pytest.raises(TemplateSyntaxError):
+        _render_template("""{% load itrans %}{% blocktranslate noop noop %}{% endblocktranslate %}""")
+    with pytest.raises(TemplateSyntaxError):
+        _render_template("""{% load itrans %}{% blocktranslate uknown %}{% endblocktranslate %}""")
+    with pytest.raises(TemplateSyntaxError):
+        _render_template("""{% load itrans %}{% blocktranslate with %}{% endblocktranslate %}""")
+    with pytest.raises(TemplateSyntaxError):
+        _render_template("""{% load itrans %}{% blocktranslate count %}{% endblocktranslate %}""")
+    with pytest.raises(TemplateSyntaxError):
+        _render_template("""{% load itrans %}{% blocktranslate context %}{% endblocktranslate %}""")
 
 
 def test_block_translate(data):

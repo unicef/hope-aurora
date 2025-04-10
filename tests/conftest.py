@@ -30,7 +30,6 @@ def pytest_configure(config):
     os.environ["SOCIAL_AUTH_REDIRECT_IS_HTTPS"] = "false"
     os.environ["LOG_LEVEL"] = "CRITICAL"
     os.environ["LOGGING_HANDLERS"] = "null"
-
     from django.conf import global_settings, settings
 
     settings.STORAGES = global_settings.STORAGES

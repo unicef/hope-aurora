@@ -4,7 +4,7 @@ from django.utils.translation.trans_real import _active, _default, translation  
 from .engine import translator
 
 
-def gettext(message):
+def gettext(message: str) -> str:
     """Translate the 'message' string.
 
     It uses the current thread to find the
