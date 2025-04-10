@@ -1,4 +1,5 @@
 import binascii
+from typing import TYPE_CHECKING
 
 import requests
 from constance import config
@@ -14,6 +15,9 @@ from requests.exceptions import MissingSchema, ReadTimeout
 from aurora.core.fields.mixins import MultiValueWidgetMixin
 from aurora.core.fields.widgets import SmartTextWidget
 from aurora.core.version_media import VersionMedia
+
+if TYPE_CHECKING:
+    from aurora.core.models import FlexFormField
 
 FALSE = "false"
 
@@ -1334,6 +1338,7 @@ class UBANameEnquiryMultiWidget(MultiValueWidgetMixin, MultiWidget):
 
 class UBANameEnquiryField(forms.MultiValueField):
     widget = UBANameEnquiryMultiWidget
+    flex_field: "FlexFormField"
 
     def __init__(self, *args, **kwargs):
         fields = [
@@ -1357,10 +1362,9 @@ class UBANameEnquiryField(forms.MultiValueField):
         except ValueError:
             raise ValidationError("ValueError: not enough values to unpack") from None
 
-        i = 0
         generate = False
 
-        while i < 3:
+        for __ in range(1, 3):
             headers = {
                 "AccessCode": self.get_token(generate),
                 "Applcode": config.UBA_APPL_CODE,
@@ -1377,7 +1381,6 @@ class UBANameEnquiryField(forms.MultiValueField):
             try:
                 response = requests.post(config.UBA_NAME_ENQUIRY_URL, headers=headers, json=payload, timeout=60)
             except (ReadTimeout, ConnectionError):
-                i += 1
                 continue
 
             if response.status_code == 200:
@@ -1398,7 +1401,6 @@ class UBANameEnquiryField(forms.MultiValueField):
                     error_message = "Invalid account number"
                 raise ValidationError(f"{error_message}: (error {error_code})")
             generate = True
-            i += 1
 
         if not self.flex_field.advanced.get("ignore_error", False):
             raise ValidationError(
@@ -1421,7 +1423,7 @@ class UBANameEnquiryField(forms.MultiValueField):
                     jresponse = response.json()
                     token = f"{jresponse['token_type']} {jresponse['access_token']}"
                 except MissingSchema:
-                    raise ValidationError("Invalid Token") from None
+                    raise ValidationError("Invalid UBA Api url") from None
                 except (ReadTimeout, ConnectionError, KeyError):
                     i += 1
                     continue

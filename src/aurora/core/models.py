@@ -3,9 +3,8 @@ import logging
 import re
 from datetime import date, datetime, time
 from inspect import isclass
-from json import JSONDecodeError
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from admin_ordering.models import OrderableModel
 from concurrency.fields import AutoIncVersionField
@@ -25,7 +24,6 @@ from mptt.fields import TreeForeignKey
 from mptt.managers import TreeManager
 from mptt.models import MPTTModel
 from natural_keys import NaturalKeyModel, NaturalKeyModelManager
-from sentry_sdk import set_tag
 from strategy_field.utils import fqn
 
 from ..i18n.get_text import gettext as _
@@ -39,6 +37,11 @@ from .forms import CustomFieldMixin, FlexFormBaseForm, SmartBaseFormSet
 from .js import DukPYValidator
 from .registry import field_registry, form_registry, import_custom_field
 from .utils import JSONEncoder, dict_setdefault, jsonfy, namify, underscore_to_camelcase
+
+if TYPE_CHECKING:
+    from typing import TypeVar
+
+    FlexFormForm = TypeVar("FlexFormForm", bound=FlexFormBaseForm)
 
 logger = logging.getLogger(__name__)
 
@@ -225,72 +228,72 @@ _.is_adult = function(d) { return !_.is_child(d)};
             engine = DukPYValidator(self.code)
             engine.validate(value)
 
-    def validate_old(self, value, registration=None):
-        set_tag("validator", self.name)
-
-        status = self.STATUS_UNKNOWN if self.active else self.STATUS_INACTIVE
-        self.monitor(status, value)
-
-        if value and (self.active or (self.draft and state.request.user.is_staff)):
-            from py_mini_racer import MiniRacer
-            from py_mini_racer._types import JSUndefined
-            from py_mini_racer.py_mini_racer import MiniRacerBaseException
-
-            ctx = MiniRacer()
-            try:
-                pickled = self.jspickle(value or "")
-                base = f"{self.CONSOLE};{self.LIB}; var value = {pickled};"
-
-                ctx.eval(base)
-
-                result = ctx.eval(self.code)
-
-                if result is None:
-                    ret = False
-                else:
-                    try:
-                        ret = json.loads(result)
-                    except (JSONDecodeError, TypeError):
-                        ret = result
-                if isinstance(ret, str):
-                    raise ValidationError(_(ret))
-                if isinstance(ret, list | tuple):
-                    errors = [_(v) for v in ret]
-                    raise ValidationError(errors)
-                if isinstance(ret, dict):
-                    errors = {k: _(v) for (k, v) in ret.items()}
-                    raise ValidationError(errors)
-                if isinstance(ret, bool) and not ret or ret is JSUndefined:
-                    raise ValidationError(_("Please insert a valid value"))
-
-            except ValidationError as e:
-                import sentry_sdk
-
-                if self.trace:
-                    with sentry_sdk.push_scope() as scope:
-                        scope.set_tag("validator", self.name)
-                        scope.set_extra("registration", registration)
-                        logger.exception(e)
-                    self.monitor(self.STATUS_ERROR, value, e)
-                elif self.count_errors:
-                    with sentry_sdk.push_scope() as scope:
-                        scope.set_tag("validator", self.name)
-                        scope.set_extra("registration", registration)
-                        sentry_sdk.capture_message(f"{self.name}", level="info")
-                raise
-            except MiniRacerBaseException as e:
-                logger.exception(e)
-                self.monitor(self.STATUS_EXCEPTION, value, e)
-                return True
-            except Exception as e:
-                logger.exception(e)
-                self.monitor(self.STATUS_EXCEPTION, value, e)
-                raise
-            self.monitor(self.STATUS_SUCCESS, value)
-
-        elif self.trace:
-            self.monitor(self.STATUS_SKIP, value)
-        return None
+    # def validate_old(self, value, registration=None):
+    #     set_tag("validator", self.name)
+    #
+    #     status = self.STATUS_UNKNOWN if self.active else self.STATUS_INACTIVE
+    #     self.monitor(status, value)
+    #
+    #     if value and (self.active or (self.draft and state.request.user.is_staff)):
+    #         from py_mini_racer import MiniRacer
+    #         from py_mini_racer._types import JSUndefined
+    #         from py_mini_racer.py_mini_racer import MiniRacerBaseException
+    #
+    #         ctx = MiniRacer()
+    #         try:
+    #             pickled = self.jspickle(value or "")
+    #             base = f"{self.CONSOLE};{self.LIB}; var value = {pickled};"
+    #
+    #             ctx.eval(base)
+    #
+    #             result = ctx.eval(self.code)
+    #
+    #             if result is None:
+    #                 ret = False
+    #             else:
+    #                 try:
+    #                     ret = json.loads(result)
+    #                 except (JSONDecodeError, TypeError):
+    #                     ret = result
+    #             if isinstance(ret, str):
+    #                 raise ValidationError(_(ret))
+    #             if isinstance(ret, list | tuple):
+    #                 errors = [_(v) for v in ret]
+    #                 raise ValidationError(errors)
+    #             if isinstance(ret, dict):
+    #                 errors = {k: _(v) for (k, v) in ret.items()}
+    #                 raise ValidationError(errors)
+    #             if isinstance(ret, bool) and not ret or ret is JSUndefined:
+    #                 raise ValidationError(_("Please insert a valid value"))
+    #
+    #         except ValidationError as e:
+    #             import sentry_sdk
+    #
+    #             if self.trace:
+    #                 with sentry_sdk.push_scope() as scope:
+    #                     scope.set_tag("validator", self.name)
+    #                     scope.set_extra("registration", registration)
+    #                     logger.exception(e)
+    #                 self.monitor(self.STATUS_ERROR, value, e)
+    #             elif self.count_errors:
+    #                 with sentry_sdk.push_scope() as scope:
+    #                     scope.set_tag("validator", self.name)
+    #                     scope.set_extra("registration", registration)
+    #                     sentry_sdk.capture_message(f"{self.name}", level="info")
+    #             raise
+    #         except MiniRacerBaseException as e:
+    #             logger.exception(e)
+    #             self.monitor(self.STATUS_EXCEPTION, value, e)
+    #             return True
+    #         except Exception as e:
+    #             logger.exception(e)
+    #             self.monitor(self.STATUS_EXCEPTION, value, e)
+    #             raise
+    #         self.monitor(self.STATUS_SUCCESS, value)
+    #
+    #     elif self.trace:
+    #         self.monitor(self.STATUS_SKIP, value)
+    #     return None
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not self.name:
@@ -346,7 +349,7 @@ class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
         return FormSet.objects.update_or_create(parent=self, flex_form=form, defaults=defaults)[0]
 
     # @cache_form
-    def get_form_class(self):
+    def get_form_class(self) -> "[FlexFormForm]":
         from aurora.core.fields import CompilationTimeField
 
         fields = {}

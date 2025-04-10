@@ -13,7 +13,7 @@
             width: 200px;
         }
     </style>
-    <form method="post" action="." enctype="multipart/form-data">
+    <form method="post" action="." enctype="multipart/form-data" id="importForm">
         {% csrf_token %}
         {% if rows %}
             <table>
@@ -40,11 +40,11 @@
             {{ form.errors }}
             {{ opts_form.errors }}
             <table>
-                {{ form }}
+                {{ form.as_table }}
             </table>
             <table>
                 <caption>CSV Options</caption>
-                {{ opts_form }}
+                {{ opts_form.as_table }}
             </table>
             <input type="submit" name="import" id="import" value="Import">
         {% endif %}

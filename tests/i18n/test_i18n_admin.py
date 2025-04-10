@@ -1,8 +1,13 @@
+from pathlib import Path
+from pyquery import PyQuery
+
 from typing import TYPE_CHECKING
 from unittest.mock import Mock
 
 import pytest
 from django.urls import reverse
+from webtest import Upload
+
 from testutils.factories import FormFactory, MessageFactory, RegistrationFactory
 
 from aurora.core import fields
@@ -37,8 +42,8 @@ def registration():
 
 @pytest.fixture
 def record():
-    m1 = MessageFactory(msgstr="name", locale="en-us")
-    m1.update_or_create_translation("nome", "it", draft=False)
+    m1 = MessageFactory(msgstr="Name", locale="en-us")
+    m1.update_or_create_translation("Nome", "it-it", draft=False)
     MessageFactory(msgstr="Date Of Birth", locale="en-us")
     return m1
 
@@ -100,4 +105,69 @@ def test_i18n_admin_create_invalid(app, mock_state, record):
     res = res.click("Create Translation")
     res.forms["translation_form"]["locale"].force_value("err")
     res = res.forms["translation_form"].submit()
+    assert res.status_code == 200
+
+
+def test_i18n_admin_import_translation(app, mock_state, record):
+    from aurora.i18n.models import Message
+
+    url = reverse("admin:i18n_message_import_translations")
+    res = app.get(url)
+    form = res.forms["importForm"]
+    form["locale"] = "it-it"
+    form["csv-delimiter"] = ","
+    content = Path("tests/data/it_translations.csv").read_bytes()
+    form["csv_file"] = Upload("tests/data/it_translations.csv", content)
+    res = form.submit()
+    assert res.status_code == 200
+    form = res.forms["importForm"]
+    res = form.submit("save").follow()
+
+    message = PyQuery(res.text)("ul.messagelist").text()
+    assert message == "Messages processed: Processed: 5, Selected: 5, Created: 4, Updated: 1"
+
+    assert Message.objects.filter(msgid="Date Of Birth", locale="it-it").exists()
+    assert Message.objects.filter(msgid="Name", locale="it-it").exists()
+    assert Message.objects.filter(msgid="Save", locale="it-it").exists()
+    assert Message.objects.filter(msgid="please fix the errors below", locale="it-it").exists()
+    assert Message.objects.filter(msgid="required", locale="it-it").exists()
+
+
+def test_i18n_admin_import_translation_no_selection(app, mock_state, record):
+    url = reverse("admin:i18n_message_import_translations")
+    res = app.get(url)
+    form = res.forms["importForm"]
+    form["locale"] = "it-it"
+    form["csv-delimiter"] = ","
+    content = Path("tests/data/it_translations.csv").read_bytes()
+    form["csv_file"] = Upload("tests/data/it_translations.csv", content)
+    res = form.submit()
+    assert res.status_code == 200
+    form = res.forms["importForm"]
+    form["selection"] = []
+    res = form.submit("save").follow()
+    message = PyQuery(res.text)("ul.messagelist").text()
+    assert message == "Messages processed: Processed: 5, Selected: 0, Created: 0, Updated: 0"
+
+
+def test_i18n_admin_import_translation_error(app, mock_state, record):
+    url = reverse("admin:i18n_message_import_translations")
+    res = app.get(url)
+    form = res.forms["importForm"]
+    form["locale"] = "it-it"
+    form["csv-delimiter"] = ";"
+    content = Path("tests/data/it_translations.csv").read_bytes()
+    form["csv_file"] = Upload("tests/data/it_translations.csv", content)
+    res = form.submit()
+    assert res.status_code == 200
+    message = PyQuery(res.text)("ul.messagelist").text()
+    assert message == "Error on line 1. Check import configuration"
+
+
+def test_i18n_admin_check_orphans(app, mock_state, record):
+    url = reverse("admin:i18n_message_check_orphans")
+    res = app.get(url)
+    form = res.forms["check-form"]
+    form["locale"] = "it-it"
+    res = form.submit()
     assert res.status_code == 200

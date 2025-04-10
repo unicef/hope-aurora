@@ -5,6 +5,7 @@ from django.template.base import TokenType, render_value_in_context
 from django.template.defaulttags import token_kwargs
 from django.templatetags.static import static
 from django.utils import translation
+from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
 
 from ..engine import translator
@@ -341,4 +342,4 @@ def bool_icon(value):
         img = static("admin/img/icon-yes.svg")
     else:
         img = static("admin/img/icon-no.svg")
-    return f'<img src="{img}" alt="{str(bool(value))}">'
+    return mark_safe(f'<img src="{img}" alt="{str(bool(value))}">')  # noqa: S308

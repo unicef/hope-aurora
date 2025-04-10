@@ -88,52 +88,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
         ctx["rows"] = []
         if request.method == "POST":
             key = f"translation_{request.user.pk}_{md5(request.session.session_key.encode()).hexdigest()}"
-            if "import" in request.POST:
-                form = ImportLanguageForm(request.POST, request.FILES)
-                opts_form = CSVOptionsForm(request.POST, prefix="csv")
-                if form.is_valid() and opts_form.is_valid():
-                    csv_file = form.cleaned_data["csv_file"]
-                    if csv_file.multiple_chunks():
-                        self.message_user(
-                            request,
-                            "Uploaded file is too big (%.2f MB)" % (csv_file.size / 1000),
-                        )
-                    else:
-                        ctx["language_code"] = form.cleaned_data["locale"]
-                        ctx["language"] = dict(form.fields["locale"].choices)[ctx["language_code"]]
-                        self.message_user(
-                            request,
-                            "Uploaded file succeeded (%.2f MB)" % (csv_file.size / 1000),
-                        )
-                        rows = TextIOWrapper(csv_file, encoding="utf-8")
-                        rows.seek(0)
-                        config = {**opts_form.cleaned_data}
-                        has_header = config.pop("header", False)
-                        reader = csv.reader(rows, **config)
-                        line_count = 1
-                        for row in reader:
-                            if has_header and line_count == 1:
-                                continue
-                            found = Message.objects.filter(msgid=row[0]).first()
-                            ctx["rows"].append(
-                                [
-                                    line_count,
-                                    {
-                                        "msgid": row[0],
-                                        "msgstr": row[1],
-                                        "found": bool(found),
-                                        "match": found and found.msgstr == row[1],
-                                    },
-                                ]
-                            )
-                            line_count += 1
-                        data = {
-                            "language": ctx["language"],
-                            "language_code": ctx["language_code"],
-                            "messages": ctx["rows"],
-                        }
-                        cache.set(key, data, timeout=86400, version=1)
-            elif "save" in request.POST:
+            if "save" in request.POST:
                 data = cache.get(key, version=1)
                 selection = request.POST.getlist("selection")
                 lang = data["language_code"]
@@ -146,8 +101,8 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
                             selected += 1
                             info = row[1]
                             __, c = Message.objects.update_or_create(
-                                locale=lang,
                                 msgid=info["msgid"],
+                                locale=lang,
                                 defaults={"msgstr": info["msgstr"]},
                             )
                             ids.append(str(__.pk))
@@ -165,6 +120,56 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
                     )
                     base_url = reverse("admin:i18n_message_changelist")
                     return HttpResponseRedirect(f"{base_url}?locale__exact={lang}&qs=id__in={','.join(ids)}")
+            else:  # if "import" in request.POST:
+                form = ImportLanguageForm(request.POST, request.FILES)
+                opts_form = CSVOptionsForm(request.POST, prefix="csv")
+                if form.is_valid() and opts_form.is_valid():
+                    csv_file = form.cleaned_data["csv_file"]
+                    if csv_file.multiple_chunks():
+                        self.message_user(
+                            request,
+                            "Uploaded file is too big (%.2f MB)" % (csv_file.size / 1000),
+                        )
+                    else:
+                        ctx["language_code"] = form.cleaned_data["locale"]
+                        ctx["language"] = dict(form.fields["locale"].choices)[ctx["language_code"]]
+                        rows = TextIOWrapper(csv_file, encoding="utf-8")
+                        rows.seek(0)
+                        config = {**opts_form.cleaned_data}
+                        has_header = config.pop("header", False)
+                        reader = csv.reader(rows, **config)
+                        line_count = 1
+                        try:
+                            for row in reader:
+                                if has_header and line_count == 1:
+                                    continue
+                                found = Message.objects.filter(msgid=row[0]).first()
+                                ctx["rows"].append(
+                                    [
+                                        line_count,
+                                        {
+                                            "msgid": row[0],
+                                            "msgstr": row[1],
+                                            "found": bool(found),
+                                            "match": found and found.msgstr == row[1],
+                                        },
+                                    ]
+                                )
+                                line_count += 1
+                            data = {
+                                "language": ctx["language"],
+                                "language_code": ctx["language_code"],
+                                "messages": ctx["rows"],
+                            }
+                            cache.set(key, data, timeout=86400, version=1)
+                            self.message_user(
+                                request,
+                                "Uploaded file succeeded (%.2f MB)" % (csv_file.size / 1000),
+                            )
+                        except IndexError:
+                            self.message_user(
+                                request, "Error on line %d. Check import configuration" % line_count, messages.ERROR
+                            )
         else:
             form = ImportLanguageForm()
             opts_form = CSVOptionsForm(prefix="csv", initial=CSVOptionsForm.defaults)

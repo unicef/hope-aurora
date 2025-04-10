@@ -62,20 +62,16 @@ def test_export_translate(mock_state, browser: AuroraTestBrowser, registration):
 
 @pytest.mark.xdist_group("translate")
 def test_import_translate(mock_state, browser: AuroraTestBrowser, registration):
-    url_list = reverse("admin:registration_registration_changelist")
-    url_detail = reverse("admin:registration_registration_change", args=[registration.pk])
-
+    url_list = reverse("admin:i18n_message_changelist")
     browser.login()
     browser.click(f"tr th a[href='{url_list}']")
-    browser.click(f"tr th a[href='{url_detail}']")
-    browser.click("select#btn-admin")
-    browser.select_option_by_text("select#btn-admin", "Export translation file")
+    browser.click("#btn-import_translations")
     browser.select_option_by_value("select#id_locale", "it-it")
-    browser.click("input[type=submit][name=create]")
-    browser.click("input#select_all")
-    browser.click("input[type=submit][name=export]")
+    browser.select_option_by_value("select#id_csv-delimiter", ",")
 
-    exported = browser.get_downloaded_files()
-    time.sleep(1)
-    assert len(exported)
-    Path(browser.get_path_of_downloaded_file(exported[0])).rename(Path(__file__).parent / "AAAAAA.csv")
+    file_path = "tests/data/it_translations.csv"
+    browser.choose_file('input[type="file"]', file_path)
+    browser.click("input#import[type=submit]")
+
+    browser.click("input#save")
+    assert browser.get_text("ul.messagelist") == "Messages processed: Processed: 5, Selected: 5, Created: 5, Updated: 0"
