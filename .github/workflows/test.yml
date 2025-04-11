@@ -132,6 +132,7 @@ jobs:
       - name: Run Test suite
         run: |
             mkdir output latest_logs
+            uv build
             docker run --rm \
               --network host \
               -e PYTHONPATH=/app/src \
