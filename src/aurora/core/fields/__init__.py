@@ -38,4 +38,4 @@ WIDGET_FOR_FORMFIELD_DEFAULTS = {
     # MultiCheckboxField: {"widget": widgets.MultiCheckboxWidget},
 }
 
-__all__ = ["CharField", "DateField", "CompilationTimeField"]
+__all__ = ["CharField", "DateField", "CompilationTimeField", "SmartFileField"]

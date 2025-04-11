@@ -212,7 +212,7 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
         if not self.handler:
             return SaveToDB(self).save(fields_data)
         if not self.is_running():
-            raise Exception("Registration  is expired")
+            raise Exception("Registration is expired")
         return self.handler.save(fields_data)
 
     def get_unique_value(self, cleaned_data):

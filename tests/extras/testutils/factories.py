@@ -165,6 +165,8 @@ class RegistrationFactory(AutoRegisterModelFactory):
     active = True
     locale = "en-us"
     locales = ["en-us", "it-it"]
+    public_key = None
+    encrypt_data = False
 
     class Meta:
         model = Registration

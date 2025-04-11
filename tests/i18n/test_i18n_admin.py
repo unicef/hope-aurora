@@ -1,8 +1,7 @@
-from unittest import mock
-
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
+from unittest import mock
 from unittest.mock import Mock
 
 import pytest
