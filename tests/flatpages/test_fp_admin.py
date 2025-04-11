@@ -1,6 +1,5 @@
 import pytest
 from django.contrib.sites.models import Site
-
 from testutils.factories import FlatPageFactory
 
 

@@ -2,9 +2,9 @@ import pytest
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.sites.models import Site
 from django.http import Http404
+from testutils.factories import FlatPageFactory
 
 from aurora.flatpages.views import flatpage, render_flatpage
-from testutils.factories import FlatPageFactory
 
 
 @pytest.fixture
