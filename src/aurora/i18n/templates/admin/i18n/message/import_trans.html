@@ -28,7 +28,7 @@
 
                 {% for line in rows %}
                     <tr>
-                        <td><input type="checkbox" name="selection" checked value="{{ line.0 }}"> {{ line.0 }}</td>
+                        <td><input type="checkbox" name="selection" checked value="{{ line.1.msgid }}"> {{ line.0 }}</td>
                         <td>{{ line.1.msgid }}</td>
                         <td>{{ line.1.msgstr }}</td>
                         <td>{{ line.1.found|bool_icon }}</td>

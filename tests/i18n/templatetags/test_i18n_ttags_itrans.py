@@ -52,6 +52,9 @@ def test_translate_error(data):
     with pytest.raises(TemplateSyntaxError):
         _render_template("""{% load itrans %}{% translate k uknown %}""")
 
+    with pytest.raises(TemplateSyntaxError):
+        _render_template("""{% load itrans %}{% translate %}""")
+
 
 def test_translate_context(data):
     rendered = _render_template("""{% load itrans %}{% translate "First Name" context "greeting" %}""")
@@ -80,7 +83,12 @@ def test_translate_as_var(data):
         _render_template("""{% load itrans %}{% translate "First Name" as  %}{{ var }}""", locale="it")
 
 
+# block_translate
+
+
 def test_block_translate_error(data):
+    with pytest.raises(TemplateSyntaxError):
+        _render_template("""{% load itrans %}{% blocktranslate with a=1 with b=2 %}{% endblocktranslate %}""")
     with pytest.raises(TemplateSyntaxError):
         _render_template("""{% load itrans %}{% blocktranslate noop noop %}{% endblocktranslate %}""")
     with pytest.raises(TemplateSyntaxError):
@@ -91,10 +99,21 @@ def test_block_translate_error(data):
         _render_template("""{% load itrans %}{% blocktranslate count %}{% endblocktranslate %}""")
     with pytest.raises(TemplateSyntaxError):
         _render_template("""{% load itrans %}{% blocktranslate context %}{% endblocktranslate %}""")
+    with pytest.raises(TemplateSyntaxError):
+        _render_template("""{% load itrans %}{% blocktranslate asvar %}{% endblocktranslate %}""")
 
 
 def test_block_translate(data):
     tpl = """{% load itrans %}{% blocktranslate %}First Name{% endblocktranslate %}"""
+    rendered = _render_template(tpl)
+    assert rendered == "First Name"
+
+    rendered = _render_template(tpl, locale="it")
+    assert rendered == "Nome"
+
+
+def test_block_translate_trimmed(data):
+    tpl = """{% load itrans %}{% blocktranslate with aa=k trimmed %}{{ aa }}   {% endblocktranslate %}"""
     rendered = _render_template(tpl)
     assert rendered == "First Name"
 
@@ -140,3 +159,26 @@ There is {{ count }} object.{% plural %}There are {{ count }} objects.{% endbloc
 
     rendered = _render_template(tpl, locale="it", context={"var": "abc"})
     assert "Ci sono 3 oggetti." in rendered
+
+
+def test_md5(data):
+    tpl = """{% load itrans %}{{ "First Name"|md5:"it-it" }}"""
+    assert _render_template(tpl) == "c746cb9d2a1d62ece08e03ea0f789004"
+
+
+def test_msgcode(data):
+    tpl = """{% load itrans %}{{ "First Name"|msgcode  }}"""
+    assert _render_template(tpl) == "b3b358e690289684023f60990a582858"
+
+
+def test_strip(data):
+    tpl = """{% load itrans %}{{ "First Name   "|strip }}"""
+    assert _render_template(tpl) == "First Name"
+
+
+def test_bool_icon(data):
+    tpl = """{% load itrans %}{{ True|bool_icon }}"""
+    assert _render_template(tpl) == '<img src="/static/admin/img/icon-yes.svg" alt="True">'
+
+    tpl = """{% load itrans %}{{ False|bool_icon }}"""
+    assert _render_template(tpl) == '<img src="/static/admin/img/icon-no.svg" alt="False">'

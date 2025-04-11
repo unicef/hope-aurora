@@ -1,3 +1,6 @@
+from unittest import mock
+
+from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import Mock
@@ -20,6 +23,7 @@ def mock_state():
 
     from aurora.state import state
 
+    state.timestamp = datetime.now()
     state.request = Mock(user=AnonymousUser(), headers={"I18N_SESSION": "abc"})
     yield state
     state.request = None
@@ -76,7 +80,7 @@ def test_i18n_admin_siblings(app, mock_state, record):
     assert res.status_code == 302
 
 
-def test_i18n_admin_create_translation(app, mock_state, record):
+def test_i18n_admin_create_translation_single_update(app, mock_state, record):
     url = reverse("admin:i18n_message_change", args=(record.pk,))
     res = app.get(url)
     res = res.click("Create Translation")
@@ -85,6 +89,56 @@ def test_i18n_admin_create_translation(app, mock_state, record):
     translation: Message = res.context["original"]
     assert record.msgid == translation.msgid
     assert translation.draft
+    message = PyQuery(res.text)("ul.messagelist").text()
+    assert message == "Message found."
+
+
+def test_i18n_admin_create_translation_single_create(app, mock_state, record):
+    url = reverse("admin:i18n_message_change", args=(record.pk,))
+    res = app.get(url)
+    res = res.click("Create Translation")
+    res.forms["translation_form"]["locale"] = "de-de"
+    res = res.forms["translation_form"].submit().follow()
+    translation: Message = res.context["original"]
+    assert record.msgid == translation.msgid
+    assert translation.draft
+    message = PyQuery(res.text)("ul.messagelist").text()
+    assert message == "Message created."
+
+
+def test_i18n_admin_create_translation_single_error(app, mock_state, record):
+    with mock.patch("aurora.i18n.models.Message.update_or_create_translation", side_effect=Exception()):
+        url = reverse("admin:i18n_message_change", args=(record.pk,))
+        res = app.get(url)
+        res = res.click("Create Translation")
+        res.forms["translation_form"]["locale"] = "de-de"
+        res = res.forms["translation_form"].submit()
+        assert res.status_code == 302
+
+
+def test_i18n_admin_create_translations(app, mock_state, record):
+    url = reverse("admin:i18n_message_changelist")
+    res = app.get(url)
+    res = res.click("Create Translations")
+    res.forms["translation_form"]["locale"] = "it-it"
+    res = res.forms["translation_form"].submit()
+    message = PyQuery(res.text)("ul.messagelist").text()
+    assert message == "1 messages created. 2 available"
+
+    url = reverse("admin:i18n_message_create_translations")
+    res = app.post(url, {})
+    assert res.status_code == 200
+
+
+def test_i18n_admin_create_translations_error(app, mock_state, record):
+    url = reverse("admin:i18n_message_changelist")
+    with mock.patch("aurora.i18n.models.Message.objects.get_or_create", side_effect=Exception()):
+        res = app.get(url)
+        res = res.click("Create Translations")
+        res.forms["translation_form"]["locale"] = "it-it"
+        res = res.forms["translation_form"].submit()
+        message = PyQuery(res.text)("ul.messagelist").text()
+        assert "Exception" in message
 
 
 def test_i18n_admin_do_not_create_duplicate_translation(app, mock_state, record):
@@ -131,6 +185,32 @@ def test_i18n_admin_import_translation(app, mock_state, record):
     assert Message.objects.filter(msgid="required", locale="it-it").exists()
 
 
+def test_i18n_admin_import_header(app, mock_state, record):
+    from aurora.i18n.models import Message
+
+    url = reverse("admin:i18n_message_import_translations")
+    res = app.get(url)
+    form = res.forms["importForm"]
+    form["locale"] = "it-it"
+    form["csv-delimiter"] = ","
+    form["csv-header"] = True
+    content = Path("tests/data/it_translations_header.csv").read_bytes()
+    form["csv_file"] = Upload("tests/data/it_translations_header.csv", content)
+    res = form.submit()
+    assert res.status_code == 200
+    form = res.forms["importForm"]
+    res = form.submit("save").follow()
+
+    message = PyQuery(res.text)("ul.messagelist").text()
+    assert message == "Messages processed: Processed: 5, Selected: 5, Created: 4, Updated: 1"
+
+    assert Message.objects.filter(msgid="Date Of Birth", locale="it-it").exists()
+    assert Message.objects.filter(msgid="Name", locale="it-it").exists()
+    assert Message.objects.filter(msgid="Save", locale="it-it").exists()
+    assert Message.objects.filter(msgid="please fix the errors below", locale="it-it").exists()
+    assert Message.objects.filter(msgid="required", locale="it-it").exists()
+
+
 def test_i18n_admin_import_translation_no_selection(app, mock_state, record):
     url = reverse("admin:i18n_message_import_translations")
     res = app.get(url)
@@ -160,6 +240,16 @@ def test_i18n_admin_import_translation_error(app, mock_state, record):
     assert res.status_code == 200
     message = PyQuery(res.text)("ul.messagelist").text()
     assert message == "Error on line 1. Check import configuration"
+
+
+def test_i18n_admin_get_or_create(app, mock_state, record, registration):
+    url = reverse("admin:i18n_message_get_or_create")
+    res = app.get(url)
+    assert res.status_code == 302
+    res = app.post(url, {"msgid": "First Name", "lang": "it-it"})
+    assert res.status_code == 302
+    res = app.post(url, {"msgid": "First Name", "lang": "en-us"})
+    assert res.status_code == 302
 
 
 def test_i18n_admin_check_orphans(app, mock_state, record, registration):

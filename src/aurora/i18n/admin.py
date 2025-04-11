@@ -88,7 +88,14 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
         ctx = self.get_common_context(request, media=self.media, title="Import Translations File", pre={}, post={})
         ctx["rows"] = []
         if request.method == "POST":
-            key = f"translation_{request.user.pk}_{md5(request.session.session_key.encode()).hexdigest()}"
+            key = "_".join(
+                [
+                    "translation",
+                    str(request.user.pk),
+                    str(state.timestamp),
+                    str(md5(request.session.session_key.encode()).hexdigest()),
+                ]
+            )
             if "save" in request.POST:
                 data = cache.get(key, version=1)
                 selection = request.POST.getlist("selection")
@@ -96,11 +103,11 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
                 processed = selected = updated = created = 0
                 ids = []
                 with atomic():
-                    for i, row in enumerate(data["messages"], 1):
+                    for row in data["messages"]:
                         processed += 1
-                        if str(i) in selection:
+                        info = row[1]
+                        if info["msgid"] in selection:
                             selected += 1
-                            info = row[1]
                             __, c = Message.objects.update_or_create(
                                 msgid=info["msgid"],
                                 locale=lang,
@@ -139,9 +146,8 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
                         config = {**opts_form.cleaned_data}
                         has_header = config.pop("header", False)
                         reader = csv.reader(rows, **config)
-                        line_count = 1
                         try:
-                            for row in reader:
+                            for line_count, row in enumerate(reader, 1):
                                 if has_header and line_count == 1:
                                     continue
                                 found = Message.objects.filter(msgid=row[0]).first()
@@ -156,8 +162,8 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
                                         },
                                     ]
                                 )
-                                line_count += 1
                             data = {
+                                "header": has_header,
                                 "language": ctx["language"],
                                 "language_code": ctx["language_code"],
                                 "messages": ctx["rows"],
@@ -273,11 +279,11 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
                         self.message_user(request, "Message created.")
                     else:
                         self.message_user(request, "Message found.", messages.WARNING)
-
+                    return HttpResponseRedirect(reverse("admin:i18n_message_change", args=[msg.pk]))
                 except Exception as e:
                     logger.exception(e)
                     self.message_error_to_user(request, e)
-                return HttpResponseRedirect(reverse("admin:i18n_message_change", args=[msg.pk]))
+                    return HttpResponseRedirect(".")
             ctx["form"] = form
         else:
             form = LanguageForm()
