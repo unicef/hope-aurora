@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_protect
 DEFAULT_TEMPLATE = "flatpages/default.html"
 
 
-def flatpage(request, url):
+def flatpage(request, url: str):
     """
     Public interface to the flat page view.
 
@@ -35,7 +35,7 @@ def flatpage(request, url):
 
 
 @csrf_protect
-def render_flatpage(request, f):
+def render_flatpage(request, f: FlatPage):
     """Return an internal interface to the flat page view."""
     # If registration is required for accessing this page, and the user isn't
     # logged in, redirect to the login page.

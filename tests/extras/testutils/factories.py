@@ -2,6 +2,7 @@ import factory.fuzzy
 from django import forms
 from django.contrib.admin.models import LogEntry
 from django.contrib.auth.models import Group, User
+from django.contrib.flatpages.models import FlatPage
 from django.utils import timezone
 from factory import PostGenerationMethodCall
 from factory.base import FactoryMetaClass
@@ -255,3 +256,8 @@ class MessageFactory(AutoRegisterModelFactory):
 
     class Meta:
         model = Message
+
+
+class FlatPageFactory(AutoRegisterModelFactory):
+    class Meta:
+        model = FlatPage
