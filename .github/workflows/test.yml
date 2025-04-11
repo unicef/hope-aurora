@@ -80,7 +80,7 @@ jobs:
       DOCKER_DEFAULT_PLATFORM: linux/amd64
       DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
       DATABASE_URL: postgres://postgres:postgres@localhost:15432/aurora
-      CACHE_DEFAULT: redis://localhost:16379/0
+#      CACHE_DEFAULT: redis://localhost:16379/0
       REDIS_CONNSTR: localhost:16379/2
       DOCKER_BUILDKIT: 1
     steps:
@@ -136,9 +136,8 @@ jobs:
               --network host \
               -e PYTHONPATH=/app/src \
               -e DATABASE_URL=${DATABASE_URL} \
-              -e CELERY_BROKER_URL=${CELERY_BROKER_URL} \
-              -e CACHE_URL=${CACHE_URL} \
               -e DJANGO_ADMIN_URL=admin \
+              -e REDIS_CONNSTR=${REDIS_CONNSTR} \
               -e GITHUB_ACTIONS=1 \
               -e SECRET_KEY=super-secret-key-just-for-testing \
               -v "./output/:/app/output" \
