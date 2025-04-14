@@ -14,6 +14,8 @@ package-lock.json
 package.json
 latest_logs
 archived_logs
+Makefile
+
 !tests/.coveragerc
 !.gitignore
 !.dockerignore

@@ -387,7 +387,7 @@ INTERNAL_IPS = env.list("INTERNAL_IPS")
 ROOT_TOKEN = env("ROOT_TOKEN")
 CSRF_FAILURE_VIEW = "aurora.web.views.sites.error_csrf"
 
-AUTH_USER_MODEL = "auth.User"
+AUTH_USER_MODEL = "security.User"
 
 LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/logged-in/"

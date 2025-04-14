@@ -34,7 +34,7 @@ class RecordViewSet(SmartViewSet):
     filterset_class = RecordFilter
     pagination_class = RecordPaginator
 
-    @action(detail=False)
+    @action(detail=True)
     def metadata(self, request, pk=None):
         latest = Record.objects.latest("id")
         return Response(

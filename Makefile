@@ -32,3 +32,22 @@ i18n:  ## i18n support
 	cd src && django-admin makemessages --all --settings=aurora.config.settings --pythonpath=. --ignore=~*
 	cd src && django-admin compilemessages --settings=aurora.config.settings --pythonpath=. --ignore=~*
 	git commit -m "Update translations"
+
+create-db:
+	dropdb -p 5432 --if-exists aurora
+	createdb -p 5432 aurora
+
+reset-db: create-db
+	./manage.py migrate
+
+reset-migrations:
+	@find src -name 000[1-9]*.py -type f -delete
+	./manage.py makemigrations aurora
+	./manage.py makemigrations i18n
+	./manage.py makemigrations security
+	./manage.py makemigrations core
+	./manage.py makemigrations registration
+	./manage.py makemigrations counters
+	./manage.py makemigrations dbtemplates
+
+	$(MAKE) create-db

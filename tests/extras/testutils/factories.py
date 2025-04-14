@@ -1,7 +1,8 @@
 import factory.fuzzy
 from django import forms
 from django.contrib.admin.models import LogEntry
-from django.contrib.auth.models import Group, User
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.contrib.flatpages.models import FlatPage
 from django.utils import timezone
 from factory import PostGenerationMethodCall
@@ -83,7 +84,7 @@ class UserFactory(AutoRegisterModelFactory):
     password = PostGenerationMethodCall("set_password", "password")
 
     class Meta:
-        model = User
+        model = get_user_model()
         django_get_or_create = ("username",)
 
 
