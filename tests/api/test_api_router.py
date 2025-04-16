@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING
 
 import pytest
 from rest_framework.test import APIClient
-
 from testutils.factories import TokenProxyFactory
 
 if TYPE_CHECKING:

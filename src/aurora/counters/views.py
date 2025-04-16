@@ -97,10 +97,6 @@ class MonthlyDataView(ChartView):
         return JsonResponse(data)
 
 
-def daily_data(request, registration, record):
-    pass
-
-
 class MonthlyChartView(ChartView):
     def get(self, request, org, prj, registration):
         reg: Registration = self.get_registration(request, org, prj, registration)

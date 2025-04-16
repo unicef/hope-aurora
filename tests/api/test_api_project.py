@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from rest_framework.test import APIClient
-from testutils.factories import TokenProxyFactory, RegistrationFactory
+from testutils.factories import RegistrationFactory, TokenProxyFactory
 
 if TYPE_CHECKING:
     from aurora.registration.models import Project

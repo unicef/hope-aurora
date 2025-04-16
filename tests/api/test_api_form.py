@@ -4,7 +4,6 @@ import pytest
 from rest_framework.test import APIClient
 from testutils.factories import TokenProxyFactory
 
-
 if TYPE_CHECKING:
     from aurora.registration.models import FlexForm
 
