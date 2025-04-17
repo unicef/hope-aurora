@@ -1,3 +1,5 @@
+from random import randint
+
 import factory.fuzzy
 from django import forms
 from django.contrib.admin.models import LogEntry
@@ -5,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.flatpages.models import FlatPage
 from django.utils import timezone
-from factory import PostGenerationMethodCall
+from factory import LazyAttribute, PostGenerationMethodCall
 from factory.base import FactoryMetaClass
 from rest_framework.authtoken.models import TokenProxy
 from social_django.models import Association, Nonce, UserSocialAuth
@@ -185,8 +187,9 @@ class RecordFactory(AutoRegisterModelFactory):
 
 class CounterFactory(AutoRegisterModelFactory):
     registration = factory.SubFactory(RegistrationFactory)
-    details = {"hours": {str(x): 10 for x in range(23)}}
-    day = timezone.now()
+    details = {"hours": {str(x): randint(20, 200) for x in range(23)}}
+    day = timezone.now().date()
+    records = LazyAttribute(lambda o: sum(list(o.details["hours"].values())))
 
     class Meta:
         model = Counter

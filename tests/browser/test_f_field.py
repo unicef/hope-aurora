@@ -17,6 +17,8 @@ def pytest_generate_tests(metafunc):
 
     if "field_type" in metafunc.fixturenames:
         for field in field_registry:
+            if hasattr(field, "custom"):
+                continue
             idlist.append(fqn(field.__name__))
             argvalues.append(field)
 

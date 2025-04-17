@@ -18,15 +18,33 @@ User = get_user_model()
 
 
 @login_required()
-def index(request, org):
+def index(request):
+    if not request.user.has_perm("counters.view_counter"):
+        raise PermissionDenied("----")
+    if request.user.is_superuser:
+        filters = {}
+    else:
+        filters = {"members__user": request.user}
+    context = {
+        "organizations": Organization.objects.filter(**filters).order_by("name"),
+    }
+    return render(request, "counters/index.html", context)
+
+
+@login_required()
+def org_index(request, org):
     o: Organization = Organization.objects.get(slug=org)
     if not request.user.has_perm("counters.view_counter", o):
         raise PermissionDenied("----")
+    if request.user.is_superuser:
+        filters = {}
+    else:
+        filters = {"members__user": request.user}
     context = {
         "organization": o,
-        "projects": o.projects.filter(members__user=request.user),
+        "projects": o.projects.filter(**filters),
     }
-    return render(request, "counters/index.html", context)
+    return render(request, "counters/org_index.html", context)
 
 
 @login_required()
@@ -36,6 +54,7 @@ def project_index(request, org, prj):
     if not request.user.has_perm("counters.view_counter", p):
         raise PermissionDenied("----")
     context = {
+        "organization": o,
         "project": p,
         "registrations": p.registrations.filter(members__user=request.user),
     }
@@ -102,9 +121,21 @@ class MonthlyChartView(ChartView):
         reg: Registration = self.get_registration(request, org, prj, registration)
         first: [Counter] = reg.counters.first()
         latest: [Counter] = reg.counters.last()
-        if not latest:
-            latest = timezone.now()
+        m = request.GET.get("m", None)
+        if not m:
+            month = timezone.now().month
+            year = timezone.now().year
+            date = timezone.now()
+        else:
+            year, month = m.split("-")
+            date = datetime(int(year), int(month), 1).date()
+
         context = {
+            "date": date,
+            "month": month,
+            "year": year,
+            "project": reg.project,
+            "organization": reg.organization,
             "registration": reg,
             "first": first,
             "latest": latest,
@@ -112,3 +143,24 @@ class MonthlyChartView(ChartView):
             # "years": range(first.day.year, latest.day.year)
         }
         return render(request, "counters/chart_month.html", context)
+
+
+class DayChartView(ChartView):
+    def get(self, request, org, prj, registration):
+        reg: Registration = self.get_registration(request, org, prj, registration)
+        day = request.GET.get("day", datetime.today().strftime("%Y-%m-%d"))
+        date = datetime.strptime(day, "%Y-%m-%d")
+
+        original: Counter = reg.counters.filter(day=day).first()
+        context = {
+            "project": reg.project,
+            "organization": reg.organization,
+            "date": date,
+            "month": date.month,
+            "day": day,
+            "registration": reg,
+            "original": original,
+            "token": get_session_id(),
+            # "years": range(first.day.year, latest.day.year)
+        }
+        return render(request, "counters/chart_day.html", context)

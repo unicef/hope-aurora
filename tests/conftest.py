@@ -147,7 +147,9 @@ def mock_storage(monkeypatch):
 def user(db):
     from testutils.factories import UserFactory
 
-    return UserFactory()
+    user = UserFactory()
+    user._password = "password"
+    return user
 
 
 @pytest.fixture

@@ -53,6 +53,15 @@ class AuroraSeleniumTC(BaseCase):
         self.click(f"li.select2-results__option:contains('{value}')")
         self.wait_for_element_absent("input.select2-search__field")
 
+    def login_as_user(self, user=None):
+        if user is not None:
+            self.admin_user = user
+        self.open("/login/")
+        self.type("input[name=username]", f"{self.admin_user.username}")
+        self.type("input[name=password]", f"{self.admin_user._password}")
+        self.submit('input[value="Login"]')
+        self.wait_for_ready_state_complete()
+
     def login(self):
         self.open("/admin/")
         if self.get_current_url() == f"{self.live_server_url}/admin/login/?next=/admin/":

@@ -44,7 +44,7 @@ def data(db) -> list[Counter]:
 def test_counter_index(app, data):
     reg: "Registration" = data[0].registration
 
-    url = reverse("charts:index", args=[reg.project.organization.slug])
+    url = reverse("charts:org-index", args=[reg.project.organization.slug])
     res = app.get(url, expect_errors=True)
     assert res.status_code == 403
     with user_grant_permissions(app._user, ["counters.view_counter"], reg):
@@ -68,7 +68,7 @@ def test_counter_project_index(app, data):
 def test_counter_registration(app, data):
     reg: "Registration" = data[0].registration
 
-    url = reverse("charts:registration", args=[reg.project.organization.slug, reg.project.pk, reg.pk])
+    url = reverse("charts:monthly", args=[reg.project.organization.slug, reg.project.pk, reg.pk])
     res = app.get(url, user=None)
     assert res.status_code == 302
 

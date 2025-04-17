@@ -4,6 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 from django.urls import reverse
+from selenium.webdriver import ActionChains
 from testutils.factories import CounterFactory, OrganizationFactory, ProjectFactory, RegistrationFactory
 from testutils.selenium import AuroraTestBrowser
 
@@ -35,35 +36,24 @@ def data(db) -> list[Counter]:
     return [CounterFactory(day=date(today.year, today.month, day), registration=reg) for day in range(1, 28)]
 
 
-def test_counter_index(mock_state, browser: AuroraTestBrowser, data):
+def test_charts_user_navigation(browser: AuroraTestBrowser, admin_user, data):
     reg: "Registration" = data[0].registration
-
-    url = reverse("charts:index", args=[reg.project.organization.slug])
-    browser.login()
+    url = reverse("charts:index")
+    # with user_grant_permissions(user, "counters.view_counter", reg):
+    browser.login_as_user()
     browser.open(url)
-
-
-def test_counter_project_index(browser: AuroraTestBrowser, data):
-    reg: "Registration" = data[0].registration
-
-    url = reverse("charts:project-index", args=[reg.project.organization.slug, reg.project.pk])
-    browser.login()
-    browser.open(url)
-
-
-def test_counter_registration(browser: AuroraTestBrowser, data):
-    reg: "Registration" = data[0].registration
-
-    url = reverse("charts:registration", args=[reg.project.organization.slug, reg.project.pk, reg.pk])
-    browser.login()
-    browser.open(url)
+    browser.click_link_text(reg.organization.name)
+    browser.click_link_text(reg.project.name)
+    browser.click_link_text(reg.name)
     browser.click("button#prev")
     browser.click("button#next")
-
-
-def test_counter_monthly_data(browser: AuroraTestBrowser, data):
-    reg: "Registration" = data[0].registration
-
-    url = reverse("charts:monthly_data", args=[reg.project.organization.slug, reg.project.pk, reg.pk])
-    browser.login()
-    browser.open(url)
+    canvas = browser.find_element("#myChart")
+    location = canvas.location
+    x = location["x"]
+    y = location["y"]
+    ActionChains(browser.driver).move_by_offset(x, y + 20).click(canvas).perform()
+    browser.click("button#prev")
+    browser.click("button#next")
+    browser.find_element("div.breadcrumbs a.month").click()
+    browser.click_link_text(reg.project.name)
+    browser.click_link_text(reg.organization.name)

@@ -47,7 +47,10 @@ class AuroraRoleManager(models.Manager):
 class AuroraRole(NaturalKeyModel, models.Model):
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
 
     organization = models.ForeignKey(
         Organization,

@@ -1,15 +1,15 @@
-{% extends "counters/project.html" %}{% load static %}
+{% extends "counters/project.html" %}{% load static i18n %}
 {% block breadcrumbs %}
     {{ block.super }}
-    {#    &gt;<a href="{% url "charts:org-index" organization.slug %}">{{ organization }}</a>#}
     > {{ registration }}
+    &gt;<a class="month" href="{% url "charts:monthly" organization.slug project.pk registration.pk %}?m={{ date.year }}-{{ date.month }}">{{ date|date:"F" }}</a>
+
 {% endblock breadcrumbs %}
 
 {% block body %}
     <div class="min-h-screen flex w-wull bg-gray-100 pb-10 charting">
         {% block info %}
             <div class="w-full m-20 lg:w-1/2 mt-5">
-                <h1 class="text-lg">{{ registration }}</h1>
                 <div><strong>Started on : </strong>{{ registration.start }}</div>
                 <div><strong>Until: </strong>{{ registration.end|default_if_none:"Running" }}</div>
                 <div><strong>Status: </strong>{% if registration.active %}Active{% else %}Paused{% endif %}</div>
@@ -18,18 +18,18 @@
                         <button class="button" id="prev"><<</button>
                         <button class="button" id="next"> >></button>
                     </div>
-                    <div class="chart-container">
-                        <canvas id="myChart" style="width: 100%;height: 100%"></canvas>
-                    </div>
+                    {% if original %}
+                        <div class="chart-container">
+                            <canvas id="myChart" style="width: 100%;height: 100%"></canvas>
+                        </div>
+                    {% else %}
+                        No data for the selected day
+                    {% endif %}
                 {% endblock chart %}
             </div>
         {% endblock info %}
-        {% block data %}
-            <script id="counters" data-registration={{ registration.pk }} data-token="{{ token }}"
-                    data-month="{{ month }}" data-year="{{ year }}"
-                    data-url="{% url "charts:monthly_data" registration.project.organization.slug registration.project.pk registration.pk %}?m={{ year }}-{{ month }}-1"
-                    src="{% static "counters/monthly.js" %}"></script>
-        {% endblock data %}
-
     </div>
+    <script id="counters" data-registration={{ registration.pk }} data-token="{{ token }}"
+            data-day="{{ day }}" data-data="{{ original.hourly }}"
+            src="{% static "counters/daily.js" %}"></script>
 {% endblock body %}

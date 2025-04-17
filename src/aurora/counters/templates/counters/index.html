@@ -1,15 +1,18 @@
-{% extends "base.html" %}{% load static %}
-{% block body %}
+{% extends "counters/chart_base.html" %}{% load static %}
 
-    <div class="min-h-screen flex w-wull bg-gray-100 pb-10">
-        <div class="w-full m-20 lg:w-1/2 mt-5">
-            <h1 class="text-lg mb-20">{{ organization }}</h1>
-        <ul>
-            {% for project in projects %}
-                <li><a href="{% url "charts:project-index" organization.slug project.pk %}">{{ project }}</a></li>
-            {% endfor %}
-        </ul>
+{% block body %}
+    <div class="min-h-screen w-wull bg-gray-100 pb-10">
+        <div class="block w-full justify-center">
+            <img class="m-auto w-1/2" src="{% static "img.png" %}">
+        </div>
+        <div class="block">
+            <ul class="ml-20">
+                {% for org in organizations %}
+                    <li class="text-xl">
+                        <a href="{% url "charts:org-index" org.slug %}">{{ org }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
         </div>
     </div>
-
 {% endblock body %}

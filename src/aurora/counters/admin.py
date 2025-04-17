@@ -5,13 +5,11 @@ from adminfilters.autocomplete import LinkedAutoCompleteFilter
 from django.contrib.admin import register
 from django.db.transaction import atomic
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
 from django.urls import reverse
 from smart_admin.modeladmin import SmartModelAdmin
 
 from ..core.utils import is_root
 from ..registration.admin.paginator import LargeTablePaginator
-from .forms import ChartForm
 from .models import Counter
 
 logger = logging.getLogger(__name__)
@@ -61,16 +59,7 @@ class CounterAdmin(SmartModelAdmin):
 
     @button()
     def chart(self, request):
-        ctx = self.get_common_context(request)
-        if request.method == "POST":
-            form = ChartForm(request.POST)
-            if form.is_valid():
-                registration = form.cleaned_data["registration"]
-                return HttpResponseRedirect(reverse("charts:registration", args=[registration.pk]))
-        else:
-            form = ChartForm()
-        ctx["form"] = form
-        return render(request, "admin/counters/counter/chart.html", ctx)
+        return HttpResponseRedirect(reverse("charts:index"))
 
     @button()
     def collect(self, request):
