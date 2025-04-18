@@ -269,11 +269,11 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
             button.choices = [self.removekey]
         elif original.encrypt_data:
             colors = ["#dfd", "black"]
-            self.toggle_encryption.func._handler.config["label"] = "Disable Symmetric"
+            self.toggle_encryption.func.extra_buttons_handler.config["label"] = "Disable Symmetric"
             button.choices = [self.toggle_encryption]
         else:
-            self.toggle_encryption.func._handler.config["label"] = "Enable Symmetric"
-            self.generate_keys.func._handler.config["label"] = "Enable RSA"
+            self.toggle_encryption.func.extra_buttons_handler.config["label"] = "Enable Symmetric"
+            self.generate_keys.func.extra_buttons_handler.config["label"] = "Enable RSA"
             button.choices = [self.generate_keys, self.toggle_encryption]
         button.config["html_attrs"] = {"style": f"background-color:{colors[0]};color:{colors[1]}"}
         return button
@@ -424,6 +424,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
                                     parent=forms[fs.parent.pk],
                                     flex_form=forms[fs.flex_form.pk],
                                 )
+                        self.message_user(request, "Registration Successfully Cloned.", messages.SUCCESS)
                         return HttpResponseRedirect(reverse("admin:registration_registration_inspect", args=[reg.pk]))
                 except Exception as e:
                     logger.exception(e)
@@ -438,12 +439,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
 
     @view()
     def create_custom_template(self, request, pk):
-        ctx = self.get_common_context(
-            request,
-            pk,
-            media=self.media,
-            title="Create Custom Template",
-        )
+        ctx = self.get_common_context(request, pk, media=self.media, title="Create Custom Template")
         if request.method == "POST":
             obj = ctx["original"]
             form = TemplateForm(request.POST)

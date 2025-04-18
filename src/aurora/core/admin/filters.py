@@ -7,6 +7,10 @@ from django.core.cache import caches
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.urls import reverse
+from django.utils.translation import gettext as _
+from strategy_field.utils import fqn
+
+from aurora.core.registry import field_registry
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +19,24 @@ cache = caches["default"]
 
 class Select2FieldComboFilter(ChoicesFieldComboFilter):
     template = "adminfilters/select2.html"
+
+
+class StrategyFieldComboFilter(Select2FieldComboFilter):
+    def choices(self, changelist):
+        yield {
+            "selected": self.lookup_val is None,
+            "query_string": changelist.get_query_string(remove=[self.lookup_kwarg, self.lookup_kwarg_isnull]),
+            "display": _("All"),
+        }
+        values = sorted(field_registry, key=lambda i1: i1.__name__)
+        for field in values:
+            yield {
+                "selected": self.lookup_val is not None and fqn(field) in self.lookup_val,
+                "query_string": changelist.get_query_string(
+                    {self.lookup_kwarg: fqn(field)}, [self.lookup_kwarg_isnull]
+                ),
+                "display": field.__name__,
+            }
 
 
 class Select2RelatedFieldComboFilter(RelatedFieldComboFilter):

@@ -58,6 +58,8 @@ class Loader(BaseLoader):
         # * If all of the above steps have failed we generate a new key
         #   in the cache indicating that queries failed, with the current
         #   timestamp.
+        if template_name.startswith("debug_toolbar/"):
+            raise TemplateDoesNotExist(template_name)
         site = Site.objects.get_current()
         cache_key = get_cache_key(template_name)
         if cache:

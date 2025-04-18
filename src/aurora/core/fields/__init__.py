@@ -13,7 +13,7 @@ from .mixins import SmartFieldMixin  # noqa
 from .multi_checkbox import MultiCheckboxField  # noqa
 from .radio import RadioField, YesNoChoice, YesNoRadio  # noqa
 from .remote_ip import RemoteIpField  # noqa
-from .selected import AjaxSelectField, SelectField, SmartSelectWidget  # noqa
+from .select import AjaxSelectField, SelectField, SmartSelectWidget  # noqa
 from .uba import UBANameEnquiryField  # noqa
 from .webcam import WebcamField  # noqa
 

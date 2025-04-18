@@ -62,7 +62,7 @@ dependencies = [
   "django-simple-math-captcha",
   "django-smart-admin",
   "django-smart-env",
-  "django-strategy-field",
+  "django-strategy-field>=3.2",
   "django-stubs[compatible-mypy]",
   "django-stubs-ext>=5.1.3",
   "django-sysinfo",

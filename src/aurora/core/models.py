@@ -24,6 +24,7 @@ from mptt.fields import TreeForeignKey
 from mptt.managers import TreeManager
 from mptt.models import MPTTModel
 from natural_keys import NaturalKeyModel, NaturalKeyModelManager
+from strategy_field.exceptions import StrategyClassError
 from strategy_field.utils import fqn
 
 from ..i18n.get_text import gettext as _
@@ -108,6 +109,7 @@ class Project(AdminReverseMixin, NaturalKeyModel, MPTTModel):
 
     class Meta:
         unique_together = ("slug", "organization")
+        ordering = ("name",)
 
     def __str__(self):
         return self.name
@@ -193,6 +195,7 @@ _.is_adult = function(d) { return !_.is_child(d)};
     class Meta:
         verbose_name = "Validator"
         verbose_name_plural = "Validators"
+        ordering = ("name",)
 
     def __str__(self):
         return f"{self.label} ({self.target})"
@@ -332,6 +335,7 @@ class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
     class Meta:
         verbose_name = "Flex Form"
         verbose_name_plural = "Flex Forms"
+        ordering = ("name",)
 
     def __str__(self):
         return self.name
@@ -612,7 +616,10 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
         return "[[ removed ]]"
 
     def fqn(self):
-        return fqn(self.field_type)
+        try:
+            return fqn(self.field_type)
+        except StrategyClassError:
+            return f"[[removed]] {self._strategy_fqn_field_type}"
 
     def get_default_value(self):
         return self.advanced.get("kwargs", {}).get("default_value", None)

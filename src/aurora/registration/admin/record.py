@@ -2,9 +2,7 @@ import json
 import logging
 
 from admin_extra_buttons.decorators import button, link
-from adminfilters.autocomplete import AutoCompleteFilter
-from adminfilters.numbers import NumberFilter
-from adminfilters.value import ValueFilter
+from adminfilters.filters import AutoCompleteFilter, NumberFilter, ValueFilter
 from django.conf import settings
 from django.shortcuts import render
 from django.urls import reverse

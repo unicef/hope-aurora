@@ -2,23 +2,15 @@
 
 {% block action-content %}
     {% if form %}
-        <form method="post">
+        <form method="post" id="cloneForm">
             {% csrf_token %}
             {{ form.errors }}
             <table>
-                {{ form }}
+                {{ form.as_table}}
             </table>
             <input type="submit" value="Create">
         </form>
     {% else %}
-        {# <table>{% for c in created %} #}
-        {# <tr> #}
-        {# <td>{{ c }}</td> #}
-        {# </tr> #}
-        {# {% endfor %} #}
-        {# </table> #}
-
-
         <table width="100%">
             <tr>
                 <td>Registration</td>

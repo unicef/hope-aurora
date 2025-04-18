@@ -1,10 +1,11 @@
 from django_regex.utils import RegexList
+from flags.state import flag_enabled
 
 
 def show_ddt(request):  # pragma: no-cover
     if request.path in RegexList(("/tpl/.*", "/api/.*", "/dal/.*")):  # pragma: no cache
         return False
-    return None
+    return flag_enabled("DEVELOP_DEBUG_TOOLBAR", request=request)
 
 
 DEBUG_TOOLBAR_CONFIG = {
@@ -16,7 +17,7 @@ DEBUG_TOOLBAR_CONFIG = {
 
 DEBUG_TOOLBAR_PANELS = [
     "debug_toolbar.panels.history.HistoryPanel",
-    # "debug_toolbar.panels.versions.VersionsPanel",
+    "debug_toolbar.panels.versions.VersionsPanel",
     "aurora.ddt_panels.StatePanel",
     "aurora.ddt_panels.MigrationPanel",
     "debug_toolbar.panels.timer.TimerPanel",

@@ -21,7 +21,7 @@ from ..models import FIELD_KWARGS, FlexFormField
 from ..utils import dict_setdefault, is_root, render
 from .base import ConcurrencyVersionAdmin
 from .field_editor import FieldEditor
-from .filters import Select2FieldComboFilter
+from .filters import StrategyFieldComboFilter
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
     list_editable = ["required", "enabled"]
     list_filter = (
         ("flex_form", AutoCompleteFilter),
-        ("field_type", Select2FieldComboFilter),
+        ("field_type", StrategyFieldComboFilter),
         QueryStringFilter,
     )
     autocomplete_fields = ("flex_form", "validator")

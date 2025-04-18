@@ -1,0 +1,153 @@
+from typing import TYPE_CHECKING
+from unittest.mock import Mock
+
+import pytest
+from django.urls import reverse
+from testutils.factories import FlexFormFieldFactory, FormFactory, OptionSetFactory, RegistrationFactory
+from testutils.selenium import AuroraTestBrowser
+
+from aurora.core import fields
+from aurora.registration.models import Registration
+
+if TYPE_CHECKING:
+    from aurora.core.models import OptionSet
+
+pytestmark = pytest.mark.selenium
+
+
+@pytest.fixture
+def mock_state():
+    from django.contrib.auth.models import AnonymousUser
+
+    from aurora.state import state
+
+    state.request = Mock(user=AnonymousUser())
+    yield
+    state.request = None
+
+
+@pytest.fixture
+def registration(birth_after_1900):
+    from aurora.core.cache import cache
+
+    cache.clear()
+    frm = FormFactory(name="Form1")
+    opt1: OptionSet = OptionSetFactory(
+        name="optionset1",
+        separator=";",
+        pk_col=0,
+        parent_col=-1,
+        locale="en-us",
+        languages="-,-,en-us",
+        data="""0;0;----\r
+UA01;UA;Admin1\r
+UA02;UA;Admin2\r
+UA03;UA;Admin3\r
+""",
+    )
+
+    opt2: OptionSet = OptionSetFactory(
+        name="optionset2",
+        separator=";",
+        pk_col=0,
+        parent_col=1,
+        locale="en-us",
+        languages="-,-,en-us",
+        data="""0;0;----\r
+UA11;UA01;Admin1.1\r
+UA22;UA02;Admin2.1\r
+UA33;UA03;Admin3.1\r
+""",
+    )
+
+    FlexFormFieldFactory(
+        flex_form=frm,
+        name="admin1",
+        required=False,
+        field_type=fields.AjaxSelectField,
+        advanced={
+            "smart": {
+                "datasource": opt1.name,
+            }
+        },
+    )
+    FlexFormFieldFactory(
+        flex_form=frm,
+        name="admin2",
+        required=False,
+        field_type=fields.AjaxSelectField,
+        advanced={
+            "smart": {
+                "parent_datasource": opt1.name,
+                "datasource": opt2.name,
+            }
+        },
+    )
+
+    return RegistrationFactory(
+        name="registration #3",
+        flex_form=frm,
+        encrypt_data=False,
+        unique_field_path="last_name",
+        unique_field_error="last_name is not unique",
+    )
+
+
+def test_menu_admin(mock_state, browser: AuroraTestBrowser, registration):
+    url = reverse("admin:registration_registration_change", args=[registration.pk])
+    browser.login()
+    browser.open(url)
+    browser.select_option_by_text("#btn-admin", "James Editor")
+    assert browser.is_text_visible("JAMESPath Editor", selector="#content")
+    browser.click_link_text(registration.name)
+
+    browser.select_option_by_text("#btn-admin", "Inspect")
+    assert browser.is_text_visible("Inspect Registration", selector="#content")
+    browser.click_link_text(registration.name)
+
+
+def test_menu_admin_create_custom_template(mock_state, browser: AuroraTestBrowser, registration):
+    url = reverse("admin:registration_registration_change", args=[registration.pk])
+    browser.login()
+    browser.open(url)
+    browser.select_option_by_text("#btn-admin", "Create Custom Template")
+    browser.select_option_by_text("#id_locale", "Any Language")
+    browser.click("input[value=Create]")
+    assert browser.is_text_visible("successfully created", selector="html")
+    browser.click_link_text("Edit")
+    assert browser.is_text_visible("Change template", selector="#content")
+
+
+def test_menu_admin_clone(mock_state, browser: AuroraTestBrowser, registration):
+    url = reverse("admin:registration_registration_change", args=[registration.pk])
+    browser.login()
+    browser.open(url)
+    browser.select_option_by_text("#btn-admin", "Clone")
+    assert browser.is_text_visible("Clone Registration", selector="#content")
+
+    browser.type("input[name=title]", "Cloned Registration")
+    browser.click("input[type=submit]")
+    assert browser.is_text_visible("Inspect Registration", selector="#content")
+    assert browser.get_text("ul.messagelist") == "Registration Successfully Cloned."
+
+    cloned: Registration = Registration.objects.filter(title="Cloned Registration").first()
+    assert cloned
+    assert cloned.flex_form == registration.flex_form
+
+
+def test_menu_admin_clone_deep(mock_state, browser: AuroraTestBrowser, registration):
+    url = reverse("admin:registration_registration_change", args=[registration.pk])
+    browser.login()
+    browser.open(url)
+    browser.select_option_by_text("#btn-admin", "Clone")
+    assert browser.is_text_visible("Clone Registration", selector="#content")
+
+    browser.type("input[name=title]", "Cloned Registration")
+    browser.click("input[name=deep]")
+    browser.click("input[type=submit]")
+    assert browser.is_text_visible("Inspect Registration", selector="#content")
+    assert browser.get_text("ul.messagelist") == "Registration Successfully Cloned."
+
+    cloned: Registration = Registration.objects.filter(title="Cloned Registration").first()
+    assert cloned
+    assert cloned.flex_form != registration.flex_form
