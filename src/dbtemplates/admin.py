@@ -1,7 +1,6 @@
 import logging
 
 from admin_extra_buttons.decorators import button, view
-
 from admin_sync.mixin import PublishMixin, SyncMixin
 from adminfilters.mixin import AdminFiltersMixin
 from adminfilters.value import ValueFilter
