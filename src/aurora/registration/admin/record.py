@@ -29,7 +29,6 @@ class RecordAdmin(SmartModelAdmin):
     )
     list_filter = (
         ("registration", AutoCompleteFilter),
-        ("registrar", AutoCompleteFilter),
         ("id", NumberFilter),
         ("timestamp", DateRangeFilter),
         HourFilter,

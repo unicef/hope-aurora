@@ -1,0 +1,7 @@
+{% extends "admin/base.html" %}{% load static %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "admin/css/aurora_admin.css" %}">
+    <script src="{% static "_colored_header.js" %}"></script>
+{% endblock extrahead %}

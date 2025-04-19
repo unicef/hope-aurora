@@ -7,6 +7,17 @@ from testutils.factories import ValidatorFactory
 from testutils.selenium import AuroraSeleniumTC
 
 from aurora.core.models import Validator
+from aurora.state import State
+
+
+@pytest.fixture
+def mock_state(rf) -> Generator[State, None, None]:
+    from aurora.state import state
+
+    state.request = rf.get("/")
+    # -state.user = AnonymousUser()
+    yield state
+    state.request = None
 
 
 @pytest.fixture

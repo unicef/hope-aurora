@@ -240,19 +240,26 @@ class RegisterView(RegistrationMixin, AdminAccessMixin, FormView):
         m = self.registration.flex_form.get_form_class()().media
         for fs in self.get_formsets().values():
             m += fs.media
+        js_files = [
+            "admin/js/vendor/jquery/jquery%s.js" % extra,
+            "admin/js/jquery.init.js",
+            "jquery.compat%s.js" % extra,
+            "sentry%s.js" % extra,
+            "i18n/i18n%s.js" % extra,
+            "registration/auth%s.js" % extra,
+            "registration/survey%s.js" % extra,
+            "page%s.js" % extra,
+        ]
+        if self.request.user.is_staff:
+            js_files.extend(
+                [
+                    "i18n/i18n_edit.js",
+                    "edit%s.js" % extra,
+                ]
+            )
 
-        mine = VersionMedia(
-            js=[
-                "admin/js/vendor/jquery/jquery%s.js" % extra,
-                "admin/js/jquery.init.js",
-                "jquery.compat%s.js" % extra,
-                "sentry%s.js" % extra,
-                "i18n/i18n%s.js" % extra,
-                "registration/auth%s.js" % extra,
-                "registration/survey%s.js" % extra,
-                "page%s.js" % extra,
-            ]
-        )
+        mine = VersionMedia(js=js_files)
+
         return mine + m
 
     def get_context_data(self, **kwargs):

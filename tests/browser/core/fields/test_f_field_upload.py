@@ -2,7 +2,6 @@ import base64
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING
-from unittest.mock import Mock
 
 import pytest
 from testutils.factories import FlexFormFieldFactory, FormFactory, RegistrationFactory
@@ -14,17 +13,6 @@ if TYPE_CHECKING:
     from aurora.registration.models import Record, Registration
 
 pytestmark = pytest.mark.selenium
-
-
-@pytest.fixture
-def mock_state():
-    from django.contrib.auth.models import AnonymousUser
-
-    from aurora.state import state
-
-    state.request = Mock(user=AnonymousUser())
-    yield
-    state.request = None
 
 
 @pytest.fixture

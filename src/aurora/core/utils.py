@@ -378,7 +378,7 @@ def cache_aware_url(request, url):
 
 def cache_aware_reverse(viewname, urlconf=None, args=None, kwargs=None, current_app=None, **kw):
     url = reverse(viewname, urlconf, args, kwargs, current_app, **kw)
-    if state.request.user.is_authenticated:
+    if hasattr(state, "user") and state.request.user.is_authenticated:
         url += f"?s={get_session_id()}"
     return url
 

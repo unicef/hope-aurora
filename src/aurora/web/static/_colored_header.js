@@ -17,11 +17,21 @@ document.addEventListener("DOMContentLoaded", function (event) {
         } else {
             color = '#00ADEF';
         }
-        var head = document.getElementById("header");
-        if (head){
-            head.style.backgroundColor = color;
+        var header = document.getElementById("header");
+        if (header) {
+            document.getElementById("header").style.backgroundColor = color;
+            var element = document.createElement("div");
+            element.style.position = "absolute";
+            element.style.left = 0;
+            element.style.top = 0;
+            element.appendChild(document.createTextNode(text));
+            document.getElementById('header').prepend(element);
+        }else{
+            // head.style.backgroundColor = color;
             var element = document.createElement("div");
             element.appendChild(document.createTextNode(text));
-            document.getElementById('header').appendChild(element);
+            element.style.backgroundColor = color;
+            document.body.prepend(element);
+            console.log(11111, element)
         }
     });

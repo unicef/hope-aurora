@@ -12,17 +12,14 @@
     <link rel="stylesheet" href="{% static "base.css" %}">
     <link href="{% static "staff-toolbar.css" %}" type="text/css" media="all" rel="stylesheet">
     <link rel="stylesheet" href="{% static "admin/debug.css" %}">
-
-{# <script src="https://code.jquery.com/jquery-3.6.0.min.js" #}
-{# integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script> #}
     {% block cache %}{# <script src="{% static "cache.min.js" %}"></script> #}{% endblock %}
+    <script src="{% static "_colored_header.js" %}"></script>
 
     {% block head %}{% endblock %}
 </head>
 <body class="min-h-screen">
 <script>
     const LANGUAGE_CODE = "{{ LANGUAGE_CODE }}";
-    {%  include "_colored_header.js" %}
 </script>
 
 {#<script>#}

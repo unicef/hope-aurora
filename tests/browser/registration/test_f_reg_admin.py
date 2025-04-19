@@ -1,5 +1,4 @@
 from typing import TYPE_CHECKING
-from unittest.mock import Mock
 
 import pytest
 from django.urls import reverse
@@ -13,17 +12,6 @@ if TYPE_CHECKING:
     from aurora.core.models import OptionSet
 
 pytestmark = pytest.mark.selenium
-
-
-@pytest.fixture
-def mock_state():
-    from django.contrib.auth.models import AnonymousUser
-
-    from aurora.state import state
-
-    state.request = Mock(user=AnonymousUser())
-    yield
-    state.request = None
 
 
 @pytest.fixture
@@ -91,6 +79,17 @@ UA33;UA03;Admin3.1\r
         unique_field_path="last_name",
         unique_field_error="last_name is not unique",
     )
+
+
+def test_changelist(mock_state, browser: AuroraTestBrowser, registration):
+    url = reverse("admin:registration_registration_changelist")
+    browser.login()
+    browser.open(url)
+    browser.click("details[data-filter-title='active'] ul li a:contains('Yes')")
+    browser.click("details[data-filter-title='active'] ul li a:contains('No')")
+    browser.click("details[data-filter-title='active'] ul li a:contains('All')")
+    browser.select2_select("ac_project__organization", registration.organization.name)
+    browser.select2_select("ac_project", registration.project.name)
 
 
 def test_menu_admin(mock_state, browser: AuroraTestBrowser, registration):

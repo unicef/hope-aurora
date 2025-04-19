@@ -1,6 +1,6 @@
 (function ($) {
     $(function () {
-        var TOOLBAR = "<div class=\"fixed flex staff-toolbar\">" +
+        var TOOLBAR2 = "<div class=\"sticky top-0 flex staff-toolbar\">" +
             "<div class=\"flex-shrink ml-3 block hidden lg:inline-flex\">" +
             "Version: {{project.version}}" +
             "</div>" +
@@ -18,17 +18,17 @@
             "<input id=\"staff-i18n\" type=\"checkbox\" class=\" mt-1 chk cursor-pointer\">" +
             "</div>" +
             "</div>";
-
+        // $("#header").prepend(TOOLBAR2);
         var seed = Date.now() + Math.random();
         $(".staff-editor").hide();
         $.get("/api/user/me/?" + seed).done(function (resp) {
             if (resp.canTranslate) {
                 $.get("/api/project/?" + seed).done(function (resp1) {
-                    var html = TOOLBAR.replaceAll("{{project.version}}", resp1.version)
+                    var html = TOOLBAR2.replaceAll("{{project.version}}", resp1.version)
                                       .replaceAll("{{project.build_date}}", resp1.build_date)
                                       .replaceAll("{{project.env}}", resp1.env)
                                       .replaceAll("{{admin_url}}", resp.adminUrl);
-                    $("body").prepend(html);
+                    $("#header").prepend(html);
                     i18n.displayIcons(resp);
                     $editCheckBox = $("#staff-editor");
                     $i18nCheckBox = $("#staff-i18n");

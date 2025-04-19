@@ -50,10 +50,10 @@ INSTALLED_APPS = [
     # ---
     "smart_admin.apps.SmartLogsConfig",
     "smart_admin.apps.SmartTemplateConfig",
-    "aurora.web",
     "smart_admin.apps.SmartAuthConfig",
     "smart_admin.apps.SmartConfig",
     "aurora.administration.apps.AuroraAdminConfig",
+    "aurora.web",
     "front_door.contrib",
     "hijack",
     "rest_framework",

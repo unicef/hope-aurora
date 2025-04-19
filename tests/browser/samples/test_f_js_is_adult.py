@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from unittest.mock import Mock
 
 import pytest
 from selenium.webdriver import Keys
@@ -10,17 +9,6 @@ from aurora.core import fields
 from aurora.registration.models import Record
 
 pytestmark = pytest.mark.selenium
-
-
-@pytest.fixture
-def mock_state():
-    from django.contrib.auth.models import AnonymousUser
-
-    from aurora.state import state
-
-    state.request = Mock(user=AnonymousUser())
-    yield
-    state.request = None
 
 
 @pytest.fixture

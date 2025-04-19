@@ -1,9 +1,11 @@
 from datetime import datetime
 from threading import local
 
+from django.http import HttpRequest
+
 
 class State(local):
-    request = None
+    request: HttpRequest | None = None
     data = {"collect_messages": False, "hit_messages": False}
 
     def __init__(self):

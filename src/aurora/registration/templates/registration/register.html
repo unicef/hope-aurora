@@ -17,8 +17,6 @@
     {% if registration %}
     <script src="{% url 'javascript-catalog' registration.locale %}"></script>
     {% endif %}
-{# <script src="{% static 'registration/survey.min.js' %}"></script> #}
-{# <script>var VERSION="{{ project.version }}";var DSN="{{ project.sentry_dsn }}";</script> #}
 
     <script src="https://browser.sentry-cdn.com/5.30.0/bundle.min.js"
             integrity="sha384-V+jCLoAVKKml0VanRLGJGAdKk+Lzo1kRFe079J0majdfeGabOd32KG/2adGnr4N0"
@@ -56,10 +54,10 @@
 {# {% if registration.locales|length >= 1 %} #}
 {# <script defer src="{% static 'i18n/i18n.min.js' %}"></script> #}
 {# {% endif %} #}
-    {% if can_translate %}
-        <script src="{% static 'i18n/i18n_edit.js' %}"></script>
-        <script defer src="{% static "edit.min.js" %}"></script>
-    {% endif %}
+{#    {% if can_translate %}#}
+{#        <script src="{% static 'i18n/i18n_edit.js' %}"></script>#}
+{#        <script defer src="{% static "edit.js" %}"></script>#}
+{#    {% endif %}#}
 {# <script defer src="{% static "registration/auth.js" %}"></script> #}
     {% if registration.advanced.smart.wizard %}<script src="{% static "wizard.min.js" %}"></script>{% endif %}
     <div class="flex justify-center text-xs footer m-auto pt-1 pb-2 border-t-2 text-gray-400 border-gray-400">
