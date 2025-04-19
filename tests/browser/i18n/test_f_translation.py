@@ -75,5 +75,5 @@ def test_import_translate(mock_state, browser: AuroraTestBrowser, registration):
     browser.click("input#import[type=submit]")
 
     browser.click("input#save")
-    time.sleep(0.3)
+    time.sleep(0.5)
     assert browser.get_text("ul.messagelist") == "Messages processed: Processed: 5, Selected: 5, Created: 5, Updated: 0"
