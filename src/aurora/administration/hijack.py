@@ -4,12 +4,8 @@ from hijack.templatetags.hijack import can_hijack
 from hijack.views import get_used_backend, keep_session_age
 
 
-def is_hijacked():
-    pass
-
-
 def can_impersonate(hijacker, hijacked):
-    return not hijacker.is_hijacked
+    return (hijacker != hijacked) and not hijacker.is_hijacked
 
 
 def impersonate(request, hijacked):

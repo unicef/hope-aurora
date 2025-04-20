@@ -3,6 +3,7 @@ from unittest import mock
 
 import pytest
 from django.urls import reverse
+from faker import Faker
 from testutils.factories import RecordFactory, RegistrationFactory
 from testutils.selenium import AuroraTestBrowser
 
@@ -10,6 +11,8 @@ from aurora.state import State
 
 if TYPE_CHECKING:
     from aurora.registration.models import Record
+
+fake = Faker()
 
 pytestmark = pytest.mark.selenium
 

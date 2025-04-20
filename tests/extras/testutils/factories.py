@@ -1,6 +1,7 @@
 from random import randint
 
 import factory.fuzzy
+import pytz
 from django import forms
 from django.contrib.admin.models import LogEntry
 from django.contrib.auth import get_user_model
@@ -49,7 +50,7 @@ def get_factory_for_model(_model):
 
     if _model in factories_registry:
         return factories_registry[_model]
-    return type(f"{_model._meta.model_name}Factory", (AutoRegisterModelFactory,), {"Meta": Meta})
+    return type(f"{_model._meta.model_name}AutoFactory", (AutoRegisterModelFactory,), {"Meta": Meta})
 
 
 class GroupFactory(AutoRegisterModelFactory):
@@ -179,7 +180,9 @@ class RegistrationFactory(AutoRegisterModelFactory):
 
 class RecordFactory(AutoRegisterModelFactory):
     registration = factory.SubFactory(RegistrationFactory)
-    timestamp = timezone.now()
+    timestamp = factory.Faker(
+        "date_time_between_dates", datetime_start="-1y", datetime_end=timezone.now(), tzinfo=pytz.UTC
+    )
 
     class Meta:
         model = Record
@@ -251,6 +254,7 @@ class AuroraRoleFactory(AutoRegisterModelFactory):
 
 
 class MessageFactory(AutoRegisterModelFactory):
+    timestamp = timezone.now()
     msgstr = factory.Sequence(lambda d: "message-%s" % d)
     msgid = factory.LazyAttribute(lambda o: o.msgstr)
 

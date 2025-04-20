@@ -150,7 +150,10 @@ def test_group_list(app):
 
 
 @pytest.mark.django_db
-@pytest.mark.skip_models("constance.Config", "registration.Record")
+@pytest.mark.skip_models(
+    "constance.Config",
+    "registration.Record",
+)
 def test_changelist(app, modeladmin, record):
     url = reverse(admin_urlname(modeladmin.model._meta, "changelist"))
     opts: Options = modeladmin.model._meta

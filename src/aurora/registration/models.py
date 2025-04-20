@@ -330,6 +330,7 @@ class Record(models.Model):
 
     class Meta:
         unique_together = ("registration", "unique_field")
+        ordering = ("pk",)
 
     def __str__(self):
         return f"{self.registration} - {self.pk}"

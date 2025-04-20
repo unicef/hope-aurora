@@ -1,8 +1,7 @@
-from unittest.mock import Mock
-
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING
+from unittest.mock import Mock
 
 import pytest
 from django.urls import reverse

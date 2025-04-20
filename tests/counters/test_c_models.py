@@ -1,18 +1,22 @@
-from datetime import date
 from typing import TYPE_CHECKING
 
 import pytest
+import pytz
 from django.test import RequestFactory
+from django.utils import timezone
+from faker import Faker
 from testutils.factories import (
     RecordFactory,
     RegistrationFactory,
     UserFactory,
 )
 
-from aurora.counters.models import Counter
+from aurora.counters.models import Counter, Record
 
 if TYPE_CHECKING:
     from aurora.registration.models import Registration
+
+fake = Faker()
 
 
 @pytest.fixture(autouse=True)
@@ -35,9 +39,26 @@ def app(django_app_factory):
 
 @pytest.fixture
 def data(db) -> list[Counter]:
-    today = date.today()
+    today = timezone.now()
     reg = RegistrationFactory()
-    return [RecordFactory(timestamp=date(today.year, today.month, day), registration=reg) for day in range(1, 28)]
+    return [
+        RecordFactory(
+            registration=reg,
+            timestamp=fake.date_time_between_dates(datetime_start="-30d", datetime_end=today).astimezone(pytz.utc),
+        )
+        for __ in range(1, 28)
+    ]
+
+
+def test_collect_no_collected(db):
+    Counter.objects.all().delete()
+    assert Counter.objects.collect()
+
+
+def test_collect_no_data(db):
+    Record.objects.all().delete()
+    Counter.objects.all().delete()
+    assert Counter.objects.collect()
 
 
 def test_collect(data):

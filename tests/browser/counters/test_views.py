@@ -39,7 +39,8 @@ def test_charts_user_navigation(browser: AuroraTestBrowser, admin_user, data):
     location = canvas.location
     x = location["x"]
     y = location["y"]
-    ActionChains(browser.driver).move_by_offset(x, y + 20).click(canvas).perform()
+    browser.scroll_to_top()
+    ActionChains(browser.driver).move_by_offset(x, y + 40).click(canvas).perform()
     browser.click("button#prev")
     browser.click("button#next")
     browser.find_element("div.breadcrumbs a.month").click()
