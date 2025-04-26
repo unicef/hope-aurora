@@ -62,7 +62,7 @@ dependencies = [
   "django-simple-math-captcha",
   "django-smart-admin",
   "django-smart-env",
-  "django-strategy-field>=3.2",
+  "django-strategy-field>=3.2.1",
   "django-stubs[compatible-mypy]",
   "django-stubs-ext>=5.1.3",
   "django-sysinfo",
@@ -75,7 +75,6 @@ dependencies = [
   "jmespath",
   "jsonpickle",
   "markdown",
-  "mini-racer",
   "natural-keys",
   "pillow",
   "psycopg2-binary",
@@ -83,9 +82,7 @@ dependencies = [
   "pyquery",
   "qrcode",
   "sentry-sdk",
-  "setuptools>=75.6",
   "social-auth-app-django",
-  "soupsieve",
   "sqlparse",
 ]
 
@@ -97,7 +94,6 @@ dev = [
   "django-webtest>=1.9.13",
   "factory-boy",
   "freezegun",
-  "licensecheck>=2020",
   "pdbpp",
   "pip-licenses>=5",
   "pre-commit",
@@ -107,7 +103,7 @@ dev = [
   "pytest-echo",
   "pytest-xdist",
   "responses",
-  "seleniumbase>=4.35.2",
+  "seleniumbase",
   "tox",
   "types-jmespath>=1.0.2.20240106",
   "watchdog",
@@ -136,6 +132,9 @@ docs = [
   "mkdocstrings[python]>=0.24.1",
   "mkdocstrings-python",
   "pymdown-extensions>=10.7.1",
+]
+mypy = [
+  "mypy",
 ]
 
 [tool.hatch]

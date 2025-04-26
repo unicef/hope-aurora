@@ -13,6 +13,7 @@ from django.db.models.functions import Collate
 from django.http import HttpResponse, JsonResponse
 from jsoneditor.forms import JSONEditor
 from smart_admin.modeladmin import SmartModelAdmin
+from strategy_field import admin  # noqa: E402, I001, F401
 
 from ...administration.mixin import LoadDumpMixin
 from ..admin_sync import SyncMixin
@@ -21,7 +22,7 @@ from ..models import FIELD_KWARGS, FlexFormField
 from ..utils import dict_setdefault, is_root, render
 from .base import ConcurrencyVersionAdmin
 from .field_editor import FieldEditor
-from .filters import StrategyFieldComboFilter
+from .filters import StrategyFieldSelect2Filter
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +62,8 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
     list_editable = ["required", "enabled"]
     list_filter = (
         ("flex_form", AutoCompleteFilter),
-        ("field_type", StrategyFieldComboFilter),
+        ("field_type", StrategyFieldSelect2Filter),
+        # "field_type",
         QueryStringFilter,
     )
     autocomplete_fields = ("flex_form", "validator")

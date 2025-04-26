@@ -11,9 +11,11 @@ def app(django_app_factory):
     return django_app_factory(csrf_checks=False)
 
 
-def test_impersonate(user, admin_user):
-    with mock.patch("aurora.administration.hijack.can_hijack", return_value=True):
-        assert impersonate(admin_user, user) is None
+def test_impersonate(user, admin_user, rf):
+    req = rf.get("/")
+    req.user = admin_user
+    with mock.patch("aurora.administration.hijack.can_hijack", return_value=False):
+        assert impersonate(req, user) is None
 
 
 def test_hijack_security(app, user, admin_user):

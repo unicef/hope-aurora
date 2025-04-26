@@ -40,7 +40,7 @@ jobs:
           token: ${{ github.token }}
           filters: .github/file-filters.yml
 
-  ruff:
+  lint:
     needs: changes
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false && needs.changes.outputs.lint
@@ -49,8 +49,29 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install requirements
-        run: pip install ruff
-      - name: Check syntax
-        # Stop the build if there are Python syntax errors or undefined names
-        run: ruff check -e
+      - name: Static Code checks
+        run: tox -e lint
+
+  mypy:
+    needs: changes
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false && needs.changes.outputs.lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check Python Package structure
+        run: tox -e mypy
+
+  package:
+    needs: changes
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false && needs.changes.outputs.lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check Python Package structure
+        run: tox -e pkg_meta

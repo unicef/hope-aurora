@@ -31,6 +31,7 @@ build:
 	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION} \
 	$(MAKE) .build ## build image
 
+
 .build-stage:
 	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION}-${STAGE} \
 	$(MAKE) .build
@@ -82,6 +83,14 @@ step5: dist
 			${RUN_OPTIONS} \
 			-t ${DOCKER_IMAGE} \
 			${CMD}
+
+check:
+	CMD='check.sh' \
+	RUN_OPTIONS="-it -v \
+	 			-v ./src/:/app/src \
+	" \
+	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION}-tests \
+	$(MAKE) .run
 
 run:
 	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${TAG} \

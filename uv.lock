@@ -102,7 +102,6 @@ dependencies = [
     { name = "jmespath" },
     { name = "jsonpickle" },
     { name = "markdown" },
-    { name = "mini-racer" },
     { name = "natural-keys" },
     { name = "pillow" },
     { name = "psycopg2-binary" },
@@ -110,9 +109,7 @@ dependencies = [
     { name = "pyquery" },
     { name = "qrcode" },
     { name = "sentry-sdk" },
-    { name = "setuptools" },
     { name = "social-auth-app-django" },
-    { name = "soupsieve" },
     { name = "sqlparse" },
 ]
 
@@ -124,7 +121,6 @@ dev = [
     { name = "django-webtest" },
     { name = "factory-boy" },
     { name = "freezegun" },
-    { name = "licensecheck" },
     { name = "pdbpp" },
     { name = "pip-licenses" },
     { name = "pre-commit" },
@@ -163,6 +159,9 @@ docs = [
     { name = "mkdocstrings-python" },
     { name = "pymdown-extensions" },
 ]
+mypy = [
+    { name = "mypy" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -174,7 +173,7 @@ requires-dist = [
     { name = "django", specifier = "==5.2.*" },
     { name = "django-admin-extra-buttons" },
     { name = "django-admin-ordering" },
-    { name = "django-admin-sync" },
+    { name = "django-admin-sync", editable = "../../saxix/django-admin-sync" },
     { name = "django-adminactions" },
     { name = "django-adminfilters" },
     { name = "django-anymail", extras = ["mailjet"] },
@@ -205,7 +204,7 @@ requires-dist = [
     { name = "django-simple-math-captcha" },
     { name = "django-smart-admin" },
     { name = "django-smart-env" },
-    { name = "django-strategy-field", specifier = ">=3.2" },
+    { name = "django-strategy-field", specifier = ">=3.2.1" },
     { name = "django-stubs", extras = ["compatible-mypy"] },
     { name = "django-stubs-ext", specifier = ">=5.1.3" },
     { name = "django-sysinfo" },
@@ -218,7 +217,6 @@ requires-dist = [
     { name = "jmespath" },
     { name = "jsonpickle" },
     { name = "markdown" },
-    { name = "mini-racer" },
     { name = "natural-keys" },
     { name = "pillow" },
     { name = "psycopg2-binary" },
@@ -226,9 +224,7 @@ requires-dist = [
     { name = "pyquery" },
     { name = "qrcode" },
     { name = "sentry-sdk" },
-    { name = "setuptools", specifier = ">=75.6" },
     { name = "social-auth-app-django" },
-    { name = "soupsieve" },
     { name = "sqlparse" },
 ]
 
@@ -240,7 +236,6 @@ dev = [
     { name = "django-webtest", specifier = ">=1.9.13" },
     { name = "factory-boy" },
     { name = "freezegun" },
-    { name = "licensecheck", specifier = ">=2020" },
     { name = "pdbpp" },
     { name = "pip-licenses", specifier = ">=5" },
     { name = "pre-commit" },
@@ -250,7 +245,7 @@ dev = [
     { name = "pytest-echo" },
     { name = "pytest-xdist" },
     { name = "responses" },
-    { name = "seleniumbase", specifier = ">=4.35.2" },
+    { name = "seleniumbase" },
     { name = "tox" },
     { name = "types-jmespath", specifier = ">=1.0.2.20240106" },
     { name = "watchdog" },
@@ -279,6 +274,7 @@ docs = [
     { name = "mkdocstrings-python" },
     { name = "pymdown-extensions", specifier = ">=10.7.1" },
 ]
+mypy = [{ name = "mypy" }]
 
 [[package]]
 name = "autobahn"
@@ -848,13 +844,60 @@ wheels = [
 
 [[package]]
 name = "django-admin-sync"
-version = "0.7.1"
-source = { registry = "https://pypi.org/simple" }
+source = { editable = "../../saxix/django-admin-sync" }
 dependencies = [
     { name = "django-admin-extra-buttons" },
+    { name = "django-concurrency" },
+    { name = "django-stubs" },
+    { name = "pytz" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b4/c6/bffb6bba06b5d0399d385cd0532034d462a30832ce7f7a5071c705e232d3/django-admin-sync-0.7.1.tar.gz", hash = "sha256:70c1ff70affd05c62bbf809572ff28648e869c059294656c05364e7036cebe32", size = 45516 }
+
+[package.metadata]
+requires-dist = [
+    { name = "django-admin-extra-buttons", specifier = ">=2.1" },
+    { name = "django-concurrency" },
+    { name = "django-stubs" },
+    { name = "pytz", specifier = ">=2025.1" },
+    { name = "requests" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "check-manifest" },
+    { name = "django-factory-boy" },
+    { name = "django-reversion" },
+    { name = "django-webtest", specifier = ">=1.9.13" },
+    { name = "freezegun" },
+    { name = "pre-commit" },
+    { name = "psycopg2-binary" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-django" },
+    { name = "pytest-echo" },
+    { name = "pytest-pythonpath" },
+    { name = "pytest-responses" },
+    { name = "tox" },
+]
+dj = [{ name = "django" }]
+docs = [
+    { name = "markdown-include", specifier = ">=0.8.1" },
+    { name = "mdx-gh-links", specifier = ">=0.4" },
+    { name = "mkdocs", specifier = ">=1.6.1" },
+    { name = "mkdocs-autolinks-plugin", specifier = ">=0.7.1" },
+    { name = "mkdocs-autorefs", specifier = ">=1.3.1" },
+    { name = "mkdocs-awesome-pages-plugin", specifier = ">=2.10.1" },
+    { name = "mkdocs-ezlinks-plugin", specifier = ">=0.1.14" },
+    { name = "mkdocs-glightbox", specifier = ">=0.4" },
+    { name = "mkdocs-include-markdown-plugin", specifier = ">=6.2.2" },
+    { name = "mkdocs-macros-plugin", specifier = ">=1.3.7" },
+    { name = "mkdocs-markdownextradata-plugin", specifier = ">=0.2.6" },
+    { name = "mkdocs-material", specifier = ">=9.6.5" },
+    { name = "mkdocs-material-extensions", specifier = ">=1.3.1" },
+    { name = "mkdocstrings", specifier = ">=0.28.1" },
+    { name = "mkdocstrings-python", specifier = ">=1.16.1" },
+]
+type-check = [{ name = "mypy" }]
 
 [[package]]
 name = "django-adminactions"
@@ -1224,11 +1267,11 @@ wheels = [
 
 [[package]]
 name = "django-strategy-field"
-version = "3.2"
+version = "3.2.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/02/ab/0431766b7f3a54470bb01397a3039569856f61cc7d0f897f742fd0125d10/django_strategy_field-3.2.tar.gz", hash = "sha256:9e719c8eea80eda733862658fafe90b80a9c0ef4f0261664edabb6c238fac784", size = 9391 }
+sdist = { url = "https://files.pythonhosted.org/packages/6b/86/98783fe60e8e016851c5f96727cb7ed4375aa9bb738b7e4cf6fbc8f3f287/django_strategy_field-3.2.1.tar.gz", hash = "sha256:d87083f4a0ed7160ba2cff1b718bde670232ae557c6ec4c0a95d06b49419bc5b", size = 9752 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d3/82/ca6ecc11d142aeca71e07dcfa44fd4738ef505d75dc068a577e7018593b9/django_strategy_field-3.2-py3-none-any.whl", hash = "sha256:394e2d5cd62ce4f438dd69fda03bf2c686689a60f136cded278ae8b7977bc514", size = 13313 },
+    { url = "https://files.pythonhosted.org/packages/15/02/d0f2d8f69e619c4ab446571ad2b954b41f5f39a7ebc16cad927a3ca4f698/django_strategy_field-3.2.1-py3-none-any.whl", hash = "sha256:fabdf06052fcea9fe319fd855fb2a308ec36ce513f1902688f369fbdbd00e1c6", size = 14033 },
 ]
 
 [[package]]
@@ -1629,19 +1672,6 @@ wheels = [
 ]
 
 [[package]]
-name = "licensecheck"
-version = "2020"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "requests" },
-    { name = "requirements-parser" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/39/09/d0f6ea6f6bd9250493a9432cc6e55af7bf4569490fce50de6c1e1b2afe61/licensecheck-2020.tar.gz", hash = "sha256:769411e1663d0b38f469c1aff77120bb8ff71895ffc46c1059494bc01fb07f80", size = 10939 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ff/2a/f0dfaa96c85a937d8a30d8d12d9999500924b1eb98a0cedb5474de551b50/licensecheck-2020-py3-none-any.whl", hash = "sha256:b39bffe8394568548e0cdb6df0bba5e7ae3059e9d5dbf9d81df774ba16117b45", size = 11646 },
-]
-
-[[package]]
 name = "lxml"
 version = "5.3.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1770,21 +1800,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/3a/41/580bb4006e3ed0361b8151a01d324fb03f420815446c7def45d02f74c270/mergedeep-1.3.4.tar.gz", hash = "sha256:0096d52e9dad9939c3d975a774666af186eda617e6ca84df4c94dec30004f2a8", size = 4661 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2c/19/04f9b178c2d8a15b076c8b5140708fa6ffc5601fb6f1e975537072df5b2a/mergedeep-1.3.4-py3-none-any.whl", hash = "sha256:70775750742b25c0d8f36c55aed03d24c3384d17c951b3175d898bd778ef0307", size = 6354 },
-]
-
-[[package]]
-name = "mini-racer"
-version = "0.12.4"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/8c/2d/e051f58e17117b1b8b11a7d17622c1528fa9002c553943c6b677c1b412da/mini_racer-0.12.4.tar.gz", hash = "sha256:84c67553ce9f3736d4c617d8a3f882949d37a46cfb47fe11dab33dd6704e62a4", size = 447529 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/71/fe/1452b6c74cae9e8cd7b6a16d8b1ef08bba4dd0ed373a95f3b401c2e712ea/mini_racer-0.12.4-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:bce8a3cee946575a352f5e65335903bc148da42c036d0c738ac67e931600e455", size = 15701219 },
-    { url = "https://files.pythonhosted.org/packages/99/ae/c22478eff26e6136341e6b40d34f8d285f910ca4d2e2a0ca4703ef87be79/mini_racer-0.12.4-py3-none-macosx_11_0_arm64.whl", hash = "sha256:56c832e6ac2db6a304d1e8e80030615297aafbc6940f64f3479af4ba16abccd5", size = 14566436 },
-    { url = "https://files.pythonhosted.org/packages/44/89/f062aa116b14fcace91f0af86a37605f0ba7c07a01c8101b5ea104d489b1/mini_racer-0.12.4-py3-none-manylinux_2_31_aarch64.whl", hash = "sha256:b82c4bd2976e280ed0a72c9c2de01b13f18ccfbe6f4892cbc22aae04410fac3c", size = 14931664 },
-    { url = "https://files.pythonhosted.org/packages/9c/a1/09122c88a0dd0a2141b0ea068d70f5d31acd0015d6f3157b8efd3ff7e026/mini_racer-0.12.4-py3-none-manylinux_2_31_x86_64.whl", hash = "sha256:69a1c44d02a9069b881684cef15a2d747fe0743df29eadc881fda7002aae5fd2", size = 14955238 },
-    { url = "https://files.pythonhosted.org/packages/6c/3b/826e41f92631560e5c6ca2aa4ef9005bdccf9290c1e7ddebe05e0a3b8c7c/mini_racer-0.12.4-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:499dbc267dfe60e954bc1b6c3787f7b10fc41fe1975853c9a6ddb55eb83dc4d9", size = 15211136 },
-    { url = "https://files.pythonhosted.org/packages/e5/37/15b30316630d1f63b025f058dc92efa75931a37315c34ca07f80be2cc405/mini_racer-0.12.4-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:231f949f5787d18351939f1fe59e5a6fe134bccb5ecf8f836b9beab69d91c8d9", size = 15128684 },
-    { url = "https://files.pythonhosted.org/packages/5c/0e/a9943f90b4a8a6d3849b81a00a00d2db128d876365385af382a0e2caf191/mini_racer-0.12.4-py3-none-win_amd64.whl", hash = "sha256:9446e3bd6a4eb9fbedf1861326f7476080995a31c9b69308acef17e5b7ecaa1b", size = 13674040 },
 ]
 
 [[package]]
@@ -2954,12 +2969,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/42/f2/05f29bc3913aea15e
 wheels = [
     { url = "https://files.pythonhosted.org/packages/3b/5d/63d4ae3b9daea098d5d6f5da83984853c1bbacd5dc826764b249fe119d24/requests_oauthlib-2.0.0-py2.py3-none-any.whl", hash = "sha256:7dd8a5c40426b779b0868c404bdef9768deccf22749cde15852df527e6269b36", size = 24179 },
 ]
-
-[[package]]
-name = "requirements-parser"
-version = "0.2.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/03/80/eb6ba1dd0429089436e90e556db50884ea21da060b10f2e5668c4cac99da/requirements-parser-0.2.0.tar.gz", hash = "sha256:5963ee895c2d05ae9f58d3fc641082fb38021618979d6a152b6b1398bd7d4ed4", size = 6269 }
 
 [[package]]
 name = "responses"

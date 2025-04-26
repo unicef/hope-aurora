@@ -1,5 +1,5 @@
 import pytest
-from django.forms import BooleanField
+from django.forms import BooleanField, DurationField
 from strategy_field.utils import fqn
 from testutils.factories import FlexFormFieldFactory, FormFactory
 from testutils.selenium import AuroraTestBrowser
@@ -39,7 +39,7 @@ def test_add_field(browser: AuroraTestBrowser, field_type):
     browser.click('input[name="_save"]')
     browser.wait_for_ready_state_complete()
     browser.click_link("FlexField-Test")
-    if field_type not in [HiddenField, LocationField, CompilationTimeField]:
+    if field_type not in [HiddenField, LocationField, CompilationTimeField, DurationField]:
         browser.click('a:contains("editor")')
         browser.click("#radio_code")
         browser.click("#radio_attrs")
