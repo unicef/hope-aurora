@@ -32,7 +32,7 @@ if not DJANGO_ADMIN_URL.endswith("/"):
 # Application definition
 SITE_ID = env("SITE_ID")
 INSTALLED_APPS = [
-    "daphne",
+    # "daphne",
     "smart_env",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -301,7 +301,6 @@ EMAIL_TIMEOUT = env("EMAIL_TIMEOUT")
 EMAIL_USE_SSL = env("EMAIL_USE_SSL")
 EMAIL_USE_TLS = env("EMAIL_USE_TLS")
 
-LOGIN_REDIRECT_URL = "index"
 LOGOUT_REDIRECT_URL = "index"
 
 LOGGING_HANDLERS = os.environ.get("LOG_HANDLER")

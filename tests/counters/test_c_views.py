@@ -5,7 +5,6 @@ from unittest.mock import Mock
 import pytest
 from django.urls import reverse
 from django_webtest import WebTest
-
 from testutils.factories import CounterFactory, OrganizationFactory, ProjectFactory, RegistrationFactory, UserFactory
 from testutils.perms import user_grant_permissions
 

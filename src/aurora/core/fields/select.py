@@ -69,7 +69,8 @@ class AjaxSelectField(forms.Field):
             if self.parent:
                 attrs["data-parent"] = self.parent
             attrs["data-source"] = self.datasource
-            attrs["data-ajax--url"] = reverse("optionset", args=[self.datasource])
+            attrs["data-ajax--base-url"] = reverse("optionset", args=[self.datasource])
+            attrs["data-ajax--url-version"] = reverse("optionset-version", args=[self.datasource])
         except (OptionSet.DoesNotExist, NoReverseMatch, TypeError) as e:
             logger.exception(e)
 

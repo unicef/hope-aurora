@@ -45,6 +45,10 @@ class MigrationPanel(Panel):
         return ""
 
     @property
+    def enabled(self):
+        return True
+
+    @property
     def content(self):
         out = io.StringIO()
         call_command("showmigrations", stdout=out, no_color=True)
@@ -63,6 +67,10 @@ class StatePanel(Panel):
 
     def nav_title(self):
         return _("State")
+
+    @property
+    def enabled(self):
+        return True
 
     def title(self):
         return _("State Panel")

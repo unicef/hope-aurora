@@ -25,7 +25,6 @@ OPTIONS = {
     "ALLOWED_HOSTS": (list, ["*"]),
     "AUTHENTICATION_BACKENDS": (list, []),
     "AZURE_AUTHORITY_HOST": (str, ""),
-    "AZURE_CLIENT_ID": (str, ""),
     "AZURE_CLIENT_KEY": (str, ""),
     "AZURE_CLIENT_SECRET": (str, ""),
     "AZURE_POLICY_NAME": (str, ""),

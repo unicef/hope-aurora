@@ -18,12 +18,16 @@
         $.get("/api/registration/" + pk + "/" + lang + "/version/?" + Math.random(), function (data) {
             const version = parseInt(parts[parts.length - 2]);
             if (version !== data.version) {
+                // console.log("version mismatch:", version, data.version, "redirect to:",  data.url)
                 location.href = data.url;
             } else if (data.auth && (data.session_id !== sessionUrl)) {
-                location.href = data.url;
+                // console.log("Logged User:", data.session_id, sessionUrl, "redirect to:",  data.url)
+                location.href = data.url + "?s=" + data.session_id;
             } else if (!data.auth && sessionUrl) {
+                // console.log("session_id tampered with: redirect", data.url)
                 location.href = data.url;
             } else {
+                // console.log("version matches", data.url)
             }
         });
     });

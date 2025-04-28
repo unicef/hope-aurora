@@ -132,14 +132,14 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           python-version: ${{ matrix.python }}
 
-      - name: Build Test Image
-        run: |
-             docker build \
-                --target tests \
-                -t ${{env.IMAGE}} \
-                --cache-from "type=gha" \
-                --cache-to "type=gha,mode=max" \
-                -f docker/Dockerfile .
+#      - name: Build Test Image
+#        run: |
+#             docker build \
+#                --target tests \
+#                -t ${{env.IMAGE}} \
+#                --cache-from "type=gha" \
+#                --cache-to "type=gha,mode=max" \
+#                -f docker/Dockerfile .
 
       - name: Run Test suite
         run: |

@@ -3,8 +3,12 @@ import time
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from django.utils.cache import get_conditional_response
+from django.utils.decorators import method_decorator
 from django.utils.translation import get_language
+from django.views import View
+from django.views.decorators.cache import never_cache
 from django.views.generic.list import BaseListView
 
 from aurora.core.models import OptionSet
@@ -36,7 +40,16 @@ def filter_optionset(obj: OptionSet, pk, term, lang, parent=None):
     }
 
 
-# @method_decorator(cache_page(60 * 60), name="dispatch")
+@method_decorator(never_cache, name="dispatch")
+class OptionsListVersion(View):
+    def get(self, request, *args, **kwargs):
+        name = self.kwargs["name"]
+        obj: OptionSet = get_object_or_404(OptionSet, name=name)
+        return JsonResponse(
+            {"version": obj.version, "url": reverse("optionset-versioned", args=[obj.name, obj.version])}
+        )
+
+
 class OptionsListView(BaseListView):
     def get(self, request, *args, **kwargs):
         name = self.kwargs["name"]

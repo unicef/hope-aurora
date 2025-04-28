@@ -10,13 +10,15 @@ for line in sys.stdin:
 endef
 export PRINT_HELP_PYSCRIPT
 
+PHONY = build
+
 BROWSER := python -c "$$BROWSER_PYSCRIPT"
 
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
 clean:  ## remove development artifacts and working directory
-	@rm -fr dist '~build' .pytest_cache .coverage src/smart_admin.egg-info build
+	@rm -fr dist '~build' .pytest_cache .coverage src/smart_admin.egg-info build latest_logs
 	@find . -name __pycache__ -o -name .eggs | xargs rm -rf
 	@find . -name "*.py?" -o -name "*.min.min.js" -o -name ".DS_Store" -o -name "*.orig" -o -name "*.min.min.js" -o -name "*.min.min.css" -prune | xargs rm -rf
 
@@ -51,3 +53,7 @@ reset-migrations:
 	./manage.py makemigrations dbtemplates
 
 	$(MAKE) create-db
+
+build:
+	rm -f dist/*
+	uv build

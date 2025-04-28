@@ -5,15 +5,19 @@
 *.py[ico]
 *.db
 *.egg-info
+__pycache__
 dist/
 build/
-__pycache__
+/latest_logs
+/downloaded_files
+/archived_logs
+
 coverage.xml
-node_modules
+junit.xml
 package-lock.json
+
+node_modules
 package.json
-latest_logs
-archived_logs
 Makefile
 
 !tests/.coveragerc

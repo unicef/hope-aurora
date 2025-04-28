@@ -24,7 +24,7 @@ class MicrosoftGraphAPI:
 
     def get_token(self) -> str:
         if not self.azure_client_id or not self.azure_client_secret:
-            raise Exception("Configure AZURE_CLIENT_ID and/or AZURE_CLIENT_SECRET")
+            raise Exception("Configure AZURE_CLIENT_KEY and/or AZURE_CLIENT_SECRET")
 
         post_dict = {
             "grant_type": "client_credentials",

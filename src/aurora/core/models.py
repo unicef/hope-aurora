@@ -616,6 +616,8 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
 
             field_kwargs.setdefault("validators", get_validators(self))
 
+        if not field_type:
+            return {}
         if field_type in WIDGET_FOR_FORMFIELD_DEFAULTS:
             field_kwargs = {**WIDGET_FOR_FORMFIELD_DEFAULTS[field_type], **field_kwargs}
         elif issubclass(self.field_type.widget, TailWindMixin):
@@ -650,8 +652,10 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
         return field_kwargs
 
     def get_instance(self):
+        if self.field_type is None:
+            return None
         try:
-            if issubclass(self.field_type, CustomFieldMixin):
+            if isclass(self.field_type) and issubclass(self.field_type, CustomFieldMixin):
                 field_type = self.field_type.custom.base_type
             else:
                 field_type = self.field_type
