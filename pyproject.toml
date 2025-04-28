@@ -52,7 +52,7 @@ dependencies = [
   "django-reversion-compare",
   "django-simple-captcha",
   "django-simple-math-captcha",
-  "django-smart-admin",
+  "django-smart-admin>=3",
   "django-smart-env",
   "django-strategy-field>=3.2.1",
   "django-stubs[compatible-mypy]",
@@ -133,7 +133,6 @@ mypy = [
 
 [tool.uv]
 package = true
-no-sources = true
 
 [tool.nitpick]
 style = [

@@ -1,7 +1,7 @@
-import django_stubs_ext as django_stubs
+import os
 
-from .version import __version__
+import django_stubs_ext as django_stubs
 
 django_stubs.monkeypatch()
 
-VERSION = __version__
+VERSION = __version__ = os.environ.get("VERSION", "")

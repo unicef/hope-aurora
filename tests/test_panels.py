@@ -25,13 +25,13 @@ def pytest_generate_tests(metafunc):
 
 @pytest.mark.admin
 def test_panel(panel, django_app, admin_user):
-    url = reverse(f"admin:{panel['name']}")
+    url = reverse(f"admin:console-{panel['name']}")
     res = django_app.get(url, user=admin_user)
     assert res.status_code == 200
 
 
 def test_panel_email(app, admin_user):
-    url = reverse("admin:email")
+    url = reverse("admin:console-email")
     res = app.get(url, user=admin_user)
     res = res.forms[1].submit()
     assert res.status_code == 200

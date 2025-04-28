@@ -38,6 +38,7 @@ class CounterManager(models.Manager):
 
             if last_counter:
                 start_date = last_counter.day + timedelta(days=1)
+                start_date = datetime.combine(start_date, datetime.min.time()).astimezone(tz)
             else:
                 start_date = datetime(2000, 1, 1, tzinfo=tz)
             # Query historical data

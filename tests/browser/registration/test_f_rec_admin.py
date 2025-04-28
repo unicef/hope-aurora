@@ -24,13 +24,12 @@ def records():
 
 
 def test_changelist(mock_state: State, browser: AuroraTestBrowser, records: "list[Record]", settings):
-    registration = records[0].registration
-
     settings.ROOT_TOKEN = "123"
     url = reverse("admin:registration_record_changelist")
     browser.login()
     browser.open(url)
     assert browser.find_text("403 Forbidden", "body")
+    registration = records[0].registration
 
     with mock.patch("aurora.registration.admin.record.is_root", return_value=True):
         browser.open(url)
