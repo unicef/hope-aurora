@@ -49,6 +49,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - run: pip install tox
       - name: Static Code checks
         run: tox -e lint
 
@@ -61,6 +62,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - run: pip install tox
       - name: Check Python Package structure
         run: tox -e mypy
 
@@ -73,5 +75,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - run: pip install tox
       - name: Check Python Package structure
         run: tox -e pkg_meta
