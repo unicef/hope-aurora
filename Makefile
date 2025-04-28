@@ -18,7 +18,7 @@ help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
 clean:  ## remove development artifacts and working directory
-	@rm -fr dist '~build' .pytest_cache .coverage src/smart_admin.egg-info build latest_logs ~SYNC* junit.xml coverage.xml
+	@rm -fr dist '~build' .pytest_cache .coverage src/smart_admin.egg-info build latest_logs ~SYNC* junit.xml coverage.xml downloaded_files
 	@find . -name __pycache__ -o -name .eggs | xargs rm -rf
 	@find . -name "*.py?" -o -name "*.min.min.js" -o -name ".DS_Store" -o -name "*.orig" -o -name "*.min.min.js" -o -name "*.min.min.css" -prune | xargs rm -rf
 
