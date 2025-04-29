@@ -43,10 +43,10 @@ class Template(NaturalKeyModel, models.Model):
         verbose_name_plural = _("templates")
         ordering = ("name",)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs) -> None:
         self.last_changed = now()
         # If content is empty look for a template with the given name and
         # populate the template instance with its content.
@@ -54,7 +54,7 @@ class Template(NaturalKeyModel, models.Model):
             self.populate()
         super().save(*args, **kwargs)
 
-    def populate(self, name=None):
+    def populate(self, name: str | None = None) -> None:
         """Try to find a template with the same name and populates the content field if found."""
         if name is None:
             name = self.name
@@ -66,7 +66,7 @@ class Template(NaturalKeyModel, models.Model):
             pass
 
 
-def add_default_site(instance, **kwargs):
+def add_default_site(instance: Template, **kwargs) -> None:
     """
     Cache the templates.
 

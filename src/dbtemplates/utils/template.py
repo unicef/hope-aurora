@@ -1,11 +1,10 @@
-from django.template import Template, TemplateDoesNotExist, TemplateSyntaxError
-
-from django.template.loaders.base import Loader as BaseLoader
 from typing import TYPE_CHECKING
+
+from django.template import Template, TemplateDoesNotExist, TemplateSyntaxError
+from django.template.loaders.base import Loader as BaseLoader
 
 if TYPE_CHECKING:
     from dbtemplates.models import Template as DBTemplate
-
 
 
 def get_loaders() -> list[BaseLoader]:

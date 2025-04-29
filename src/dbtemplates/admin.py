@@ -7,7 +7,7 @@ from adminfilters.value import ValueFilter
 from django import forms
 from django.contrib import admin
 from django.core.exceptions import ImproperlyConfigured
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
@@ -21,6 +21,12 @@ if settings.DBTEMPLATES_USE_REVERSION:
     from reversion.admin import VersionAdmin as TemplateModelAdmin
 else:
     from django.contrib.admin import ModelAdmin as TemplateModelAdmin  # noqa
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from django.db.models import QuerySet
+
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +102,7 @@ class TemplateAdmin(SyncMixin, AdminFiltersMixin, PublishMixin, TemplateModelAdm
     actions = ["invalidate_cache", "repopulate_cache", "check_syntax"]
     change_form_template = "admin/dbtemplates/template/change_form.html"
 
-    def invalidate_cache(self, request, queryset):
+    def invalidate_cache(self, request: "HttpRequest", queryset: "QuerySet") -> None:
         for template in queryset:
             remove_cached_template(template)
         count = queryset.count()
@@ -109,7 +115,7 @@ class TemplateAdmin(SyncMixin, AdminFiltersMixin, PublishMixin, TemplateModelAdm
 
     invalidate_cache.short_description = _("Invalidate cache of selected templates")
 
-    def repopulate_cache(self, request, queryset):
+    def repopulate_cache(self, request: "HttpRequest", queryset: "QuerySet") -> None:
         for template in queryset:
             add_template_to_cache(template)
         count = queryset.count()
@@ -122,7 +128,7 @@ class TemplateAdmin(SyncMixin, AdminFiltersMixin, PublishMixin, TemplateModelAdm
 
     repopulate_cache.short_description = _("Repopulate cache with selected templates")
 
-    def check_syntax(self, request, queryset):
+    def check_syntax(self, request: "HttpRequest", queryset: "QuerySet") -> None:
         errors = []
         for template in queryset:
             valid, error = check_template_syntax(template)
@@ -147,28 +153,29 @@ class TemplateAdmin(SyncMixin, AdminFiltersMixin, PublishMixin, TemplateModelAdm
 
     check_syntax.short_description = _("Check template syntax")
 
-    def site_list(self, template):
+    def site_list(self, template: str) -> str:
         return ", ".join([site.name for site in template.sites.all()])
 
     site_list.short_description = _("sites")
 
-    def check_publish_permission(self, request, obj=None):
+    def check_publish_permission(self, request: "HttpRequest", obj: Template | None = None) -> bool:
         return True
 
-    def check_sync_permission(self, request, obj=None):
+    def check_sync_permission(self, request: "HttpRequest", obj: Template | None = None) -> bool:
         return True
 
     @view()
-    def xrender(self, request, pk):
-        obj = self.get_object(request, pk)
-        from django.template import Context, Template
+    def xrender(self, request: "HttpRequest", pk: str) -> HttpResponse:
+        obj: Template = self.get_object(request, pk)
+        from django.template import Context
+        from django.template import Template as DjangoTemplate
 
-        tpl = Template(obj.content)
+        tpl = DjangoTemplate(obj.content)
         content = tpl.render(Context({}))
         return HttpResponse(content)
 
     @button()
-    def preview(self, request, pk):
+    def preview(self, request: "HttpRequest", pk: str) -> HttpResponse:
         ctx = self.get_common_context(request, pk, title="Preview", preview_template=True)
         return render(request, "admin/dbtemplates/template/preview.html", ctx)
 

@@ -95,4 +95,4 @@ line-ending = "auto"
 # temporary disabled
 "src/aurora/core/**/*.py" = ["ALL"]
 "src/aurora/registration/**/*.py" = ["ALL"]
-"src/dbtemplates/**/*.py" = ["ALL"]
+#"src/dbtemplates/**/*.py" = ["ALL"]

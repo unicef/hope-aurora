@@ -1,17 +1,18 @@
-from typing import Never
+from typing import TYPE_CHECKING, Never, TypeVar
 
 from django.contrib.sites.models import Site
 from django.core import signals
 from django.template.defaultfilters import slugify
 
 from dbtemplates.conf import settings
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..models import Template as DBTemplate
 
+    _T = TypeVar("_T")
 
-def get_cache_backend():
+
+def get_cache_backend() -> "_T":
     """Compatibilty wrapper for getting Django's cache backend instance."""
     from django.core.cache import caches
 
@@ -26,21 +27,21 @@ def get_cache_backend():
 cache = get_cache_backend()
 
 
-def get_cache_key(name):
+def get_cache_key(name: str) -> str:
     current_site = Site.objects.get_current()
     return "dbtemplates::%s::%s" % (slugify(name), current_site.pk)
 
 
-def get_cache_notfound_key(name):
+def get_cache_notfound_key(name: str) -> str:
     return get_cache_key(name) + "::notfound"
 
 
-def remove_notfound_key(instance:"DBTemplate") -> Never:
+def remove_notfound_key(instance: "DBTemplate") -> Never:
     # Remove notfound key as soon as we save the template.
     cache.delete(get_cache_notfound_key(instance.name))
 
 
-def set_and_return(cache_key, content, display_name: str):
+def set_and_return(cache_key: str, content: str, display_name: str) -> tuple[str, str]:
     # Save in cache backend explicitly if manually deleted or invalidated
     if cache:
         cache.set(cache_key, content)

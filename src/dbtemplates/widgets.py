@@ -6,7 +6,7 @@ from django import forms
 class HtmlEditor(forms.Textarea):
     template_name = "admin/dbtemplates/template/editor.html"
 
-    def __init__(self, *args:Any, **kwargs:Any)->None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         theme = kwargs.pop("theme", "midnight")
         toolbar = kwargs.pop("toolbar", True)
         super().__init__(*args, **kwargs)
