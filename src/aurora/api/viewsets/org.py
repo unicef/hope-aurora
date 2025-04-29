@@ -1,4 +1,6 @@
+from django.http import HttpRequest
 from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from ...core.models import Organization, Project
 from ..serializers import OrganizationSerializer, ProjectSerializer
@@ -10,7 +12,7 @@ class OrganizationViewSet(SmartViewSet):
     serializer_class = OrganizationSerializer
 
     @action(detail=True, methods=["GET"])
-    def projects(self, request, pk=None):
+    def projects(self, request: HttpRequest, pk: str | None = None) -> Response:
         queryset = Project.objects.filter(organization__id=pk)
         page = self.paginate_queryset(queryset)
 

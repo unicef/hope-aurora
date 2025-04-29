@@ -129,6 +129,20 @@ docs = [
 
 mypy = [
   "mypy",
+  "django-stubs[compatible-mypy]",
+  "djangorestframework-types",
+  "lxml-stubs",
+  "types-Markdown",
+  "types-Pygments",
+  "types-defusedxml",
+  "types-gevent",
+  "types-html5lib",
+  "types-jmespath",
+  "types-psycopg2",
+  "types-python-dateutil",
+  "types-pytz",
+  "types-qrcode",
+  "types-requests",
 ]
 
 [tool.uv]

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Never
 
 from django.apps import AppConfig
 
@@ -10,8 +10,9 @@ class AuroraAdminConfig(AppConfig):
     default = False
     name = "aurora.administration"
 
-    def ready(self):
+    def ready(self) -> Never:
         super().ready()
+        site: SmartAdminSite
         from django.contrib.admin import site
         from smart_admin.console import (
             panel_email,
@@ -22,7 +23,6 @@ class AuroraAdminConfig(AppConfig):
             panel_sysinfo,
         )
 
-        site: SmartAdminSite
 
         from .panels import panel_dumpdata, panel_loaddata, panel_sql
 

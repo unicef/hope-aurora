@@ -11,9 +11,10 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.core.management import call_command
 from django.db import DEFAULT_DB_ALIAS, connections
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpRequest, HttpResponse
 from django.shortcuts import render
 
+from smart_admin.site import SmartAdminSite
 from .. import VERSION
 from ..core.utils import is_root
 from .forms import ExportForm, ImportForm, SQLForm
@@ -21,24 +22,23 @@ from .forms import ExportForm, ImportForm, SQLForm
 if TYPE_CHECKING:
     from ..security.models import UserProfile
 
-
 logger = logging.getLogger(__name__)
 
 QUICK_SQL = {
     "Show Tables": "SELECT * FROM information_schema.tables;",
     "Show Indexes": "SELECT tablename, indexname, indexdef FROM pg_indexes "
-    "WHERE schemaname='public' ORDER BY tablename, indexname;",
+                    "WHERE schemaname='public' ORDER BY tablename, indexname;",
     "Describe Table": "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=[table_name];",
     "Show Contraints": """SELECT con.*
-       FROM pg_catalog.pg_constraint con
-            INNER JOIN pg_catalog.pg_class rel
-                       ON rel.oid = con.conrelid
-            INNER JOIN pg_catalog.pg_namespace nsp
-                       ON nsp.oid = connamespace;""",
+                          FROM pg_catalog.pg_constraint con
+                                   INNER JOIN pg_catalog.pg_class rel
+                                              ON rel.oid = con.conrelid
+                                   INNER JOIN pg_catalog.pg_namespace nsp
+                                              ON nsp.oid = connamespace;""",
 }
 
 
-def panel_loaddata(self, request):
+def panel_loaddata(self:SmartAdminSite, request:HttpRequest)->HttpResponse:
     context = self.each_context(request)
     context["title"] = "Loaddata"
     if request.method == "POST":
@@ -88,7 +88,7 @@ def panel_loaddata(self, request):
 panel_loaddata.verbose_name = "Load Data"
 
 
-def panel_dumpdata(self, request):
+def panel_dumpdata(self:SmartAdminSite, request:HttpRequest)->HttpResponse:
     stdout = io.StringIO()
     context = self.each_context(request)
     context["title"] = "Export Configuration"
@@ -118,7 +118,7 @@ def panel_dumpdata(self, request):
 panel_dumpdata.verbose_name = "Dump Data"
 
 
-def save_expression(request):
+def save_expression(request:HttpRequest)->JsonResponse:
     response = {}
     form = SQLForm(request.POST)
     if form.is_valid():
@@ -136,7 +136,7 @@ def save_expression(request):
     return JsonResponse(response)
 
 
-def panel_sql(self, request, extra_context=None):
+def panel_sql(self:SmartAdminSite, request: HttpRequest, extra_context: dict | None = None)->HttpResponse:
     if not request.user.is_superuser:
         raise PermissionDenied
     context = self.each_context(request)

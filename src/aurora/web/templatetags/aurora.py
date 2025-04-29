@@ -3,16 +3,18 @@ import io
 import json
 import logging
 import re
+from typing import Any, reveal_type
 
 import markdown as md
 from PIL import Image, UnidentifiedImageError
-from django.template import Library, Node
+from django.template import Library, Node, Context
+from django.template.base import Parser, NodeList
 from django.utils.safestring import mark_safe
 
-from aurora.i18n.get_text import gettext as _
-
 from ...core.flags import parse_bool
+from ...core.models import FlexFormField
 from ...core.utils import dict_get_nested, dict_setdefault, oneline
+from ...i18n.get_text import gettext as _
 from ...registration.models import Registration
 
 logger = logging.getLogger(__name__)
@@ -20,54 +22,55 @@ register = Library()
 
 
 class EscapeScriptNode(Node):
-    def __init__(self, nodelist):
+    def __init__(self, nodelist:NodeList)->None:
         super().__init__()
         self.nodelist = nodelist
 
-    def render(self, context):
+    def render(self, context:Context) -> str:
         out = self.nodelist.render(context)
         return out.replace("</script>", "<\\/script>")
 
 
 @register.tag()
-def escapescript(parser, token):
+def escapescript(parser:Parser, token:str) -> Node:
     nodelist = parser.parse(("endescapescript",))
     parser.delete_first_token()
     return EscapeScriptNode(nodelist)
 
 
 @register.filter
-def islist(value):
+def islist(value:Any)->bool:
     return isinstance(value, list | tuple)
 
 
 @register.filter
-def isstring(value):
+def isstring(value:Any)->bool:
     return isinstance(value, str)
 
 
 @register.filter
-def isdict(value):
+def isdict(value:Any) -> bool:
     return isinstance(value, dict)
 
 
 @register.inclusion_tag("dump/dump.html")
-def dump(value):
+def dump(value:Any) -> dict[str, Any]:
     return {"value": value}
 
 
 @register.inclusion_tag("dump/list.html")
-def dump_list(value):
+def dump_list(value: list) -> dict[str, Any]:
     return {"value": value}
 
 
 @register.inclusion_tag("dump/dict.html")
-def dump_dict(value):
+def dump_dict(value: dict) -> dict[str, Any]:
     return {"value": value}
 
 
 @register.filter(name="smart")
-def smart_attr(field, attr):
+def smart_attr(field, attr:str) ->str:
+    print(111.1, 2222222, reveal_type(field))
     translate = False
     if "," in attr:
         attr, translate = attr.split(",")
@@ -78,17 +81,17 @@ def smart_attr(field, attr):
 
 
 @register.filter()
-def jsonfy(d):
+def jsonfy(d:Any) -> str:
     return json.dumps(d, indent=3)
 
 
 @register.filter(name="lookup")
-def lookup(value, arg):
-    return value.get(arg, None)
+def lookup(value:dict[str, Any], arg:str)->Any:
+    return value.get(arg)
 
 
 @register.filter()
-def is_image(element):
+def is_image(element:str) -> bool:
     if not isinstance(element, str) or len(element) < 200:
         return False
     try:
@@ -97,11 +100,11 @@ def is_image(element):
         im.verify()
         return True
     except UnidentifiedImageError:
-        return None
+        return False
 
 
 @register.filter()
-def is_base64(element):
+def is_base64(element:str) -> bool:
     expression = "^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$"
     try:
         if isinstance(element, str) and element.strip().endswith("=="):
@@ -112,7 +115,7 @@ def is_base64(element):
 
 
 @register.inclusion_tag("buttons/link.html")
-def link(registration):
+def link(registration:Registration) -> str:
     config = registration.advanced.copy()
     config = dict_setdefault(config, Registration.ADVANCED_DEFAULT_ATTRS)
     widget = dict_get_nested(config, "smart.buttons.link.widget")
@@ -129,14 +132,14 @@ def link(registration):
 
 
 @register.filter(name="markdown")
-def _markdown(value) -> str:
+def _markdown(value:str) -> str:
     if value:
         return mark_safe(md.markdown(value, extensions=["markdown.extensions.fenced_code"]))  # noqa: S308
     return ""
 
 
 @register.filter(name="md")
-def _md(value) -> str:
+def _md(value:str) -> str:
     if value:
         p = md.markdown(value, extensions=["markdown.extensions.fenced_code"])
         return p.replace("<p>", "").replace("</p>", "")
@@ -144,5 +147,5 @@ def _md(value) -> str:
 
 
 @register.filter(name="oneline")
-def _oneline(value):
+def _oneline(value:str) -> str:
     return oneline(value)

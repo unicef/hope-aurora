@@ -3,8 +3,10 @@ import io
 import logging
 import os
 from collections import OrderedDict
+from typing import Any
 from urllib import parse
 
+from django.core.paginator import Page
 from django.http import HttpRequest, HttpResponse
 from django.utils.cache import get_conditional_response
 from django_filters import rest_framework as filters
@@ -15,7 +17,9 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.renderers import JSONRenderer
+from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import Serializer
 
 from ...core.utils import build_dict, get_etag, get_session_id
 from ...registration.models import Record, Registration
@@ -23,11 +27,20 @@ from ..serializers import RegistrationDetailSerializer, RegistrationListSerializ
 from ..serializers.record import DataTableRecordSerializer
 from .base import SmartViewSet
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rest_framework.permissions import _SupportsHasPermission
+
+
 logger = logging.getLogger(__name__)
 
 
 class RecordPageNumberPagination(PageNumberPagination):
-    def get_paginated_response(self, data):
+    request: Request
+    page: Page
+
+    def get_paginated_response(self, data: list[dict[str, Any]]) -> Response:
         return Response(
             OrderedDict(
                 [
@@ -48,16 +61,16 @@ class RecordFilter(filters.FilterSet):
 class RegistrationViewSet(SmartViewSet):
     queryset = Registration.objects.all()
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> type[Serializer]:
         if self.detail:
             return RegistrationDetailSerializer
         return RegistrationListSerializer
 
-    def get_permissions(self):
+    def get_permissions(self) -> "list[_SupportsHasPermission]":
         return [permission() for permission in self.permission_classes]
 
     @action(detail=True, permission_classes=[AllowAny])
-    def metadata(self, request, pk=None):
+    def metadata(self, request: Request, pk: str | None = None) -> Response:
         reg: Registration = self.get_object()
         return Response(reg.metadata)
 
@@ -66,7 +79,7 @@ class RegistrationViewSet(SmartViewSet):
         permission_classes=[AllowAny],
         url_path="((?P<language>[a-z-]*)/)*version",
     )
-    def version1(self, request, pk, language=""):
+    def version1(self, request: Request, pk: str, language: str = "") -> Response:
         reg: Registration = self.get_object()
         return Response(
             {
@@ -86,7 +99,7 @@ class RegistrationViewSet(SmartViewSet):
         pagination_class=RecordPageNumberPagination,
         filter_backends=[DjangoFilterBackend],
     )
-    def records(self, request, pk=None):
+    def records(self, request: HttpRequest, pk: str | None = None) -> Response:
         obj: Registration = self.get_object()
         if not request.user.has_perm("registration.view_data", obj):
             raise PermissionDenied()
@@ -126,7 +139,7 @@ class RegistrationViewSet(SmartViewSet):
         return response
 
     @action(detail=True)
-    def csv(self, request: HttpRequest, pk):
+    def csv(self, request: Request, pk: str) -> HttpResponse:
         r"""
         Return a CSV json for registration information.
 

@@ -27,7 +27,7 @@ class ExportForm(forms.Form):
 class SQLForm(forms.Form):
     command = forms.CharField(widget=forms.Textarea(attrs={"style": "width:100%;height:40px"}))
 
-    def clean_command(self):
+    def clean_command(self) -> str:
         value = self.cleaned_data.pop("command")
         value = urllib.parse.unquote(base64.b64decode(value).decode())
 

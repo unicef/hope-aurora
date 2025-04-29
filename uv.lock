@@ -160,7 +160,21 @@ docs = [
     { name = "pymdown-extensions" },
 ]
 mypy = [
+    { name = "django-stubs", extra = ["compatible-mypy"] },
+    { name = "djangorestframework-types" },
+    { name = "lxml-stubs" },
     { name = "mypy" },
+    { name = "types-defusedxml" },
+    { name = "types-gevent" },
+    { name = "types-html5lib" },
+    { name = "types-jmespath" },
+    { name = "types-markdown" },
+    { name = "types-psycopg2" },
+    { name = "types-pygments" },
+    { name = "types-python-dateutil" },
+    { name = "types-pytz" },
+    { name = "types-qrcode" },
+    { name = "types-requests" },
 ]
 
 [package.metadata]
@@ -201,7 +215,7 @@ requires-dist = [
     { name = "django-reversion-compare" },
     { name = "django-simple-captcha" },
     { name = "django-simple-math-captcha" },
-    { name = "django-smart-admin", specifier = ">=3.0" },
+    { name = "django-smart-admin", specifier = ">=3" },
     { name = "django-smart-env" },
     { name = "django-strategy-field", specifier = ">=3.2.1" },
     { name = "django-stubs", extras = ["compatible-mypy"] },
@@ -274,7 +288,23 @@ docs = [
     { name = "mkdocstrings-python" },
     { name = "pymdown-extensions", specifier = ">=10.7.1" },
 ]
-mypy = [{ name = "mypy" }]
+mypy = [
+    { name = "django-stubs", extras = ["compatible-mypy"] },
+    { name = "djangorestframework-types" },
+    { name = "lxml-stubs" },
+    { name = "mypy" },
+    { name = "types-defusedxml" },
+    { name = "types-gevent" },
+    { name = "types-html5lib" },
+    { name = "types-jmespath" },
+    { name = "types-markdown" },
+    { name = "types-psycopg2" },
+    { name = "types-pygments" },
+    { name = "types-python-dateutil" },
+    { name = "types-pytz" },
+    { name = "types-qrcode" },
+    { name = "types-requests" },
+]
 
 [[package]]
 name = "autobahn"
@@ -1324,6 +1354,15 @@ wheels = [
 ]
 
 [[package]]
+name = "djangorestframework-types"
+version = "0.9.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d6/5d/1a21a5fd10ad9980dcb934b8221934dee2b6b97af5edc58cb169558c0831/djangorestframework_types-0.9.0.tar.gz", hash = "sha256:aa6b27fbdab5ff4ab1dfa5376f3b6ec45713ce48dbcdd4226bf3e1410f0deaca", size = 32521 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a4/5f/d908ce938356b209d4d27a7fb159ab9100b8814396a69c0204bb66e38703/djangorestframework_types-0.9.0-py3-none-any.whl", hash = "sha256:5e4258fe43774d0a3d018780170bd702bf615407fe244453ea5ec6e6676b98c4", size = 54947 },
+]
+
+[[package]]
 name = "dukpy"
 version = "0.5.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1664,6 +1703,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/ee/cd/95fa2201041a610c4d08ddaf31d43b98ecc4b1d74b1e7245b1abdab443cb/lxml-5.4.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:15a665ad90054a3d4f397bc40f73948d48e36e4c09f9bcffc7d90c87410e478a", size = 5021569 },
     { url = "https://files.pythonhosted.org/packages/2d/a6/31da006fead660b9512d08d23d31e93ad3477dd47cc42e3285f143443176/lxml-5.4.0-cp313-cp313-win32.whl", hash = "sha256:d5663bc1b471c79f5c833cffbc9b87d7bf13f87e055a5c86c363ccd2348d7e82", size = 3485270 },
     { url = "https://files.pythonhosted.org/packages/fc/14/c115516c62a7d2499781d2d3d7215218c0731b2c940753bf9f9b7b73924d/lxml-5.4.0-cp313-cp313-win_amd64.whl", hash = "sha256:bcb7a1096b4b6b24ce1ac24d4942ad98f983cd3810f9711bcd0293f43a9d8b9f", size = 3814606 },
+]
+
+[[package]]
+name = "lxml-stubs"
+version = "0.5.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/99/da/1a3a3e5d159b249fc2970d73437496b908de8e4716a089c69591b4ffa6fd/lxml-stubs-0.5.1.tar.gz", hash = "sha256:e0ec2aa1ce92d91278b719091ce4515c12adc1d564359dfaf81efa7d4feab79d", size = 14778 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1f/c9/e0f8e4e6e8a69e5959b06499582dca6349db6769cc7fdfb8a02a7c75a9ae/lxml_stubs-0.5.1-py3-none-any.whl", hash = "sha256:1f689e5dbc4b9247cb09ae820c7d34daeb1fdbd1db06123814b856dae7787272", size = 13584 },
 ]
 
 [[package]]
@@ -3340,6 +3388,55 @@ wheels = [
 ]
 
 [[package]]
+name = "types-defusedxml"
+version = "0.7.0.20240218"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/5c/04/acc0a4ef3ea7eff334e3bc73e7a7af54f06684dfea405c0c81fb28a243ab/types-defusedxml-0.7.0.20240218.tar.gz", hash = "sha256:05688a7724dc66ea74c4af5ca0efc554a150c329cb28c13a64902cab878d06ed", size = 5493 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/82/a3/6c007483045d362f45cc30955eb07644a3e8a0d57ee6293f5b540b127558/types_defusedxml-0.7.0.20240218-py3-none-any.whl", hash = "sha256:2b7f3c5ca14fdbe728fab0b846f5f7eb98c4bd4fd2b83d25f79e923caa790ced", size = 7827 },
+]
+
+[[package]]
+name = "types-docutils"
+version = "0.21.0.20241128"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/dd/df/64e7ab01a4fc5ce46895dc94e31cffc8b8087c8d91ee54c45ac2d8d82445/types_docutils-0.21.0.20241128.tar.gz", hash = "sha256:4dd059805b83ac6ec5a223699195c4e9eeb0446a4f7f2aeff1759a4a7cc17473", size = 26739 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/59/b6/10ba95739f2cbb9c5bd2f6568148d62b468afe01a94c633e8892a2936d8a/types_docutils-0.21.0.20241128-py3-none-any.whl", hash = "sha256:e0409204009639e9b0bf4521eeabe58b5e574ce9c0db08421c2ac26c32be0039", size = 34677 },
+]
+
+[[package]]
+name = "types-gevent"
+version = "24.11.0.20250401"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "types-greenlet" },
+    { name = "types-psutil" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f8/db/bdade74c3ba3a266eafd625377eb7b9b37c9c724c7472192100baf0fe507/types_gevent-24.11.0.20250401.tar.gz", hash = "sha256:1443f796a442062698e67d818fca50aa88067dee4021d457a7c0c6bedd6f46ca", size = 36980 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/25/3d/c8b12d048565ef12ae65d71a0e566f36c6e076b158d3f94d87edddbeea6b/types_gevent-24.11.0.20250401-py3-none-any.whl", hash = "sha256:6764faf861ea99250c38179c58076392c44019ac3393029f71b06c4a15e8c1d1", size = 54863 },
+]
+
+[[package]]
+name = "types-greenlet"
+version = "3.2.0.20250417"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ad/a3/0a2583e1542bd79cfdfd3ffc0407c9f0de5f62642cff13f4d191e1291e40/types_greenlet-3.2.0.20250417.tar.gz", hash = "sha256:eb006afcf281ec5756a75c1fd4a6c8a7be5d0cc09b2e82c4856c764760cfa0e3", size = 8785 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d1/ce/61b00f3ffc1ab468d6d994c0880f1470bc0ee9b198dae9fbd773a0029c9f/types_greenlet-3.2.0.20250417-py3-none-any.whl", hash = "sha256:7798b9fdf19d718a62e2d63351e112e7bee622898c6e6cec539296c3dec27808", size = 8819 },
+]
+
+[[package]]
+name = "types-html5lib"
+version = "1.1.11.20241018"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b6/9d/f6fbcc8246f5e46845b4f989c4e17e6fb3ce572f7065b185e515bf8a3be7/types-html5lib-1.1.11.20241018.tar.gz", hash = "sha256:98042555ff78d9e3a51c77c918b1041acbb7eb6c405408d8a9e150ff5beccafa", size = 11370 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ba/7c/f862b1dc31268ef10fe95b43dcdf216ba21a592fafa2d124445cd6b92e93/types_html5lib-1.1.11.20241018-py3-none-any.whl", hash = "sha256:3f1e064d9ed2c289001ae6392c84c93833abb0816165c6ff0abfc304a779f403", size = 17292 },
+]
+
+[[package]]
 name = "types-jmespath"
 version = "1.0.2.20240106"
 source = { registry = "https://pypi.org/simple" }
@@ -3349,12 +3446,93 @@ wheels = [
 ]
 
 [[package]]
+name = "types-markdown"
+version = "3.8.0.20250415"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/0d/d3/5fa81c99f0d169ade1f96822c5b327821c0357663e3b6d8782c870457a2d/types_markdown-3.8.0.20250415.tar.gz", hash = "sha256:98ab13587d1177769d93e55586d3dc97047df75bc6e37ce4074666f5dd4212ba", size = 18265 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9d/03/3a6ea34260eb8358aaeaa5c2eac8000aa5d1f71778d706848fc91698d5ee/types_markdown-3.8.0.20250415-py3-none-any.whl", hash = "sha256:b41abed474a303ba300e3a4cf6f27eda339219124a59d529a158203570007776", size = 23695 },
+]
+
+[[package]]
+name = "types-psutil"
+version = "7.0.0.20250401"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ef/fc/3829cb113aa05c268b18369f1f003a4589216931658ebfa69e3d4931ba60/types_psutil-7.0.0.20250401.tar.gz", hash = "sha256:2a7d663c0888a079fc1643ebc109ad12e57a21c9552a9e2035da504191336dbf", size = 20273 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/58/42/45e01f3bce242c0caad36b968114a00f454169df6c771c092c96727239d8/types_psutil-7.0.0.20250401-py3-none-any.whl", hash = "sha256:ed23f7140368104afe4e05a6085a5fa56fbe8c880a0f4dfe8d63e041106071ed", size = 23173 },
+]
+
+[[package]]
+name = "types-psycopg2"
+version = "2.9.21.20250318"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/09/29/9e86192ffa0a7ffc48d222f510026ec92aa93c7321ee24128480553661ec/types_psycopg2-2.9.21.20250318.tar.gz", hash = "sha256:eb6eac5bfb16adfd5f16b818918b9e26a40ede147e0f2bbffdf53a6ef7025a87", size = 26614 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a7/9c/34da1d5c2fe53c91f3382f45e18c58141cebef38e7204f676a93d1af6a1c/types_psycopg2-2.9.21.20250318-py3-none-any.whl", hash = "sha256:7296d111ad950bbd2fc979a1ab0572acae69047f922280e77db657c00d2c79c0", size = 24939 },
+]
+
+[[package]]
+name = "types-pygments"
+version = "2.19.0.20250305"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "types-docutils" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e6/be/88f777c75022b111f9e9fe4cdb430bf92892fe90188b0fd037601ded2ea1/types_pygments-2.19.0.20250305.tar.gz", hash = "sha256:044c50e80ecd4128c00a7268f20355e16f5c55466d3d49dfda09be920af40b4b", size = 18521 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6f/c6/b6d3ad345b76425e46d25a2da1758603d80c3a59405bdcbbbaa86d8c8070/types_pygments-2.19.0.20250305-py3-none-any.whl", hash = "sha256:ca88aae5ec426f9b107c0f7adc36dc096d2882d930a49f679eaf4b8b643db35d", size = 25638 },
+]
+
+[[package]]
+name = "types-python-dateutil"
+version = "2.9.0.20241206"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a9/60/47d92293d9bc521cd2301e423a358abfac0ad409b3a1606d8fbae1321961/types_python_dateutil-2.9.0.20241206.tar.gz", hash = "sha256:18f493414c26ffba692a72369fea7a154c502646301ebfe3d56a04b3767284cb", size = 13802 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0f/b3/ca41df24db5eb99b00d97f89d7674a90cb6b3134c52fb8121b6d8d30f15c/types_python_dateutil-2.9.0.20241206-py3-none-any.whl", hash = "sha256:e248a4bc70a486d3e3ec84d0dc30eec3a5f979d6e7ee4123ae043eedbb987f53", size = 14384 },
+]
+
+[[package]]
+name = "types-pytz"
+version = "2025.2.0.20250326"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/4b/66/38c89861242f2c61c8315ddbcc7d7bbf64979f4b0bdc48db0ba62aeec330/types_pytz-2025.2.0.20250326.tar.gz", hash = "sha256:deda02de24f527066fc8d6a19e284ab3f3ae716a42b4adb6b40e75e408c08d36", size = 10595 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4e/e0/17f3a6670db5c95dc195f346e2e7290f22ba8327c188133959389b578cbd/types_pytz-2025.2.0.20250326-py3-none-any.whl", hash = "sha256:3c397fd1b845cd2b3adc9398607764ced9e578a98a5d1fbb4a9bc9253edfb162", size = 10222 },
+]
+
+[[package]]
 name = "types-pyyaml"
 version = "6.0.12.20250402"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/2d/68/609eed7402f87c9874af39d35942744e39646d1ea9011765ec87b01b2a3c/types_pyyaml-6.0.12.20250402.tar.gz", hash = "sha256:d7c13c3e6d335b6af4b0122a01ff1d270aba84ab96d1a1a1063ecba3e13ec075", size = 17282 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ed/56/1fe61db05685fbb512c07ea9323f06ea727125951f1eb4dff110b3311da3/types_pyyaml-6.0.12.20250402-py3-none-any.whl", hash = "sha256:652348fa9e7a203d4b0d21066dfb00760d3cbd5a15ebb7cf8d33c88a49546681", size = 20329 },
+]
+
+[[package]]
+name = "types-qrcode"
+version = "8.1.0.20250404"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pillow" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c0/fe/eca4d29f2a1e3bf444f3f48b68fc372f7cb13863c916dedff749780e4052/types_qrcode-8.1.0.20250404.tar.gz", hash = "sha256:224f55fed2c8d6096c0ec71243891e7fa34522684134adb993d807db2bbee57d", size = 14993 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2c/70/30b3252e9c108af8ab7309639b63ab5e18e6370cfe441461647bdb1e9261/types_qrcode-8.1.0.20250404-py3-none-any.whl", hash = "sha256:caeaa75f4f35457961bf25cb8e5c5204efacb16b0635f0b479088a92c2802cf4", size = 19853 },
+]
+
+[[package]]
+name = "types-requests"
+version = "2.32.0.20250328"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/00/7d/eb174f74e3f5634eaacb38031bbe467dfe2e545bc255e5c90096ec46bc46/types_requests-2.32.0.20250328.tar.gz", hash = "sha256:c9e67228ea103bd811c96984fac36ed2ae8da87a36a633964a21f199d60baf32", size = 22995 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cc/15/3700282a9d4ea3b37044264d3e4d1b1f0095a4ebf860a99914fd544e3be3/types_requests-2.32.0.20250328-py3-none-any.whl", hash = "sha256:72ff80f84b15eb3aa7a8e2625fffb6a93f2ad5a0c20215fc1dcfa61117bcb2a2", size = 20663 },
 ]
 
 [[package]]

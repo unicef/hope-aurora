@@ -1,8 +1,14 @@
+from typing import Never
+
 from django.contrib.sites.models import Site
 from django.core import signals
 from django.template.defaultfilters import slugify
 
 from dbtemplates.conf import settings
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..models import Template as DBTemplate
 
 
 def get_cache_backend():
@@ -29,19 +35,19 @@ def get_cache_notfound_key(name):
     return get_cache_key(name) + "::notfound"
 
 
-def remove_notfound_key(instance):
+def remove_notfound_key(instance:"DBTemplate") -> Never:
     # Remove notfound key as soon as we save the template.
     cache.delete(get_cache_notfound_key(instance.name))
 
 
-def set_and_return(cache_key, content, display_name):
+def set_and_return(cache_key, content, display_name: str):
     # Save in cache backend explicitly if manually deleted or invalidated
     if cache:
         cache.set(cache_key, content)
     return (content, display_name)
 
 
-def add_template_to_cache(instance, **kwargs):
+def add_template_to_cache(instance: "DBTemplate", **kwargs) -> Never:
     """
     Cache templates.
 
@@ -54,7 +60,7 @@ def add_template_to_cache(instance, **kwargs):
         cache.set(get_cache_key(instance.name), instance.content)
 
 
-def remove_cached_template(instance, **kwargs):
+def remove_cached_template(instance: "DBTemplate", **kwargs) -> Never:
     """
     Remove cached templates.
 

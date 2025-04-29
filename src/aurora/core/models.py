@@ -4,7 +4,7 @@ import re
 from datetime import date, datetime, time
 from inspect import isclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Never
 
 from admin_ordering.models import OrderableModel
 from concurrency.fields import AutoIncVersionField
@@ -651,7 +651,7 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
         # these are for django FormField and handled by SmartFieldMixin
         return field_kwargs
 
-    def get_instance(self):
+    def get_instance(self) -> SmartFieldMixin | None:
         if self.field_type is None:
             return None
         try:
@@ -668,7 +668,7 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
             raise
         return fld
 
-    def clean(self):
+    def clean(self)->Never:
         if self.field_type:
             try:
                 self.get_instance()
@@ -676,13 +676,13 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
                 logger.exception(e)
                 raise ValidationError(e) from None
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+    def save(self, force_insert:bool=False, force_update:bool=False, using:str|None=None, update_fields:list[str]=None) ->Never:
         if not self.name.strip():
             self.name = namify(self.label)[:100]
 
         super().save(force_insert, force_update, using, update_fields)
 
-    def get_usage(self):
+    def get_usage(self) ->list[str]:
         ret = []
         ret.append(
             {
@@ -696,7 +696,7 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
 
 
 class OptionSetManager(NaturalKeyModelManager):
-    def get_from_cache(self, name):
+    def get_from_cache(self, name:str) -> str:
         key = f"option-set-{name}"
         value = cache.get(key)
         if value is None:
@@ -739,10 +739,10 @@ class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
 
     objects = OptionSetManager()
 
-    def __str__(self):
+    def __str__(self)->str:
         return self.name
 
-    def clean(self):
+    def clean(self)->Never:
         if self.locale not in self.languages:
             raise ValidationError("Default locale must be in the languages list")
         try:
@@ -750,13 +750,13 @@ class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
         except ValueError:
             raise ValidationError("Languages must be a comma separated list of locales") from None
 
-    def get_cache_key(self, requested_language):
+    def get_cache_key(self, requested_language:str)->str:
         return f"options-{self.pk}-{requested_language}-{self.version}"
 
-    def get_api_url(self):
+    def get_api_url(self)->str:
         return reverse("optionset", args=[self.name])
 
-    def get_data(self, requested_language=None):
+    def get_data(self, requested_language:str|None=None) ->str:
         if self.separator and requested_language:
             try:
                 label_col = self.languages.split(",").index(requested_language)
@@ -771,7 +771,6 @@ class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
 
         key = self.get_cache_key(requested_language)
         value = cache.get(key, version=self.version)
-        value = None
         if not value:
             value = []
             for line in self.data.split("\r\n"):

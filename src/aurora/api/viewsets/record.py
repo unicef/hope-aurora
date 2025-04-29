@@ -1,3 +1,4 @@
+from django.http import HttpRequest
 from django_filters import rest_framework as filters
 from rest_framework.decorators import action
 from rest_framework.pagination import CursorPagination
@@ -8,7 +9,7 @@ from ..serializers import RecordSerializer
 from .base import SmartViewSet
 
 
-class RecordFilter(filters.FilterSet):
+class RecordFilter(filters.FilterSet):  # type: ignore[misc]
     id = filters.NumberFilter(field_name="id", lookup_expr="gte")
     after = filters.DateFilter(field_name="timestamp", lookup_expr="gte")
 
@@ -35,7 +36,7 @@ class RecordViewSet(SmartViewSet):
     pagination_class = RecordPaginator
 
     @action(detail=True)
-    def metadata(self, request, pk=None):
+    def metadata(self, request: HttpRequest, pk: str | None = None) -> Response:
         latest = Record.objects.latest("id")
         return Response(
             {

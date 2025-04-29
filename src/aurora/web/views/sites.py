@@ -1,9 +1,11 @@
 import logging
 import os
+from typing import Any
 
 from constance import config
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseRedirect
+from django.db.models import QuerySet
+from django.http import HttpResponse, HttpResponseRedirect, HttpRequest
 from django.template.response import TemplateResponse
 from django.utils.cache import get_conditional_response
 from django.utils.decorators import method_decorator
@@ -18,13 +20,13 @@ from aurora.registration.models import Registration
 logger = logging.getLogger(__name__)
 
 
-def error_csrf(request, reason=""):
+def error_csrf(request:HttpRequest, reason:str="")->HttpResponse:
     if reason:
         logger.error(reason)
     return TemplateResponse(request, "csrf.html", status=400)
 
 
-def error_404(request, exception):
+def error_404(request:HttpRequest, exception:Exception) -> HttpResponse:
     return TemplateResponse(
         request,
         "404.html",
@@ -33,21 +35,21 @@ def error_404(request, exception):
     )
 
 
-def offline(request):
+def offline(request:HttpRequest)->HttpResponse:
     return render(request, "offline.html")
 
 
-def get_active_registrations():
+def get_active_registrations()->QuerySet[Registration]:
     return Registration.objects.filter(active=True, show_in_homepage=True)
 
 
 class PageView(TemplateView):
     template_name = "index.html"
 
-    def get_template_names(self):
+    def get_template_names(self) -> list[str]:
         return [f"{self.kwargs['page']}.html"]
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs)->dict[str, Any]:
         from aurora.i18n.get_text import gettext as _
 
         return super().get_context_data(
@@ -62,10 +64,10 @@ class PageView(TemplateView):
 class HomeView(TemplateView):
     template_name = "home.html"
 
-    def get_template_names(self):
+    def get_template_names(self) -> list[str]:
         return [config.HOME_TEMPLATE, self.template_name]
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request:HttpRequest, *args, **kwargs)->HttpResponse:
         res_etag = get_etag(
             request,
             config.HOME_TEMPLATE,
@@ -80,14 +82,14 @@ class HomeView(TemplateView):
             response.headers.setdefault("ETag", res_etag)
         return response
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs)-> dict[str, Any]:
         return super().get_context_data(registrations=get_active_registrations(), **kwargs)
 
 
 class QRCodeView(TemplateView):
     template_name = "qrcode.html"
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs)-> dict[str, Any]:
         url = self.request.build_absolute_uri("/")
         qrcode = get_qrcode(url)
         return super().get_context_data(**kwargs, qrcode=qrcode, url=url)
@@ -96,20 +98,20 @@ class QRCodeView(TemplateView):
 class ProbeView(View):
     http_method_names = ["get", "head"]
 
-    def head(self, request, *args, **kwargs):
+    def head(self, request:HttpRequest, *args, **kwargs) ->HttpResponse:
         return HttpResponse("Ok")
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request:HttpRequest, *args, **kwargs) ->HttpResponse:
         return HttpResponse("Ok")
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request:HttpRequest, *args, **kwargs) ->HttpResponse:
         return self.get(request, *args, **kwargs)
 
 
 class MaintenanceView(TemplateView):
     template_name = "maintenance.html"
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request:HttpRequest, *args, **kwargs) ->HttpResponse:
         if not config.MAINTENANCE_MODE:
             return HttpResponseRedirect("/")
         context = self.get_context_data(**kwargs)
