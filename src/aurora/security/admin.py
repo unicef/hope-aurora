@@ -24,8 +24,7 @@ from .utils import generate_pwd
 if TYPE_CHECKING:
     from admin_sync.types import Collectable
     from django.db.models import Model
-    from django.http import HttpRequest
-
+    from django.http import HttpRequest, HttpResponse
 
 logger = logging.getLogger(__name__)
 
@@ -85,12 +84,12 @@ class UserAdmin(AdminActionPermMixin, ADUSerMixin, UserAdmin_):
     )
 
     @button(permission=lambda req, obj, **kw: is_root(req) and can_hijack(req.user, obj))
-    def hijack(self, request, pk):
+    def hijack(self, request: "HttpRequest", pk: str) -> "HttpResponse":
         hijacked = self.get_object(request, pk)
         impersonate(request, hijacked)
 
     @button()
-    def generate_password(self, request: "HttpRequest", pk):
+    def generate_password(self, request: "HttpRequest", pk: str) -> "HttpResponse":
         message = generate_pwd(pk)
         self.message_user(request, message, messages.SUCCESS)
 

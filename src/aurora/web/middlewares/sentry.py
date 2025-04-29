@@ -1,10 +1,9 @@
 import logging
 import os
+from typing import TYPE_CHECKING, Callable
 
 from django.conf import settings
 from sentry_sdk import configure_scope
-
-from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
     from django.http import HttpRequest, HttpResponse
@@ -17,7 +16,7 @@ class SentryMiddleware:
     def __init__(self, get_response: Callable) -> None:
         self.get_response = get_response
 
-    def __call__(self, request:"HttpRequest") -> "HttpResponse":
+    def __call__(self, request: "HttpRequest") -> "HttpResponse":
         with configure_scope() as scope:
             scope.set_tag("debug", settings.DEBUG)
             scope.set_tag("Version", os.environ.get("VERSION", "?"))

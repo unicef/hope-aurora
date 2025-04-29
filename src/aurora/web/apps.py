@@ -1,9 +1,9 @@
 import logging
+from typing import TYPE_CHECKING
 
 from django.apps import AppConfig
 from django.core.cache import cache
 from django.db.models.signals import post_save
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from dbtemplates.models import Template
@@ -32,7 +32,7 @@ class Config(AppConfig):
         post_save.connect(invalidate_page_cache, Template, dispatch_uid="template_saved")
 
 
-def invalidate_page_cache(instance: "Template", **kwargs)-> None:
+def invalidate_page_cache(instance: "Template", **kwargs) -> None:
     try:
         incr_key_version(instance.name)
     except Exception as e:  # pragma: no cover

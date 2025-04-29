@@ -1,4 +1,5 @@
 import os
+import time
 
 import pytest
 from django import forms
@@ -36,6 +37,7 @@ def pytest_configure(config):
     settings.CAPTCHA_TEST_MODE = True
     settings.SESSION_COOKIE_SECURE = False
     settings.DJANGO_ADMIN_URL = "admin/"
+    settings.CACHE_PREFIX = str(time.time())
 
 
 @pytest.fixture

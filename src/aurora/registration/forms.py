@@ -1,27 +1,27 @@
 import logging
 import re
+from typing import Any, Never
 
 import jmespath
 from adminfilters.querystring import QueryStringFilter
 from django import forms
 from django.core.exceptions import ValidationError
+from django.forms import Widget
 from django_regex.utils import RegexList
 from mdeditor.fields import MDTextFormField
 
-from aurora.registration.models import Record
-
-from .models import Registration
+from .models import Record, Registration
 
 logger = logging.getLogger(__name__)
 
 
 class JMESPathFormField(forms.CharField):
-    def widget_attrs(self, widget):
+    def widget_attrs(self, widget: Widget) -> dict[str, str]:
         attrs = super().widget_attrs(widget)
         attrs.setdefault("style", "width:80%")
         return attrs
 
-    def validate(self, value):
+    def validate(self, value: Any) -> Never:
         super().validate(value)
         if value not in self.empty_values:
             try:
@@ -30,7 +30,7 @@ class JMESPathFormField(forms.CharField):
                 raise ValidationError(str(e)) from None
 
 
-def as_link(param):
+def as_link(param: Any) -> str:
     return f'<a target="_new" href="{param}">{param}</a>'
 
 
@@ -109,18 +109,18 @@ class RegistrationExportForm(forms.Form):
         help_text="list the fields should be ignored. Regex can be used in each line.",
     )
 
-    def clean_filters(self):
+    def clean_filters(self) -> tuple[dict[str, str], dict[str, str]]:
         qs_filter = QueryStringFilter(None, {}, Record, None)
         return qs_filter.get_filters(self.cleaned_data["filters"])
 
-    def clean_include(self):
+    def clean_include(self) -> RegexList:
         try:
             patterns = [p for p in self.cleaned_data.get("include", ".*").split("\n") if p.strip()]
             return RegexList([re.compile(rule) for rule in patterns] or [".*"])
         except Exception as e:
             raise ValidationError(e) from e
 
-    def clean_exclude(self):
+    def clean_exclude(self) -> RegexList:
         try:
             return RegexList([re.compile(rule) for rule in self.cleaned_data["exclude"].split("\n")])
         except Exception as e:

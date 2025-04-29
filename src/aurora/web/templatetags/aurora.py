@@ -68,7 +68,7 @@ def dump_dict(value: dict) -> dict[str, Any]:
 
 
 @register.filter(name="smart")
-def smart_attr(field:Any, attr: str) -> str:
+def smart_attr(field: Any, attr: str) -> str:
     translate = False
     if "," in attr:
         attr, translate = attr.split(",")

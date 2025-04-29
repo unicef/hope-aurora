@@ -3,7 +3,7 @@ from typing import Callable
 
 from constance import config
 from django.conf import settings
-from django.http import HttpResponseRedirect, HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 
 from aurora.core.utils import has_token

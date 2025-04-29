@@ -1,13 +1,13 @@
 from django.contrib.auth.backends import ModelBackend
-from django.db.models import Q
+from django.db.models import Model, Q
 from django.utils import timezone
 
 from ..core.models import Organization, Project
-from .models import AuroraRole
+from .models import AuroraRole, User
 
 
 class AuroraAuthBackend(ModelBackend):
-    def has_perm(self, user_obj, perm, obj=None):
+    def has_perm(self, user_obj: "User", perm: str, obj: "Model|None" = None) -> bool:
         from aurora.registration.models import Registration
 
         if obj and obj._meta.app_label in ["core", "registration"]:

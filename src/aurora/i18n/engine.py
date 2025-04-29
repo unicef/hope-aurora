@@ -14,7 +14,7 @@ cache = caches["default"]
 
 
 class Dictionary:
-    def __init__(self, locale:str) -> None:
+    def __init__(self, locale: str) -> None:
         self.locale = locale
         self.messages = {}
         self._loaded = False
@@ -27,12 +27,12 @@ class Dictionary:
         self.messages = {k["msgid"]: k["msgstr"] for k in entries}
         self._loaded = True
 
-    def ngettext(self, singular:str, plural:str, count:int) -> str:
+    def ngettext(self, singular: str, plural: str, count: int) -> str:
         if count > 1:
             return self[plural]
         return self[singular]
 
-    def __getitem__(self, msgid:str) -> str:
+    def __getitem__(self, msgid: str) -> str:
         translation = msgid or ""
         if not msgid.strip():
             return translation
@@ -68,14 +68,14 @@ class Cache:
         for locale in self.locales.values():
             locale.reset()
 
-    def activate(self, locale:str)-> Dictionary:
+    def activate(self, locale: str) -> Dictionary:
         self.active_locale = locale
         activate(locale)
         e = self[locale]
         e.load_all()
         return e
 
-    def __getitem__(self, locale:str) -> Dictionary:
+    def __getitem__(self, locale: str) -> Dictionary:
         try:
             entry = self.locales[locale]
         except KeyError:

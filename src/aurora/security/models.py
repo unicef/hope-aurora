@@ -25,7 +25,7 @@ class UserProfile(models.Model):
     custom_fields = JSONField(default=dict, blank=True)
     job_title = models.CharField(max_length=255, blank=True)
 
-    def __str__(self)->str:
+    def __str__(self) -> str:
         return f"{self.user}"
 
     def save(self, *args, **kwargs) -> None:
@@ -33,7 +33,9 @@ class UserProfile(models.Model):
 
 
 class AuroraRoleManager(models.Manager):
-    def get_by_natural_key(self, org_slug:str, prj_slug:str, registration_slug:str, username:str, group:str) -> "AuroraRole":
+    def get_by_natural_key(
+        self, org_slug: str, prj_slug: str, registration_slug: str, username: str, group: str
+    ) -> "AuroraRole":
         if org_slug:
             flt = {"organization__slug": org_slug}
         elif prj_slug:
@@ -80,7 +82,7 @@ class AuroraRole(NaturalKeyModel, models.Model):
         verbose_name = _("role")
         verbose_name_plural = _("roles")
 
-    def __str__(self)->str:
+    def __str__(self) -> str:
         return f"{self.user} -> {self.role} in {self.project}/{self.organization}"
 
     def save(

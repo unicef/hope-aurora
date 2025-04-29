@@ -128,17 +128,17 @@ docs = [
 ]
 
 mypy = [
-  "mypy",
   "django-stubs[compatible-mypy]",
   "djangorestframework-types",
   "lxml-stubs",
-  "types-Markdown",
-  "types-Pygments",
+  "mypy",
   "types-defusedxml",
   "types-gevent",
   "types-html5lib",
   "types-jmespath",
+  "types-markdown",
   "types-psycopg2",
+  "types-pygments",
   "types-python-dateutil",
   "types-pytz",
   "types-qrcode",

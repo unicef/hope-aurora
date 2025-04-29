@@ -5,6 +5,7 @@ from .azure_graph_api import *  # noqa
 from .capcha import *  # noqa
 
 # from .channels import *  # noqa
+from .cache import *  # noqa
 from .concurrency import *  # noqa
 from .constance import *  # noqa
 from .cors import *  # noqa

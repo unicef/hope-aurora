@@ -1,6 +1,5 @@
 import logging
-from typing import Callable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
     from django.http import HttpRequest, HttpResponse
@@ -16,7 +15,7 @@ class ThreadLocalMiddleware:
     def __init__(self, get_response: Callable) -> None:
         self.get_response = get_response
 
-    def __call__(self, request:"HttpRequest") -> "HttpResponse":
+    def __call__(self, request: "HttpRequest") -> "HttpResponse":
         state.request = request
         state.collect_messages = False
 

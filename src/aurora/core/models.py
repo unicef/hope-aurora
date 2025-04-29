@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Never
 from admin_ordering.models import OrderableModel
 from concurrency.fields import AutoIncVersionField
 from django import forms
+from django.conf import settings
 from django.contrib.admin.templatetags.admin_urls import admin_urlname
 from django.core.cache import caches
 from django.core.exceptions import ValidationError
@@ -748,7 +749,7 @@ class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
     def __str__(self) -> str:
         return self.name
 
-    def clean(self) -> Never:
+    def clean(self) -> None:
         if self.locale not in self.languages:
             raise ValidationError("Default locale must be in the languages list")
         try:
@@ -757,7 +758,7 @@ class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
             raise ValidationError("Languages must be a comma separated list of locales") from None
 
     def get_cache_key(self, requested_language: str) -> str:
-        return f"options-{self.pk}-{requested_language}-{self.version}"
+        return f"{settings.CACHE_PREFIX}-options-{self.pk}-{requested_language}-{self.version}"
 
     def get_api_url(self) -> str:
         return reverse("optionset", args=[self.name])

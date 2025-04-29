@@ -1,18 +1,16 @@
 import os
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 
 from aurora import __version__
 from aurora.core.utils import get_session_id, has_token, is_root
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from django.http import HttpRequest
 
 
-
-def smart(request:"HttpRequest") -> dict[str, Any]:
+def smart(request: "HttpRequest") -> dict[str, Any]:
     return {
         "session_id": get_session_id(),
         "user_is_root": is_root(request),

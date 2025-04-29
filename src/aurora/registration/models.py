@@ -10,6 +10,9 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from django.conf import settings
 from django.contrib.flatpages.models import FlatPage
 from django.db import models
+from django.db.models import QuerySet
+from django.db.models.base import Model, ModelBase
+from django.forms import Media
 from django.utils import timezone, translation
 from django.utils.functional import cached_property
 from django.utils.text import slugify
@@ -22,7 +25,7 @@ from aurora.core.crypto.rsa import crypt, decrypt, decrypt_offline
 from aurora.core.crypto.symmetric import Symmetric
 from aurora.core.fields import AjaxSelectField, LabelOnlyField
 from aurora.core.forms import VersionMedia
-from aurora.core.models import FlexForm, FlexFormField, Project, Validator
+from aurora.core.models import FlexForm, FlexFormField, Organization, Project, Validator
 from aurora.core.utils import (
     cache_aware_reverse,
     dict_setdefault,
@@ -45,7 +48,7 @@ undef = Undefined("undefined")
 
 
 class RegistrationManager(NaturalKeyModelManager):
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet["Registration"]:
         return super().get_queryset().select_related("project", "project__organization")
 
 
@@ -152,26 +155,33 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
         )
         ordering = ("name", "title")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+    def save(
+        self,
+        *,
+        force_insert: bool | tuple[ModelBase, ...] = False,
+        force_update: bool = False,
+        using: str | None = None,
+        update_fields: typing.Iterable[str] | None = None,
+    ) -> None:
         if not self.slug:
             self.slug = slugify(self.name)
         if not self.title:
             self.title = self.name
         dict_setdefault(self.advanced, self.ADVANCED_DEFAULT_ATTRS)
-        super().save(force_insert, force_update, using, update_fields)
+        super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
 
-    def get_absolute_url(self):
+    def get_absolute_url(self) -> str:
         return cache_aware_reverse("register", args=[self.slug, self.version])
 
     @property
-    def media(self):
+    def media(self) -> Media:
         return VersionMedia(js=[script.get_script_url() for script in self.scripts.all()])
 
     @cached_property
-    def organization(self):
+    def organization(self) -> Organization:
         return self.project.organization
 
     def is_running(self) -> bool:
@@ -180,11 +190,11 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
             return True
         return self.start <= today <= self.end
 
-    def get_i18n_url(self, lang=None):
+    def get_i18n_url(self, lang: str | None = None) -> str:
         translation.activate(language=lang or self.locale)
         return cache_aware_reverse("register", args=[self.slug, self.version])
 
-    def get_welcome_url(self):
+    def get_welcome_url(self) -> str:
         if self.welcome_page:
             return self.welcome_page.get_absolute_url()
         return self.get_absolute_url()
@@ -203,19 +213,19 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
         self.save()
         return private_pem, public_pem
 
-    def encrypt(self, value):
+    def encrypt(self, value: bytes | str) -> bytes:
         if not isinstance(value, str):
             value = safe_json(value)
         return crypt(value, self.public_key)
 
-    def add_record(self, fields_data):
+    def add_record(self, fields_data: dict) -> typing.Any:
         if not self.handler:
             return SaveToDB(self).save(fields_data)
         if not self.is_running():
             raise Exception("Registration is expired")
         return self.handler.save(fields_data)
 
-    def get_unique_value(self, cleaned_data):
+    def get_unique_value(self, cleaned_data: dict[str, typing.Any]) -> str:
         unique_value = None
         if self.unique_field_path:
             try:
@@ -225,18 +235,18 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
         return unique_value
 
     @cached_property
-    def languages(self):
+    def languages(self) -> list[tuple[str, str]]:
         return [(k, v) for k, v in settings.LANGUAGES if k in self.all_locales]
 
     @cached_property
-    def all_locales(self):
+    def all_locales(self) -> set[str]:
         locales = [self.locale]
         if self.locales:
             locales += self.locales
         return set(locales)
 
     @property
-    def option_set_links(self):
+    def option_set_links(self) -> list[str]:
         # TODO: is en-us always valid?
         return [
             f"/en-us/options/{field.choices}/"
@@ -245,15 +255,15 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
         ]
 
     @cached_property
-    def metadata(self):
+    def metadata(self) -> dict:
         script: Validator
 
-        def _get_validator(owner) -> dict[str, typing.Any]:
+        def _get_validator(owner: FlexForm | FlexFormField) -> dict[str, typing.Any]:
             if owner.validator:
                 return {}
             return {}
 
-        def _get_field_details(flex_field: FlexFormField):
+        def _get_field_details(flex_field: FlexFormField) -> dict[str, typing.Any]:
             if flex_field.field_type is None:
                 kwargs = {
                     "smart_attrs": {},
@@ -274,7 +284,7 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
                 "validator": _get_validator(flex_field),
             }
 
-        def _process_form(frm):
+        def _process_form(frm: FlexForm) -> dict[str, typing.Any]:
             return {
                 field.name: _get_field_details(field)
                 for field in frm.fields.all()
@@ -302,7 +312,7 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
 
 
 class RemoteIp(models.GenericIPAddressField):
-    def pre_save(self, model_instance, add):
+    def pre_save(self, model_instance: Model, add: bool) -> str:
         if add:
             value = get_client_ip(getattr(state, "request", None))
             setattr(model_instance, self.attname, value)
@@ -332,14 +342,14 @@ class Record(models.Model):
         unique_together = ("registration", "unique_field")
         ordering = ("pk",)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.registration} - {self.pk}"
 
     @property
-    def fields_data(self):
+    def fields_data(self) -> str | dict[str, typing.Any]:
         return "String too long to display..." if self.is_offline and len(self.fields) > 12_000 else self.fields
 
-    def decrypt(self, private_key: UndefinedStr = undef, secret: UndefinedStr = undef):
+    def decrypt(self, private_key: UndefinedStr = undef, secret: UndefinedStr = undef) -> dict[str, typing.Any] | None:
         if isinstance(private_key, bytes):
             private_key = private_key.decode()
 
@@ -357,11 +367,11 @@ class Record(models.Model):
         return None
 
     @property
-    def unicef_id(self):
+    def unicef_id(self) -> str:
         return get_registration_id(self)
 
     @property
-    def data(self):
+    def data(self) -> dict[str, typing.Any]:
         if self.registration.public_key:
             return {"Forbidden": "Cannot access encrypted data"}
         if self.registration.encrypt_data:
@@ -375,21 +385,21 @@ class Record(models.Model):
         return merge(files, self.fields or {})
 
 
-def merge(a, b, path=None, update=True):
+def merge(a: dict, b: dict, path: list[str] | None = None, update: bool = True) -> dict[str, typing.Any]:
     """Merge b into a."""
     if path is None:
         path = []
-    for key in b:
+    for key, value in b.items():
         if key in a:
-            if isinstance(a[key], dict) and isinstance(b[key], dict):
-                merge(a[key], b[key], path + [str(key)])
-            elif a[key] == b[key]:
+            if isinstance(a[key], dict) and isinstance(value, dict):
+                merge(a[key], value, path + [str(key)])
+            elif a[key] == value:
                 pass  # same leaf value
-            elif isinstance(a[key], list) and isinstance(b[key], list):
-                for idx, _ in enumerate(b[key]):
+            elif isinstance(a[key], list) and isinstance(value, list):
+                for idx, _ in enumerate(value):
                     a[key][idx] = merge(
                         a[key][idx],
-                        b[key][idx],
+                        value[idx],
                         path + [str(key), str(idx)],
                         update=update,
                     )
@@ -398,5 +408,5 @@ def merge(a, b, path=None, update=True):
             else:
                 raise Exception("Conflict at %s" % ".".join(path + [str(key)]))
         else:
-            a[key] = b[key]
+            a[key] = value
     return a

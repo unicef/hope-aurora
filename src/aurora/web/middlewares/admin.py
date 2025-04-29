@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 from constance import config
 from django.conf import settings
 from django.http import HttpResponse
+
 if TYPE_CHECKING:
     from django.http import HttpRequest
 
