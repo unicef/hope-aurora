@@ -4,6 +4,8 @@ Create hreflang tags as specified by Google.
 https://support.google.com/webmasters/answer/189077?hl=en
 """
 
+from typing import Any
+
 from django import template
 from django.urls import NoReverseMatch
 from django.urls.base import resolve
@@ -15,7 +17,7 @@ register = template.Library()
 
 
 @register.simple_tag(takes_context=True)
-def translate_url(context, lang, view_name=None, *args, **kwargs):
+def translate_url(context: dict[str, Any], lang: str, view_name: str | None = None, *args, **kwargs) -> str:
     """
     Translate an url to a specific language.
 

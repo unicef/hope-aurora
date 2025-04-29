@@ -49,23 +49,26 @@ class Message(NaturalKeyModel):
     class Meta:
         unique_together = ("msgid", "locale")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{truncatechars(self.msgid, 60)}"
 
     @staticmethod
-    def get_md5(msgid, locale=""):
+    def get_md5(msgid: str, locale: str = "") -> str:
         return hashlib.md5((msgid + "|" + locale).encode()).hexdigest()
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+    def save(
+        self, force_insert: bool = False, force_update: bool = False, using: str = None, update_fields: list[str] = None
+    ) -> None:
         self.md5 = self.get_md5(self.msgid, self.locale)
         self.msgcode = self.get_md5(self.msgid)
-        obj: Message = super().save()
-        return obj
+        super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
 
     def get_siblings(self) -> "QuerySet[Message]":
         return Message.objects.filter(msgcode=self.msgcode)
 
-    def update_or_create_translation(self, value, locale, draft=True) -> "tuple[Message, bool] | None":
+    def update_or_create_translation(
+        self, value: str, locale: str, draft: bool = True
+    ) -> "tuple[Message, bool] | None":
         if not self.pk:
             raise Exception("Cannot create translation for not saved messages")
         return Message.objects.update_or_create(

@@ -6,7 +6,7 @@ from django.utils.translation import deactivate, get_language, override
 from aurora.i18n.engine import translator
 
 
-def reverse(view_name, lang=None, use_lang_prefix=True, *args, **kwargs):
+def reverse(view_name: str, lang: str = None, use_lang_prefix: bool = True, *args, **kwargs) -> str:
     """
     Similar to django.core.urlresolvers.reverse except for the parameters.
 

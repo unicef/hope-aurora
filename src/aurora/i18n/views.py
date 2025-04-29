@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.http import JsonResponse
@@ -9,11 +11,15 @@ from django.views.i18n import JavaScriptCatalog
 
 from aurora.i18n.engine import translator
 
+if TYPE_CHECKING:
+    from django.http import HttpRequest, HttpResponse
+
+
 LANGUAGE_QUERY_PARAMETER = "language"
 
 
 @login_required()
-def editor_info(request):
+def editor_info(request: "HttpRequest") -> JsonResponse:
     data = {
         "authenticated": request.user.is_authenticated,
         "staff": request.user.is_staff,
@@ -28,7 +34,7 @@ class SmartJavascriptCatalog(JavaScriptCatalog):
     domain = "djangojs"
     packages = None
 
-    def get_catalog(self):
+    def get_catalog(self) -> dict[str, list[str] | str]:
         catalog: dict = super().get_catalog()
         current_locale = get_language()
         dictionary = translator[current_locale]
@@ -36,8 +42,5 @@ class SmartJavascriptCatalog(JavaScriptCatalog):
         return catalog
 
     @method_decorator(condition(lambda *a, **kw: cache.get("i18n")))
-    def get(self, request, *args, **kwargs):
+    def get(self, request: "HttpRequest", *args, **kwargs) -> "HttpResponse":
         return super().get(request)
-
-    def render_to_response(self, context, **response_kwargs):
-        return super().render_to_response(context, **response_kwargs)

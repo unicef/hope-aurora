@@ -7,7 +7,7 @@ from .models import Message
 cache = caches["default"]
 
 
-def update_cache(sender, instance, **kwargs):
+def update_cache(instance: Message, **kwargs) -> None:
     tznow = timezone.now()
     msconds = tznow.microsecond // 1000
     serial = f"{tznow:%d-%m-%Y:%H:%M:%S}.{msconds:03d}"
