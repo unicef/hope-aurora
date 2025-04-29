@@ -1,15 +1,14 @@
-from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils.translation import get_language
 from rest_framework import serializers
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
+from rest_framework.request import Request
 from rest_framework.response import Response
 
+from ...security.models import User
 from .base import SmartViewSet
-
-User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -19,7 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ("pk", "is_staff", "permissions")
 
-    def get_permissions(self, obj):
+    def get_permissions(self, obj: User) -> set[str]:
         return obj.get_all_permissions()
 
 
@@ -34,7 +33,7 @@ class UserViewSet(SmartViewSet):
         permission_classes=[AllowAny],
         authentication_classes=[SessionAuthentication],
     )
-    def me(self, request):
+    def me(self, request: Request) -> Response:
         response = {
             "perms": [],
             "staff": False,

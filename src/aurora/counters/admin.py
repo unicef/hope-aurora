@@ -1,10 +1,11 @@
 import logging
+from typing import Iterable
 
 from admin_extra_buttons.decorators import button
 from adminfilters.autocomplete import LinkedAutoCompleteFilter
 from django.contrib.admin import register
 from django.db.transaction import atomic
-from django.http import HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from smart_admin.modeladmin import SmartModelAdmin
 
@@ -15,7 +16,7 @@ from .models import Counter
 logger = logging.getLogger(__name__)
 
 
-def get_token(request):
+def get_token(request: "HttpRequest") -> str:
     return str(request.user.last_login.utcnow().timestamp())
 
 
@@ -40,29 +41,26 @@ class CounterAdmin(SmartModelAdmin):
     paginator = LargeTablePaginator
     show_full_result_count = False
 
-    def check(self, **kwargs):
-        return super().check(**kwargs)
-
-    def get_exclude(self, request, obj=None):
+    def get_exclude(self, request: "HttpRequest", obj: "Counter|None" = None) -> Iterable[str]:
         return ("details",)
 
-    def get_readonly_fields(self, request, obj=None):
+    def get_readonly_fields(self, request: "HttpRequest", obj: "Counter|None" = None) -> Iterable[str]:
         if is_root(request):
             return []
         return ("registration", "day", "records")
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request: "HttpRequest") -> bool:
         return False
 
-    def has_change_permission(self, request, obj=None):
+    def has_change_permission(self, request: "HttpRequest", obj: "Counter|None" = None) -> bool:
         return is_root(request)
 
     @button()
-    def chart(self, request):
+    def chart(self, request: "HttpRequest") -> "HttpResponse":
         return HttpResponseRedirect(reverse("charts:index"))
 
     @button()
-    def collect(self, request):
+    def collect(self, request: "HttpRequest") -> "HttpResponse":
         try:
             with atomic():
                 querysets, result = Counter.objects.collect()

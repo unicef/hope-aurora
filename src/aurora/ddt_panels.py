@@ -1,4 +1,5 @@
 import io
+from typing import TYPE_CHECKING
 
 from debug_toolbar.panels import Panel
 from django.core.management import call_command
@@ -6,6 +7,10 @@ from django.template import Context, Template
 from django.utils.translation import gettext_lazy as _
 
 from aurora.state import state
+
+if TYPE_CHECKING:
+    from django.utils.functional import _StrPromise
+
 
 TEMPLATE = """
 <h2>{{state}}</h2>
@@ -35,21 +40,21 @@ class MigrationPanel(Panel):
     name = "migrations"
     has_content = True
 
-    def nav_title(self):
+    def nav_title(self) -> "_StrPromise":
         return _("Migrations")
 
-    def title(self):
+    def title(self) -> "_StrPromise":
         return _("Migrations Panel")
 
-    def url(self):
+    def url(self) -> str:
         return ""
 
     @property
-    def enabled(self):
+    def enabled(self) -> bool:
         return True
 
     @property
-    def content(self):
+    def content(self) -> str:
         out = io.StringIO()
         call_command("showmigrations", stdout=out, no_color=True)
         context = Context(
@@ -65,21 +70,21 @@ class StatePanel(Panel):
     name = "state"
     has_content = True
 
-    def nav_title(self):
+    def nav_title(self) -> "_StrPromise":
         return _("State")
 
     @property
-    def enabled(self):
+    def enabled(self) -> bool:
         return True
 
-    def title(self):
+    def title(self) -> "_StrPromise":
         return _("State Panel")
 
-    def url(self):
+    def url(self) -> str:
         return ""
 
     @property
-    def content(self):
+    def content(self) -> str:
         context = Context(
             {
                 "state": state,

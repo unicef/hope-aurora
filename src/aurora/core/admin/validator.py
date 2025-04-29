@@ -1,5 +1,6 @@
 import json
 import logging
+from typing import TYPE_CHECKING, Any
 
 from admin_extra_buttons.decorators import button
 from django import forms
@@ -14,6 +15,10 @@ from ..forms import ValidatorForm
 from ..models import Validator
 from ..utils import render
 from .base import ConcurrencyVersionAdmin
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest, HttpResponse
+
 
 logger = logging.getLogger(__name__)
 
@@ -51,11 +56,11 @@ class ValidatorAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartMod
     change_form_template = None
     inlines = []
 
-    def save_model(self, request, obj, form, change):
+    def save_model(self, request: "HttpRequest", obj: Validator, form: Any, change: Any) -> None:
         super().save_model(request, obj, form, change)
         cache.set(f"validator-{request.user.pk}-{obj.pk}-status", obj.STATUS_UNKNOWN)
 
-    def used_by(self, obj):
+    def used_by(self, obj: Validator) -> str | None:
         if obj.target == Validator.FORM:
             return ", ".join(obj.flexform_set.values_list("name", flat=True))
         if obj.target == Validator.FIELD:
@@ -69,7 +74,7 @@ class ValidatorAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartMod
         return None
 
     @button()
-    def test(self, request, pk):
+    def test(self, request: "HttpRequest", pk: str) -> "HttpResponse":
         ctx = self.get_common_context(request, pk)
         original = ctx["original"]
         stored = cache.get(f"validator-{request.user.pk}-{original.pk}-payload")

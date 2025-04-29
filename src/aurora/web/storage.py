@@ -15,7 +15,7 @@ class ForgivingManifestStaticFilesStorage(ManifestStaticFilesStorage):
                 logger.exception(e)
             return name
 
-    def hashed_name(self, name, content=None, filename=None) -> str:
+    def hashed_name(self, name:str, content:str|None=None, filename:str|None=None) -> str:
         try:
             result = super().hashed_name(name, content, filename)
         except ValueError:

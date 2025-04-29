@@ -1,30 +1,24 @@
-import secrets
 import string
+from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
+from django.utils.crypto import get_random_string
+
+if TYPE_CHECKING:
+    from aurora.security.models import User
 
 
-def generate_password(length=20):
-    pwd = ""
-    count = 0
-    length = max(8, length)
-    while count < length:
-        upper = [secrets.choice(string.ascii_uppercase)]
-        lower = [secrets.choice(string.ascii_lowercase)]
-        num = [secrets.choice(string.digits)]
-        symbol = [secrets.choice(string.punctuation)]
-        everything = upper + lower + num + symbol
-        pwd += secrets.choice(everything)
-        count += 1
-    return pwd
+def generate_password(length: int = 20) -> str:
+    allowed_chars = string.ascii_uppercase + string.ascii_lowercase + string.digits + string.punctuation
+    return get_random_string(length=length, allowed_chars=allowed_chars)
 
 
-def generate_pwd(user_pk):
+def generate_pwd(user_pk: str) -> str | None:
     subject = "Aurora Credentials"
     pwd = generate_password()
-    user = get_user_model().objects.get(pk=user_pk)
+    user: "User" = get_user_model().objects.get(pk=user_pk)
     user.set_password(pwd)
     user.save()
 

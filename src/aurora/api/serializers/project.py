@@ -12,6 +12,6 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
         model = Project
         exclude = ("lft", "rght", "tree_id", "level")
 
-    def get_registrations(self, obj):
+    def get_registrations(self, obj: Project) -> str:
         req = self.context["request"]
         return req.build_absolute_uri(reverse("api:project-registrations", kwargs={"pk": obj.pk}))

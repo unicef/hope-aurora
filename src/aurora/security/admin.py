@@ -1,4 +1,5 @@
 import logging
+from typing import TYPE_CHECKING, Iterable
 
 from admin_extra_buttons.decorators import button
 from admin_sync.exceptions import SyncError
@@ -20,10 +21,16 @@ from .ad import ADUSerMixin
 from .forms import AuroraRoleForm
 from .utils import generate_pwd
 
+if TYPE_CHECKING:
+    from admin_sync.types import Collectable
+    from django.db.models import Model
+    from django.http import HttpRequest
+
+
 logger = logging.getLogger(__name__)
 
 
-def generate_passwords(modeladmin, request, queryset):  # noqa
+def generate_passwords(modeladmin, request: "HttpRequest", queryset):  # noqa
     opts = modeladmin.model._meta
     perm = f"{opts.app_label}.add_aurorauser"
     if not request.user.has_perm(perm):
@@ -36,7 +43,7 @@ def generate_passwords(modeladmin, request, queryset):  # noqa
 
 
 class GroupProtocol(LoadDumpProtocol):
-    def collect(self, data):
+    def collect(self, data: "Collectable") -> "Iterable[Model]":
         from django.contrib.auth.models import Group
 
         if len(data) == 0:
@@ -83,7 +90,7 @@ class UserAdmin(AdminActionPermMixin, ADUSerMixin, UserAdmin_):
         impersonate(request, hijacked)
 
     @button()
-    def generate_password(self, request, pk):
+    def generate_password(self, request: "HttpRequest", pk):
         message = generate_pwd(pk)
         self.message_user(request, message, messages.SUCCESS)
 

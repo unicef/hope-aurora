@@ -1,4 +1,5 @@
 import json
+from typing import TYPE_CHECKING, Any
 
 from django import forms
 from django.core.cache import caches
@@ -12,11 +13,16 @@ from aurora.core.admin.editor import FlexEditor
 from aurora.core.fields.widgets import JavascriptEditor
 from aurora.core.models import FlexForm
 
+if TYPE_CHECKING:
+    from django.contrib.admin import ModelAdmin
+    from django.http import HttpRequest
+
+
 cache = caches["default"]
 
 
 class AdvancendAttrsMixin(FlexEditor):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         self.form = kwargs.pop("form", None)
         super().__init__(*args, **kwargs)
 
@@ -39,7 +45,7 @@ class EventForm(AdvancendAttrsMixin, forms.Form):
 DEFAULTS = {}
 
 
-def get_initial(form, prefix):
+def get_initial(form: "FlexForm", prefix: str) -> dict[str, Any]:
     return DEFAULTS.get(prefix, {})
 
 
@@ -49,29 +55,26 @@ class FormEditor:
         "events": EventForm,
     }
 
-    def __init__(self, modeladmin, request, pk):
+    def __init__(self, modeladmin: "ModelAdmin", request: "HttpRequest", pk: str) -> None:
         self.modeladmin = modeladmin
         self.request = request
         self.pk = pk
         self.cache_key = f"/editor/form/{self.request.user.pk}/{self.pk}/"
 
     @cached_property
-    def flex_form(self):
+    def flex_form(self) -> FlexForm:
         return FlexForm.objects.get(pk=self.pk)
 
     @cached_property
-    def patched_form(self):
+    def patched_form(self) -> FlexForm:
         return self.flex_form.get_form_class()
 
-    def patch(self, request, pk):
-        pass
-
-    def get_configuration(self):
+    def get_configuration(self) -> "HttpResponse":
         self.patched_form.get_instance()
         rendered = json.dumps(self.flex_form.advanced, indent=4)
         return HttpResponse(rendered, content_type="text/plain")
 
-    def get_code(self):
+    def get_code(self) -> "HttpResponse":
         from bs4 import BeautifulSoup, formatter
         from pygments import highlight
         from pygments.formatters.html import HtmlFormatter
@@ -95,7 +98,7 @@ class FormEditor:
             content_type="text/html",
         )
 
-    def render(self):
+    def render(self) -> "HttpResponse":
         instance = self.patched_form
         form_class = self.flex_form.get_form_class()
         ctx = self.get_context(self.request)
@@ -111,7 +114,7 @@ class FormEditor:
 
         return render(self.request, "admin/core/flexform/form_editor/preview.html", ctx)
 
-    def get_forms(self, data=None) -> dict:
+    def get_forms(self, data: dict[str, Any] | None = None) -> dict:
         if data:
             return {prefix: Form(data, prefix=prefix, form=self.flex_form) for prefix, Form in self.FORMS.items()}
         if self.request.method == "POST":
@@ -133,7 +136,7 @@ class FormEditor:
             for prefix, Form in self.FORMS.items()
         }
 
-    def refresh(self):
+    def refresh(self) -> JsonResponse:
         forms = self.get_forms()
         if all(f.is_valid() for f in forms.values()):
             data = self.request.POST.dict()
@@ -143,13 +146,13 @@ class FormEditor:
             return JsonResponse({prefix: frm.errors for prefix, frm in forms.items()}, status=400)
         return JsonResponse(data)
 
-    def get_context(self, request, pk=None, **kwargs):
+    def get_context(self, request: "HttpRequest", pk: str | None = None, **kwargs) -> dict[str, Any]:
         return {
             **self.modeladmin.get_common_context(request, pk),
             **kwargs,
         }
 
-    def get(self, request, pk):
+    def get(self, request: "HttpRequest", pk: str) -> "HttpResponse":
         ctx = self.get_context(request, pk)
         ctx["forms_media"] = Media()
         for prefix, frm in self.get_forms().items():
@@ -157,7 +160,7 @@ class FormEditor:
             ctx["forms_media"] += frm.media
         return render(request, "admin/core/flexform/form_editor/main.html", ctx)
 
-    def post(self, request, pk):
+    def post(self, request: "HttpRequest", pk: str | None = None) -> "HttpResponse | None":
         forms = self.get_forms()
         if all(f.is_valid() for f in forms.values()):
             return HttpResponseRedirect(".")

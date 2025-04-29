@@ -25,15 +25,15 @@ class UserProfile(models.Model):
     custom_fields = JSONField(default=dict, blank=True)
     job_title = models.CharField(max_length=255, blank=True)
 
-    def __str__(self):
+    def __str__(self)->str:
         return f"{self.user}"
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs) -> None:
         super().save(*args, **kwargs)
 
 
 class AuroraRoleManager(models.Manager):
-    def get_by_natural_key(self, org_slug, prj_slug, registration_slug, username, group):
+    def get_by_natural_key(self, org_slug:str, prj_slug:str, registration_slug:str, username:str, group:str) -> "AuroraRole":
         if org_slug:
             flt = {"organization__slug": org_slug}
         elif prj_slug:
@@ -80,18 +80,26 @@ class AuroraRole(NaturalKeyModel, models.Model):
         verbose_name = _("role")
         verbose_name_plural = _("roles")
 
-    def __str__(self):
+    def __str__(self)->str:
         return f"{self.user} -> {self.role} in {self.project}/{self.organization}"
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+    def save(
+        self,
+        force_insert: bool = False,
+        force_update: bool = False,
+        using: str = None,
+        update_fields: list[str] | None = None,
+    ) -> None:
         if self.registration:
             self.project = self.registration.project
             self.organization = self.project.organization
         elif self.project:
             self.organization = self.project.organization
-        return super().save(force_insert, force_update, using, update_fields)
+        return super().save(
+            force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields
+        )
 
-    def natural_key(self):
+    def natural_key(self) -> tuple[str | None, ...]:
         if self.organization:
             return (
                 self.organization.slug,

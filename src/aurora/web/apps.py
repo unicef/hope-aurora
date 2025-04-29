@@ -3,15 +3,19 @@ import logging
 from django.apps import AppConfig
 from django.core.cache import cache
 from django.db.models.signals import post_save
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dbtemplates.models import Template
 
 logger = logging.getLogger(__name__)
 
 
-def get_key_version(key):
+def get_key_version(key: str) -> str:
     return cache.get(f"{key}:version")
 
 
-def incr_key_version(key):
+def incr_key_version(key: str) -> str:
     try:
         cache.incr(f"{key}:version", 1)
     except ValueError:
@@ -22,13 +26,13 @@ def incr_key_version(key):
 class Config(AppConfig):
     name = "aurora.web"
 
-    def ready(self):
+    def ready(self) -> None:
         from dbtemplates.models import Template
 
         post_save.connect(invalidate_page_cache, Template, dispatch_uid="template_saved")
 
 
-def invalidate_page_cache(sender, instance, **kwargs):
+def invalidate_page_cache(instance: "Template", **kwargs)-> None:
     try:
         incr_key_version(instance.name)
     except Exception as e:  # pragma: no cover

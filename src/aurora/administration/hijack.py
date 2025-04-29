@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from django.contrib.auth import login
 from django.http import HttpRequest
 from hijack import signals
@@ -5,7 +7,6 @@ from hijack.templatetags.hijack import can_hijack
 from hijack.views import get_used_backend, keep_session_age
 
 from aurora.security.models import User
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from aurora.types import HiJackUser

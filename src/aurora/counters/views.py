@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
@@ -14,11 +15,14 @@ from aurora.core.utils import get_session_id, last_day_of_month, render
 from aurora.counters.models import Counter
 from aurora.registration.models import Registration
 
+if TYPE_CHECKING:
+    from django.http import HttpRequest, HttpResponse
+
 User = get_user_model()
 
 
 @login_required()
-def index(request):
+def index(request: "HttpRequest") -> "HttpResponse":
     if not request.user.has_perm("counters.view_counter"):
         raise PermissionDenied("----")
     if request.user.is_superuser:
@@ -32,7 +36,7 @@ def index(request):
 
 
 @login_required()
-def org_index(request, org):
+def org_index(request: "HttpRequest", org: str) -> "HttpResponse":
     o: Organization = Organization.objects.get(slug=org)
     if not request.user.has_perm("counters.view_counter", o):
         raise PermissionDenied("----")
@@ -48,7 +52,7 @@ def org_index(request, org):
 
 
 @login_required()
-def project_index(request, org, prj):
+def project_index(request: "HttpRequest", org: str, prj: str) -> "HttpResponse":
     o: Organization = Organization.objects.get(slug=org)
     p: Project = Project.objects.get(organization=o, pk=prj)
     if not request.user.has_perm("counters.view_counter", p):
@@ -65,21 +69,21 @@ class ChartView(UserPassesTestMixin, View):
     permission_denied_message = "----"
     login_url = "/login/"
 
-    def test_func(self):
+    def test_func(self) -> bool:
         return self.request.user.is_authenticated
 
-    def get_registration(self, request, org, prj, reg_pk) -> Registration:
+    def get_registration(self, request: "HttpRequest", org: str, prj: str, reg_pk: str) -> Registration:
         reg = get_object_or_404(Registration, project__organization__slug=org, project_id=prj, id=reg_pk)
         if not request.user.has_perm("counters.view_counter", reg):
             raise PermissionDenied("----")
         return reg
 
-    def handle_no_permission(self):
+    def handle_no_permission(self) -> "HttpResponse":
         return HttpResponseRedirect("/")
 
 
 class MonthlyDataView(ChartView):
-    def get(self, request, org, prj, registration_id):
+    def get(self, request: "HttpRequest", org: str, prj: str, registration_id: str) -> "HttpResponse":
         registration = self.get_registration(request, org, prj, registration_id)
         qs = Counter.objects.filter(registration_id=registration_id).order_by("day")
         param_month = request.GET.get("m", None)
@@ -117,10 +121,10 @@ class MonthlyDataView(ChartView):
 
 
 class MonthlyChartView(ChartView):
-    def get(self, request, org, prj, registration):
+    def get(self, request: "HttpRequest", org: str, prj: str, registration: str) -> "HttpResponse":
         reg: Registration = self.get_registration(request, org, prj, registration)
-        first: [Counter] = reg.counters.first()
-        latest: [Counter] = reg.counters.last()
+        first: Counter = reg.counters.first()
+        latest: Counter = reg.counters.last()
         m = request.GET.get("m", None)
         if not m:
             month = timezone.now().month
@@ -146,7 +150,7 @@ class MonthlyChartView(ChartView):
 
 
 class DayChartView(ChartView):
-    def get(self, request, org, prj, registration):
+    def get(self, request: "HttpRequest", org: str, prj: str, registration: str) -> "HttpResponse":
         reg: Registration = self.get_registration(request, org, prj, registration)
         day = request.GET.get("day", datetime.today().strftime("%Y-%m-%d"))
         date = datetime.strptime(day, "%Y-%m-%d")

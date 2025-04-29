@@ -1,4 +1,5 @@
 import uuid
+from typing import Any
 from urllib.parse import urlencode, urlparse
 
 from environ import Env
@@ -7,11 +8,11 @@ from smart_env import SmartEnv
 from aurora.core.flags import parse_bool
 
 
-def parse_bookmarks(value):
+def parse_bookmarks(value: str) -> str:
     return "".join(value.split(r"\n"))
 
 
-def parse_emails(value):
+def parse_emails(value: str) -> list[tuple[str, str]]:
     admins = value.split(",")
     return [(a.split("@")[0].strip(), a.strip()) for a in admins]
 
@@ -103,7 +104,7 @@ OPTIONS = {
 
 
 class SmartEnv2(SmartEnv):
-    def cache_url(self, var=Env.DEFAULT_CACHE_ENV, default=Env.NOTSET, backend=None):
+    def cache_url(self, var: str = Env.DEFAULT_CACHE_ENV, default: str = Env.NOTSET, backend: Any = None) -> None:
         v = self.str(var, default)
         if v.startswith("redisraw://"):
             scheme, string = v.split("redisraw://")

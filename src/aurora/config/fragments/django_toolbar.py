@@ -1,8 +1,13 @@
+from typing import TYPE_CHECKING
+
 from django_regex.utils import RegexList
 from flags.state import flag_enabled
 
+if TYPE_CHECKING:
+    from django.http import HttpRequest
 
-def show_ddt(request):  # pragma: no-cover
+
+def show_ddt(request: "HttpRequest") -> bool:  # pragma: no-cover
     if request.path in RegexList(("/tpl/.*", "/api/.*", "/dal/.*")):  # pragma: no cache
         return False
     return flag_enabled("DEVELOP_DEBUG_TOOLBAR", request=request)

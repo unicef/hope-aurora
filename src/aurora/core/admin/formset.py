@@ -1,15 +1,20 @@
 import logging
+from typing import TYPE_CHECKING
 
 from adminfilters.autocomplete import AutoCompleteFilter
 from django.contrib.admin import register
 from django.core.cache import caches
-from django.db.models import JSONField
+from django.db.models import JSONField, QuerySet
 from jsoneditor.forms import JSONEditor
 from smart_admin.modeladmin import SmartModelAdmin
 
 from ...administration.mixin import LoadDumpMixin
 from ..admin_sync import SyncMixin
 from ..models import FormSet
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest
+
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +46,9 @@ class FormSetAdmin(LoadDumpMixin, SyncMixin, SmartModelAdmin):
         JSONField: {"widget": JSONEditor},
     }
 
-    def get_search_results(self, request, queryset, search_term):
+    def get_search_results(
+        self, request: "HttpRequest", queryset: "QuerySet", search_term: str
+    ) -> "tuple[QuerySet, bool]":
         queryset, may_have_duplicates = super().get_search_results(request, queryset, search_term)
         if "oid" in request.GET:
             queryset = queryset.filter(flex_form__organization__id=request.GET["oid"])

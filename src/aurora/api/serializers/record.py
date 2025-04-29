@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.utils.functional import cached_property
 from rest_framework import serializers
 from rest_framework.fields import empty
@@ -22,13 +24,13 @@ class RecordSerializer(serializers.ModelSerializer):
         model = Record
         exclude = ("storage", "files")
 
-    def get_registration_url(self, obj):
+    def get_registration_url(self, obj: Record) -> str:
         req = self.context["request"]
         return req.build_absolute_uri(reverse("api:registration-detail", kwargs={"pk": obj.registration_id}))
 
 
 class DataTableRecordSerializer(serializers.ModelSerializer):
-    def __init__(self, instance=None, data=empty, **kwargs):
+    def __init__(self, instance: Record | None = None, data: Any = empty, **kwargs) -> None:
         self.metadata = kwargs.pop("metadata")
         super().__init__(instance, data, **kwargs)
 
@@ -41,7 +43,7 @@ class DataTableRecordSerializer(serializers.ModelSerializer):
         )
 
     @cached_property
-    def fields(self):
+    def fields(self) -> BindingDict:
         """Return a dictionary of {field_name: field_instance}."""
         # `fields` is evaluated lazily. We do this to ensure that we don't
         # have issues importing modules that use ModelSerializers as fields,
@@ -55,5 +57,5 @@ class DataTableRecordSerializer(serializers.ModelSerializer):
         fields["flatten"] = serializers.SerializerMethodField(read_only=True, default="N/A")
         return fields
 
-    def get_flatten(self, obj):
+    def get_flatten(self, obj: Record) -> dict[str, Any]:
         return build_dict(obj)

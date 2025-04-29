@@ -13,6 +13,6 @@ class OrganizationSerializer(serializers.HyperlinkedModelSerializer):
         model = Organization
         exclude = ("lft", "rght", "tree_id", "level")
 
-    def get_projects(self, obj):
+    def get_projects(self, obj: Organization) -> str:
         req = self.context["request"]
         return req.build_absolute_uri(reverse("api:organization-projects", kwargs={"pk": obj.pk}))

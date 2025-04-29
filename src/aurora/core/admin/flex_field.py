@@ -1,4 +1,5 @@
 import logging
+from typing import TYPE_CHECKING, Any
 
 from admin_extra_buttons.decorators import button, view
 from admin_ordering.admin import OrderableAdmin
@@ -8,9 +9,9 @@ from django import forms
 from django.contrib import messages
 from django.contrib.admin import register
 from django.core.cache import caches
-from django.db.models import JSONField
+from django.db.models import JSONField, QuerySet
 from django.db.models.functions import Collate
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from jsoneditor.forms import JSONEditor
 from smart_admin.modeladmin import SmartModelAdmin
 from strategy_field import admin  # noqa: E402, I001, F401
@@ -23,6 +24,11 @@ from ..utils import dict_setdefault, is_root, render
 from .base import ConcurrencyVersionAdmin
 from .field_editor import FieldEditor
 from .filters import StrategyFieldSelect2Filter
+
+if TYPE_CHECKING:
+    from django.db.models import Field as DBField
+    from django.forms import TypedChoiceField
+    from django.forms.fields import Field as FormField
 
 logger = logging.getLogger(__name__)
 
@@ -47,11 +53,12 @@ class FlexFormFieldForm(forms.ModelForm):
             "advanced",
         )
 
-    def clean(self):
+    def clean(self) -> dict[str, Any] | None:
         ret = super().clean()
-        ret.setdefault("advanced", {})
-        dict_setdefault(ret["advanced"], FlexFormField.FLEX_FIELD_DEFAULT_ATTRS)
-        dict_setdefault(ret["advanced"], {"kwargs": FIELD_KWARGS.get(ret["field_type"], {})})
+        if ret:
+            ret.setdefault("advanced", {})
+            dict_setdefault(ret["advanced"], FlexFormField.FLEX_FIELD_DEFAULT_ATTRS)
+            dict_setdefault(ret["advanced"], {"kwargs": FIELD_KWARGS.get(ret["field_type"], {})})
         return ret
 
 
@@ -76,7 +83,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
     order = "ordering"
     readonly_fields = ("version", "last_update_date")
 
-    def get_queryset(self, request):
+    def get_queryset(self, request: "HttpRequest") -> "QuerySet[FlexFormField]":
         return (
             super()
             .get_queryset(request)
@@ -84,27 +91,29 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             .select_related("flex_form")
         )
 
-    def get_readonly_fields(self, request, obj=None):
+    def get_readonly_fields(self, request: "HttpRequest", obj: "FlexFormField|None" = None) -> list[str]:
         return super().get_readonly_fields(request, obj) if is_root(request) else []
 
-    def formfield_for_dbfield(self, db_field, request, **kwargs):
+    def formfield_for_dbfield(self, db_field: "DBField", request: "HttpRequest", **kwargs) -> "FormField | None":
         if db_field.name == "advanced":
             kwargs["widget"] = JSONEditor()
         return super().formfield_for_dbfield(db_field, request, **kwargs)
 
-    def formfield_for_choice_field(self, db_field, request, **kwargs):
+    def formfield_for_choice_field(
+        self, db_field: "DBField", request: "HttpRequest", **kwargs
+    ) -> "TypedChoiceField|None":
         if db_field.name == "field_type":
             kwargs["widget"] = Select2Widget()
             return db_field.formfield(**kwargs)
         return super().formfield_for_choice_field(db_field, request, **kwargs)
 
-    def get_changeform_initial_data(self, request):
+    def get_changeform_initial_data(self, request: "HttpRequest") -> dict[str, str | list[str]]:
         initial = super().get_changeform_initial_data(request)
         initial.setdefault("advanced", FlexFormField.FLEX_FIELD_DEFAULT_ATTRS)
         return initial
 
     @button(label="editor")
-    def field_editor(self, request, pk):
+    def field_editor(self, request: "HttpRequest", pk: str) -> "HttpResponse":
         self.editor = FieldEditor(self, request, pk)
         if request.method == "POST":
             ret = self.editor.post(request, pk)
@@ -113,7 +122,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
         return self.editor.get(request, pk)
 
     @view()
-    def widget_attrs(self, request, pk) -> HttpResponse:
+    def widget_attrs(self, request: "HttpRequest", pk: str) -> HttpResponse:
         try:
             editor = FieldEditor(self, request, pk)
             return editor.get_configuration()
@@ -122,7 +131,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             return HttpResponse("An internal error has occurred.")
 
     @view()
-    def widget_refresh(self, request, pk) -> JsonResponse:
+    def widget_refresh(self, request: "HttpRequest", pk: str) -> JsonResponse:
         try:
             editor = FieldEditor(self, request, pk)
             return editor.refresh()
@@ -131,7 +140,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             return JsonResponse({"Error": "An internal error has occurred."})
 
     @view()
-    def widget_code(self, request, pk) -> HttpResponse:
+    def widget_code(self, request: "HttpRequest", pk: str) -> HttpResponse:
         try:
             editor = FieldEditor(self, request, pk)
             return editor.get_code()
@@ -140,7 +149,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             return HttpResponse("An internal error has occurred.")
 
     @view()
-    def widget_display(self, request, pk) -> HttpResponse:
+    def widget_display(self, request: "HttpRequest", pk: str) -> HttpResponse:
         try:
             editor = FieldEditor(self, request, pk)
             return editor.render()
@@ -149,7 +158,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             return HttpResponse("An internal error has occurred.")
 
     @button()
-    def test(self, request, pk):
+    def test(self, request: "HttpRequest", pk: str) -> "HttpResponse":
         ctx = self.get_common_context(request, pk)
         try:
             fld = ctx["original"]

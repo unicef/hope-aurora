@@ -1,12 +1,18 @@
-from typing import Iterable
+from typing import TYPE_CHECKING, Iterable
 
 from admin_sync.collector import ForeignKeysCollector
 from admin_sync.exceptions import SyncError
 from admin_sync.protocol import LoadDumpProtocol
 
+if TYPE_CHECKING:
+    from admin_sync.types import Collectable
+    from django.db.models import ForeignObjectRel, Model, QuerySet
+
+    from aurora.core.models import Organization
+
 
 class AuroraSyncProjectProtocol(LoadDumpProtocol):
-    def collect(self, data: Iterable, collect_related=True):
+    def collect(self, data: "Collectable", collect_related: bool = True) -> "Iterable[Model]":
         from aurora.core.models import Project
 
         if len(data) == 0:
@@ -23,10 +29,10 @@ class AuroraSyncProjectProtocol(LoadDumpProtocol):
 
 
 class OrgForeignKeysCollector(ForeignKeysCollector):
-    def collect(self, objs, collect_related=None):
+    def collect(self, objs: "Collectable", collect_related: bool = None) -> None:
         return super().collect(objs, collect_related)
 
-    def get_related_for_field(self, obj, field):
+    def get_related_for_field(self, obj: "Organization", field: "ForeignObjectRel") -> "QuerySet[Model] | list[Model]":
         if field.name == "parent":
             if obj not in self._visited:
                 return [obj.parent]

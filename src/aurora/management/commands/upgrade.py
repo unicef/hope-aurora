@@ -40,15 +40,15 @@ class NotRunningInTTYError(Exception):
     help="Main Organization name",
 )
 def upgrade(
-    admin_email,
-    admin_password,
-    static,
-    migrate,
-    prompt,
-    verbosity,
-    organization,
+    admin_email: str,
+    admin_password: str,
+    static: bool,
+    migrate: bool,
+    prompt: bool,
+    verbosity: int,
+    organization: str,
     **kwargs,
-):
+) -> None:
     from aurora.config import env
     from aurora.core.models import FlexForm, Organization, Project
     from aurora.registration.models import Registration

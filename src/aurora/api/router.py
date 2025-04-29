@@ -1,9 +1,10 @@
-from django.http import HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden
+from rest_framework.request import Request
 from rest_framework.routers import APIRootView, DefaultRouter
 
 
 class AuroraAPIRootView(APIRootView):
-    def get(self, request, *args, **kwargs):
+    def get(self, request: Request, *args, **kwargs) -> HttpResponse:
         if request.user.is_authenticated:
             return super().get(request, *args, **kwargs)
         return HttpResponseForbidden()

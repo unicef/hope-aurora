@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING
 
 import pytz
 from django.conf import settings
@@ -11,9 +12,14 @@ from django.utils.functional import cached_property
 
 from aurora.registration.models import Record, Registration
 
+if TYPE_CHECKING:
+    from typing import Sequence
+
+    from django.db.models import QuerySet
+
 
 class CounterManager(models.Manager):
-    def collect(self, *, registrations=None):
+    def collect(self, *, registrations: "Sequence[Registration] | None" = None) -> "tuple[QuerySet[Counter], dict]":
         result = {"registration": 0, "records": 0, "days": 0, "details": {}}
         tz = pytz.timezone(settings.TIME_ZONE)
         today = timezone.now()
@@ -22,7 +28,7 @@ class CounterManager(models.Manager):
         if registrations:
             selection = selection.filter(id__in=registrations)
 
-        def annotate(qs):
+        def annotate(qs: "QuerySet") -> "QuerySet":
             return (
                 qs.annotate(hour=ExtractHour("timestamp"), day=TruncDay("timestamp"))
                 .values("day", "hour")
@@ -95,12 +101,12 @@ class Counter(models.Model):
         get_latest_by = "day"
         ordering = ("-day",)
 
-    def __str__(self):
+    def __str__(self) -> str:
         try:
             return f"{self.registration} {self.day}"
         except Exception:
             return f"Counter #{self.pk}"
 
     @cached_property
-    def hourly(self):
+    def hourly(self) -> list[str]:
         return [self.details["hours"].get(str(x), 0) for x in range(23)]

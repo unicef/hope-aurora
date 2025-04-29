@@ -2,11 +2,9 @@ import csv
 import logging
 from hashlib import md5
 from io import TextIOWrapper
-from typing import Sequence, Never
+from typing import Never, Sequence
 from unittest.mock import Mock
 from urllib.parse import unquote
-
-from django.db.models import Model, QuerySet
 
 from admin_extra_buttons.decorators import button, view
 from adminfilters.combo import ChoicesFieldComboFilter
@@ -16,8 +14,9 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin import register
 from django.core.cache import caches
+from django.db.models import Model, QuerySet
 from django.db.transaction import atomic
-from django.http import HttpResponseRedirect, HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.template import loader
 from django.urls import reverse
@@ -73,11 +72,11 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
     )
     actions = ["approve", "rehash", "publish_action"]
 
-    def approve(self, request:HttpRequest, queryset:QuerySet[Message])->Never:
+    def approve(self, request: HttpRequest, queryset: QuerySet[Message]) -> Never:
         num = queryset.update(draft=False)
         self.message_user(request, f"{num} Messages have been approved")
 
-    def get_queryset(self, request:HttpRequest) -> QuerySet[Message]:
+    def get_queryset(self, request: HttpRequest) -> QuerySet[Message]:
         return (
             super()
             .get_queryset(request)
@@ -87,7 +86,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
         )
 
     @button()
-    def import_translations(self, request:HttpRequest) -> HttpResponse:
+    def import_translations(self, request: HttpRequest) -> HttpResponse:
         ctx = self.get_common_context(request, media=self.media, title="Import Translations File", pre={}, post={})
         ctx["rows"] = []
         if request.method == "POST":
@@ -232,7 +231,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
         return render(request, "admin/i18n/message/check_orphans.html", ctx)
 
     @view()
-    def get_or_create(self, request:HttpRequest) -> HttpResponse:
+    def get_or_create(self, request: HttpRequest) -> HttpResponse:
         if request.method == "POST":
             msgid = unquote(request.POST["msgid"])
             lang = request.POST["lang"]
@@ -250,7 +249,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
 
         return HttpResponseRedirect(cl)
 
-    def rehash(self, request:HttpRequest, queryset:QuerySet)->Never:
+    def rehash(self, request: HttpRequest, queryset: QuerySet) -> Never:
         num = 0
         for m in queryset.all():
             m.save()
@@ -258,13 +257,13 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
         self.message_user(request, f"{num} Messages have been rehashed")
 
     @button()
-    def siblings(self, request:HttpRequest, pk:str) -> HttpResponse:
+    def siblings(self, request: HttpRequest, pk: str) -> HttpResponse:
         obj = self.get_object(request, pk)
         cl = reverse("admin:i18n_message_changelist")
         return HttpResponseRedirect(f"{cl}?msgcode__exact={obj.msgcode}")
 
     @button(label="Create Translation")
-    def create_translation_single(self, request:HttpRequest, pk:str) -> HttpResponse:
+    def create_translation_single(self, request: HttpRequest, pk: str) -> HttpResponse:
         ctx = self.get_common_context(
             request,
             pk,
@@ -294,7 +293,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
         return render(request, "admin/i18n/message/translation.html", ctx)
 
     @button()
-    def create_translations(self, request:HttpRequest) ->HttpResponse:
+    def create_translations(self, request: HttpRequest) -> HttpResponse:
         ctx = self.get_common_context(
             request,
             media=self.media,
@@ -334,7 +333,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
             ctx["form"] = form
         return render(request, "admin/i18n/message/translation.html", ctx)
 
-    def get_readonly_fields(self, request:HttpRequest, obj:Model|None=None)->Sequence[str]:
+    def get_readonly_fields(self, request: HttpRequest, obj: Model | None = None) -> Sequence[str]:
         if obj:
             return ("msgid",) + self.readonly_fields
         return self.readonly_fields

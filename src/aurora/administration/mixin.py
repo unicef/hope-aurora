@@ -8,7 +8,7 @@ from admin_extra_buttons.mixins import ExtraButtonsMixin
 from concurrency.api import disable_concurrency
 from django.contrib import messages
 from django.core.management import call_command
-from django.http import JsonResponse, HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 
 from aurora.core.utils import render
 
@@ -17,7 +17,7 @@ from .forms import ImportForm
 
 class LoadDumpMixin(ExtraButtonsMixin):
     @button(label="loaddata")
-    def loaddata(self, request:HttpRequest)->HttpResponse:
+    def loaddata(self, request: HttpRequest) -> HttpResponse:
         opts = self.model._meta
         ctx = self.get_common_context(
             request,
@@ -67,7 +67,7 @@ class LoadDumpMixin(ExtraButtonsMixin):
         return render(request, "admin/registration/registration/import.html", ctx)
 
     @button()
-    def dumpdata(self, request:HttpRequest)->JsonResponse:
+    def dumpdata(self, request: HttpRequest) -> JsonResponse:
         opts = self.model._meta
         stdout = io.StringIO()
         call_command(

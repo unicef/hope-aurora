@@ -1,4 +1,5 @@
 import json
+from typing import TYPE_CHECKING, Any
 
 from django import forms
 from django.conf import settings
@@ -14,11 +15,15 @@ from aurora.core.forms import FlexFormBaseForm, VersionMedia
 from aurora.core.models import FlexForm, FlexFormField, OptionSet
 from aurora.core.utils import merge_data
 
+if TYPE_CHECKING:
+    from django.contrib.admin import ModelAdmin
+
+
 cache = caches["default"]
 
 
 class AdvancendAttrsMixin(FlexEditor):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         self.field = kwargs.pop("field", None)
         self.prefix = kwargs.get("prefix")
         if self.field:
@@ -30,7 +35,7 @@ class FlexFieldAttributesForm(AdvancendAttrsMixin, forms.ModelForm):
     required = forms.BooleanField(widget=forms.CheckboxInput, required=False)
     enabled = forms.BooleanField(widget=forms.CheckboxInput, required=False)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         kwargs["instance"] = kwargs["field"]
         super().__init__(*args, **kwargs)
 
@@ -58,7 +63,7 @@ class WidgetAttributesForm(AdvancendAttrsMixin, forms.Form):
     fieldset = forms.CharField(label="Fieldset class", required=False, help_text="Fieldset CSS class to apply")
 
 
-def get_datasources():
+def get_datasources() -> list[tuple[str, str]]:
     v = OptionSet.objects.order_by("name").values_list("name", flat=True)
     return [("", "")] + list(zip(v, v, strict=True))
 
@@ -115,7 +120,7 @@ DEFAULTS = {
 }
 
 
-def get_initial(field, prefix):
+def get_initial(field: FlexFormField, prefix: str) -> dict[str, Any]:
     base = DEFAULTS.get(prefix, {})
     for k, v in field.advanced.get(prefix, {}).items():
         if v:
@@ -133,18 +138,18 @@ class FieldEditor:
         "events": EventForm,
     }
 
-    def __init__(self, modeladmin, request, pk):
+    def __init__(self, modeladmin: "ModelAdmin", request: "HttpRequest", pk: str) -> None:
         self.modeladmin = modeladmin
         self.request = request
         self.pk = pk
         self.cache_key = f"/editor/field/{self.request.user.pk}/{self.pk}/{self.field.field_type}/"
 
     @cached_property
-    def field(self):
+    def field(self) -> "FlexFormField":
         return FlexFormField.objects.get(pk=self.pk)
 
     @cached_property
-    def patched_field(self):
+    def patched_field(self) -> "FlexFormField":
         fld = self.field
         if config := cache.get(self.cache_key, None):
             forms = self.get_forms(config)
@@ -158,15 +163,12 @@ class FieldEditor:
                 fld.advanced = merged
         return fld
 
-    def patch(self, request, pk):
-        pass
-
-    def get_configuration(self) -> HttpResponse:
+    def get_configuration(self) -> "HttpResponse":
         self.patched_field.get_instance()
         rendered = json.dumps(self.field.advanced, indent=4)
         return HttpResponse(rendered, content_type="text/plain")
 
-    def get_code(self) -> HttpResponse:
+    def get_code(self) -> "HttpResponse":
         from bs4 import BeautifulSoup, formatter
         from pygments import highlight
         from pygments.formatters.html import HtmlFormatter
@@ -196,7 +198,7 @@ class FieldEditor:
             content_type="text/html",
         )
 
-    def render(self) -> HttpResponse:
+    def render(self) -> "HttpResponse":
         instance = self.patched_field.get_instance()
         form_class_attrs = {
             self.field.name: instance,
@@ -245,13 +247,13 @@ class FieldEditor:
             return JsonResponse({prefix: frm.errors for prefix, frm in forms.items()}, status=200)
         return JsonResponse(data)
 
-    def get_context(self, request, pk=None, **kwargs):
+    def get_context(self, request: "HttpRequest", pk: str = None, **kwargs) -> dict[str, Any]:
         return {
             **self.modeladmin.get_common_context(request, pk),
             **kwargs,
         }
 
-    def get(self, request: HttpRequest, pk: str) -> HttpResponse:
+    def get(self, request: "HttpRequest", pk: str) -> "HttpResponse":
         ctx = self.get_context(request, pk)
         extra = "" if settings.DEBUG else ".min"
         ctx["media"] = VersionMedia(

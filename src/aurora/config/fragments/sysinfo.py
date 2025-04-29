@@ -1,4 +1,10 @@
-def masker(key, value, config, request):
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest
+
+
+def masker(key: str, value: str, config: Any, request: "HttpRequest") -> Any:
     from django_sysinfo.utils import cleanse_setting
 
     from aurora.core.utils import is_root

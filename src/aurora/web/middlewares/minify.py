@@ -1,11 +1,17 @@
 import logging
 import re
 from enum import IntFlag, unique
+from typing import Callable, Any
 
 from constance import config
 from constance.signals import config_updated
 from django.utils.functional import cached_property
 from htmlmin import Minifier
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from django.http import HttpResponse, HttpRequest
+
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +24,7 @@ class MinifyFlag(IntFlag):
 
 
 class HtmlMinMiddleware:
-    def __init__(self, get_response=None):
+    def __init__(self, get_response:Callable) -> None:
         self.get_response = get_response
         self.minifier = Minifier(
             remove_comments=True,
@@ -30,24 +36,24 @@ class HtmlMinMiddleware:
         config_updated.connect(self.update_config)
 
     @cached_property
-    def config_value(self):
+    def config_value(self) ->int:
         return int(config.MINIFY_RESPONSE or "0")
 
     @cached_property
-    def ignore_regex(self):
+    def ignore_regex(self) -> re.Pattern[str]:
         return re.compile(config.MINIFY_IGNORE_PATH) if config.MINIFY_IGNORE_PATH else None
 
-    def update_config(self, sender, key, old_value, new_value, **kwargs):
+    def update_config(self, sender:Any, key:str, old_value:Any, new_value:Any, **kwargs) ->None:
         if hasattr(self, "config_value"):
             del self.config_value
 
         if hasattr(self, "ignore_regex"):
             del self.ignore_regex
 
-    def ignore_path(self, path):
-        return self.ignore_regex.match(path) if self.ignore_regex else None
+    def ignore_path(self, path:str) -> bool:
+        return self.ignore_regex.match(path) if self.ignore_regex else False
 
-    def can_minify(self, request, response):
+    def can_minify(self, request:"HttpRequest", response:"HttpResponse") -> bool:
         return (
             "Content-Type" in response
             and "text/html" in response["Content-Type"]
@@ -57,7 +63,7 @@ class HtmlMinMiddleware:
             and not request.headers.get("X-No-Minify")
         )
 
-    def __call__(self, request):
+    def __call__(self, request:"HttpRequest") -> "HttpResponse":
         response = self.get_response(request)
         if not response.streaming and len(response.content) < 200:
             return response

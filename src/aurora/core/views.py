@@ -1,7 +1,7 @@
 import time
 
 from django.conf import settings
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpRequest
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils.cache import get_conditional_response
@@ -82,7 +82,7 @@ class OptionsListView(BaseListView):
         return response
 
 
-def service_worker(request):
+def service_worker(request: "HttpRequest") -> "HttpResponse":
     return HttpResponse(
         open(settings.PWA_SERVICE_WORKER_PATH).read(),
         content_type="application/javascript",

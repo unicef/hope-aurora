@@ -3,7 +3,7 @@ import io
 import logging
 import os
 from collections import OrderedDict
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from urllib import parse
 
 from django.core.paginator import Page
@@ -26,8 +26,6 @@ from ...registration.models import Record, Registration
 from ..serializers import RegistrationDetailSerializer, RegistrationListSerializer
 from ..serializers.record import DataTableRecordSerializer
 from .base import SmartViewSet
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from rest_framework.permissions import _SupportsHasPermission

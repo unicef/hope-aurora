@@ -286,7 +286,7 @@ class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
         return FormSet.objects.update_or_create(parent=self, flex_form=form, defaults=defaults)[0]
 
     # @cache_form
-    def get_form_class(self) -> "[FlexFormForm]":
+    def get_form_class(self) -> "type[FlexFormForm]":
         from aurora.core.fields import CompilationTimeField
 
         fields = {}
@@ -668,7 +668,7 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
             raise
         return fld
 
-    def clean(self)->Never:
+    def clean(self) -> Never:
         if self.field_type:
             try:
                 self.get_instance()
@@ -676,13 +676,19 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
                 logger.exception(e)
                 raise ValidationError(e) from None
 
-    def save(self, force_insert:bool=False, force_update:bool=False, using:str|None=None, update_fields:list[str]=None) ->Never:
+    def save(
+        self,
+        force_insert: bool = False,
+        force_update: bool = False,
+        using: str | None = None,
+        update_fields: list[str] = None,
+    ) -> Never:
         if not self.name.strip():
             self.name = namify(self.label)[:100]
 
         super().save(force_insert, force_update, using, update_fields)
 
-    def get_usage(self) ->list[str]:
+    def get_usage(self) -> list[str]:
         ret = []
         ret.append(
             {
@@ -696,7 +702,7 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
 
 
 class OptionSetManager(NaturalKeyModelManager):
-    def get_from_cache(self, name:str) -> str:
+    def get_from_cache(self, name: str) -> str:
         key = f"option-set-{name}"
         value = cache.get(key)
         if value is None:
@@ -739,10 +745,10 @@ class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
 
     objects = OptionSetManager()
 
-    def __str__(self)->str:
+    def __str__(self) -> str:
         return self.name
 
-    def clean(self)->Never:
+    def clean(self) -> Never:
         if self.locale not in self.languages:
             raise ValidationError("Default locale must be in the languages list")
         try:
@@ -750,13 +756,13 @@ class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
         except ValueError:
             raise ValidationError("Languages must be a comma separated list of locales") from None
 
-    def get_cache_key(self, requested_language:str)->str:
+    def get_cache_key(self, requested_language: str) -> str:
         return f"options-{self.pk}-{requested_language}-{self.version}"
 
-    def get_api_url(self)->str:
+    def get_api_url(self) -> str:
         return reverse("optionset", args=[self.name])
 
-    def get_data(self, requested_language:str|None=None) ->str:
+    def get_data(self, requested_language: str | None = None) -> str:
         if self.separator and requested_language:
             try:
                 label_col = self.languages.split(",").index(requested_language)

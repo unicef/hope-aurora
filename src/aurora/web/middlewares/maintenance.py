@@ -1,8 +1,9 @@
 import logging
+from typing import Callable
 
 from constance import config
 from django.conf import settings
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpRequest, HttpResponse
 from django.urls import reverse
 
 from aurora.core.utils import has_token
@@ -11,10 +12,10 @@ logger = logging.getLogger(__name__)
 
 
 class MaintenanceMiddleware:
-    def __init__(self, get_response):
+    def __init__(self, get_response: Callable) -> None:
         self.get_response = get_response
 
-    def __call__(self, request):
+    def __call__(self, request: "HttpRequest") -> "HttpResponse":
         """Code to be executed for each request before the view (and later middleware) are called."""
         if config.MAINTENANCE_MODE:
             url = reverse("maintenance")

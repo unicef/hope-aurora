@@ -1,3 +1,5 @@
+from typing import Any
+
 from rest_framework import serializers
 from strategy_field.utils import fqn
 
@@ -13,7 +15,7 @@ class FormSerializer(serializers.HyperlinkedModelSerializer):
         model = FlexForm
         exclude = ()
 
-    def to_representation(self, instance):
+    def to_representation(self, instance: FlexForm) -> dict[str, Any]:
         data = super().to_representation(instance)
         data["base_type"] = fqn(instance.base_type)
         return data

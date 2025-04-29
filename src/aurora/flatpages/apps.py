@@ -1,10 +1,15 @@
+from typing import TYPE_CHECKING
+
 from django.apps import AppConfig
 from django.urls import NoReverseMatch, get_script_prefix, reverse
 from django.utils.encoding import iri_to_uri
 from smart_admin.decorators import smart_register
 
+if TYPE_CHECKING:
+    from django.contrib.flatpages.models import FlatPage
 
-def get_absolute_url(self):
+
+def get_absolute_url(self: "FlatPage") -> str | None:
     from .views import flatpage
 
     for url in (self.url.lstrip("/"), self.url):
@@ -20,7 +25,7 @@ class Config(AppConfig):
     default = False
     name = "django.contrib.flatpages"
 
-    def ready(self):
+    def ready(self) -> None:
         super().ready()
         from django.contrib.flatpages.models import FlatPage
 

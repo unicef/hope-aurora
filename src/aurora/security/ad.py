@@ -18,7 +18,7 @@ from requests import HTTPError
 from aurora.core.models import Organization, Project
 from aurora.registration.models import Registration
 from aurora.security.microsoft_graph import MicrosoftGraphAPI
-from aurora.security.models import AuroraRole
+from aurora.security.models import AuroraRole, User
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ class LoadUsersForm(forms.Form):
             raise ValidationError("Invalid emails {}".format(", ".join(errors)))
         return self.cleaned_data["emails"]
 
-    def clean(self):
+    def clean(self) -> None:
         found = [
             self.cleaned_data.get(x) for x in ["organization", "project", "registration"] if self.cleaned_data.get(x)
         ]
@@ -76,7 +76,7 @@ class ADUSerMixin:
             return self.ad_form_class(request.POST, request=request)
         return self.ad_form_class(request=request)
 
-    def _sync_ad_data(self, user) -> None:
+    def _sync_ad_data(self, user: "User") -> None:
         ms_graph = MicrosoftGraphAPI()
         if user.profile and user.profile.ad_uuid:
             filters = [{"uuid": user.profile.ad_uuid}, {"email": user.email}]
