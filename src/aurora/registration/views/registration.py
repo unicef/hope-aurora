@@ -5,6 +5,7 @@ import time
 from functools import wraps
 from hashlib import md5
 from json import JSONDecodeError
+from typing import TYPE_CHECKING
 
 import sentry_sdk
 from constance import config
@@ -13,6 +14,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core import signing
 from django.core.exceptions import ValidationError
+from django.forms import Form
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -26,6 +28,7 @@ from django.views.generic import TemplateView
 from django.views.generic.edit import FormView
 from sentry_sdk import set_tag
 
+from aurora.core.forms import SmartBaseFormSet
 from aurora.core.models import FormSet
 from aurora.core.utils import get_etag, get_qrcode, has_token, never_ever_cache
 from aurora.core.version_media import VersionMedia
@@ -33,6 +36,9 @@ from aurora.i18n.get_text import gettext as _
 from aurora.registration.models import Record, Registration
 from aurora.state import state
 from aurora.web.middlewares.admin import is_admin_site, is_public_site
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +115,7 @@ class RegisterRouter(FormView):
     def get_form(self, form_class=None):
         return None
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: "HttpRequest", *args, **kwargs):
         r = Registration.objects.only("slug", "version", "locale").get(slug=request.POST["slug"])
         language = translation.get_language()
         if language not in r.all_locales:
@@ -184,7 +190,7 @@ class RegisterView(RegistrationMixin, AdminAccessMixin, FormView):
         ]
 
     @check_access
-    def get(self, request, *args, **kwargs):
+    def get(self, request: "HttpRequest", *args, **kwargs):
         if not self.is_post_allowed():
             return HttpResponse("Not Allowed")
 
@@ -215,7 +221,7 @@ class RegisterView(RegistrationMixin, AdminAccessMixin, FormView):
         return self.registration.flex_form.get_form_class()
 
     # @cache_formset
-    def get_formsets_classes(self) -> dict[str, type[FormSet]]:
+    def get_formsets_classes(self) -> dict[str, type[SmartBaseFormSet]]:
         formsets = {}
         for fs in self.registration.flex_form.formsets.select_related("flex_form", "parent").filter(enabled=True):
             formsets[fs.name] = fs.get_formset()
@@ -224,7 +230,7 @@ class RegisterView(RegistrationMixin, AdminAccessMixin, FormView):
     def get_initial(self):
         return self.registration.flex_form.get_initial()
 
-    def get_formsets(self) -> dict[str, FormSet]:
+    def get_formsets(self) -> "dict[str, SmartBaseFormSet]":
         formsets = {}
         attrs = self.get_form_kwargs().copy()
         attrs["initial"] = []
@@ -295,7 +301,7 @@ class RegisterView(RegistrationMixin, AdminAccessMixin, FormView):
         return True
 
     @check_access
-    def post(self, request, *args, **kwargs):
+    def post(self, request: "HttpRequest", *args, **kwargs) -> "HttpResponse":
         if not self.is_post_allowed():
             return HttpResponse("Not Allowed")
 
@@ -317,7 +323,7 @@ class RegisterView(RegistrationMixin, AdminAccessMixin, FormView):
         is_valid = self.validate(all_cleaned_data) and is_valid
         return self.form_valid(form, formsets) if form_valid and is_valid else self.form_invalid(form, formsets)
 
-    def form_valid(self, form, formsets):
+    def form_valid(self, form: "FlexFormBaseForm", formsets: dict[str, FormSet]) -> "HttpResponse":
         data = form.cleaned_data
 
         for name, fs in formsets.items():
@@ -340,7 +346,7 @@ class RegisterView(RegistrationMixin, AdminAccessMixin, FormView):
         success_url = reverse("register-done", args=[self.registration.pk, record.pk])
         return HttpResponseRedirect(success_url)
 
-    def form_invalid(self, form, formsets):
+    def form_invalid(self, form: Form, formsets: dict[str, FormSet]) -> "HttpResponse":
         """If the form is invalid, render the invalid form."""
         if config.LOG_POST_ERRORS:
             with sentry_sdk.push_scope() as scope:
@@ -358,7 +364,7 @@ class RegisterView(RegistrationMixin, AdminAccessMixin, FormView):
 
 class RegisterAuthView(RegistrationMixin, View):
     @method_decorator(never_ever_cache)
-    def get(self, request, *args, **kwargs):
+    def get(self, request: "HttpRequest", *args, **kwargs) -> "HttpResponse":
         project = {
             "build_date": os.environ.get("BUILD_DATE", ""),
             "version": os.environ.get("VERSION", ""),
@@ -384,7 +390,7 @@ class RegisterAuthView(RegistrationMixin, View):
         )
 
 
-def registrations(request):
+def registrations(request: "HttpRequest") -> "HttpResponse|None":
     # if request.user.is_authenticated:
     registration_objs = Registration.objects.filter(active=True)
 
@@ -410,7 +416,7 @@ def registrations(request):
     return None
 
 
-def get_pwa_enabled(request):
+def get_pwa_enabled(request: "HttpRequest") -> "HttpResponse":
     register_obj = Registration.objects.filter(is_pwa_enabled=True).first()
     return JsonResponse(
         {
@@ -423,7 +429,7 @@ def get_pwa_enabled(request):
 
 
 @csrf_exempt
-def authorize_cookie(request):
+def authorize_cookie(request: "HttpRequest") -> HttpResponse:
     try:
         decoded_key = signing.loads(
             json.loads(request.body),

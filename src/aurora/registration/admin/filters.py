@@ -1,12 +1,19 @@
 import logging
 import re
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING
 
 from adminfilters.filters import AutoCompleteFilter, NumberFilter
 from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.urls import reverse
 from django.utils.translation import gettext as _
+
+if TYPE_CHECKING:
+    from django.contrib.admin import ModelAdmin
+    from django.db.models import QuerySet
+    from django.http import HttpRequest
+
 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +25,10 @@ class OrganizationFilter(AutoCompleteFilter):
 class RegistrationProjectFilter(AutoCompleteFilter):
     fk_name = "project__organization__exact"
 
-    def has_output(self):
+    def has_output(self) -> bool:
         return "project__organization__exact" in self.request.GET
 
-    def get_url(self):
+    def get_url(self) -> str:
         url = reverse("%s:autocomplete" % self.admin_site.name)
         if self.fk_name in self.request.GET:
             oid = self.request.GET[self.fk_name]
@@ -42,10 +49,10 @@ class HourFilter(SimpleListFilter):
         (60 * 24, _("24 hour")),
     )
 
-    def lookups(self, request, model_admin):
+    def lookups(self, request: "HttpRequest", model_admin: "ModelAdmin") -> tuple[tuple[int, str], ...]:
         return self.slots
 
-    def queryset(self, request, queryset):
+    def queryset(self, request: "HttpRequest", queryset: "QuerySet") -> "QuerySet":
         if self.value():
             offset = datetime.now() - timedelta(minutes=int(self.value()))
             queryset = queryset.filter(timestamp__gte=offset)
@@ -59,7 +66,7 @@ class DateRangeFilter(NumberFilter):
     re_list = re.compile(r"(\d{4}-\d{2}-\d{2}),?")
     re_unlike = re.compile(r"^(<>)(?P<date>\d{4}-\d{2}-\d{2})$")
 
-    def queryset(self, request, queryset):
+    def queryset(self, request: "HttpRequest", queryset: "QuerySet") -> "QuerySet":
         if self.value() and self.value()[0]:
             raw_value = self.value()[0]
             m1 = self.rex1.match(raw_value)

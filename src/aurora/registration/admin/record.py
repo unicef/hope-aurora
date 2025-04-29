@@ -1,5 +1,6 @@
 import json
 import logging
+from typing import TYPE_CHECKING, Any, Iterable
 
 from admin_extra_buttons.decorators import button, link
 from adminfilters.filters import AutoCompleteFilter, NumberFilter, ValueFilter
@@ -12,6 +13,13 @@ from ...core.utils import is_root
 from ..forms import DecryptForm
 from .filters import DateRangeFilter, HourFilter
 from .paginator import LargeTablePaginator
+
+if TYPE_CHECKING:
+    from admin_extra_buttons.buttons import LinkButton
+    from django.db.models import QuerySet
+    from django.http import HttpRequest, HttpResponse
+
+    from ..models import Record
 
 logger = logging.getLogger(__name__)
 
@@ -44,22 +52,28 @@ class RecordAdmin(SmartModelAdmin):
         "registration",
     ]
 
-    def get_actions(self, request):
+    def get_actions(self, request: "HttpRequest") -> dict:
         return {}
 
-    def get_queryset(self, request):
+    def get_queryset(self, request: "HttpRequest") -> "QuerySet":
         qs = super().get_queryset(request)
         return qs.select_related("registration", "registrar")
 
-    def get_common_context(self, request, pk=None, **kwargs):
+    def get_common_context(self, request: "HttpRequest", pk: str | None = None, **kwargs) -> dict[str, Any]:
         return super().get_common_context(request, pk, is_root=is_root(request), **kwargs)
 
-    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
+    def changeform_view(
+        self,
+        request: "HttpRequest",
+        object_id: str | None = None,
+        form_url: str = "",
+        extra_context: dict[str, Any] = None,
+    ) -> "HttpResponse":
         extra_context = {"is_root": is_root(request)}
         return super().changeform_view(request, object_id, form_url, extra_context)
 
     @link(html_attrs={"class": "aeb-warn "}, change_form=True)
-    def receipt(self, button):
+    def receipt(self, button: "LinkButton") -> None:
         try:
             if button.original:
                 base = reverse(
@@ -72,19 +86,19 @@ class RecordAdmin(SmartModelAdmin):
             logger.exception(e)
 
     @button(label="Preview", permission=is_root)
-    def preview(self, request, pk):
+    def preview(self, request: "HttpRequest", pk: str) -> "HttpResponse":
         ctx = self.get_common_context(request, pk, title="Preview")
 
         return render(request, "admin/registration/record/preview.html", ctx)
 
     @button(label="inspect", permission=is_root)
-    def inspect(self, request, pk):
+    def inspect(self, request: "HttpRequest", pk: str) -> "HttpResponse":
         ctx = self.get_common_context(request, pk, title="Inspect")
         ctx["files_as_dict"] = json.loads(self.object.files.tobytes().decode())
         return render(request, "admin/registration/record/inspect.html", ctx)
 
     @button(permission=is_root)
-    def decrypt(self, request, pk):
+    def decrypt(self, request: "HttpRequest", pk: str) -> "HttpResponse":
         ctx = self.get_common_context(request, pk, title="To decrypt you need to provide Registration Private Key")
         if request.method == "POST":
             form = DecryptForm(request.POST)
@@ -102,19 +116,19 @@ class RecordAdmin(SmartModelAdmin):
         ctx["form"] = form
         return render(request, "admin/registration/record/decrypt.html", ctx)
 
-    def get_readonly_fields(self, request, obj=None):
+    def get_readonly_fields(self, request: "HttpRequest", obj: "Record|None" = None) -> Iterable[str]:
         if is_root(request) or settings.DEBUG:
             return []
         return self.readonly_fields
 
-    def has_view_permission(self, request, obj=None):
+    def has_view_permission(self, request: "HttpRequest", obj: "Record|None" = None) -> bool:
         return is_root(request) or settings.DEBUG
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request: "HttpRequest") -> bool:
         return is_root(request) or settings.DEBUG
 
-    def has_delete_permission(self, request, obj=None):
+    def has_delete_permission(self, request: "HttpRequest", obj: "Record|None" = None) -> bool:
         return settings.DEBUG
 
-    def has_change_permission(self, request, obj=None):
+    def has_change_permission(self, request: "HttpRequest", obj: "Record|None" = None) -> bool:
         return is_root(request) or settings.DEBUG
