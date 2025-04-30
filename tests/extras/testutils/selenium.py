@@ -62,7 +62,7 @@ class AuroraSeleniumTC(BaseCase):
         self.submit('input[value="Login"]')
         self.wait_for_ready_state_complete()
 
-    def login(self):
+    def login(self, url=None):
         self.open("/admin/")
         if self.get_current_url() == f"{self.live_server_url}/admin/login/?next=/admin/":
             self.type("input[name=username]", f"{self.admin_user.username}")
@@ -76,6 +76,20 @@ class AuroraSeleniumTC(BaseCase):
 
     def get_field_error(self, element: str) -> bool:
         return self.wait_for_element_visible(f"fieldset.{element} ul.errorlist").text
+
+    def get_pixel_colors(self):
+        # Return the RGB colors of the canvas element's top left pixel
+        x = 0
+        y = 0
+        if self.browser == "safari":
+            x = 1
+            y = 1
+        color = self.execute_script(
+            "return document.querySelector('canvas').getContext('2d').getImageData(%s,%s,1,1).data;" % (x, y)
+        )
+        if self.is_chromium():
+            return [color[0], color[1], color[2]]
+        return [color["0"], color["1"], color["2"]]
 
 
 AuroraTestBrowser = AuroraSeleniumTC

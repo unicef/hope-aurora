@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 
 import pytest
 from django.urls import reverse
-from selenium.webdriver import ActionChains
 from testutils.factories import CounterFactory, OrganizationFactory, ProjectFactory, RegistrationFactory
 from testutils.selenium import AuroraTestBrowser
 
@@ -27,20 +26,17 @@ def data(db) -> list[Counter]:
 def test_charts_user_navigation(browser: AuroraTestBrowser, admin_user, data):
     reg: "Registration" = data[0].registration
     url = reverse("charts:index")
-    # with user_grant_permissions(user, "counters.view_counter", reg):
     browser.login_as_user()
+    browser.maximize_window()
     browser.open(url)
     browser.click_link_text(reg.organization.name)
     browser.click_link_text(reg.project.name)
     browser.click_link_text(reg.name)
     browser.click("button#prev")
     browser.click("button#next")
-    canvas = browser.find_element("#myChart")
-    location = canvas.location
-    x = location["x"]
-    y = location["y"]
     browser.scroll_to_top()
-    ActionChains(browser.driver).move_by_offset(x, y + 40).click(canvas).perform()
+    # mark the point just for debugging purpose. To find int in the screenshot
+    browser.click_with_offset("#myChart", 60, 200, mark=True)
     browser.click("button#prev")
     browser.click("button#next")
     browser.find_element("div.breadcrumbs a.month").click()

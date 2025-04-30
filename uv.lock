@@ -128,6 +128,7 @@ dev = [
     { name = "pytest-coverage" },
     { name = "pytest-django" },
     { name = "pytest-echo" },
+    { name = "pytest-repeat" },
     { name = "pytest-xdist" },
     { name = "responses" },
     { name = "seleniumbase" },
@@ -258,6 +259,7 @@ dev = [
     { name = "pytest-coverage" },
     { name = "pytest-django" },
     { name = "pytest-echo" },
+    { name = "pytest-repeat", specifier = ">=0.9.4" },
     { name = "pytest-xdist" },
     { name = "responses" },
     { name = "seleniumbase" },
@@ -2829,6 +2831,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/e1/ba/65091c36e6e18da479d22d860586e3ba3a4237cc92a66e3ddd945e4fe761/pytest-ordering-0.6.tar.gz", hash = "sha256:561ad653626bb171da78e682f6d39ac33bb13b3e272d406cd555adb6b006bda6", size = 2629 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ec/98/adc368fe369465f291ab24e18b9900473786ed1afdf861ba90467eb0767e/pytest_ordering-0.6-py3-none-any.whl", hash = "sha256:3f314a178dbeb6777509548727dc69edf22d6d9a2867bf2d310ab85c403380b6", size = 4643 },
+]
+
+[[package]]
+name = "pytest-repeat"
+version = "0.9.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/80/d4/69e9dbb9b8266df0b157c72be32083403c412990af15c7c15f7a3fd1b142/pytest_repeat-0.9.4.tar.gz", hash = "sha256:d92ac14dfaa6ffcfe6917e5d16f0c9bc82380c135b03c2a5f412d2637f224485", size = 6488 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/73/d4/8b706b81b07b43081bd68a2c0359fe895b74bf664b20aca8005d2bb3be71/pytest_repeat-0.9.4-py3-none-any.whl", hash = "sha256:c1738b4e412a6f3b3b9e0b8b29fcd7a423e50f87381ad9307ef6f5a8601139f3", size = 4180 },
 ]
 
 [[package]]

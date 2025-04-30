@@ -1,7 +1,9 @@
 import os
 import time
+import warnings
 
 import pytest
+from coverage.exceptions import CoverageWarning
 from django import forms
 from django.core.files.storage import default_storage
 
@@ -12,7 +14,7 @@ ALL = {"darwin"}
 
 @pytest.fixture(autouse=True)
 def configure_settings(settings):
-    pass
+    warnings.filterwarnings("ignore", category=CoverageWarning)
 
 
 def pytest_configure(config):

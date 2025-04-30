@@ -186,7 +186,7 @@ class FieldEditor:
             '{% for field in form %}{% spaceless %}{% include "smart/_fieldset.html" %}{% endspaceless %}{% endfor %}'
         ).render(Context(ctx))
         formatter = formatter.HTMLFormatter(indent=2)
-        soup = BeautifulSoup(code)
+        soup = BeautifulSoup(code, "lxml")
         pretty_html = soup.prettify(formatter=formatter)
 
         formatter = HtmlFormatter(style="default", full=True)

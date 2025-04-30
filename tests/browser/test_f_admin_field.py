@@ -1,5 +1,7 @@
 import pytest
 from django.forms import BooleanField, DurationField
+from django.urls import reverse
+
 from strategy_field.utils import fqn
 from testutils.factories import FlexFormFieldFactory, FormFactory
 from testutils.selenium import AuroraTestBrowser
@@ -28,10 +30,10 @@ def pytest_generate_tests(metafunc):
 def test_add_field(browser: AuroraTestBrowser, field_type):
     main = browser.driver.current_window_handle
     form = FormFactory()
-    browser.open("/admin/")
     browser.login()
-    browser.click_link("Flex Fields")
-    browser.click('a:contains("Add Flex Field")')
+    add_url = reverse("admin:core_flexformfield_add")
+    browser.open(add_url)
+
     browser.select2_select("id_flex_form", form.name)
     browser.send_keys("input#id_label", "FlexField-Test")
     browser.send_keys("input#id_name", "flex_field_test")
@@ -57,6 +59,7 @@ def test_add_field(browser: AuroraTestBrowser, field_type):
         browser.click('a:contains("Usage")')
     browser.open_if_not_url("/admin/")
     assert FlexFormField.objects.filter(label="FlexField-Test").exists()
+    browser.switch_to_window(main)
 
 
 def test_boolean_field(browser: AuroraTestBrowser):
@@ -64,7 +67,7 @@ def test_boolean_field(browser: AuroraTestBrowser):
     fld: FlexFormField = FlexFormFieldFactory(
         flex_form=form,
         label="FlexField1",
-        name="flexfield1",
+        name="flexfield-bool1",
         field_type=BooleanField,
         advanced={"smart": {"visible": True}},
     )
@@ -76,7 +79,7 @@ def test_boolean_field(browser: AuroraTestBrowser):
     browser.click('a:contains("editor")')
     browser.click("#radio_display")
     browser.switch_to_frame("#widget_display")
-    browser.click("input[type=checkbox][name=flexfield1]")
+    browser.click(f"input[type=checkbox][name={fld.name}]")
     browser.click("input[type=submit]")
     browser.wait_for_ready_state_complete()
     browser.assert_exact_text("Success", "div.bg-green-200", timeout=10)
@@ -86,7 +89,12 @@ def test_multicheckboxfield_field(browser: AuroraTestBrowser):
     main = browser.driver.current_window_handle
     form = FormFactory()
     fld: FlexFormField = FlexFormFieldFactory(
-        flex_form=form, label="FlexField1", name="flexfield1", field_type=MultiCheckboxField, choices="a,b,c"
+        flex_form=form,
+        label="FlexField1",
+        name="flexfield-mc1",
+        field_type=MultiCheckboxField,
+        choices="a,b,c",
+        advanced={"smart": {"visible": True}},
     )
     browser.open("/admin/")
     browser.login()
@@ -100,5 +108,6 @@ def test_multicheckboxfield_field(browser: AuroraTestBrowser):
 
     browser.click("input[type=checkbox][value=a]")
     browser.click("input[type=submit]")
+    browser.wait_for_ready_state_complete()
     browser.assert_exact_text("Success", "div.bg-green-200")
     browser.switch_to_window(main)

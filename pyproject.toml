@@ -94,6 +94,7 @@ dev = [
   "pytest-coverage",
   "pytest-django",
   "pytest-echo",
+  "pytest-repeat>=0.9.4",
   "pytest-xdist",
   "responses",
   "seleniumbase",
