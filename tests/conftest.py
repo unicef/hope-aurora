@@ -7,7 +7,7 @@ from django.core.files.storage import default_storage
 
 from aurora.core.fields import CompilationTimeField, SmartFileField
 
-ALL = set("darwin".split())
+ALL = {"darwin"}
 
 
 @pytest.fixture(autouse=True)
