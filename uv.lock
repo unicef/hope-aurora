@@ -127,6 +127,7 @@ dev = [
     { name = "pytest" },
     { name = "pytest-coverage" },
     { name = "pytest-django" },
+    { name = "pytest-docker" },
     { name = "pytest-echo" },
     { name = "pytest-repeat" },
     { name = "pytest-xdist" },
@@ -258,6 +259,7 @@ dev = [
     { name = "pytest" },
     { name = "pytest-coverage" },
     { name = "pytest-django" },
+    { name = "pytest-docker", specifier = ">=3.2.1" },
     { name = "pytest-echo" },
     { name = "pytest-repeat", specifier = ">=0.9.4" },
     { name = "pytest-xdist" },
@@ -2781,6 +2783,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b1/fb/55d580352db26eb3d59ad50c64321ddfe228d3d8ac107db05387a2fadf3a/pytest_django-4.11.1.tar.gz", hash = "sha256:a949141a1ee103cb0e7a20f1451d355f83f5e4a5d07bdd4dcfdd1fd0ff227991", size = 86202 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/be/ac/bd0608d229ec808e51a21044f3f2f27b9a37e7a0ebaca7247882e67876af/pytest_django-4.11.1-py3-none-any.whl", hash = "sha256:1b63773f648aa3d8541000c26929c1ea63934be1cfa674c76436966d73fe6a10", size = 25281 },
+]
+
+[[package]]
+name = "pytest-docker"
+version = "3.2.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "attrs" },
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/dd/38/ba9344240455a09195863f2c4466468b41a08be0dff8c5611f7ec63f260d/pytest_docker-3.2.1.tar.gz", hash = "sha256:fc2cd9d1d317ac0854c140738182a60331fbcee8c0ef655b790e8f40a96e226f", size = 13499 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d5/22/8495ea7fbb9685efccb969e5139d564cbc5a8645b86278b28cbaa21bce0d/pytest_docker-3.2.1-py3-none-any.whl", hash = "sha256:ad1be411336959bee768b965c1c4949657e743eec9cf9e7a921fadf83ad97526", size = 8584 },
 ]
 
 [[package]]

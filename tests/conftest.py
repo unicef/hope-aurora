@@ -1,13 +1,10 @@
 import os
 import time
 import warnings
+from pathlib import Path
 
 import pytest
 from coverage.exceptions import CoverageWarning
-from django import forms
-from django.core.files.storage import default_storage
-
-from aurora.core.fields import CompilationTimeField, SmartFileField
 
 ALL = {"darwin"}
 
@@ -15,6 +12,10 @@ ALL = {"darwin"}
 @pytest.fixture(autouse=True)
 def configure_settings(settings):
     warnings.filterwarnings("ignore", category=CoverageWarning)
+
+
+def pytest_addoption(parser):
+    parser.addoption("--no-stack", action="store_true", default=False)
 
 
 def pytest_configure(config):
@@ -31,7 +32,11 @@ def pytest_configure(config):
     os.environ["SESSION_COOKIE_SECURE"] = "false"
     os.environ["SOCIAL_AUTH_REDIRECT_IS_HTTPS"] = "false"
     os.environ["LOG_LEVEL"] = "DEBUG"
-    os.environ["LOGGING_HANDLERS"] = "null"
+    os.environ["DJANGO_SETTINGS_MODULE"] = "aurora.config.settings"
+
+    os.environ["DATABASE_URL"] = "postgres://postgres:@127.0.0.1:15432/aurora"
+    os.environ["CACHE_DEFAULT"] = "redis://127.0.0.1:16379/2"
+
     from django.conf import global_settings, settings
 
     settings.STORAGES = global_settings.STORAGES
@@ -42,10 +47,54 @@ def pytest_configure(config):
     settings.CACHE_PREFIX = str(time.time())
 
 
+@pytest.fixture(scope="session")
+def docker_compose_command() -> str:
+    return "docker compose"
+
+
+@pytest.fixture(scope="session")
+def docker_setup():
+    return ["up -d"]
+
+
+@pytest.fixture(scope="session")
+def docker_teardown():
+    return ["rm -fsv"]
+
+
+@pytest.fixture(scope="session")
+def docker_compose_file():
+    return str(Path(__file__).parent / "compose.yml")
+
+
+@pytest.fixture(scope="session")
+def docker_compose_project_name() -> str:
+    return "aurora-test-stack"
+
+
+def is_responsive(address, port):
+    try:
+        import socket
+
+        sock = socket.socket()
+        sock.connect((address, port))
+        return True
+    except ConnectionError:
+        return False
+
+
+@pytest.fixture(scope="session", autouse=True)
+def services(docker_ip, docker_services):
+    port = docker_services.port_for("db", 5432)
+    docker_services.wait_until_responsive(timeout=30.0, pause=0.1, check=lambda: is_responsive(docker_ip, port))
+
+
 @pytest.fixture
 def simple_form(db):
     from aurora.core.cache import cache
     from aurora.core.models import Validator
+    from django import forms
+    from aurora.core.fields import CompilationTimeField
 
     cache.clear()
 
@@ -88,6 +137,8 @@ def simple_form(db):
 @pytest.fixture
 def complex_form():
     from aurora.core.models import Validator
+    from django import forms
+    from aurora.core.fields import SmartFileField
 
     v1, __ = Validator.objects.get_or_create(
         name="length_2_8",
@@ -131,6 +182,7 @@ def complex_form():
 @pytest.fixture
 def mock_storage(monkeypatch):
     """Mocks the backend storage system by not actually accessing media"""
+    from django.core.files.storage import default_storage
 
     def clean_name(name):
         return os.path.splitext(os.path.basename(name))[0]

@@ -15,20 +15,21 @@ Install [uv](https://docs.astral.sh/uv/)
 
     pytests tests
 
+!!! note
+
+    Support services (Postgres / Valkey) are automatically started byt the test suite
+    using the compose file (`compose.yml`) in the `tests/` directory.
+
+    If you want to keep the support stack up and running, just run this command in the project root.
+
+        docker compose -f tests/compose.yml -p aurora-test-stack up
+
+
+
+
 ## Run Selenium tests (ONLY)
 
     pytests tests -m selenium
-
-
-## Run Selenium any tests
-
-    pytests tests --selenium
-
-
-!!! note
-
-    You can disable selenium headless mode (show the browser activity on the screen) using  `--show-browser` flag
-
 
 
 

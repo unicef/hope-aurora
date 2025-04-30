@@ -1,0 +1,19 @@
+volumes:
+  db:
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=
+      - POSTGRES_DB=aurora
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - 15432:5432
+
+  valkey:
+    image: valkey/valkey:7
+    restart: unless-stopped
+    ports:
+      - 16379:6379

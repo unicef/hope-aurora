@@ -93,6 +93,7 @@ dev = [
   "pytest",
   "pytest-coverage",
   "pytest-django",
+  "pytest-docker>=3.2.1",
   "pytest-echo",
   "pytest-repeat>=0.9.4",
   "pytest-xdist",

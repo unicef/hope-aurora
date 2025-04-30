@@ -63,6 +63,9 @@ def test_add_field(browser: AuroraTestBrowser, field_type):
 
 
 def test_boolean_field(browser: AuroraTestBrowser):
+    main = browser.driver.current_window_handle
+    browser.switch_to_window(main)
+
     form = FormFactory()
     fld: FlexFormField = FlexFormFieldFactory(
         flex_form=form,
@@ -78,6 +81,7 @@ def test_boolean_field(browser: AuroraTestBrowser):
 
     browser.click('a:contains("editor")')
     browser.click("#radio_display")
+
     browser.switch_to_frame("#widget_display")
     browser.click(f"input[type=checkbox][name={fld.name}]")
     browser.click("input[type=submit]")
