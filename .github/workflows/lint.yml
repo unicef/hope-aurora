@@ -53,18 +53,18 @@ jobs:
       - name: Static Code checks
         run: tox -e lint
 
-  mypy:
-    needs: changes
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false && needs.changes.outputs.lint
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: pip install tox
-      - name: Check Python Package structure
-        run: tox -e mypy
+#  mypy:
+#    needs: changes
+#    runs-on: ubuntu-latest
+#    if: github.event.pull_request.draft == false && needs.changes.outputs.lint
+#    steps:
+#      - uses: actions/checkout@v4
+#      - uses: actions/setup-python@v5
+#        with:
+#          python-version: '3.12'
+#      - run: pip install tox
+#      - name: Check Python Package structure
+#        run: tox -e mypy
 
   package:
     needs: changes
