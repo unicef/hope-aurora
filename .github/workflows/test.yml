@@ -148,7 +148,7 @@ jobs:
               -e PYTHONPATH=/app/src \
               -e DATABASE_URL=${DATABASE_URL} \
               -e DJANGO_ADMIN_URL=admin \
-              -e CACHE_DEFAULT=redis://localhost:16379/0
+              -e CACHE_DEFAULT=redis://localhost:16379/0 \
               -e GITHUB_ACTIONS=1 \
               -e SECRET_KEY=super-secret-key-just-for-testing \
               -v "./output/:/app/output" \

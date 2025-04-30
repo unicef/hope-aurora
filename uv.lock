@@ -161,6 +161,7 @@ docs = [
 ]
 mypy = [
     { name = "django-stubs", extra = ["compatible-mypy"] },
+    { name = "djangorestframework-stubs" },
     { name = "djangorestframework-types" },
     { name = "lxml-stubs" },
     { name = "mypy" },
@@ -290,6 +291,7 @@ docs = [
 ]
 mypy = [
     { name = "django-stubs", extras = ["compatible-mypy"] },
+    { name = "djangorestframework-stubs" },
     { name = "djangorestframework-types" },
     { name = "lxml-stubs" },
     { name = "mypy" },
@@ -1351,6 +1353,22 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c7/a0/7481fee713387fd5c632b05c1d95c32f5b2ea6e1e8f15c9cf1894e1895a8/djangorestframework_datatables-0.7.2.tar.gz", hash = "sha256:d7953968088ceb14968621a0c0a83d2f39ec1cda24b5ebe1240f3c9619bc7129", size = 19647 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f3/25/17cd01982c7299cbca9e20247e73c83bfa53a0ed9e8b7735c915c1bb6675/djangorestframework_datatables-0.7.2-py2.py3-none-any.whl", hash = "sha256:fd5747b1e3d0bfb84713a975394dd4d879b57ee8bc66cc0f97566fa67f4406f4", size = 15303 },
+]
+
+[[package]]
+name = "djangorestframework-stubs"
+version = "3.16.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django-stubs" },
+    { name = "requests" },
+    { name = "types-pyyaml" },
+    { name = "types-requests" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/47/2b/45a1c9ccb7c4a1f79112a2b4b65a1abd3ee9d4ed1a80d21736bd8f999750/djangorestframework_stubs-3.16.0.tar.gz", hash = "sha256:8c5ccdfe9271b1a37946a3564dc3714d521cd3f2f8695e528808e0c700538243", size = 34818 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/23/f8/50be82c084173adb95f2a925f6336aa53b97ea7ce6fe1dc943ddc20b1193/djangorestframework_stubs-3.16.0-py3-none-any.whl", hash = "sha256:2085a6e023de65843d4d53fe5abc73fbbc3ef380a59919ad9801182f6bb435de", size = 54703 },
 ]
 
 [[package]]
