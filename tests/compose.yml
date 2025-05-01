@@ -13,7 +13,7 @@ services:
       - 15432:5432
 
   valkey:
-    image: valkey/valkey:7
+    image: valkey/valkey
     restart: unless-stopped
     ports:
       - 16379:6379
