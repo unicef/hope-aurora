@@ -1,7 +1,6 @@
 import pytest
 from django.forms import BooleanField, DurationField
 from django.urls import reverse
-
 from strategy_field.utils import fqn
 from testutils.factories import FlexFormFieldFactory, FormFactory
 from testutils.selenium import AuroraTestBrowser

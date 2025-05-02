@@ -17,13 +17,13 @@ class Config(AppConfig):
         from .handlers import cache_handler
 
         cache_handler()
-        try:
-            for field in CustomFieldType.objects.all():
-                try:
-                    cls = field.get_class()
-                    field_registry.register(cls)
-                except Exception as e:
-                    logger.exception(e)
-
-        except (OperationalError, ProgrammingError):  # pragma: no-cover
-            pass
+        # try:
+        #     for field in CustomFieldType.objects.all():
+        #         try:
+        #             cls = field.get_class()
+        #             field_registry.register(cls)
+        #         except Exception as e:
+        #             logger.exception(e)
+        #
+        # except (OperationalError, ProgrammingError):  # pragma: no-cover
+        #     pass

@@ -56,7 +56,7 @@ def upgrade(
     extra = {"no_input": prompt, "verbosity": verbosity - 1, "stdout": None}
     click.echo("Run upgrade.. waiting for lock")
     try:
-        with cache.lock(
+        with cache.lock(  # type: ignore[attr-defined]
             env("MIGRATION_LOCK_KEY"),
             timeout=60 * 10,
             blocking_timeout=2,

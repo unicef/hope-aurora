@@ -1,5 +1,6 @@
 # noqa: A005
 import logging
+from typing import Any
 
 from django import forms
 from django.forms import BoundField
@@ -28,15 +29,15 @@ class SelectField(forms.ChoiceField):
             attrs["data-parent"] = self.parent
         return attrs
 
-    def _get_options(self):
+    def _get_options(self) -> tuple[Any, Any]:
         return self._options
 
-    def _set_options(self, value):
+    def _set_options(self, value: tuple[Any, Any]) -> None:
+        from aurora.core.models import OptionSet
+
         if value:  # pragma: no branch
             try:
-                from aurora.core.models import OptionSet
-
-                optset = OptionSet.objects.get_from_cache(value)
+                optset: OptionSet = OptionSet.objects.get_from_cache(str(value))
                 value = list(optset.as_choices(self.language))
             except OptionSet.DoesNotExist as e:
                 logger.exception(e)

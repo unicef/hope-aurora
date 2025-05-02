@@ -20,7 +20,10 @@ from ..core.utils import is_root
 from .forms import ExportForm, ImportForm, SQLForm
 
 if TYPE_CHECKING:
+    from django.forms.utils import ErrorDict
+
     from ..security.models import UserProfile
+    from ..types.http import AuthHttpRequest
 
 logger = logging.getLogger(__name__)
 
@@ -47,20 +50,16 @@ def panel_loaddata(self: SmartAdminSite, request: HttpRequest) -> HttpResponse:
             try:
                 f = request.FILES["file"]
                 buf = io.BytesIO()
-                for chunk in f.chunks():
+                for chunk in f.chunks():  # type: ignore[union-attr]
                     buf.write(chunk)
                 buf.seek(0)
                 data = json.load(buf)
                 out = io.StringIO()
                 workdir = Path(".").absolute()
                 with disable_concurrency():
-                    kwargs = {
-                        "dir": workdir,
-                        "prefix": "~IMPORT",
-                        "suffix": ".json",
-                        "delete": False,
-                    }
-                    with tempfile.NamedTemporaryFile(**kwargs) as fdst:
+                    with tempfile.NamedTemporaryFile(
+                        dir=workdir, prefix="~IMPORT", suffix=".json", delete=False
+                    ) as fdst:
                         fdst.write(json.dumps(data).encode())
                     fixture = (workdir / fdst.name).absolute()
                     try:
@@ -85,7 +84,7 @@ def panel_loaddata(self: SmartAdminSite, request: HttpRequest) -> HttpResponse:
     return render(request, "admin/panels/loaddata.html", context)
 
 
-panel_loaddata.verbose_name = "Load Data"
+panel_loaddata.verbose_name = "Load Data"  # type: ignore[attr-defined]
 
 
 def panel_dumpdata(self: SmartAdminSite, request: HttpRequest) -> HttpResponse:
@@ -115,11 +114,11 @@ def panel_dumpdata(self: SmartAdminSite, request: HttpRequest) -> HttpResponse:
     return render(request, "admin/panels/dumpdata.html", context)
 
 
-panel_dumpdata.verbose_name = "Dump Data"
+panel_dumpdata.verbose_name = "Dump Data"  # type: ignore[attr-defined]
 
 
-def save_expression(request: HttpRequest) -> JsonResponse:
-    response = {}
+def save_expression(request: "AuthHttpRequest") -> JsonResponse:
+    response: dict[str, str | ErrorDict]
     form = SQLForm(request.POST)
     if form.is_valid():
         name = request.POST["name"]
@@ -136,7 +135,7 @@ def save_expression(request: HttpRequest) -> JsonResponse:
     return JsonResponse(response)
 
 
-def panel_sql(self: SmartAdminSite, request: HttpRequest, extra_context: dict | None = None) -> HttpResponse:
+def panel_sql(self: SmartAdminSite, request: "AuthHttpRequest", extra_context: dict | None = None) -> HttpResponse:
     if not request.user.is_superuser:
         raise PermissionDenied
     context = self.each_context(request)

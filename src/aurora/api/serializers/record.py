@@ -30,7 +30,7 @@ class RecordSerializer(serializers.ModelSerializer):
 
 
 class DataTableRecordSerializer(serializers.ModelSerializer):
-    def __init__(self, instance: Record | None = None, data: Any = empty, **kwargs) -> None:
+    def __init__(self, instance: Any | None = None, data: Any = empty, **kwargs) -> None:
         self.metadata = kwargs.pop("metadata")
         super().__init__(instance, data, **kwargs)
 

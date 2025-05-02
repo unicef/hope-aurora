@@ -22,7 +22,7 @@ cache = caches["default"]
 class ConcurrencyVersionAdmin(CompareVersionAdmin):
     change_list_template = "admin_extra_buttons/change_list.html"
 
-    @button(label="Recover deleted")
+    @button(label="Recover deleted")  # type: ignore[arg-type]
     def _recoverlist_view(self, request: "HttpRequest") -> "HttpResponse":
         return super().recoverlist_view(request)
 

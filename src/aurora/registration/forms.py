@@ -10,6 +10,7 @@ from django.forms import Widget
 from django_regex.utils import RegexList
 from mdeditor.fields import MDTextFormField
 
+from ..core.forms import FormWithDefault
 from .models import Record, Registration
 
 logger = logging.getLogger(__name__)
@@ -91,7 +92,7 @@ class RegistrationOptionForm(forms.ModelForm):
     export = forms.BooleanField(required=False, help_text="allows data to be exported in CSV")
 
 
-class RegistrationExportForm(forms.Form):
+class RegistrationExportForm(FormWithDefault, forms.Form):
     defaults = {}
     filters = forms.CharField(
         widget=forms.Textarea({"rows": 3, "cols": 80}),

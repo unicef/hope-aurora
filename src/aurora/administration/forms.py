@@ -1,9 +1,12 @@
 import base64
+import logging
 import urllib.parse
 
 import sqlparse
 from django import forms
 from django.core.exceptions import ValidationError
+
+logger = logging.getLogger(__name__)
 
 
 class ImportForm(forms.Form):
@@ -38,5 +41,6 @@ class SQLForm(forms.Form):
         except ValidationError:
             raise
         except Exception as e:
-            raise ValidationError(e) from e
+            logger.exception(e)
+            raise ValidationError("ErrorExcuting command") from e
         return value

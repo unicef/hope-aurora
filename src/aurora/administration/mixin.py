@@ -16,7 +16,7 @@ from .forms import ImportForm
 
 
 class LoadDumpMixin(ExtraButtonsMixin):
-    @button(label="loaddata")
+    @button(label="loaddata")  # type: ignore[arg-type]
     def loaddata(self, request: HttpRequest) -> HttpResponse:
         opts = self.model._meta
         ctx = self.get_common_context(
@@ -30,20 +30,16 @@ class LoadDumpMixin(ExtraButtonsMixin):
                 try:
                     f = request.FILES["file"]
                     buf = io.BytesIO()
-                    for chunk in f.chunks():
+                    for chunk in f.chunks():  # type: ignore[union-attr]
                         buf.write(chunk)
                     buf.seek(0)
                     data = json.load(buf)
                     out = io.StringIO()
                     workdir = Path(".").absolute()
                     with disable_concurrency():
-                        kwargs = {
-                            "dir": workdir,
-                            "prefix": f"~IMPORT-{opts.model_name}",
-                            "suffix": ".json",
-                            "delete": False,
-                        }
-                        with tempfile.NamedTemporaryFile(**kwargs) as fdst:
+                        with tempfile.NamedTemporaryFile(
+                            dir=workdir, prefix=f"~IMPORT-{opts.model_name}", suffix=".json", delete=False
+                        ) as fdst:
                             fdst.write(json.dumps(data).encode())
                         fixture = (workdir / fdst.name).absolute()
                         try:
@@ -66,7 +62,7 @@ class LoadDumpMixin(ExtraButtonsMixin):
             ctx["form"] = form
         return render(request, "admin/registration/registration/import.html", ctx)
 
-    @button()
+    @button()  # type: ignore[arg-type]
     def dumpdata(self, request: HttpRequest) -> JsonResponse:
         opts = self.model._meta
         stdout = io.StringIO()

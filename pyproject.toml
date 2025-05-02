@@ -131,7 +131,6 @@ docs = [
 mypy = [
   "django-stubs[compatible-mypy]",
   "djangorestframework-stubs",
-  "djangorestframework-types",
   "lxml-stubs",
   "mypy",
   "types-defusedxml",

@@ -9,7 +9,7 @@ from ..serializers import RecordSerializer
 from .base import SmartViewSet
 
 
-class RecordFilter(filters.FilterSet):  # type: ignore[misc]
+class RecordFilter(filters.FilterSet):
     id = filters.NumberFilter(field_name="id", lookup_expr="gte")
     after = filters.DateFilter(field_name="timestamp", lookup_expr="gte")
 

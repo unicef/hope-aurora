@@ -114,7 +114,11 @@ class SmartBaseFormSet(BaseFormSet):
         )
 
 
-class DateFormatsForm(forms.Form):
+class FormWithDefault(forms.Form):
+    defaults: dict[str, str]
+
+
+class DateFormatsForm(FormWithDefault, forms.Form):
     defaults = {
         "date_format": formats.get_format("DATE_FORMAT"),
         "datetime_format": formats.get_format("DATETIME_FORMAT"),
@@ -125,7 +129,7 @@ class DateFormatsForm(forms.Form):
     time_format = forms.CharField(label=_("Time format"), required=False)
 
 
-class CSVOptionsForm(forms.Form):
+class CSVOptionsForm(FormWithDefault, forms.Form):
     defaults = {
         "date_format": "d/m/Y",
         "datetime_format": "N j, Y, P",

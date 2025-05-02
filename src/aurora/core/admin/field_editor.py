@@ -9,6 +9,7 @@ from django.shortcuts import render
 from django.template import Context, Template
 from django.utils.functional import cached_property
 
+from admin_extra_buttons.mixins import ExtraButtonsMixin
 from aurora.core.admin.editor import FlexEditor
 from aurora.core.fields.widgets import JavascriptEditor
 from aurora.core.forms import FlexFormBaseForm, VersionMedia
@@ -18,11 +19,10 @@ from aurora.core.utils import merge_data
 if TYPE_CHECKING:
     from django.contrib.admin import ModelAdmin
 
-
 cache = caches["default"]
 
 
-class AdvancendAttrsMixin(FlexEditor):
+class AdvancendAttrsMixin(FlexEditor, forms.Form):
     def __init__(self, *args, **kwargs) -> None:
         self.field = kwargs.pop("field", None)
         self.prefix = kwargs.get("prefix")
@@ -129,7 +129,7 @@ def get_initial(field: FlexFormField, prefix: str) -> dict[str, Any]:
 
 
 class FieldEditor:
-    FORMS = {
+    FORMS: dict[str, type[AdvancendAttrsMixin]] = {
         "field": FlexFieldAttributesForm,
         "kwargs": FormFieldAttributesForm,
         "widget": WidgetAttributesForm,
@@ -138,7 +138,7 @@ class FieldEditor:
         "events": EventForm,
     }
 
-    def __init__(self, modeladmin: "ModelAdmin", request: "HttpRequest", pk: str) -> None:
+    def __init__(self, modeladmin: "ExtraButtonsMixin", request: "HttpRequest", pk: str) -> None:
         self.modeladmin = modeladmin
         self.request = request
         self.pk = pk
@@ -178,7 +178,7 @@ class FieldEditor:
         form_class_attrs = {
             self.field.name: instance,
         }
-        form_class = type(forms.Form)("TestForm", (forms.Form,), form_class_attrs)
+        form_class = type("TestForm", (forms.Form,), form_class_attrs)
         ctx = self.get_context(self.request)
         ctx["form"] = form_class()
         ctx["instance"] = instance
@@ -203,7 +203,7 @@ class FieldEditor:
         form_class_attrs = {
             self.field.name: instance,
         }
-        form_class = type(FlexFormBaseForm)("TestForm", (FlexFormBaseForm,), form_class_attrs)
+        form_class = type(FlexFormBaseForm)("TestForm", (FlexFormBaseForm,), form_class_attrs)  # type: ignore[misc]
         form_class.flex_form = FlexForm()
         ctx = self.get_context(self.request)
         if self.request.method == "POST":
@@ -219,9 +219,11 @@ class FieldEditor:
 
         return render(self.request, "admin/core/flexformfield/field_editor/preview.html", ctx)
 
-    def get_forms(self, data: dict[str, str] | None = None) -> dict[str, forms.Form]:
+    def get_forms(self, data: dict[str, str] | None = None) -> dict[str, AdvancendAttrsMixin]:
         if data:
-            return {prefix: Form(data, prefix=prefix, field=self.field) for prefix, Form in self.FORMS.items()}
+            return {
+                prefix: FormClass(data, prefix=prefix, field=self.field) for prefix, FormClass in self.FORMS.items()
+            }
         if self.request.method == "POST":
             return {
                 prefix: Form(
@@ -233,8 +235,8 @@ class FieldEditor:
                 for prefix, Form in self.FORMS.items()
             }
         return {
-            prefix: Form(prefix=prefix, field=self.field, initial=get_initial(self.field, prefix))
-            for prefix, Form in self.FORMS.items()
+            prefix: FormClass(prefix=prefix, field=self.field, initial=get_initial(self.field, prefix))
+            for prefix, FormClass in self.FORMS.items()
         }
 
     def refresh(self) -> JsonResponse:
