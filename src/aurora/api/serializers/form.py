@@ -9,7 +9,11 @@ from aurora.core.models import FlexForm
 class FormSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.IntegerField(read_only=True, default=None)
     base_type = serializers.CharField()
-    fields = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name="flexformfield-detail")
+    fields = serializers.HyperlinkedRelatedField(
+        many=True,  # type: ignore[assignment]
+        read_only=True,
+        view_name="flexformfield-detail",
+    )
 
     class Meta:
         model = FlexForm

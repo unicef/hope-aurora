@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING
 
 from django.contrib.auth import login
-from django.http import HttpRequest
 from hijack import signals
 from hijack.templatetags.hijack import can_hijack
 from hijack.views import get_used_backend, keep_session_age
@@ -9,14 +8,15 @@ from hijack.views import get_used_backend, keep_session_age
 from aurora.security.models import User
 
 if TYPE_CHECKING:
-    from aurora.types import HiJackUser
+    from aurora.types.http import AuthHttpRequest
+    from aurora.types.security.models import HiJackUser
 
 
 def can_impersonate(hijacker: "HiJackUser", hijacked: "HiJackUser") -> bool:
     return (hijacker != hijacked) and not hijacker.is_hijacked
 
 
-def impersonate(request: HttpRequest, hijacked: User) -> User | None:
+def impersonate(request: "AuthHttpRequest", hijacked: User) -> User | None:
     if can_hijack(request.user, hijacked):
         hijacker = request.user
 

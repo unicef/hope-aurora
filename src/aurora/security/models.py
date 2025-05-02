@@ -1,8 +1,11 @@
+from typing import Iterable
+
 from concurrency.fields import AutoIncVersionField
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 from django.db.models import JSONField
+from django.db.models.base import ModelBase
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from natural_keys import NaturalKeyModel
@@ -12,7 +15,7 @@ from aurora.registration.models import Registration
 
 
 class User(AbstractUser):
-    class Meta(AbstractUser.Meta):
+    class Meta(AbstractUser.Meta):  # type: ignore[name-defined]
         swappable = "AUTH_USER_MODEL"
         ordering = ("username",)
 
@@ -32,7 +35,7 @@ class UserProfile(models.Model):
         super().save(*args, **kwargs)
 
 
-class AuroraRoleManager(models.Manager):
+class AuroraRoleManager(models.Manager["AuroraRole"]):
     def get_by_natural_key(
         self, org_slug: str, prj_slug: str, registration_slug: str, username: str, group: str
     ) -> "AuroraRole":
@@ -87,10 +90,10 @@ class AuroraRole(NaturalKeyModel, models.Model):
 
     def save(
         self,
-        force_insert: bool = False,
+        force_insert: bool | tuple[ModelBase, ...] = False,
         force_update: bool = False,
-        using: str = None,
-        update_fields: list[str] | None = None,
+        using: str | None = None,
+        update_fields: Iterable[str] | None = None,
     ) -> None:
         if self.registration:
             self.project = self.registration.project

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Never
+from typing import TYPE_CHECKING
 
 from django.apps import AppConfig
 
@@ -10,7 +10,7 @@ class AuroraAdminConfig(AppConfig):
     default = False
     name = "aurora.administration"
 
-    def ready(self) -> Never:
+    def ready(self) -> None:
         super().ready()
         site: SmartAdminSite
         from django.contrib.admin import site
