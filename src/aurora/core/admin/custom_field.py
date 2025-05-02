@@ -37,7 +37,7 @@ class CustomFieldTypeAdmin(SmartModelAdmin):
     def get_queryset(self, request: "HttpRequest") -> "QuerySet":
         return super().get_queryset(request).annotate(name_deterministic=Collate("name", "und-x-icu"))
 
-    @button()
+    @button()  # type: ignore[arg-type]
     def test(self, request: "HttpRequest", pk: str) -> "HttpResponse":
         ctx = self.get_common_context(request, pk)
         fld = ctx["original"]
@@ -47,7 +47,7 @@ class CustomFieldTypeAdmin(SmartModelAdmin):
         form_class_attrs = {
             "sample": field,
         }
-        form_class = type(forms.Form)("TestForm", (forms.Form,), form_class_attrs)
+        form_class = type("TestForm", (forms.Form,), form_class_attrs)
 
         if request.method == "POST":
             form = form_class(request.POST)

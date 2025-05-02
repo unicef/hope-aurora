@@ -104,7 +104,9 @@ OPTIONS = {
 
 
 class SmartEnv2(SmartEnv):
-    def cache_url(self, var: str = Env.DEFAULT_CACHE_ENV, default: str = Env.NOTSET, backend: Any = None) -> None:
+    def cache_url(
+        self, var: str = Env.DEFAULT_CACHE_ENV, default: str = Env.NOTSET, backend: Any = None
+    ) -> dict[str, Any]:
         v = self.str(var, default)
         if v.startswith("redisraw://"):
             scheme, string = v.split("redisraw://")

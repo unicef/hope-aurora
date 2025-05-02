@@ -4,7 +4,7 @@ import re
 from datetime import date, datetime, time
 from inspect import isclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Never
+from typing import TYPE_CHECKING, Any, Never, Generator
 
 from admin_ordering.models import OrderableModel
 from concurrency.fields import AutoIncVersionField
@@ -559,6 +559,8 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
         return self.advanced.get("kwargs", {}).get("default_value", None)
 
     def get_field_kwargs(self) -> dict[str, Any]:
+        if self.field_type is None:
+            raise AttributeError("Field type has not been set")
         if isclass(self.field_type) and issubclass(self.field_type, CustomFieldMixin):
             advanced = self.advanced.copy()
             smart_attrs = advanced.pop("smart", {}).copy()
@@ -763,7 +765,7 @@ class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
     def get_api_url(self) -> str:
         return reverse("optionset", args=[self.name])
 
-    def get_data(self, requested_language: str | None = None) -> str:
+    def get_data(self, requested_language: str | None = None) -> list[dict[str, Any]]:
         if self.separator and requested_language:
             try:
                 label_col = self.languages.split(",").index(requested_language)
@@ -805,12 +807,12 @@ class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
             cache.set(key, value)
         return value
 
-    def as_choices(self, language=None):
+    def as_choices(self, language=None) -> "Generator[tuple[str, str]]":
         data = self.get_data(language or get_language())
         for entry in data:
             yield entry["pk"], entry["label"]
 
-    def as_json(self, language=None):
+    def as_json(self, language: str = None) -> list[dict[str, Any]]:
         return self.get_data(language or get_language())
 
 

@@ -1,10 +1,11 @@
 from django import forms
+from django.forms import RadioSelect
 
 from .widgets import RadioWidget, YesNoRadioWidget
 
 
 class RadioField(forms.ChoiceField):
-    widget = RadioWidget
+    widget: type[RadioSelect] = RadioWidget
 
 
 class YesNoMixin:
