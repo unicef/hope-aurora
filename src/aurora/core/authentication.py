@@ -4,11 +4,19 @@ from django.contrib.auth import get_user_model
 from social_core.exceptions import InvalidEmail
 from social_core.pipeline import social_auth
 from social_core.pipeline import user as social_core_user
+from typing import TYPE_CHECKING, Any
+
+from aurora.security.models import User
+
+if TYPE_CHECKING:
+    from social_core.backends.oauth import BaseOAuth2
+    from social_core.strategy import BaseStrategy
+
 
 logger = logging.getLogger(__name__)
 
 
-def social_details(backend, details, response, *args, **kwargs):
+def social_details(backend: "BaseOAuth2", details, response, *args, **kwargs):
     r = social_auth.social_details(backend, details, response, *args, **kwargs)
 
     if not r["details"].get("email"):
@@ -19,7 +27,9 @@ def social_details(backend, details, response, *args, **kwargs):
     return r
 
 
-def user_details(strategy, details, backend, user=None, *args, **kwargs):
+def user_details(
+    strategy: "BaseStrategy", backend: "BaseOAuth2", details: dict[str, Any], user: "User|None" = None, *args, **kwargs
+):
     logger.debug(f"user_details for user {user} details:\n{details}")
     # social_core_user.user_details use details dict to override some fields on User instance
     # in order to prevent it setting first and last name fields to empty values (which seems we always get from api)
@@ -36,15 +46,17 @@ def user_details(strategy, details, backend, user=None, *args, **kwargs):
     return social_core_user.user_details(strategy, details, backend, user, *args, **kwargs)
 
 
-def require_email(strategy, details, user=None, is_new=False, *args, **kwargs):
+def require_email(
+    backend: "BaseOAuth2", details: dict[str, Any], user: "User|None" = None, is_new=False, *args, **kwargs
+):
     if user and user.email:
         return
     if is_new and not details.get("email"):
         logger.error("Email couldn't be validated")
-        raise InvalidEmail(strategy)
+        raise InvalidEmail(backend)
 
 
-def create_user(strategy, details, user=None, *args, **kwargs):
+def create_user(details: dict[str, Any], user: "User|None" = None, *args, **kwargs):
     if user:
         return {"is_new": False}
 
@@ -62,7 +74,7 @@ def create_user(strategy, details, user=None, *args, **kwargs):
     return {"is_new": True, "user": user}
 
 
-def redir_to_form(strategy, details, backend, user=None, *args, **kwargs):
+def redir_to_form(details: dict[str, Any], user: "User|None" = None, *args, **kwargs):
     if user:
         return {"is_new": False}
 

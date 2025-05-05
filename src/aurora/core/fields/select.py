@@ -30,10 +30,10 @@ class SelectField(forms.ChoiceField):
             attrs["data-parent"] = self.parent
         return attrs
 
-    def _get_options(self) -> tuple[str, Iterable[tuple[Any, Any]]]:
+    def _get_options(self) -> Iterable[tuple[Any, Any]]:
         return self._options
 
-    def _set_options(self, value: tuple[Any, Any]) -> None:
+    def _set_options(self, value: Iterable[tuple[Any, Any]]) -> None:
         from aurora.core.models import OptionSet
 
         if value:  # pragma: no branch

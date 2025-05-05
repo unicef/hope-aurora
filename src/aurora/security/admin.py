@@ -55,7 +55,7 @@ class GroupProtocol(LoadDumpProtocol):
         return list(data)
 
 
-class GroupAdmin(AdminActionPermMixin, SyncMixin, GroupAdmin_):
+class GroupAdmin(AdminActionPermMixin, SyncMixin, GroupAdmin_):  # type: ignore[misc]
     protocol_class = GroupProtocol
 
 

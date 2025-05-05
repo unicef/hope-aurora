@@ -13,15 +13,6 @@ class RegexEditor(forms.Textarea):
 class RegexField(RegexField_):
     widget = RegexEditor
 
-    def value_from_object(self, obj):
-        """Return the value of this field in the given model instance."""
-        return getattr(obj, self.attname)
-
-    def get_prep_value(self, value):
-        if isinstance(value, Regex):
-            return value.pattern
-        return value
-
 
 class StrategyFormField(StrategyFormField_):
     def __init__(self, *args, **kwargs):

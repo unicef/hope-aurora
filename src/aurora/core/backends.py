@@ -1,14 +1,15 @@
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 from django.db import IntegrityError
+from django.http import HttpRequest
 
-User = get_user_model()
+from aurora.security.models import User
 
 
 class AnyUserAuthBackend(ModelBackend):  # pragma: no cover
-    # Develop only backend
-    def authenticate(self, request, username=None, password=None, **kwargs):
+    def authenticate(
+        self, request: "HttpRequest", username: str | None = None, password: str | None = None, **kwargs
+    ) -> User | None:
         host = request.get_host()
         if settings.DEBUG and (host.startswith(("localhost", "127.0.0.1"))):
             try:

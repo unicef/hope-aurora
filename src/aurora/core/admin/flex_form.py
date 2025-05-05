@@ -115,7 +115,7 @@ class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
     def is_main(self, obj: FlexForm) -> bool:
         return obj.registration_set.exists()
 
-    is_main.boolean = True
+    is_main.boolean = True  # type: ignore[attr-defined]
 
     @button(html_attrs={"class": "aeb-danger"})  # type: ignore[arg-type]
     def invalidate_cache(self, request: "HttpRequest") -> "HttpResponse":  # type: ignore[return]

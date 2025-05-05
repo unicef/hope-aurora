@@ -1,4 +1,5 @@
 import time
+from typing import Any
 
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse, HttpRequest
@@ -42,7 +43,7 @@ def filter_optionset(obj: OptionSet, pk, term, lang, parent=None):
 
 @method_decorator(never_cache, name="dispatch")
 class OptionsListVersion(View):
-    def get(self, request, *args, **kwargs):
+    def get(self, request: "HttpRequest", *args: Any, **kwargs: Any) -> HttpResponse:
         name = self.kwargs["name"]
         obj: OptionSet = get_object_or_404(OptionSet, name=name)
         return JsonResponse(
@@ -51,7 +52,7 @@ class OptionsListVersion(View):
 
 
 class OptionsListView(BaseListView):
-    def get(self, request, *args, **kwargs):
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         name = self.kwargs["name"]
 
         lang = get_language()

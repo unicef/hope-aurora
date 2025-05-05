@@ -310,7 +310,7 @@ class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
             "indexes": indexes,
             **fields,
         }
-        return type(f"{self.name}FlexForm", (self.base_type,), form_class_attrs)
+        return type(FlexFormBaseForm)(f"{self.name}FlexForm", (self.base_type,), form_class_attrs)
 
     def get_formsets_classes(self):
         formsets = {}
