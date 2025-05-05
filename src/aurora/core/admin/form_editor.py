@@ -9,6 +9,7 @@ from django.shortcuts import render
 from django.template.loader import get_template
 from django.utils.functional import cached_property
 
+from admin_extra_buttons.mixins import ExtraButtonsMixin
 from aurora.core.admin.editor import FlexEditor
 from aurora.core.fields.widgets import JavascriptEditor
 from aurora.core.models import FlexForm
@@ -55,7 +56,7 @@ class FormEditor:
         "events": EventForm,
     }
 
-    def __init__(self, modeladmin: "ModelAdmin", request: "HttpRequest", pk: str) -> None:
+    def __init__(self, modeladmin: "ExtraButtonsMixin", request: "HttpRequest", pk: str) -> None:
         self.modeladmin = modeladmin
         self.request = request
         self.pk = pk

@@ -7,7 +7,7 @@ from mypy.types import AnyType, TypeOfAny
 
 
 def _adjust_request_members(ctx: ClassDefContext) -> None:
-    add_attribute_to_class(ctx.api, ctx.cls, "user_agrnt", AnyType(TypeOfAny.explicit))
+    add_attribute_to_class(ctx.api, ctx.cls, "user_agent", AnyType(TypeOfAny.explicit))
 
 
 class BitcasterMypyPlugin(Plugin):

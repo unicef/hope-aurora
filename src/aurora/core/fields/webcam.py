@@ -1,5 +1,6 @@
 from django import forms
 from django.conf import settings
+from .mixins import ConfigurableSmartField
 
 
 class WebcamWidget(forms.Textarea):
@@ -33,5 +34,5 @@ class WebcamWidget(forms.Textarea):
         return self._render(self.template_name, context, renderer)
 
 
-class WebcamField(forms.CharField):
+class WebcamField(ConfigurableSmartField, forms.CharField):
     widget = WebcamWidget

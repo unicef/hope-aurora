@@ -2,7 +2,7 @@ from typing import Any
 
 from ..settings import DEBUG
 
-FLAGS_STATE_LOGGING = DEBUG
+FLAGS_STATE_LOGGING: bool = DEBUG
 
 FLAGS: dict[str, Any] = {
     "DEVELOP_DEVELOPER": [],

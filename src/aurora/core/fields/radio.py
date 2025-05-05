@@ -2,13 +2,14 @@ from django import forms
 from django.forms import RadioSelect
 
 from .widgets import RadioWidget, YesNoRadioWidget
+from .mixins import ConfigurableSmartField
 
 
 class RadioField(forms.ChoiceField):
     widget: type[RadioSelect] = RadioWidget
 
 
-class YesNoMixin:
+class YesNoMixin(ConfigurableSmartField):
     def __init__(self, *, choices=(), **kwargs):
         if not choices:
             choices = (("y", "Yes"), ("n", "No"))

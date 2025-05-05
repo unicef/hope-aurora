@@ -5,17 +5,17 @@ from admin_extra_buttons.decorators import button, view
 from admin_sync.mixin import SyncMixin as SyncMixin_
 from admin_sync.perms import check_publish_permission, check_sync_permission
 from admin_sync.utils import SyncResponse, is_local, is_remote, wraps
-from django.contrib import messages
+from django.contrib import messages, admin
 from django.contrib.admin import action
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
 
-class SyncMixin(SyncMixin_):
-    actions = ["publish_action"]
+class SyncMixin(SyncMixin_, admin.ModelAdmin):
+    actions = ("publish_action",)
     UPDATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-    @view(
+    @view(  # type: ignore[arg-type]
         decorators=[csrf_exempt],
         http_basic_auth=True,
         enabled=is_remote,
@@ -30,12 +30,12 @@ class SyncMixin(SyncMixin_):
             }
         )
 
-    def get_remote_version(self, request, pk):
+    def get_remote_version(self, request, pk) -> dict[str, int | str]:
         obj = self.get_object(request, pk)
         payload = self.get_remote_data(request, "get_version", obj)
         return json.loads(payload)
 
-    @button(visible=is_local, order=999, permission=check_sync_permission)
+    @button(visible=is_local, order=999, permission=check_sync_permission)  # type: ignore[arg-type]
     def check_remote_version(self, request, pk):
         obj = self.get_object(request, pk)
         v = self.get_remote_version(request, pk)
@@ -53,16 +53,16 @@ class SyncMixin(SyncMixin_):
                 f"Remote last update {remote_date} ({v['version']})",
             )
 
-    @button(visible=is_local, order=999, permission=check_publish_permission)
+    @button(visible=is_local, order=999, permission=check_publish_permission)  # type: ignore[arg-type]
     def publish(self, request, pk):
         obj = self.get_object(request, pk)
-        i: dict = self.get_remote_version(request, obj)
+        i = self.get_remote_version(request, obj)
         if i["version"] == obj.version:
             return super().publish.func(self, request, pk)
         self.message_user(request, "Version mismatch. Fetch before publish", messages.ERROR)
         return None
 
-    @button(
+    @button(  # type: ignore[arg-type]
         visible=lambda b: b.model_admin.admin_sync_show_inspect(),
         html_attrs={"style": "background-color:red"},
     )

@@ -3,6 +3,10 @@ from django.utils.translation import get_language
 
 from aurora.core.utils import oneline
 from aurora.state import state
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from aurora.core.models import FlexFormField
 
 
 class TailWindMixin:
@@ -24,14 +28,18 @@ class SmartWidgetMixin(forms.Widget):
         return ret
 
 
-class SmartFieldMixin(forms.Field):
+class ConfigurableSmartField(forms.Field):
+    pass
+
+
+class SmartFormField(forms.Field):
     NONE = None
     PRIMARY = 1
     BLOB = 2
     storage = PRIMARY
 
     def __init__(self, *args, **kwargs) -> None:
-        self.flex_field = kwargs.pop("flex_field")
+        self.flex_field: "FlexFormField" = kwargs.pop("flex_field")
         self.smart_attrs = kwargs.pop("smart_attrs", kwargs.pop("smart", {}))
         self.field_attrs = kwargs.pop("field_attrs", {})
         self.data_attrs = kwargs.pop("data", {})

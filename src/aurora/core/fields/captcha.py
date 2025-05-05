@@ -2,6 +2,7 @@ import secrets
 
 from django import forms
 
+from .mixins import ConfigurableSmartField
 from aurora.core.fields.widgets.captcha import CaptchaWidget
 
 NUMBERS = "0123456789"
@@ -17,5 +18,5 @@ def get_random_numbers():
     return secrets.randbelow(100), secrets.randbelow(100)
 
 
-class CaptchaField(forms.CharField):
+class CaptchaField(ConfigurableSmartField, forms.CharField):
     widget = CaptchaWidget

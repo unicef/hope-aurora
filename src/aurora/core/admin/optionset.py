@@ -44,7 +44,7 @@ class OptionSetAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartMod
     def get_queryset(self, request: "HttpRequest") -> "QuerySet[OptionSet]":
         return super().get_queryset(request).annotate(name_deterministic=Collate("name", "und-x-icu"))
 
-    @button()
+    @button()  # type: ignore[arg-type]
     def display_data(self, request: "HttpRequest", pk: str) -> "HttpResponse":
         ctx = self.get_common_context(request, pk, title="Data")
         obj: OptionSet = ctx["original"]
@@ -52,7 +52,7 @@ class OptionSetAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartMod
         ctx["data"] = data
         return render(request, "admin/core/optionset/table.html", ctx)
 
-    @link(change_form=True, change_list=False, html_attrs={"target": "_new"})
+    @link(change_form=True, change_list=False, html_attrs={"target": "_new"})  # type: ignore[arg-type]
     def view_json(self, button: "LinkButton") -> None:
         original = button.context["original"]
         if original:

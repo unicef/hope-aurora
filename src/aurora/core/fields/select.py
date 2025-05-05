@@ -1,11 +1,12 @@
 # noqa: A005
 import logging
-from typing import Any
+from typing import Any, Iterable
 
 from django import forms
 from django.forms import BoundField
 from django.urls import NoReverseMatch, reverse
 from django.utils.translation import get_language
+from .mixins import ConfigurableSmartField
 
 from .widgets.selected import AjaxSelectWidget, SmartSelectWidget
 
@@ -29,7 +30,7 @@ class SelectField(forms.ChoiceField):
             attrs["data-parent"] = self.parent
         return attrs
 
-    def _get_options(self) -> tuple[Any, Any]:
+    def _get_options(self) -> tuple[str, Iterable[tuple[Any, Any]]]:
         return self._options
 
     def _set_options(self, value: tuple[Any, Any]) -> None:
@@ -37,17 +38,17 @@ class SelectField(forms.ChoiceField):
 
         if value:  # pragma: no branch
             try:
-                optset: OptionSet = OptionSet.objects.get_from_cache(str(value))
+                optset: OptionSet = OptionSet.objects.get_from_cache(str(value))  # type: ignore[assignment]
                 value = list(optset.as_choices(self.language))
             except OptionSet.DoesNotExist as e:
                 logger.exception(e)
                 value = []
         self._options = self.widget.choices = value
 
-    choices = property(_get_options, _set_options)
+    choices = property(_get_options, _set_options)  # type: ignore[assignment]
 
 
-class AjaxSelectField(forms.Field):
+class AjaxSelectField(ConfigurableSmartField, forms.Field):
     widget = AjaxSelectWidget
 
     def __init__(self, **kwargs):

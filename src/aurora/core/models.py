@@ -33,7 +33,7 @@ from ..i18n.models import I18NModel
 from ..state import state
 from . import fields
 from .compat import RegexField, StrategyClassField
-from .fields import WIDGET_FOR_FORMFIELD_DEFAULTS, SmartFieldMixin
+from .fields import WIDGET_FOR_FORMFIELD_DEFAULTS, SmartFormField
 from .fields.mixins import TailWindMixin
 from .forms import CustomFieldMixin, FlexFormBaseForm, SmartBaseFormSet
 from .js import DukPYValidator
@@ -96,7 +96,7 @@ class Project(AdminReverseMixin, NaturalKeyModel, MPTTModel):
     _natural_key = ("slug", "organization")
 
     version = AutoIncVersionField()
-    last_update_date = models.DateTimeField(auto_now=True)
+    last_update_date: datetime = models.DateTimeField(auto_now=True)
 
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=100, blank=True)
@@ -439,8 +439,8 @@ class FormSet(AdminReverseMixin, NaturalKeyModel, OrderableModel):
         dict_setdefault(self.advanced, self.FORMSET_DEFAULT_ATTRS)
         return self.advanced["smart"]["widget"]
 
-    def get_formset(self) -> SmartBaseFormSet:
-        form_set = formset_factory(
+    def get_formset(self) -> type[SmartBaseFormSet]:
+        form_set: type[SmartBaseFormSet] = formset_factory(  # type: ignore[assignment]
             self.get_form(),
             formset=SmartBaseFormSet,
             extra=self.extra,
@@ -562,22 +562,23 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
         if self.field_type is None:
             raise AttributeError("Field type has not been set")
         if isclass(self.field_type) and issubclass(self.field_type, CustomFieldMixin):
+            custom_field = self.field_type.custom
             advanced = self.advanced.copy()
             smart_attrs = advanced.pop("smart", {}).copy()
             widget_kwargs = self.advanced.get("widget_kwargs", {}).copy()
             events = self.advanced.get("events", {}).copy()
 
-            field_type = self.field_type.custom.base_type
-            field_kwargs = self.field_type.custom.attrs.copy()
+            field_type = custom_field.base_type
+            field_kwargs = custom_field.attrs.copy()
             if self.validator:
                 field_kwargs.setdefault("validators", get_validators(self))
-            elif self.field_type.custom.validator:
-                field_kwargs["validators"] = get_validators(self.field_type.custom)
+            elif custom_field.validator:
+                field_kwargs["validators"] = get_validators(custom_field)
             else:
                 field_kwargs["validators"] = []
             field_kwargs.setdefault("label", self.label)
             field_kwargs.setdefault("required", self.required)
-            regex = self.regex or self.field_type.custom.regex
+            regex = self.regex or custom_field.regex
         else:
             # field_kwargs
             # widget_kwargs
@@ -654,7 +655,7 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
         # these are for django FormField and handled by SmartFieldMixin
         return field_kwargs
 
-    def get_instance(self) -> SmartFieldMixin | None:
+    def get_instance(self) -> SmartFormField | None:
         if self.field_type is None:
             return None
         try:
@@ -664,20 +665,20 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
                 field_type = self.field_type
             kwargs = self.get_field_kwargs()
             kwargs.setdefault("flex_field", self)
-            tt = type(field_type.__name__, (SmartFieldMixin, field_type), {})
+            tt = type(field_type.__name__, (SmartFormField, field_type), {})
             fld = tt(**kwargs)
         except Exception as e:
             logger.exception(e)
             raise
         return fld
 
-    def clean(self) -> Never:
+    def clean(self) -> None:
         if self.field_type:
             try:
                 self.get_instance()
             except Exception as e:
                 logger.exception(e)
-                raise ValidationError(e) from None
+                raise ValidationError("Unable to create valid FlexField") from e
 
     def save(
         self,
@@ -685,13 +686,13 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
         force_update: bool = False,
         using: str | None = None,
         update_fields: list[str] = None,
-    ) -> Never:
+    ) -> None:
         if not self.name.strip():
             self.name = namify(self.label)[:100]
 
         super().save(force_insert, force_update, using, update_fields)
 
-    def get_usage(self) -> list[str]:
+    def get_usage(self) -> list[dict[str, Any]]:
         ret = []
         ret.append(
             {
@@ -841,6 +842,7 @@ class CustomFieldType(AdminReverseMixin, NaturalKeyModel, models.Model):
         limit_choices_to={"target": Validator.FIELD},
         on_delete=models.PROTECT,
     )
+    objects = NaturalKeyModelManager()
 
     def __str__(self):
         return self.name

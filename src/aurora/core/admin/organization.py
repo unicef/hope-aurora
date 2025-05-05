@@ -42,7 +42,9 @@ class OrganizationAdmin(SyncMixin, AdminAutoCompleteSearchMixin, LinkedObjectsMi
     def admin_sync_show_inspect(self) -> bool:
         return True
 
-    def get_readonly_fields(self, request: "HttpRequest", obj: "Organization|None" = None) -> list[str]:
+    def get_readonly_fields(
+        self, request: "HttpRequest", obj: "Organization|None" = None
+    ) -> list[str] | tuple[str, ...]:
         ro = super().get_readonly_fields(request, obj)
         if obj and obj.pk:
             ro = list(ro) + ["slug"]

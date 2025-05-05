@@ -11,12 +11,12 @@ import sys
 import time
 import unicodedata
 from collections import deque
-from collections.abc import Mapping
 from functools import wraps
 from hashlib import md5
 from itertools import chain
 from pathlib import Path
 from sys import getsizeof, stderr
+from typing import Mapping, Any
 
 import faker
 import qrcode
@@ -465,7 +465,7 @@ def get_session_id(request=None):
 
 
 def flatten_dict(d, parent_key="", sep="_") -> dict:
-    items = []
+    items: list[tuple[str, Any]] = []
     if isinstance(d, dict):
         for k, v in d.items():
             new_key = parent_key + sep + k if parent_key else k

@@ -9,7 +9,13 @@ from django.utils import formats
 from django.utils.translation import gettext as _
 
 from .fields.widgets import JavascriptEditor
+
 from .version_media import VersionMedia
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .models import CustomFieldType
 
 
 class ValidatorForm(forms.ModelForm):
@@ -21,7 +27,7 @@ class Select2Widget(forms.Select):
 
 
 class CustomFieldMixin:
-    custom = None
+    custom: "CustomFieldType"
 
 
 class FlexFormBaseForm(forms.Form):
@@ -115,7 +121,7 @@ class SmartBaseFormSet(BaseFormSet):
 
 
 class FormWithDefault(forms.Form):
-    defaults: dict[str, str]
+    defaults: dict[str, str | bool | int]
 
 
 class DateFormatsForm(FormWithDefault, forms.Form):
