@@ -29,7 +29,7 @@ class ProjectAdmin(SyncMixin, AdminAutoCompleteSearchMixin, LinkedObjectsMixin, 
     mptt_indent_field = "name"
     search_fields = ("name_deterministic",)
     protocol_class = AuroraSyncProjectProtocol
-    autocomplete_fields = "parent, "
+    autocomplete_fields = ["parent"]
 
     def get_queryset(self, request: "HttpRequest") -> "QuerySet[Project]":
         return (
@@ -41,7 +41,7 @@ class ProjectAdmin(SyncMixin, AdminAutoCompleteSearchMixin, LinkedObjectsMixin, 
             .select_related("organization")
         )
 
-    def get_readonly_fields(self, request: "HttpRequest", obj: "Project|None" = None) -> list[str]:
+    def get_readonly_fields(self, request: "HttpRequest", obj: "Project|None" = None) -> list[str] | tuple[str, ...]:
         ro = super().get_readonly_fields(request, obj)
         if obj and obj.pk:
             ro = list(ro) + ["slug"]

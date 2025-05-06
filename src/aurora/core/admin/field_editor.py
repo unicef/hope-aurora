@@ -185,12 +185,12 @@ class FieldEditor:
         code = Template(
             '{% for field in form %}{% spaceless %}{% include "smart/_fieldset.html" %}{% endspaceless %}{% endfor %}'
         ).render(Context(ctx))
-        formatter = formatter.HTMLFormatter(indent=2)
+        formatter1 = formatter.HTMLFormatter(indent=2)
         soup = BeautifulSoup(code, "lxml")
-        pretty_html = soup.prettify(formatter=formatter)
+        pretty_html = soup.prettify(formatter=formatter1)
 
-        formatter = HtmlFormatter(style="default", full=True)
-        ctx["code"] = highlight(pretty_html, HtmlLexer(), formatter)
+        formatter2 = HtmlFormatter(style="default", full=True)
+        ctx["code"] = highlight(pretty_html, HtmlLexer(), formatter2)
         return render(
             self.request,
             "admin/core/flexformfield/field_editor/code.html",

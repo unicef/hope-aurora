@@ -3,6 +3,7 @@ from django.utils.translation import gettext as _
 
 from .mixins import MultiValueWidgetMixin
 from .widgets import SmartTextWidget
+from .mixins import ConfigurableSmartField
 
 
 class DocumentCountryInput(SmartTextWidget):
@@ -32,7 +33,7 @@ class DocumentWidget(MultiValueWidgetMixin, forms.MultiWidget):
         return value.split(",") if value else [None, None]
 
 
-class DocumentField(forms.MultiValueField):
+class DocumentField(ConfigurableSmartField, forms.MultiValueField):
     widget = DocumentWidget
 
     def __init__(self, *args, **kwargs):

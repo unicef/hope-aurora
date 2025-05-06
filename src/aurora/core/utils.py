@@ -11,12 +11,12 @@ import sys
 import time
 import unicodedata
 from collections import deque
-from collections.abc import Mapping
 from functools import wraps
 from hashlib import md5
 from itertools import chain
 from pathlib import Path
 from sys import getsizeof, stderr
+from typing import Mapping, Any
 
 import faker
 import qrcode
@@ -36,6 +36,7 @@ from django.utils.functional import keep_lazy_text
 from django.utils.html import format_html
 from django.utils.text import slugify
 from django.utils.timezone import is_aware
+from flags.state import flag_enabled
 
 from aurora import VERSION
 from aurora.state import state
@@ -54,6 +55,7 @@ def has_token(request, *args, **kwargs):
 
 def is_root(request, *args, **kwargs):
     if hasattr(request, "user"):
+        # return flag_enabled("IS_ROOT")
         return request.user.is_superuser and has_token(request)
     return False
 
@@ -465,7 +467,7 @@ def get_session_id(request=None):
 
 
 def flatten_dict(d, parent_key="", sep="_") -> dict:
-    items = []
+    items: list[tuple[str, Any]] = []
     if isinstance(d, dict):
         for k, v in d.items():
             new_key = parent_key + sep + k if parent_key else k

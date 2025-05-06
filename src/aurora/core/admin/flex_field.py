@@ -9,7 +9,7 @@ from django import forms
 from django.contrib import messages
 from django.contrib.admin import register
 from django.core.cache import caches
-from django.db.models import JSONField, QuerySet
+from django.db.models import JSONField, QuerySet, Model
 from django.db.models.functions import Collate
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from jsoneditor.forms import JSONEditor
@@ -91,7 +91,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             .select_related("flex_form")
         )
 
-    def get_readonly_fields(self, request: "HttpRequest", obj: "FlexFormField|None" = None) -> list[str]:
+    def get_readonly_fields(self, request: "HttpRequest", obj: "Model|None" = None) -> list[str] | tuple[str]:
         return super().get_readonly_fields(request, obj) if is_root(request) else []
 
     def formfield_for_dbfield(self, db_field: "DBField", request: "HttpRequest", **kwargs) -> "FormField | None":
@@ -104,7 +104,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
     ) -> "TypedChoiceField|None":
         if db_field.name == "field_type":
             kwargs["widget"] = Select2Widget()
-            return db_field.formfield(**kwargs)
+            return db_field.formfield(**kwargs)  # type: ignore[return-value]
         return super().formfield_for_choice_field(db_field, request, **kwargs)
 
     def get_changeform_initial_data(self, request: "HttpRequest") -> dict[str, str | list[str]]:
@@ -112,7 +112,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
         initial.setdefault("advanced", FlexFormField.FLEX_FIELD_DEFAULT_ATTRS)
         return initial
 
-    @button(label="editor")
+    @button(label="editor")  # type: ignore[arg-type]
     def field_editor(self, request: "HttpRequest", pk: str) -> "HttpResponse":
         self.editor = FieldEditor(self, request, pk)
         if request.method == "POST":
@@ -121,7 +121,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             return ret
         return self.editor.get(request, pk)
 
-    @view()
+    @view()  # type: ignore[arg-type]
     def widget_attrs(self, request: "HttpRequest", pk: str) -> HttpResponse:
         try:
             editor = FieldEditor(self, request, pk)
@@ -130,7 +130,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             logger.exception(e)
             return HttpResponse("An internal error has occurred.")
 
-    @view()
+    @view()  # type: ignore[arg-type]
     def widget_refresh(self, request: "HttpRequest", pk: str) -> JsonResponse:
         try:
             editor = FieldEditor(self, request, pk)
@@ -139,7 +139,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             logger.exception(e)
             return JsonResponse({"Error": "An internal error has occurred."})
 
-    @view()
+    @view()  # type: ignore[arg-type]
     def widget_code(self, request: "HttpRequest", pk: str) -> HttpResponse:
         try:
             editor = FieldEditor(self, request, pk)
@@ -148,7 +148,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             logger.exception(e)
             return HttpResponse("An internal error has occurred.")
 
-    @view()
+    @view()  # type: ignore[arg-type]
     def widget_display(self, request: "HttpRequest", pk: str) -> HttpResponse:
         try:
             editor = FieldEditor(self, request, pk)
@@ -157,7 +157,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             logger.exception(e)
             return HttpResponse("An internal error has occurred.")
 
-    @button()
+    @button()  # type: ignore[arg-type]
     def test(self, request: "HttpRequest", pk: str) -> "HttpResponse":
         ctx = self.get_common_context(request, pk)
         try:
@@ -169,7 +169,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             form_class_attrs = {
                 "sample": instance,
             }
-            form_class = type(forms.Form)("TestForm", (forms.Form,), form_class_attrs)
+            form_class = type(forms.Form)("TestForm", (forms.Form,), form_class_attrs)  # type: ignore[misc]
 
             if request.method == "POST":
                 form = form_class(request.POST)

@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.utils.translation.trans_real import _active, _default, translation  # noqa
+from django.utils.translation.trans_real import _active, _default, translation  # type: ignore[attr-defined]
 
 from .engine import translator
 

@@ -1,5 +1,5 @@
 import json
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, reveal_type
 
 from django import forms
 from django.core.cache import caches
@@ -9,13 +9,16 @@ from django.shortcuts import render
 from django.template.loader import get_template
 from django.utils.functional import cached_property
 
+from admin_extra_buttons.mixins import ExtraButtonsMixin
 from aurora.core.admin.editor import FlexEditor
 from aurora.core.fields.widgets import JavascriptEditor
-from aurora.core.models import FlexForm
+from aurora.core.forms import FlexFormBaseForm
+from aurora.core.models import FlexForm, FlexFormField
 
 if TYPE_CHECKING:
     from django.contrib.admin import ModelAdmin
     from django.http import HttpRequest
+    from aurora.core.models import FlexFormForm
 
 
 cache = caches["default"]
@@ -42,7 +45,7 @@ class EventForm(AdvancendAttrsMixin, forms.Form):
     validation = forms.CharField(widget=JavascriptEditor(toolbar=True), required=False)
 
 
-DEFAULTS = {}
+DEFAULTS: dict[str, Any] = {}
 
 
 def get_initial(form: "FlexForm", prefix: str) -> dict[str, Any]:
@@ -55,7 +58,7 @@ class FormEditor:
         "events": EventForm,
     }
 
-    def __init__(self, modeladmin: "ModelAdmin", request: "HttpRequest", pk: str) -> None:
+    def __init__(self, modeladmin: "ExtraButtonsMixin", request: "HttpRequest", pk: str) -> None:
         self.modeladmin = modeladmin
         self.request = request
         self.pk = pk
@@ -66,11 +69,11 @@ class FormEditor:
         return FlexForm.objects.get(pk=self.pk)
 
     @cached_property
-    def patched_form(self) -> FlexForm:
+    def patched_form(self) -> "type[FlexFormBaseForm]":
         return self.flex_form.get_form_class()
 
     def get_configuration(self) -> "HttpResponse":
-        self.patched_form.get_instance()
+        # self.patched_form.get_instance()
         rendered = json.dumps(self.flex_form.advanced, indent=4)
         return HttpResponse(rendered, content_type="text/plain")
 
@@ -85,12 +88,12 @@ class FormEditor:
         ctx["form"] = self.flex_form.get_form_class()
         ctx["instance"] = instance
         code = get_template("smart/_form.html").render(ctx)
-        formatter = formatter.HTMLFormatter(indent=2)
-        soup = BeautifulSoup(code)
-        pretty_html = soup.prettify(formatter=formatter)
+        formatter1 = formatter.HTMLFormatter(indent=2)
+        soup = BeautifulSoup(code, features="lxml")
+        pretty_html = soup.prettify(formatter=formatter1)
 
-        formatter = HtmlFormatter(style="default", full=True)
-        ctx["code"] = highlight(pretty_html, HtmlLexer(), formatter)
+        formatter2 = HtmlFormatter(style="default", full=True)
+        ctx["code"] = highlight(pretty_html, HtmlLexer(), formatter2)
         return render(
             self.request,
             "admin/core/flexformfield/field_editor/code.html",

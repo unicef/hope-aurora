@@ -1,6 +1,7 @@
 from django import forms
 
 from aurora.core.fields.widgets.mixins import SmartWidgetMixin
+from .mixins import ConfigurableSmartField
 
 
 class MultiCheckboxWidget(SmartWidgetMixin, forms.CheckboxSelectMultiple):
@@ -14,5 +15,5 @@ class MultiCheckboxWidget(SmartWidgetMixin, forms.CheckboxSelectMultiple):
         return ret
 
 
-class MultiCheckboxField(forms.MultipleChoiceField):
+class MultiCheckboxField(ConfigurableSmartField, forms.MultipleChoiceField):
     widget = MultiCheckboxWidget

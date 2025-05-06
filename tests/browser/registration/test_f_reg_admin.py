@@ -1,12 +1,13 @@
 from typing import TYPE_CHECKING
+from unittest import mock
 
 import pytest
 from django.urls import reverse
-from testutils.factories import FlexFormFieldFactory, FormFactory, OptionSetFactory, RegistrationFactory
+from testutils.factories import FlexFormFieldFactory, FormFactory, OptionSetFactory, RegistrationFactory, RecordFactory
 from testutils.selenium import AuroraTestBrowser
 
 from aurora.core import fields
-from aurora.registration.models import Registration
+from aurora.registration.models import Registration, Record
 
 if TYPE_CHECKING:
     from aurora.core.models import OptionSet
@@ -81,6 +82,11 @@ UA33;UA03;Admin3.1\r
     )
 
 
+@pytest.fixture
+def records(registration):
+    return RecordFactory.create_batch(1000, registration=registration)
+
+
 def test_changelist(mock_state, browser: AuroraTestBrowser, registration):
     url = reverse("admin:registration_registration_changelist")
     browser.login()
@@ -150,3 +156,32 @@ def test_menu_admin_clone_deep(mock_state, browser: AuroraTestBrowser, registrat
     cloned: Registration = Registration.objects.filter(title="Cloned Registration").first()
     assert cloned
     assert cloned.flex_form != registration.flex_form
+
+
+def test_menu_admin_debug(mock_state, browser: AuroraTestBrowser, registration):
+    url = reverse("admin:registration_registration_change", args=[registration.pk])
+    browser.login()
+    browser.open(url)
+    browser.select_option_by_text("#btn-admin", "Debug")
+    assert browser.is_text_visible("Debug Registration", selector="#content")
+    browser.click("input[type=submit]")
+
+
+def test_menu_data_charts(mock_state, browser: AuroraTestBrowser, registration):
+    url = reverse("admin:registration_registration_change", args=[registration.pk])
+    browser.login()
+    browser.open(url)
+    browser.select_option_by_text("#btn-data", "Charts")
+    assert browser.is_text_visible(registration.name, selector=".breadcrumbs")
+
+
+def test_menu_data_inspect_data(mock_state, browser: AuroraTestBrowser, records: list[Record]):
+    registration = records[0].registration
+    url = reverse("admin:registration_registration_change", args=[registration.pk])
+    with mock.patch("aurora.registration.admin.registration.is_root", return_value=True):
+        browser.login()
+        browser.open(url)
+        browser.select_option_by_text("#btn-data", "Inspect Data")
+        browser.type("#date_start", records[0].timestamp.strftime("%Y-%m-%d"))
+        browser.type("#date_end", records[0].timestamp.strftime("%Y-%m-%d"))
+        browser.click("#refresh")

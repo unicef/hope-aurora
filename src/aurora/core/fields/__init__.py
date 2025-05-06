@@ -1,35 +1,54 @@
+from typing import Any
+
 from django import forms
 from django.forms.fields import CharField, DateField
 
-from . import widgets  # noqa
-from .captcha import CaptchaField  # noqa
-from .compilation_time import CompilationTimeField  # noqa
-from .document import DocumentField  # noqa
-from .file import SmartFileField  # noqa
-from .gis import LocationField  # noqa
-from .hidden import HiddenField  # noqa
-from .label import LabelOnlyField  # noqa
-from .mixins import SmartFieldMixin  # noqa
-from .multi_checkbox import MultiCheckboxField  # noqa
-from .radio import RadioField, YesNoChoice, YesNoRadio  # noqa
-from .remote_ip import RemoteIpField  # noqa
-from .select import AjaxSelectField, SelectField, SmartSelectWidget  # noqa
-from .uba import UBANameEnquiryField  # noqa
-from .webcam import WebcamField  # noqa
+from . import widgets
+from .captcha import CaptchaField
+from .compilation_time import CompilationTimeField
+from .document import DocumentField
+from .file import SmartFileField
+from .gis import LocationField
+from .hidden import HiddenField
+from .label import LabelOnlyField
+from .mixins import SmartFormField, ConfigurableSmartField
+from .multi_checkbox import MultiCheckboxField
+from .radio import RadioField, YesNoChoice, YesNoRadio
+from .remote_ip import RemoteIpField
+from .select import AjaxSelectField, SelectField, SmartSelectWidget
+from .uba import UBANameEnquiryField
+from .webcam import WebcamField
+from .django import (
+    BooleanField,
+    CharField,
+    ChoiceField,
+    DateField,
+    DateTimeField,
+    DurationField,
+    EmailField,
+    FloatField,
+    GenericIPAddressField,
+    ImageField,
+    IntegerField,
+    MultipleChoiceField,
+    NullBooleanField,
+    TimeField,
+    URLField,
+)
 
-WIDGET_FOR_FORMFIELD_DEFAULTS = {
-    forms.DateField: {"widget": widgets.SmartDateWidget},
-    forms.CharField: {
+WIDGET_FOR_FORMFIELD_DEFAULTS: dict[type[ConfigurableSmartField], dict[str, Any]] = {
+    # weird issues from mypy. does not recognize it as ConfigurableSmartField
+    CharField: {  # type: ignore [dict-item]
         "widget": widgets.SmartTextWidget,
         "max_length": 200,
         "strip": True,
     },
-    forms.BooleanField: {"widget": widgets.BooleanWidget},
-    forms.EmailField: {"widget": widgets.EmailWidget},
-    forms.IntegerField: {"widget": widgets.NumberWidget},
-    forms.FloatField: {"widget": widgets.NumberWidget},
-    forms.ChoiceField: {"widget": SmartSelectWidget},
-    forms.ImageField: {"widget": widgets.ImageWidget},
+    BooleanField: {"widget": widgets.BooleanWidget},
+    EmailField: {"widget": widgets.EmailWidget},
+    IntegerField: {"widget": widgets.NumberWidget},
+    FloatField: {"widget": widgets.NumberWidget},
+    ChoiceField: {"widget": SmartSelectWidget},
+    ImageField: {"widget": widgets.ImageWidget},
     # forms.FileField: {"widget": widgets.UploadFileWidget},
     SelectField: {"widget": SmartSelectWidget},
     RadioField: {"widget": widgets.RadioWidget},
@@ -38,4 +57,12 @@ WIDGET_FOR_FORMFIELD_DEFAULTS = {
     # MultiCheckboxField: {"widget": widgets.MultiCheckboxWidget},
 }
 
-__all__ = ["CharField", "DateField", "CompilationTimeField", "SmartFileField"]
+__all__ = [
+    "CharField",
+    "CompilationTimeField",
+    "DateField",
+    "IntegerField",
+    "SmartFileField",
+    "SmartFormField",
+    "WIDGET_FOR_FORMFIELD_DEFAULTS",
+]

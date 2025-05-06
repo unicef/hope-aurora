@@ -1,10 +1,19 @@
 import logging
-from typing import Any
+from typing import Any, TypeAlias, Mapping
 
 from constance import config
-from django.forms import ChoiceField, HiddenInput, TextInput, Textarea
+from django.core.files.uploadedfile import UploadedFile
+from django.forms import ChoiceField, HiddenInput, TextInput, Textarea, Widget
 from django.template import Context, Template
+from django.utils.datastructures import MultiValueDict
 from django.utils.safestring import SafeString, mark_safe
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    _DataT: TypeAlias = Mapping[str, Any]  # noqa: PYI047
+
+    _FilesT: TypeAlias = MultiValueDict[str, UploadedFile]  # noqa: PYI047
 
 logger = logging.getLogger(__name__)
 
@@ -25,11 +34,11 @@ class ObfuscatedInput(HiddenInput):
         return mark_safe(tpl.render(Context(context)))  # noqa: S308
 
 
-class WriteOnlyWidget:
+class WriteOnlyWidget(Widget):
     def format_value(self, value: Any) -> str:
         return super().format_value("***")
 
-    def value_from_datadict(self, data: dict[str, Any], files: Any, name: str) -> Any:
+    def value_from_datadict(self, data: "_DataT", files: "_FilesT", name: str) -> Any:
         value = data.get(name)
         if value == "***":
             return getattr(config, name)

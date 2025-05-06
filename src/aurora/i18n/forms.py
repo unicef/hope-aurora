@@ -20,7 +20,7 @@ class ImportForm(forms.Form):
 
 
 class TemplateForm(forms.Form):
-    locale = forms.ChoiceField(choices=(["-", _("Any Language")],) + settings.LANGUAGES)
+    locale = forms.ChoiceField(choices=(("-", _("Any Language")),) + settings.LANGUAGES)
 
 
 class ImportLanguageForm(forms.Form):

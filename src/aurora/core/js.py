@@ -41,11 +41,11 @@ class JsValidator:
             if isinstance(ret, str):
                 raise ValidationError(_(ret))
             if isinstance(ret, list | tuple):
-                errors = [_(v) for v in ret]
-                raise ValidationError(errors)
+                error_list = [_(v) for v in ret]
+                raise ValidationError(error_list)
             if isinstance(ret, dict):
-                errors = {k: _(v) for (k, v) in ret.items()}
-                raise ValidationError(errors)
+                errors_dict = {k: _(v) for (k, v) in ret.items()}
+                raise ValidationError(errors_dict)
         except Exception as e:
             logger.exception(e)
             raise

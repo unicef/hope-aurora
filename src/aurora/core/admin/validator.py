@@ -18,6 +18,7 @@ from .base import ConcurrencyVersionAdmin
 
 if TYPE_CHECKING:
     from django.http import HttpRequest, HttpResponse
+    from ...types.http import AuthHttpRequest
 
 
 logger = logging.getLogger(__name__)
@@ -33,7 +34,7 @@ class ValidatorTestForm(forms.Form):
 
 
 @register(Validator)
-class ValidatorAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
+class ValidatorAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin[Validator]):
     form = ValidatorForm
     list_editable = ("trace", "active", "draft")
     list_display = ("label", "name", "target", "used_by", "trace", "active", "draft")
@@ -56,7 +57,7 @@ class ValidatorAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartMod
     change_form_template = None
     inlines = []
 
-    def save_model(self, request: "HttpRequest", obj: Validator, form: Any, change: Any) -> None:
+    def save_model(self, request: "AuthHttpRequest", obj: Validator, form: Any, change: Any) -> None:
         super().save_model(request, obj, form, change)
         cache.set(f"validator-{request.user.pk}-{obj.pk}-status", obj.STATUS_UNKNOWN)
 
@@ -73,7 +74,7 @@ class ValidatorAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartMod
             return ", ".join(obj.script_for.values_list("name", flat=True))
         return None
 
-    @button()
+    @button()  # type: ignore[arg-type]
     def test(self, request: "HttpRequest", pk: str) -> "HttpResponse":
         ctx = self.get_common_context(request, pk)
         original = ctx["original"]

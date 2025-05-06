@@ -15,6 +15,7 @@ from requests.exceptions import MissingSchema, ReadTimeout
 from aurora.core.fields.mixins import MultiValueWidgetMixin
 from aurora.core.fields.widgets import SmartTextWidget
 from aurora.core.version_media import VersionMedia
+from .mixins import ConfigurableSmartField
 
 if TYPE_CHECKING:
     from aurora.core.models import FlexFormField
@@ -1336,7 +1337,7 @@ class UBANameEnquiryMultiWidget(MultiValueWidgetMixin, MultiWidget):
         )
 
 
-class UBANameEnquiryField(forms.MultiValueField):
+class UBANameEnquiryField(ConfigurableSmartField, forms.MultiValueField):
     widget = UBANameEnquiryMultiWidget
     flex_field: "FlexFormField"
 

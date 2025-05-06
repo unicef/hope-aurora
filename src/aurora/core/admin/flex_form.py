@@ -115,26 +115,26 @@ class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
     def is_main(self, obj: FlexForm) -> bool:
         return obj.registration_set.exists()
 
-    is_main.boolean = True
+    is_main.boolean = True  # type: ignore[attr-defined]
 
-    @button(html_attrs={"class": "aeb-danger"})
-    def invalidate_cache(self, request: "HttpRequest") -> "HttpResponse":
+    @button(html_attrs={"class": "aeb-danger"})  # type: ignore[arg-type]
+    def invalidate_cache(self, request: "HttpRequest") -> "HttpResponse":  # type: ignore[return]
         from ..cache import cache
 
         cache.clear()
 
-    @button(label="invalidate cache", html_attrs={"class": "aeb-warn"})
-    def invalidate_cache_single(self, request: "HttpRequest", pk: str) -> "HttpResponse":
+    @button(label="invalidate cache", html_attrs={"class": "aeb-warn"})  # type: ignore[arg-type]
+    def invalidate_cache_single(self, request: "HttpRequest", pk: str) -> "HttpResponse":  # type: ignore[return]
         obj = self.get_object(request, pk)
         obj.save()
 
-    @button()
+    @button()  # type: ignore[arg-type]
     def inspect(self, request: HttpRequest, pk: str) -> "HttpResponse":
         ctx = self.get_common_context(request, pk)
         ctx["title"] = str(ctx["original"])
         return render(request, "admin/core/flexform/inspect.html", ctx)
 
-    @button(label="editor")
+    @button(label="editor")  # type: ignore[arg-type]
     def form_editor(self, request: HttpRequest, pk: str) -> "HttpResponse":
         self.editor = FormEditor(self, request, pk)
         if request.method == "POST":
@@ -143,27 +143,27 @@ class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
             return ret
         return self.editor.get(request, pk)
 
-    @view()
+    @view()  # type: ignore[arg-type]
     def widget_attrs(self, request: HttpRequest, pk: str) -> "HttpResponse":
         editor = FormEditor(self, request, pk)
         return editor.get_configuration()
 
-    @view()
+    @view()  # type: ignore[arg-type]
     def widget_refresh(self, request: HttpRequest, pk: str) -> "HttpResponse":
         editor = FormEditor(self, request, pk)
         return editor.refresh()
 
-    @view()
+    @view()  # type: ignore[arg-type]
     def widget_code(self, request: HttpRequest, pk: str) -> "HttpResponse":
         editor = FormEditor(self, request, pk)
         return editor.get_code()
 
-    @view()
+    @view()  # type: ignore[arg-type]
     def widget_display(self, request: HttpRequest, pk: str) -> "HttpResponse":
         editor = FormEditor(self, request, pk)
         return editor.render()
 
-    @button()
+    @button()  # type: ignore[arg-type]
     def test(self, request: HttpRequest, pk: str) -> "HttpResponse":
         ctx = self.get_common_context(request, pk)
         form_class = self.object.get_form_class()

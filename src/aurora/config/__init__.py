@@ -2,7 +2,6 @@ import uuid
 from typing import Any
 from urllib.parse import urlencode, urlparse
 
-from environ import Env
 from smart_env import SmartEnv
 
 from aurora.core.flags import parse_bool
@@ -105,7 +104,7 @@ OPTIONS = {
 
 class SmartEnv2(SmartEnv):
     def cache_url(
-        self, var: str = Env.DEFAULT_CACHE_ENV, default: str = Env.NOTSET, backend: Any = None
+        self, var: str = SmartEnv.DEFAULT_CACHE_ENV, default: str = SmartEnv.NOTSET, backend: Any = None
     ) -> dict[str, Any]:
         v = self.str(var, default)
         if v.startswith("redisraw://"):

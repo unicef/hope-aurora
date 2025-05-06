@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class Config(AppConfig):
     name = "aurora.core"
 
-    def ready(self):
+    def ready(self) -> None:
         from aurora.core.models import CustomFieldType
         from aurora.core.registry import field_registry
 

@@ -2,7 +2,6 @@ import csv
 import logging
 from hashlib import md5
 from io import TextIOWrapper
-from typing import Never, Sequence
 from unittest.mock import Mock
 from urllib.parse import unquote
 
@@ -31,6 +30,11 @@ from ..state import state
 from .engine import translator
 from .forms import ImportLanguageForm, LanguageForm
 from .models import Message
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from django.utils.datastructures import _ListOrTuple
 
 logger = logging.getLogger(__name__)
 
@@ -70,9 +74,9 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
             {"fields": (("md5", "msgcode"),)},
         ),
     )
-    actions = ["approve", "rehash", "publish_action"]
+    actions = ("approve", "rehash", "publish_action")
 
-    def approve(self, request: HttpRequest, queryset: QuerySet[Message]) -> Never:
+    def approve(self, request: HttpRequest, queryset: QuerySet[Message]) -> None:
         num = queryset.update(draft=False)
         self.message_user(request, f"{num} Messages have been approved")
 
@@ -85,7 +89,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
             )
         )
 
-    @button()
+    @button()  # type: ignore[arg-type]
     def import_translations(self, request: HttpRequest) -> HttpResponse:
         ctx = self.get_common_context(request, media=self.media, title="Import Translations File", pre={}, post={})
         ctx["rows"] = []
@@ -142,7 +146,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
                         )
                     else:
                         ctx["language_code"] = form.cleaned_data["locale"]
-                        ctx["language"] = dict(form.fields["locale"].choices)[ctx["language_code"]]
+                        ctx["language"] = dict(form.fields["locale"].choices)[ctx["language_code"]]  # type: ignore[attr-defined]
                         rows = TextIOWrapper(csv_file, encoding="utf-8")
                         rows.seek(0)
                         config = {**opts_form.cleaned_data}
@@ -186,7 +190,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
         ctx["opts_form"] = opts_form
         return render(request, "admin/i18n/message/import_trans.html", ctx)
 
-    @button()
+    @button()  # type: ignore[arg-type]
     def check_orphans(self, request: HttpRequest) -> HttpResponse | None:
         ctx = self.get_common_context(request, media=self.media, title="Check Orphans", pre={}, post={})
         if request.method == "POST":
@@ -230,7 +234,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
             ctx["form"] = form
         return render(request, "admin/i18n/message/check_orphans.html", ctx)
 
-    @view()
+    @view()  # type: ignore[arg-type]
     def get_or_create(self, request: HttpRequest) -> HttpResponse:
         if request.method == "POST":
             msgid = unquote(request.POST["msgid"])
@@ -249,20 +253,20 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
 
         return HttpResponseRedirect(cl)
 
-    def rehash(self, request: HttpRequest, queryset: QuerySet) -> Never:
+    def rehash(self, request: HttpRequest, queryset: QuerySet) -> None:
         num = 0
         for m in queryset.all():
             m.save()
             num += 1
         self.message_user(request, f"{num} Messages have been rehashed")
 
-    @button()
+    @button()  # type: ignore[arg-type]
     def siblings(self, request: HttpRequest, pk: str) -> HttpResponse:
         obj = self.get_object(request, pk)
         cl = reverse("admin:i18n_message_changelist")
         return HttpResponseRedirect(f"{cl}?msgcode__exact={obj.msgcode}")
 
-    @button(label="Create Translation")
+    @button(label="Create Translation")  # type: ignore[arg-type]
     def create_translation_single(self, request: HttpRequest, pk: str) -> HttpResponse:
         ctx = self.get_common_context(
             request,
@@ -292,7 +296,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
             ctx["form"] = form
         return render(request, "admin/i18n/message/translation.html", ctx)
 
-    @button()
+    @button()  # type: ignore[arg-type]
     def create_translations(self, request: HttpRequest) -> HttpResponse:
         ctx = self.get_common_context(
             request,
@@ -333,7 +337,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
             ctx["form"] = form
         return render(request, "admin/i18n/message/translation.html", ctx)
 
-    def get_readonly_fields(self, request: HttpRequest, obj: Model | None = None) -> Sequence[str]:
+    def get_readonly_fields(self, request: HttpRequest, obj: Model | None = None) -> "_ListOrTuple[str]":
         if obj:
             return ("msgid",) + self.readonly_fields
         return self.readonly_fields

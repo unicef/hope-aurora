@@ -21,7 +21,7 @@ SECRET_KEY = env("SECRET_KEY")
 FERNET_KEY = env("FERNET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env("DEBUG")
+DEBUG: bool = env("DEBUG")
 DEBUG_PROPAGATE_EXCEPTIONS = env("DEBUG_PROPAGATE_EXCEPTIONS")
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")

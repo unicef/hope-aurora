@@ -329,7 +329,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
 
     @view()
     def debug(self, request, pk):
-        ctx = self.get_common_context(request, pk)
+        ctx = self.get_common_context(request, pk, title="Debug Registration")
         if request.method == "POST":
             form = DebugForm(request.POST)
             if form.is_valid():
@@ -619,7 +619,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
         obj = self.get_object(request, pk)
         return HttpResponseRedirect(
             reverse(
-                "charts:registration",
+                "charts:monthly",
                 args=[obj.project.organization.slug, obj.project.pk, pk],
             )
         )

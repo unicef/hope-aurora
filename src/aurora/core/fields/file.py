@@ -2,6 +2,7 @@ from django import forms
 from django.conf import settings
 
 from aurora.i18n.get_text import gettext as _
+from .mixins import ConfigurableSmartField
 
 
 class UploadFileWidget(forms.ClearableFileInput):
@@ -36,7 +37,7 @@ class UploadFileWidget(forms.ClearableFileInput):
         )
 
 
-class SmartFileField(forms.FileField):
+class SmartFileField(ConfigurableSmartField, forms.FileField):
     widget = UploadFileWidget
     default_error_messages = {
         "invalid": _("No file was submitted. Check the encoding type on the form."),

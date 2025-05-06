@@ -1,28 +1,32 @@
 import logging
 from collections import OrderedDict
 from functools import wraps
+from typing import Any, TypeVar
 
 from aurora.state import state
+
+from typing import TYPE_CHECKING
+
 
 logger = logging.getLogger(__name__)
 
 
 class Cache(OrderedDict):
-    def __init__(self, *args, **kwds):
+    def __init__(self, *args, **kwds) -> None:
         self.size_limit = kwds.pop("size", None)
         OrderedDict.__init__(self, *args, **kwds)
         self._check_size_limit()
 
-    def __setitem__(self, key, value):
-        OrderedDict.__setitem__(self, key, value)
+    def __setitem__(self, key: str, value: "Any") -> None:
+        OrderedDict.__setitem__(self, key, value)  # type: ignore[assignment]
         self._check_size_limit()
 
-    def _check_size_limit(self):
+    def _check_size_limit(self) -> None:
         if self.size_limit is not None:
             while len(self) > self.size_limit:
                 self.popitem(last=False)
 
-    def clear(self):
+    def clear(self) -> None:
         while len(self) > 0:
             self.popitem(last=False)
 
