@@ -1,3 +1,5 @@
+from typing import Any
+
 from django import forms
 from django.forms.fields import CharField, DateField
 
@@ -9,7 +11,7 @@ from .file import SmartFileField
 from .gis import LocationField
 from .hidden import HiddenField
 from .label import LabelOnlyField
-from .mixins import SmartFormField
+from .mixins import SmartFormField, ConfigurableSmartField
 from .multi_checkbox import MultiCheckboxField
 from .radio import RadioField, YesNoChoice, YesNoRadio
 from .remote_ip import RemoteIpField
@@ -34,9 +36,9 @@ from .django import (
     URLField,
 )
 
-WIDGET_FOR_FORMFIELD_DEFAULTS = {
-    DateField: {"widget": widgets.SmartDateWidget},
-    CharField: {
+WIDGET_FOR_FORMFIELD_DEFAULTS: dict[type[ConfigurableSmartField], dict[str, Any]] = {
+    # weird issues from mypy. does not recognize it as ConfigurableSmartField
+    CharField: {  # type: ignore [dict-item]
         "widget": widgets.SmartTextWidget,
         "max_length": 200,
         "strip": True,
@@ -55,4 +57,12 @@ WIDGET_FOR_FORMFIELD_DEFAULTS = {
     # MultiCheckboxField: {"widget": widgets.MultiCheckboxWidget},
 }
 
-__all__ = ["CharField", "DateField", "CompilationTimeField", "SmartFileField"]
+__all__ = [
+    "CharField",
+    "CompilationTimeField",
+    "DateField",
+    "IntegerField",
+    "SmartFileField",
+    "SmartFormField",
+    "WIDGET_FOR_FORMFIELD_DEFAULTS",
+]

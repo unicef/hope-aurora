@@ -13,8 +13,8 @@ if TYPE_CHECKING:
 
 
 class I18NModel:
-    I18N_FIELDS = []
-    I18N_ADVANCED = []
+    I18N_FIELDS: list[str] = []
+    I18N_ADVANCED: list[str] = []
 
 
 class Message(NaturalKeyModel):
@@ -23,7 +23,7 @@ class Message(NaturalKeyModel):
     msgid = models.TextField(db_index=True, help_text="Original message value")
     msgstr = models.TextField(blank=True, null=True, help_text="Localized Message content.")
 
-    md5: str = models.CharField(
+    md5 = models.CharField(
         verbose_name=_("MD5"),
         max_length=512,
         null=False,
@@ -31,7 +31,7 @@ class Message(NaturalKeyModel):
         unique=True,
         help_text="Localised code of the message",
     )
-    msgcode: str = models.CharField(
+    msgcode = models.CharField(
         verbose_name=_("Code"),
         max_length=512,
         null=False,

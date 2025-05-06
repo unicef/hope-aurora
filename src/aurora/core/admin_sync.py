@@ -12,7 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 
 class SyncMixin(SyncMixin_, admin.ModelAdmin):
-    actions = ("publish_action",)
+    actions: tuple[str, ...] = ("publish_action",)
     UPDATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
     @view(  # type: ignore[arg-type]

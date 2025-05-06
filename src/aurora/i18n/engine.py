@@ -16,7 +16,7 @@ cache = caches["default"]
 class Dictionary:
     def __init__(self, locale: str) -> None:
         self.locale = locale
-        self.messages = {}
+        self.messages: dict[str, str] = {}
         self._loaded = False
 
     def reset(self) -> None:
@@ -62,7 +62,7 @@ class Dictionary:
 class Cache:
     def __init__(self) -> None:
         self.locales: dict[str, Dictionary] = {}
-        self.active_locale = None
+        self.active_locale: str | None = None
 
     def reset(self) -> None:
         for locale in self.locales.values():

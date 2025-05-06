@@ -5,6 +5,7 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.forms import BaseFormSet
+from django.forms.utils import ErrorList
 from django.utils import formats
 from django.utils.translation import gettext as _
 
@@ -15,7 +16,7 @@ from .version_media import VersionMedia
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .models import CustomFieldType
+    from .models import CustomFieldType, FormSet
 
 
 class ValidatorForm(forms.ModelForm):
@@ -85,7 +86,10 @@ class FlexFormBaseForm(forms.Form):
 
 
 class SmartBaseFormSet(BaseFormSet):
-    def non_form_errors(self):
+    fs: "FormSet"
+    required: bool
+
+    def non_form_errors(self) -> "ErrorList":
         return super().non_form_errors()
 
     def clean(self):

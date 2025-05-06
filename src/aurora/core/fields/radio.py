@@ -5,7 +5,7 @@ from .widgets import RadioWidget, YesNoRadioWidget
 from .mixins import ConfigurableSmartField
 
 
-class RadioField(forms.ChoiceField):
+class RadioField(ConfigurableSmartField, forms.ChoiceField):
     widget: type[RadioSelect] = RadioWidget
 
 

@@ -13,7 +13,7 @@ from .widgets.selected import AjaxSelectWidget, SmartSelectWidget
 logger = logging.getLogger(__name__)
 
 
-class SelectField(forms.ChoiceField):
+class SelectField(ConfigurableSmartField, forms.ChoiceField):
     widget = SmartSelectWidget
 
     def __init__(self, **kwargs):

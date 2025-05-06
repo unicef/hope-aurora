@@ -31,10 +31,9 @@ from strategy_field.utils import fqn
 from ..i18n.get_text import gettext as _
 from ..i18n.models import I18NModel
 from ..state import state
-from . import fields
 from .compat import RegexField, StrategyClassField
-from .fields import WIDGET_FOR_FORMFIELD_DEFAULTS, SmartFormField
-from .fields.mixins import TailWindMixin
+from .fields import WIDGET_FOR_FORMFIELD_DEFAULTS, SmartFormField, CharField, IntegerField, DateField
+from .fields.mixins import TailWindMixin, ConfigurableSmartField
 from .forms import CustomFieldMixin, FlexFormBaseForm, SmartBaseFormSet
 from .js import DukPYValidator
 from .registry import field_registry, form_registry, import_custom_field
@@ -96,7 +95,7 @@ class Project(AdminReverseMixin, NaturalKeyModel, MPTTModel):
     _natural_key = ("slug", "organization")
 
     version = AutoIncVersionField()
-    last_update_date: datetime = models.DateTimeField(auto_now=True)
+    last_update_date = models.DateTimeField(auto_now=True)
 
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=100, blank=True)
@@ -454,20 +453,20 @@ class FormSet(AdminReverseMixin, NaturalKeyModel, OrderableModel):
 
 
 FIELD_KWARGS = {
-    forms.CharField: {
+    CharField: {
         "min_length": None,
         "max_length": None,
         "empty_value": "",
         "initial": None,
     },
-    forms.IntegerField: {"min_value": None, "max_value": None, "initial": None},
-    forms.DateField: {"initial": None},
-    fields.LocationField: {},
-    fields.RemoteIpField: {},
-    fields.AjaxSelectField: {},
-    fields.SmartFileField: {},
-    fields.SelectField: {},
-    fields.WebcamField: {},
+    IntegerField: {"min_value": None, "max_value": None, "initial": None},
+    DateField: {"initial": None},
+    # fields.LocationField: {},
+    # fields.RemoteIpField: {},
+    # fields.AjaxSelectField: {},
+    # fields.SmartFileField: {},
+    # fields.SelectField: {},
+    # fields.WebcamField: {},
 }
 
 
@@ -559,16 +558,17 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
         return self.advanced.get("kwargs", {}).get("default_value", None)
 
     def get_field_kwargs(self) -> dict[str, Any]:
+        field_type: "type[ConfigurableSmartField]"
         if self.field_type is None:
             raise AttributeError("Field type has not been set")
         if isclass(self.field_type) and issubclass(self.field_type, CustomFieldMixin):
-            custom_field = self.field_type.custom
+            custom_field = self.field_type.custom  # type: ignore[attr-defined]
+            field_type = custom_field.base_type
             advanced = self.advanced.copy()
             smart_attrs = advanced.pop("smart", {}).copy()
             widget_kwargs = self.advanced.get("widget_kwargs", {}).copy()
             events = self.advanced.get("events", {}).copy()
 
-            field_type = custom_field.base_type
             field_kwargs = custom_field.attrs.copy()
             if self.validator:
                 field_kwargs.setdefault("validators", get_validators(self))
@@ -580,11 +580,6 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
             field_kwargs.setdefault("required", self.required)
             regex = self.regex or custom_field.regex
         else:
-            # field_kwargs
-            # widget_kwargs
-            # widget_attrs
-            # smart_attrs
-            # data_attrs
             field_type = self.field_type
             advanced = self.advanced.copy()
             # backward compatibility code
@@ -624,10 +619,10 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
             return {}
         if field_type in WIDGET_FOR_FORMFIELD_DEFAULTS:
             field_kwargs = {**WIDGET_FOR_FORMFIELD_DEFAULTS[field_type], **field_kwargs}
-        elif issubclass(self.field_type.widget, TailWindMixin):
+        elif issubclass(field_type.widget, TailWindMixin):
             field_kwargs = {"widget": self.field_type.widget, **field_kwargs}
         else:
-            field_kwargs = {"widget": type("ss", (TailWindMixin, self.field_type.widget), {}), **field_kwargs}
+            field_kwargs = {"widget": type("ss", (TailWindMixin, field_type.widget), {}), **field_kwargs}
 
         if "datasource" in smart_attrs:
             field_kwargs["datasource"] = smart_attrs["datasource"]
@@ -658,14 +653,15 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
     def get_instance(self) -> SmartFormField | None:
         if self.field_type is None:
             return None
+        smart_field_type: type[SmartFormField]
         try:
             if isclass(self.field_type) and issubclass(self.field_type, CustomFieldMixin):
-                field_type = self.field_type.custom.base_type
+                smart_field_type = self.field_type.custom.base_type  # type: ignore[attr-defined]
             else:
-                field_type = self.field_type
+                smart_field_type = self.field_type
             kwargs = self.get_field_kwargs()
             kwargs.setdefault("flex_field", self)
-            tt = type(field_type.__name__, (SmartFormField, field_type), {})
+            tt = type(SmartFormField)(smart_field_type.__name__, (SmartFormField, smart_field_type), {})
             fld = tt(**kwargs)
         except Exception as e:
             logger.exception(e)
@@ -842,7 +838,7 @@ class CustomFieldType(AdminReverseMixin, NaturalKeyModel, models.Model):
         limit_choices_to={"target": Validator.FIELD},
         on_delete=models.PROTECT,
     )
-    objects = NaturalKeyModelManager()
+    objects = NaturalKeyModelManager()  # type: ignore[django-manager-missing]
 
     def __str__(self):
         return self.name

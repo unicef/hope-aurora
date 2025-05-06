@@ -1,9 +1,9 @@
 from decimal import Decimal
-from typing import Any, Iterable
+from typing import Any
 
 from django.template import Context, Library, Node, TemplateSyntaxError, Variable
-from django.template.base import Parser, Token, TokenType, render_value_in_context
-from django.template.defaulttags import token_kwargs
+from django.template.base import Parser, Token, TokenType, render_value_in_context, FilterExpression
+from django.template.base import token_kwargs
 from django.templatetags.static import static
 from django.utils import translation
 from django.utils.safestring import mark_safe
@@ -16,9 +16,17 @@ register = Library()
 
 class TranslateNode(Node):
     child_nodelists = ()
+    noop: bool
+    asvar: str | None
+    message_context: FilterExpression | None
+    filter_expression: FilterExpression
 
     def __init__(
-        self, filter_expression: Any, noop: Any, asvar: str | None = None, message_context: Context | None = None
+        self,
+        filter_expression: FilterExpression,
+        noop: bool,
+        asvar: str | None = None,
+        message_context: FilterExpression | None = None,
     ) -> None:
         self.noop = noop
         self.asvar = asvar
@@ -52,14 +60,23 @@ class TranslateNode(Node):
 
 
 class BlockTranslateNode(Node):
+    extra_context: dict[str, FilterExpression]
+    singular: list[Token]
+    plural: list[Token]
+    countervar: str | None
+    counter: FilterExpression | None
+    message_context: FilterExpression | None
+    trimmed: bool
+    asvar: str | None
+
     def __init__(
         self,
-        extra_context: dict[str, Any],
-        singular: str,
-        plural: str | None = None,
+        extra_context: dict[str, FilterExpression],
+        singular: list[Token],
+        plural: list[Token] | None = None,
         countervar: str | None = None,
-        counter: str | None = None,
-        message_context: Context | None = None,
+        counter: FilterExpression | None = None,
+        message_context: FilterExpression | None = None,
         trimmed: bool = False,
         asvar: str | None = None,
         tag_name: str = "blocktranslate",
@@ -74,7 +91,7 @@ class BlockTranslateNode(Node):
         self.asvar = asvar
         self.tag_name = tag_name
 
-    def render_token_list(self, tokens: Iterable[Token]) -> tuple[str, list[Variable]]:
+    def render_token_list(self, tokens: list[Token]) -> tuple[str, list[str]]:
         result = []
         variables = []
         for token in tokens:
@@ -100,7 +117,7 @@ class BlockTranslateNode(Node):
         context.update({var: val.resolve(context) for var, val in self.extra_context.items()})
         singular, variables = self.render_token_list(self.singular)
         if self.plural and self.countervar and self.counter:
-            count = self.counter.resolve(context)
+            count = int(self.counter.resolve(context))
             if not isinstance(count, Decimal | float | int):
                 raise TemplateSyntaxError("%r argument to %r tag must be a number." % (self.countervar, self.tag_name))
             context[self.countervar] = count
@@ -199,7 +216,7 @@ def do_translate(parser: Parser, token: Token) -> TranslateNode:
 
 @register.tag("blocktranslate")
 @register.tag("blocktrans")
-def do_block_translate(parser: Parser, token: Token) -> TranslateNode:  # noqa
+def do_block_translate(parser: Parser, token: Token) -> BlockTranslateNode:  # noqa
     """
     Translate a block of text with parameters.
 
@@ -244,7 +261,8 @@ def do_block_translate(parser: Parser, token: Token) -> TranslateNode:  # noqa
 
     options = {}
     remaining_bits = bits[1:]
-    asvar = None
+    asvar: str | None = None
+    value: str | dict | None | FilterExpression | bool
     while remaining_bits:
         option = remaining_bits.pop(0)
         if option in options:
@@ -260,7 +278,7 @@ def do_block_translate(parser: Parser, token: Token) -> TranslateNode:  # noqa
         elif option == "context":
             try:
                 value = remaining_bits.pop(0)
-                value = parser.compile_filter(value)
+                value: FilterExpression | None = parser.compile_filter(value)  # type: ignore[no-redef]
             except Exception:
                 raise TemplateSyntaxError('"context" in %r tag expected exactly one argument.' % bits[0]) from None
         elif option == "trimmed":
@@ -278,13 +296,13 @@ def do_block_translate(parser: Parser, token: Token) -> TranslateNode:  # noqa
         options[option] = value
 
     if "count" in options:
-        countervar, counter = next(iter(options["count"].items()))
+        countervar, counter = next(iter(options["count"].items()))  # type: ignore[union-attr]
     else:
         countervar, counter = None, None
-    message_context = options.get("context")
-    extra_context = options.get("with", {})
+    message_context: FilterExpression = options.get("context")  # type: ignore[assignment]
+    extra_context: dict[str, FilterExpression] = options.get("with", {})  # type: ignore[assignment]
 
-    trimmed = options.get("trimmed", False)
+    trimmed: bool = options.get("trimmed", False)  # type: ignore[assignment]
 
     singular = []
     plural = []

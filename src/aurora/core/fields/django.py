@@ -1,6 +1,6 @@
 from django import forms
-from .mixins import SmartFormField
 from .mixins import ConfigurableSmartField
+from .widgets import SmartDateWidget, SmartTextWidget
 
 
 class BooleanField(ConfigurableSmartField, forms.BooleanField):
@@ -8,7 +8,7 @@ class BooleanField(ConfigurableSmartField, forms.BooleanField):
 
 
 class CharField(ConfigurableSmartField, forms.CharField):
-    pass
+    widget = SmartTextWidget
 
 
 class ChoiceField(ConfigurableSmartField, forms.ChoiceField):
@@ -16,7 +16,7 @@ class ChoiceField(ConfigurableSmartField, forms.ChoiceField):
 
 
 class DateField(ConfigurableSmartField, forms.DateField):
-    pass
+    widget = SmartDateWidget
 
 
 class DateTimeField(ConfigurableSmartField, forms.DateTimeField):
