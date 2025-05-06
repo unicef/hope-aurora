@@ -9,4 +9,5 @@ FLAGS: dict[str, Any] = {
     "DEVELOP_DEBUG_TOOLBAR": [],
     "SENTRY_JAVASCRIPT": [],
     "I18N_COLLECT_MESSAGES": [],
+    "IS_ROOT": [],
 }

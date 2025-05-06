@@ -8,7 +8,7 @@
 
 {% block action-content %}
     <h1>This is a WIP - use carefully</h1>
-    <form method="post">
+    <form method="post" id="debug-form">
         {% csrf_token %}
         <table>
             {{ form }}

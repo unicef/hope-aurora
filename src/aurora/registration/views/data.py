@@ -6,6 +6,7 @@ from django.views.generic import TemplateView
 from sentry_sdk import set_tag
 
 from ..models import Registration
+from ...core.version_media import VersionMedia
 
 
 class RegistrationDataView(PermissionRequiredMixin, TemplateView):
@@ -16,9 +17,29 @@ class RegistrationDataView(PermissionRequiredMixin, TemplateView):
     ]
     raise_exception = False
 
+    @property
+    def media(self):
+        extra = "" if settings.DEBUG else ".min"
+        return VersionMedia(
+            css={
+                "all": (
+                    "datatable.css",
+                    "ui.jqgrid.min.css",
+                )
+            },
+            js=[
+                "admin/js/vendor/jquery/jquery%s.js" % extra,
+                "admin/js/jquery.init.js",
+                "jquery.compat%s.js" % extra,
+                "js/jquery.jqgrid.min.js",
+                "js/datatable%s.js" % extra,
+            ],
+        )
+
     def get_context_data(self, **kwargs):
         kwargs["registration"] = self.registration
         kwargs["drf_page_size"] = settings.REST_FRAMEWORK["PAGE_SIZE"]
+        kwargs["media"] = self.media
         return super().get_context_data(**kwargs)
 
     @cached_property

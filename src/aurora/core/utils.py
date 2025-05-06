@@ -36,6 +36,7 @@ from django.utils.functional import keep_lazy_text
 from django.utils.html import format_html
 from django.utils.text import slugify
 from django.utils.timezone import is_aware
+from flags.state import flag_enabled
 
 from aurora import VERSION
 from aurora.state import state
@@ -54,6 +55,7 @@ def has_token(request, *args, **kwargs):
 
 def is_root(request, *args, **kwargs):
     if hasattr(request, "user"):
+        # return flag_enabled("IS_ROOT")
         return request.user.is_superuser and has_token(request)
     return False
 
