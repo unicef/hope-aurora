@@ -70,7 +70,6 @@ dependencies = [
   "djangorestframework-datatables",
   "dukpy>=0.5",
   "faker",
-  "htmlmin",
   "jmespath",
   "jsonpickle",
   "markdown",

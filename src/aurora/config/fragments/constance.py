@@ -3,14 +3,6 @@ from collections import OrderedDict
 from .. import env
 
 CONSTANCE_ADDITIONAL_FIELDS = {
-    "html_minify_select": [
-        "bitfield.forms.BitFormField",
-        {
-            "initial": 0,
-            "required": False,
-            "choices": (("html", "HTML"), ("line", "NEWLINE"), ("space", "SPACES")),
-        },
-    ],
     "write_only_input": [
         "django.forms.fields.CharField",
         {
@@ -37,7 +29,6 @@ CONSTANCE_CONFIG = OrderedDict(
         "ADMIN_SYNC_REMOTE_ADMIN_URL": ("/admin/", "", str),
         "ADMIN_SYNC_LOCAL_ADMIN_URL": ("/admin/", "", str),
         "LOG_POST_ERRORS": (False, "", bool),
-        "MINIFY_RESPONSE": (0, "select yes or no", "html_minify_select"),
         "MINIFY_IGNORE_PATH": (r"", "regex for ignored path", str),
         "BASE_TEMPLATE": ("base_lean.html", "Default base template", str),
         "HOME_TEMPLATE": ("home.html", "Default home.html", str),
