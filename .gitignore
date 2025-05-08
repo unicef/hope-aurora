@@ -26,8 +26,6 @@ Makefile
 !.github
 !.pre-commit-config.yaml
 !.secrets.baseline
-.env
-.venv
 __packages__
 docker/conf/nginx.conf
 docker/conf/redis.conf

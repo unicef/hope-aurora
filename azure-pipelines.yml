@@ -51,6 +51,12 @@ stages:
           vmImage: ubuntu-latest
         displayName: "Build and Push"
         steps:
+          - script: curl -LsSf https://astral.sh/uv/install.sh | sh
+            displayName: "Install uv"
+
+          - script: uv build --sdist
+            displayName: "Build package"
+
           - task: Docker@2
             inputs:
               containerRegistry: '$(Docker.registry)'
