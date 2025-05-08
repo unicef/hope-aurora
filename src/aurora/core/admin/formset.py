@@ -8,7 +8,6 @@ from django.db.models import JSONField, QuerySet
 from jsoneditor.forms import JSONEditor
 from smart_admin.modeladmin import SmartModelAdmin
 
-from ...administration.mixin import LoadDumpMixin
 from ..admin_sync import SyncMixin
 from ..models import FormSet
 
@@ -22,7 +21,7 @@ cache = caches["default"]
 
 
 @register(FormSet)
-class FormSetAdmin(LoadDumpMixin, SyncMixin, SmartModelAdmin):
+class FormSetAdmin(SyncMixin, SmartModelAdmin):
     list_display = (
         "name",
         "title",

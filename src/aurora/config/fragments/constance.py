@@ -44,12 +44,6 @@ CONSTANCE_CONFIG = OrderedDict(
         "QRCODE": (True, "Enable QRCode generation", bool),
         "SHOW_REGISTER_ANOTHER": (True, "Enable QRCode generation", bool),
         "MAINTENANCE_MODE": (False, "set maintenance mode On/Off", bool),
-        "WAF_REGISTRATION_ALLOWED_HOSTNAMES": (
-            ".*",
-            "public website hostname (regex)",
-            str,
-        ),
-        "WAF_ADMIN_ALLOWED_HOSTNAMES": ("", "admin website hostname (regex)", "write_only_input"),
         "UBA_TOKEN_URL": ("", "UBA Token URL", str),
         "UBA_NAME_ENQUIRY_URL": ("", "UBA Name Enquiry Service URL", str),
         "UBA_USERNAME": ("", "UBA Username", str),

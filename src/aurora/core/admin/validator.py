@@ -8,7 +8,6 @@ from django.contrib.admin import register
 from django.core.cache import caches
 from smart_admin.modeladmin import SmartModelAdmin
 
-from ...administration.mixin import LoadDumpMixin
 from ..admin_sync import SyncMixin
 from ..fields.widgets import JavascriptEditor
 from ..forms import ValidatorForm
@@ -34,7 +33,7 @@ class ValidatorTestForm(forms.Form):
 
 
 @register(Validator)
-class ValidatorAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin[Validator]):
+class ValidatorAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin[Validator]):
     form = ValidatorForm
     list_editable = ("trace", "active", "draft")
     list_display = ("label", "name", "target", "used_by", "trace", "active", "draft")

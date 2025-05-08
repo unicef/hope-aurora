@@ -5,6 +5,6 @@
         <h3>Existing data will remain encrypted and will need current Private key to be decrypted.</h3>
         <form method="post">
             {% csrf_token %}
-            <input type="submit" style="background: var(--delete-button-bg); color:white;" value="Understand, Remove key">
+            <input type="submit" id="btn-remove" style="background: var(--delete-button-bg); color:white;" value="Understand, Remove key">
         </form>
 {% endblock action-content %}

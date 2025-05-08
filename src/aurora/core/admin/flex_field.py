@@ -16,7 +16,6 @@ from jsoneditor.forms import JSONEditor
 from smart_admin.modeladmin import SmartModelAdmin
 from strategy_field import admin  # noqa: E402, I001, F401
 
-from ...administration.mixin import LoadDumpMixin
 from ..admin_sync import SyncMixin
 from ..forms import Select2Widget
 from ..models import FIELD_KWARGS, FlexFormField
@@ -63,7 +62,7 @@ class FlexFormFieldForm(forms.ModelForm):
 
 
 @register(FlexFormField)
-class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, OrderableAdmin, SmartModelAdmin):
+class FlexFormFieldAdmin(SyncMixin, ConcurrencyVersionAdmin, OrderableAdmin, SmartModelAdmin):
     search_fields = ("name_deterministic", "label")
     list_display = ("label", "name", "flex_form", "type_name", "required", "enabled")
     list_editable = ["required", "enabled"]

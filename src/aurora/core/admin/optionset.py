@@ -9,7 +9,6 @@ from django.db.models.functions import Collate
 from django.urls import NoReverseMatch
 from smart_admin.modeladmin import SmartModelAdmin
 
-from ...administration.mixin import LoadDumpMixin
 from ..admin_sync import SyncMixin
 from ..models import OptionSet
 from ..utils import render
@@ -26,7 +25,7 @@ cache = caches["default"]
 
 
 @register(OptionSet)
-class OptionSetAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
+class OptionSetAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
     list_display = (
         "name",
         "id",

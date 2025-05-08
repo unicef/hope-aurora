@@ -24,6 +24,8 @@ from django.urls import reverse, translate_url
 from django.utils.text import slugify
 from django_redis import get_redis_connection
 from jsoneditor.forms import JSONEditor
+
+from aurora.exceptions import ExportError
 from smart_admin.modeladmin import SmartModelAdmin
 
 from aurora.core.admin.base import ConcurrencyVersionAdmin
@@ -205,19 +207,19 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
                         .values("fields", "id", "ignored", "timestamp", "registration_id")
                     )
                     if qs.count() >= 5000:
-                        raise Exception("Too many records please change your filters. (max 5000)")
+                        raise ExportError("Too many records please change your filters. (max 5000)")
                     valid = fmt_form.cleaned_data
                     records = [build_dict(r, **valid) for r in qs]
                     if not records:
-                        raise Exception("No records matching filtering criteria")
-                    skipped = []
-                    all_fields = []
+                        raise ExportError("No records matching filtering criteria")
+                    skipped = set()
+                    all_fields = set()
                     for r in records:
                         for field_name in r:
-                            if field_name not in skipped and field_name in exclude_fields:
-                                skipped.append(field_name)
-                            elif field_name not in all_fields and field_name in include_fields:
-                                all_fields.append(field_name)
+                            if field_name in exclude_fields:
+                                skipped.add(field_name)
+                            elif include_fields and field_name in include_fields:
+                                all_fields.add(field_name)
                     if "export" in request.POST:
                         csv_options = opts_form.cleaned_data
                         add_header = csv_options.pop("header")
@@ -242,9 +244,11 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
                     ctx["all_fields"] = sorted(set(all_fields))
                     ctx["skipped"] = skipped
                     ctx["qs"] = records[:10]
+            except ExportError as e:
+                self.message_user(request, str(e), level=messages.ERROR)
             except Exception as e:
                 logger.exception(e)
-                self.message_error_to_user(request, e)
+                self.message_user(request, "Unhandled Error", level=messages.ERROR)
         else:
             form = RegistrationExportForm(initial={"include": ".*"})
             opts_form = CSVOptionsForm(prefix="csv", initial=CSVOptionsForm.defaults)
@@ -260,7 +264,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
         obj = self.get_object(request, pk)
         obj.save()
 
-    @choice(order=900, visible=lambda c: [], change_list=False)
+    @choice(order=900, visible=lambda c: is_root(c.context["request"]), change_list=False)
     def encryption(self, button):
         original = button.context["original"]
         colors = ["#DC6C6C", "white"]
@@ -284,7 +288,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
         self.object.encrypt_data = not self.object.encrypt_data
         self.object.save()
 
-    @view()
+    @view(label="Remove Key")
     def removekey(self, request, pk):
         ctx = self.get_common_context(request, pk, title="Remove Encryption Key")
         if request.method == "POST":

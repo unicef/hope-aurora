@@ -185,3 +185,29 @@ def test_menu_data_inspect_data(mock_state, browser: AuroraTestBrowser, records:
         browser.type("#date_start", records[0].timestamp.strftime("%Y-%m-%d"))
         browser.type("#date_end", records[0].timestamp.strftime("%Y-%m-%d"))
         browser.click("#refresh")
+
+
+def test_menu_encryption_symmetric(mock_state, browser: AuroraTestBrowser, registration):
+    url = reverse("admin:registration_registration_change", args=[registration.pk])
+    with mock.patch("aurora.registration.admin.registration.is_root", return_value=True):
+        browser.login()
+        browser.open(url)
+        browser.select_option_by_text("#btn-encryption", "Enable Symmetric")
+        assert browser.get_text("ul.messagelist") == "Symmetric Encryption Enabled"
+        browser.select_option_by_text("#btn-encryption", "Disable Symmetric")
+        assert browser.get_text("ul.messagelist") == "Encryption Not Enabled"
+
+
+def test_menu_encryption_asymmetric(mock_state, browser: AuroraTestBrowser, registration):
+    url = reverse("admin:registration_registration_change", args=[registration.pk])
+    with mock.patch("aurora.registration.admin.registration.is_root", return_value=True):
+        browser.login()
+        browser.open(url)
+        browser.select_option_by_text("#btn-encryption", "Enable RSA")
+        assert browser.get_text("#content h1").startswith("Generate Private/Public Key pair")
+        browser.click("input[type=submit][value='Generate'")
+        assert browser.get_text("#content h1").startswith("Key Pair Generated")
+        browser.click_link_text("Done")
+        assert browser.get_text("ul.messagelist") == "RSA Encryption Enabled"
+        browser.select_option_by_text("#btn-encryption", "Remove Key")
+        browser.click("#btn-remove")
