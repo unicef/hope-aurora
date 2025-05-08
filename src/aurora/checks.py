@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Sequence
 
 from django.apps import AppConfig
 from django.core import checks
@@ -6,8 +6,7 @@ from django.core import checks
 from aurora.security.microsoft_graph import MicrosoftGraphAPI
 
 
-@checks.register("config")
-def check_azure_credentials(app_configs: AppConfig, **kwargs: Any) -> "list[checks.CheckMessage]":
+def check_azure_credentials(app_configs: Sequence[AppConfig], **kwargs: Any) -> "Sequence[checks.CheckMessage]":
     errors = []
 
     try:
