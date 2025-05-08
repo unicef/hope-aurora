@@ -3,6 +3,7 @@ import time
 import warnings
 
 import pytest
+import responses
 from coverage.exceptions import CoverageWarning
 from django import forms
 from django.core.management import call_command
@@ -171,6 +172,18 @@ def staff_user():
     from testutils.factories import UserFactory
 
     return UserFactory(is_staff=True)
+
+
+class EnhRequestsMock(responses.RequestsMock):
+    def __init__(self, *args, **kwargs):
+        self.bc_prefix = kwargs.pop("bc_prefix", None)
+        super().__init__(*args, **kwargs)
+
+
+@pytest.fixture
+def mocked_responses():
+    with EnhRequestsMock() as rsps:
+        yield rsps
 
 
 @pytest.fixture
