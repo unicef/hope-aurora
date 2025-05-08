@@ -1,9 +1,9 @@
 import pytest
 from django.urls import reverse
 from pyquery import PyQuery
+from testutils.factories import RecordFactory
 
 from aurora.registration.models import Registration
-from testutils.factories import RecordFactory
 
 
 @pytest.fixture

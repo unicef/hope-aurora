@@ -94,7 +94,6 @@ MIDDLEWARE = [
     "aurora.web.middlewares.sentry.SentryMiddleware",
     "front_door.middleware.FrontDoorMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    "aurora.web.middlewares.maintenance.MaintenanceMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "aurora.web.middlewares.i18n.I18NMiddleware",
     "django.middleware.security.SecurityMiddleware",

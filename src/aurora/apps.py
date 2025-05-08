@@ -1,5 +1,6 @@
 from django.apps import AppConfig
 from django.core import checks
+
 from .checks import check_azure_credentials
 
 

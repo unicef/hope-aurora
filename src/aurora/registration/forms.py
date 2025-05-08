@@ -27,7 +27,7 @@ class JMESPathFormField(forms.CharField):
         if value not in self.empty_values:
             try:
                 jmespath.compile(value)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 raise ValidationError(str(e)) from None
 
 
@@ -124,7 +124,7 @@ class RegistrationExportForm(FormWithDefault, forms.Form):
     def clean_exclude(self) -> RegexList:
         try:
             return RegexList([re.compile(rule) for rule in self.cleaned_data["exclude"].split("\n")])
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             raise ValidationError(e) from None
 
 

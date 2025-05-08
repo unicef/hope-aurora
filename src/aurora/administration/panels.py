@@ -69,7 +69,8 @@ def panel_loaddata(self: SmartAdminSite, request: HttpRequest) -> HttpResponse:
                         context["out"] = out.readlines()
                     finally:
                         fixture.unlink()
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
+                logger.error(e)
                 messages.add_message(
                     request,
                     messages.ERROR,
@@ -160,7 +161,7 @@ def panel_sql(self: SmartAdminSite, request: "AuthHttpRequest", extra_context: d
                     response["result"] = cursor.fetchall()
                 else:
                     response["result"] = ["Success"]
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 response["error"] = str(e)
         else:
             response["error"] = str(form.errors)

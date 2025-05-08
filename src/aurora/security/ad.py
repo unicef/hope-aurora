@@ -134,7 +134,7 @@ class ADUSerMixin(ExtraButtonsMixin, admin.ModelAdmin[User]):
             self.message_user(request, str(e), messages.ERROR)
 
     @button(permission="account.can_load_from_ad")  # type: ignore[arg-type]
-    def load_ad_users(self, request: "AuthHttpRequest") -> TemplateResponse:
+    def load_ad_users(self, request: "AuthHttpRequest") -> TemplateResponse:  # noqa: C901
         ctx = self.get_common_context(
             request,
             None,

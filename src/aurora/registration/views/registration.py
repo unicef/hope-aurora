@@ -5,7 +5,7 @@ import time
 from functools import wraps
 from hashlib import md5
 from json import JSONDecodeError
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable
 
 import sentry_sdk
 from constance import config
@@ -14,7 +14,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core import signing
 from django.core.exceptions import ValidationError
-from django.forms import Form
+from django.forms import Form, Media
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -38,6 +38,7 @@ from aurora.state import state
 
 if TYPE_CHECKING:
     from django.http import HttpRequest
+
     from aurora.core.forms import FlexFormBaseForm
 
 logger = logging.getLogger(__name__)
@@ -48,16 +49,16 @@ User = get_user_model()
 class QRVerify(TemplateView):
     template_name = "registration/register_verify.html"
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
         record = Record.objects.get(id=self.kwargs["pk"])
-        valid = md5(record.storage).hexdigest() == self.kwargs["hash"]
+        valid = md5(record.storage).hexdigest() == self.kwargs["hash"]  # noqa: S324
         return super().get_context_data(valid=valid, record=record, **kwargs)
 
 
 class RegisterCompleteView(TemplateView):
     template_name = "registration/register_done.html"
 
-    def get_template_names(self):
+    def get_template_names(self) -> list[str]:
         slug = self.registration.slug
         language = translation.get_language()
         return [
@@ -67,11 +68,11 @@ class RegisterCompleteView(TemplateView):
         ]
 
     @cached_property
-    def registration(self):
+    def registration(self) -> "Registration":
         return self.record.registration
 
     @cached_property
-    def record(self):
+    def record(self) -> Record:
         try:
             return Record.objects.select_related("registration").get(
                 registration__id=self.kwargs["reg"], id=self.kwargs["rec"]
@@ -81,13 +82,13 @@ class RegisterCompleteView(TemplateView):
                 Record.objects.first()
             raise Http404 from None
 
-    def get_qrcode(self, record):
-        h = md5(str(record.fields).encode()).hexdigest()
+    def get_qrcode(self, record: "Record") -> tuple[str, str]:
+        h = md5(str(record.fields).encode()).hexdigest()  # noqa: S324
         url = self.request.build_absolute_uri(reverse("register-done", args=[record.registration.pk, record.pk]))
         hashed_url = f"{url}/{h}"
         return get_qrcode(hashed_url), url
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
         if config.QRCODE:
             qrcode, url = self.get_qrcode(self.record)
         else:
@@ -103,19 +104,19 @@ class RegisterCompleteView(TemplateView):
 
 
 class BinaryFile:
-    def __init__(self, content):
+    def __init__(self, content: bytes) -> None:
         self.content = content
 
 
 @method_decorator(csrf_exempt, name="dispatch")
 class RegisterRouter(FormView):
-    def get_template_names(self):
+    def get_template_names(self) -> list[str]:
         return []
 
-    def get_form(self, form_class=None):
+    def get_form(self, form_class: type[Form] = None) -> Form | None:
         return None
 
-    def post(self, request: "HttpRequest", *args, **kwargs):
+    def post(self, request: "HttpRequest", *args, **kwargs) -> HttpResponse:
         r = Registration.objects.only("slug", "version", "locale").get(slug=request.POST["slug"])
         language = translation.get_language()
         if language not in r.all_locales:
@@ -127,7 +128,7 @@ class RegisterRouter(FormView):
 
 class RegistrationMixin:
     @cached_property
-    def registration(self):
+    def registration(self) -> "Registration":
         filters = {}
         if not self.request.user.is_staff and not state.collect_messages:
             filters["active"] = True
@@ -143,8 +144,8 @@ class RegistrationMixin:
             raise Http404 from None
 
 
-def check_access(view_func):
-    def wrapped_view(*args, **kwargs):
+def check_access(view_func: Callable[[Any, ...], Any]) -> Callable[[Any, ...], HttpResponse]:
+    def wrapped_view(*args, **kwargs) -> HttpResponse:
         view, request = args
         if view.registration.protected and not state.collect_messages:
             login_url = "%s?next=%s" % (settings.LOGIN_URL, request.path)
@@ -169,7 +170,7 @@ def check_access(view_func):
 class RegisterView(RegistrationMixin, FormView):
     template_name = "registration/register.html"
 
-    def get_template_names(self):
+    def get_template_names(self) -> list[str]:
         slug = self.registration.slug
         language = translation.get_language()
         return [
@@ -179,7 +180,7 @@ class RegisterView(RegistrationMixin, FormView):
         ]
 
     @check_access
-    def get(self, request: "HttpRequest", *args, **kwargs):
+    def get(self, request: "HttpRequest", *args, **kwargs) -> HttpResponse:
         if state.collect_messages:
             self.res_etag = get_etag(request, time.time())
         else:
@@ -203,7 +204,7 @@ class RegisterView(RegistrationMixin, FormView):
             response.headers.setdefault("ETag", self.res_etag)
         return response
 
-    def get_form_class(self):
+    def get_form_class(self) -> type[Form]:
         return self.registration.flex_form.get_form_class()
 
     # @cache_formset
@@ -213,7 +214,7 @@ class RegisterView(RegistrationMixin, FormView):
             formsets[fs.name] = fs.get_formset()
         return formsets
 
-    def get_initial(self):
+    def get_initial(self) -> dict[str, Any]:
         return self.registration.flex_form.get_initial()
 
     def get_formsets(self) -> "dict[str, SmartBaseFormSet]":
@@ -227,7 +228,7 @@ class RegisterView(RegistrationMixin, FormView):
         return formsets
 
     @property
-    def media(self):
+    def media(self) -> Media:
         extra = "" if settings.DEBUG else ".min"
         m = self.registration.flex_form.get_form_class()().media
         for fs in self.get_formsets().values():
@@ -254,7 +255,7 @@ class RegisterView(RegistrationMixin, FormView):
 
         return mine + m
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
         if "formsets" not in kwargs:
             kwargs["formsets"] = self.get_formsets()
         kwargs["registration"] = self.registration
@@ -268,7 +269,7 @@ class RegisterView(RegistrationMixin, FormView):
         ctx["media"] = self.media
         return ctx
 
-    def validate(self, cleaned_data):
+    def validate(self, cleaned_data: dict[str, Any]) -> bool:
         if self.registration.validator:
             try:
                 self.registration.validator.validate(cleaned_data, registration=self)

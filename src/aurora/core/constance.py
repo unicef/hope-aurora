@@ -18,20 +18,20 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class ObfuscatedInput(HiddenInput):
-    def render(
-        self,
-        name: str,
-        value: Any,
-        attrs: dict[str, str] | None = None,
-        renderer: Any | None = None,
-    ) -> "SafeString":
-        context = self.get_context(name, value, attrs)
-        context["value"] = str(value)
-        context["label"] = "Set" if value else "Not Set"
-
-        tpl = Template('<input type="hidden" name="{{ widget.name }}" value="{{ value }}">{{ label }}')
-        return mark_safe(tpl.render(Context(context)))  # noqa: S308
+# class ObfuscatedInput(HiddenInput):
+#     def render(
+#         self,
+#         name: str,
+#         value: Any,
+#         attrs: dict[str, str] | None = None,
+#         renderer: Any | None = None,
+#     ) -> "SafeString":
+#         context = self.get_context(name, value, attrs)
+#         context["value"] = str(value)
+#         context["label"] = "Set" if value else "Not Set"
+#
+#         tpl = Template('<input type="hidden" name="{{ widget.name }}" value="{{ value }}">{{ label }}')
+#         return mark_safe(tpl.render(Context(context)))  # noqa: S308
 
 
 class WriteOnlyWidget(Widget):

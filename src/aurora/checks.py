@@ -12,6 +12,6 @@ def check_azure_credentials(app_configs: Sequence[AppConfig], **kwargs: Any) -> 
     try:
         api = MicrosoftGraphAPI()
         api.get_token()
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         errors.append(checks.Warning("Microsoft Graph API not available", hint=str(e)))
     return errors

@@ -27,6 +27,7 @@ from mptt.models import MPTTModel
 from natural_keys import NaturalKeyModel, NaturalKeyModelManager
 from strategy_field.exceptions import StrategyClassError
 from strategy_field.utils import fqn
+from .cache import cache_form
 
 from ..i18n.get_text import gettext as _
 from ..i18n.models import I18NModel
@@ -285,7 +286,6 @@ class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
         defaults.update(extra)
         return FormSet.objects.update_or_create(parent=self, flex_form=form, defaults=defaults)[0]
 
-    # @cache_form
     def get_form_class(self) -> "type[FlexFormForm]":
         from aurora.core.fields import CompilationTimeField
 
@@ -322,9 +322,6 @@ class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
         for name, fs in self.get_formsets_classes().items():
             formsets[name] = fs(prefix=f"{name}", **attrs)
         return formsets
-
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        super().save(force_insert, force_update, using, update_fields)
 
     def get_usage(self):
         ret = []

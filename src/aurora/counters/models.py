@@ -104,7 +104,7 @@ class Counter(models.Model):
     def __str__(self) -> str:
         try:
             return f"{self.registration} {self.day}"
-        except Exception:
+        except Exception:  # noqa: BLE001
             return f"Counter #{self.pk}"
 
     @cached_property

@@ -89,7 +89,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
         )
 
     @button()  # type: ignore[arg-type]
-    def import_translations(self, request: HttpRequest) -> HttpResponse:
+    def import_translations(self, request: HttpRequest) -> HttpResponse:  # noqa: C901, PLR0912, PLR0915
         ctx = self.get_common_context(request, media=self.media, title="Import Translations File", pre={}, post={})
         ctx["rows"] = []
         if request.method == "POST":
@@ -98,7 +98,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
                     "translation",
                     str(request.user.pk),
                     str(state.timestamp),
-                    str(md5(request.session.session_key.encode()).hexdigest()),
+                    str(md5(request.session.session_key.encode()).hexdigest()),  # noqa: S324
                 ]
             )
             if "save" in request.POST:

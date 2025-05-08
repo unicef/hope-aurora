@@ -24,8 +24,6 @@ from django.urls import reverse, translate_url
 from django.utils.text import slugify
 from django_redis import get_redis_connection
 from jsoneditor.forms import JSONEditor
-
-from aurora.exceptions import ExportError
 from smart_admin.modeladmin import SmartModelAdmin
 
 from aurora.core.admin.base import ConcurrencyVersionAdmin
@@ -39,6 +37,7 @@ from aurora.core.utils import (
     is_root,
     namify,
 )
+from aurora.exceptions import ExportError
 from aurora.i18n.forms import TemplateForm, TranslationForm
 from aurora.registration.admin.filters import (
     OrganizationFilter,
@@ -629,13 +628,13 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
         )
 
     @view(permission=is_root, html_attrs={"class": "aeb-warn"})
-    def view_collected_data(self, button, pk):
+    def view_collected_data(self, button, pk: str) -> HttpResponse:
         base = reverse("admin:registration_record_changelist")
         url = f"{base}?registration__exact={pk}"
         return HttpResponseRedirect(url)
 
     @view()
-    def james_fake_data(self, request, pk):
+    def james_fake_data(self, request, pk: str) -> HttpResponse:
         reg = self.get_object(request, pk)
         data = cache.get(f"james_{pk}", version=get_system_cache_version())
         if not data:
@@ -646,7 +645,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
         return HttpResponse(data)
 
     @view()
-    def james_editor(self, request, pk):
+    def james_editor(self, request, pk) -> HttpResponse:
         ctx = self.get_common_context(request, pk, title="JAMESPath Editor")
         if request.method == "POST":
             form = JamesForm(request.POST, instance=ctx["original"])
@@ -665,7 +664,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
         return render(request, "admin/registration/registration/james_editor.html", ctx)
 
     @button(visible=False)
-    def test(self, request, pk):
+    def test(self, request, pk) -> HttpResponse:
         ctx = self.get_common_context(request, pk, title="Test")
         form = self.object.flex_form.get_form_class()
         ctx["registration"] = self.object

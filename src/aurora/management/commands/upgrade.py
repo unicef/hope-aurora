@@ -39,7 +39,7 @@ class NotRunningInTTYError(Exception):
     envvar="DEFAULT_ORGANIZATION",
     help="Main Organization name",
 )
-def upgrade(
+def upgrade(  # noqa: PLR0912,  PLR0915, C901, PLR0913
     admin_email: str,
     admin_password: str,
     static: bool,
