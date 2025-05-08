@@ -3,6 +3,7 @@ import time
 import warnings
 
 import pytest
+import responses
 from coverage.exceptions import CoverageWarning
 from django import forms
 from django.core.files.storage import default_storage
@@ -32,6 +33,8 @@ def pytest_configure(config):
     os.environ["SOCIAL_AUTH_REDIRECT_IS_HTTPS"] = "false"
     os.environ["LOG_LEVEL"] = "DEBUG"
     os.environ["LOGGING_HANDLERS"] = "null"
+    os.environ["AZURE_CLIENT_SECRET"] = "secret"
+    os.environ["AZURE_CLIENT_KEY"] = "key"
     from django.conf import global_settings, settings
 
     settings.STORAGES = global_settings.STORAGES
@@ -40,6 +43,9 @@ def pytest_configure(config):
     settings.SESSION_COOKIE_SECURE = False
     settings.DJANGO_ADMIN_URL = "admin/"
     settings.CACHE_PREFIX = str(time.time())
+    settings.SOCIAL_AUTH_RESOURCE = "https://graph.microsoft.com"
+    settings.SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_KEY = "key"
+    settings.SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_SECRET = "secret"
 
 
 @pytest.fixture
@@ -164,3 +170,15 @@ def staff_user():
     from testutils.factories import UserFactory
 
     return UserFactory(is_staff=True)
+
+
+class EnhRequestsMock(responses.RequestsMock):
+    def __init__(self, *args, **kwargs):
+        self.bc_prefix = kwargs.pop("bc_prefix", None)
+        super().__init__(*args, **kwargs)
+
+
+@pytest.fixture
+def mocked_responses():
+    with EnhRequestsMock() as rsps:
+        yield rsps

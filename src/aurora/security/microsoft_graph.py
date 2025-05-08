@@ -4,6 +4,7 @@ from typing import Any
 import requests
 from django.conf import settings
 from django.http import Http404
+from requests import Response
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +21,6 @@ class MicrosoftGraphAPI:
     def __init__(self) -> None:
         self.azure_client_id = settings.SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_KEY
         self.azure_client_secret = settings.SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_SECRET
-        self.access_token = self.get_token()
 
     def get_token(self) -> str:
         if not self.azure_client_id or not self.azure_client_secret:
@@ -42,9 +42,9 @@ class MicrosoftGraphAPI:
         json_response = response.json()
         return json_response["access_token"]
 
-    def get_results(self, url: str) -> dict:
-        headers = {"Authorization": f"Bearer {self.access_token}"}
-        response = requests.get(url, headers=headers, timeout=60)
+    def _get_results(self, url: str) -> dict:
+        headers = {"Authorization": f"Bearer {self.get_token()}"}
+        response: Response = requests.get(url, headers=headers, timeout=60)
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
@@ -55,14 +55,14 @@ class MicrosoftGraphAPI:
     def get_user_data(self, *, email: str | None = None, uuid: str | None = None) -> Any:
         try:
             if uuid:
-                q = f"https://graph.microsoft.com/v1.0/users/{uuid}"
-                value = self.get_results(q)
+                q = f"{settings.SOCIAL_AUTH_RESOURCE}/v1.0/users/{uuid}"
+                value = self._get_results(q)
             elif email:
                 q = (
-                    f"https://graph.microsoft.com/v1.0/users/?"
+                    f"{settings.SOCIAL_AUTH_RESOURCE}/v1.0/users/?"
                     f"$filter=userType in ['Member','guest'] and mail eq '{email}'"
                 )
-                data = self.get_results(q)
+                data = self._get_results(q)
                 value = data["value"][0]
             else:
                 logger.error("You must provide 'uuid' or 'email' argument.")
@@ -70,7 +70,4 @@ class MicrosoftGraphAPI:
         except IndexError as e:
             logger.error(f"User not found using email={email},uuid={uuid}")
             raise Http404("User not found") from e
-        if not value:
-            logger.error(f"User not found using email={email},uuid={uuid}")
-            raise Http404("User not found")
         return value

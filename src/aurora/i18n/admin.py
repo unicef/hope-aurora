@@ -2,6 +2,7 @@ import csv
 import logging
 from hashlib import md5
 from io import TextIOWrapper
+from typing import TYPE_CHECKING
 from unittest.mock import Mock
 from urllib.parse import unquote
 
@@ -30,8 +31,6 @@ from ..state import state
 from .engine import translator
 from .forms import ImportLanguageForm, LanguageForm
 from .models import Message
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from django.utils.datastructures import _ListOrTuple

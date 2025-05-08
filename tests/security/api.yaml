@@ -1,0 +1,29 @@
+responses:
+- response:
+    auto_calculate_content_length: false
+    body: '{"token_type":"Bearer","expires_in":"3599","ext_expires_in":"3599","expires_on":"1746553249","not_before":"1746549349","resource":"https://graph.microsoft.com","access_token":"abc..Y0ajnF0KZKpu5rdThnVepxKWxShJr__yfxKwCfI05uKiHDPMxm4IGn17DW1ndzuV2-FHuYmiKTI72yFv8kxUE3uaEU3uYIT1XkhdgI87s3Gk8AhyUS1wmsfVPf0zYYuu6e12iSuEu4PAJDuM1TeJ7fNNzgO6xKvHp2xGLWg7SZSHBI3i6mqjYbnLkk9vUb41euazGGTpT0w8rVfgdUYd9wxciHRIwWTIuftdWnWh-li2ofOawS2cgK5HnARB-bvkqXJgUeEUhMCN92GXOCvwKudqnsVCtbIvR5EZy8dT-yYNIA9fcSXyGYSOVxg-TTfyBshmmYyoquaF3k9z57L6Hg"}'
+    content_type: text/plain
+    headers:
+      Cache-Control: no-store, no-cache
+#      Content-Security-Policy-Report-Only: object-src 'none'; base-uri 'self'; script-src
+#        'self' 'nonce-NAveI_NAbLgEIkhX2XtUIQ' 'unsafe-inline' 'unsafe-eval' https://*.msauth.net
+#        https://*.msftauth.net https://*.msftauthimages.net https://*.msauthimages.net
+#        https://*.msidentity.com https://*.microsoftonline-p.com https://*.microsoftazuread-sso.com
+#        https://*.azureedge.net https://*.outlook.com https://*.office.com https://*.office365.com
+#        https://*.microsoft.com https://*.bing.com 'report-sample'; report-uri https://csp.microsoft.com/report/ESTS-UX-All
+      Expires: '-1'
+      P3P: CP="DSP CUR OTPi IND OTRi ONL FIN"
+      Pragma: no-cache
+      Set-Cookie: fpc=AjXA5bZ8y8BPrpeP8C5euToCKG_nAQAAAJAyrN8OAAAA; expires=Thu, 05-Jun-2025
+        16:40:49 GMT; path=/; secure; HttpOnly; SameSite=None, x-ms-gateway-slice=estsfd;
+        path=/; secure; samesite=none; httponly, stsservicecookie=estsfd; path=/;
+        secure; samesite=none; httponly
+      Strict-Transport-Security: max-age=31536000; includeSubDomains
+#      X-Content-Type-Options: nosniff
+#      X-XSS-Protection: '0'
+#      x-ms-ests-server: 2.1.20663.10 - SEC ProdSlices
+#      x-ms-request-id: f27d1cdb-037d-4409-885d-be326a442d00
+#      x-ms-srs: 1.P
+    method: POST
+    status: 200
+    url: https://login.microsoftonline.com/unicef.org/oauth2/token

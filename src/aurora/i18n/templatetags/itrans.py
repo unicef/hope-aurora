@@ -2,8 +2,7 @@ from decimal import Decimal
 from typing import Any
 
 from django.template import Context, Library, Node, TemplateSyntaxError, Variable
-from django.template.base import Parser, Token, TokenType, render_value_in_context, FilterExpression
-from django.template.base import token_kwargs
+from django.template.base import FilterExpression, Parser, Token, TokenType, render_value_in_context, token_kwargs
 from django.templatetags.static import static
 from django.utils import translation
 from django.utils.safestring import mark_safe

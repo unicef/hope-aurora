@@ -3,11 +3,11 @@ from unittest import mock
 
 import pytest
 from django.urls import reverse
-from testutils.factories import FlexFormFieldFactory, FormFactory, OptionSetFactory, RegistrationFactory, RecordFactory
+from testutils.factories import FlexFormFieldFactory, FormFactory, OptionSetFactory, RecordFactory, RegistrationFactory
 from testutils.selenium import AuroraTestBrowser
 
 from aurora.core import fields
-from aurora.registration.models import Registration, Record
+from aurora.registration.models import Record, Registration
 
 if TYPE_CHECKING:
     from aurora.core.models import OptionSet

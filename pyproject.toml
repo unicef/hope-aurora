@@ -1,6 +1,12 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = [
+  "hatch-vcs>=0.4",
+  "hatchling>=1.25",
+]
+
 [project]
 name = "aurora"
-version = "0.0.0"
 description = ""
 readme = "README.md"
 license = { text = "MIT" }
@@ -14,7 +20,9 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
 ]
-
+dynamic = [
+  "version",
+]
 dependencies = [
   "beautifulsoup4",
   "celery",
@@ -66,6 +74,7 @@ dependencies = [
   "jmespath",
   "jsonpickle",
   "markdown",
+  "msgpack>=1.1",
   "natural-keys",
   "pillow",
   "psycopg2-binary",
@@ -76,6 +85,10 @@ dependencies = [
   "social-auth-app-django",
   "sqlparse",
 ]
+urls.Documentation = "https://unicef.github.io/hope-aurora/"
+urls.Homepage = "https://github.com/unicef/hope-aurora"
+
+scripts.aurora = "aurora.cli:cli"
 
 [dependency-groups]
 dev = [
@@ -142,6 +155,27 @@ mypy = [
   "types-pytz",
   "types-qrcode",
   "types-requests",
+]
+
+[tool.hatch]
+build.hooks.vcs.version-file = "src/aurora/version.py"
+version.source = "vcs"
+raw-options = { root = "../.." }
+
+[tool.hatch.version.raw-options]
+local_scheme = "no-local-version"
+
+[tool.hatch.build.targets.sdist]
+ignore-vcs = true
+include = [
+  "src/aurora/**/*.*",
+  "src/dbtemplates/**/*.*",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+  "src/aurora",
+  "src/dbtemplates",
 ]
 
 [tool.uv]

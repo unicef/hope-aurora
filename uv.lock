@@ -47,7 +47,6 @@ wheels = [
 
 [[package]]
 name = "aurora"
-version = "0.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -100,6 +99,7 @@ dependencies = [
     { name = "jmespath" },
     { name = "jsonpickle" },
     { name = "markdown" },
+    { name = "msgpack" },
     { name = "natural-keys" },
     { name = "pillow" },
     { name = "psycopg2-binary" },
@@ -228,6 +228,7 @@ requires-dist = [
     { name = "jmespath" },
     { name = "jsonpickle" },
     { name = "markdown" },
+    { name = "msgpack", specifier = ">=1.1.0" },
     { name = "natural-keys" },
     { name = "pillow" },
     { name = "psycopg2-binary" },

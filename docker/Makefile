@@ -1,6 +1,6 @@
 # envs to set before use this script
 .ONESHELL:
-VERSION := $(shell grep -m 1 version ../pyproject.toml | tr -s ' ' | tr -d '"' | tr -d "'" | cut -d' ' -f3)
+VERSION := $(shell aurora --version | tr -d "Aurora, version, " | tr -ds "\+" "-")
 BUILD_DATE:="$(shell date +"%Y-%m-%d %H:%M")"
 SOURCE_COMMIT=$(shell git rev-parse --short HEAD)
 STAGE?=dist
@@ -10,11 +10,14 @@ help:
 	@echo "Docke"
 
 .build:
+	cd .. && rm -fr ./docker-wheel/*
+	cd .. && uv build --sdist -o ./docker-wheel
+	cd .. && uv sync
 	DOCKER_BUILDKIT=1 cd .. && docker build \
 			--build-arg BUILDKIT_INLINE_CACHE=1 \
 			--build-arg VERSION=${VERSION} \
 			--build-arg BUILD_DATE=${BUILD_DATE} \
-			--build-arg GIT_SHA=${SOURCE_COMMIT} \
+			--build-arg PACKAGE=./docker-wheel \
 			--cache-from ${DOCKER_IMAGE_NAME}:${VERSION}-base \
 			--cache-from ${DOCKER_IMAGE_NAME}:${VERSION}-builder \
 			--cache-from ${DOCKER_IMAGE_NAME}:${VERSION}-production \
@@ -22,7 +25,7 @@ help:
 			--target ${STAGE} \
 			${BUILD_OPTIONS} \
 			-t ${DOCKER_IMAGE} \
-			-f docker/Dockerfile .
+			-f docker/Dockerfile2 .
 	docker images | grep "${DOCKER_IMAGE_NAME}" | grep ${VERSION}
 	docker inspect ${DOCKER_IMAGE} | jq -r '.[0].Config.Labels'
 

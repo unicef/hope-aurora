@@ -4,7 +4,7 @@ from django.contrib.sites.models import Site
 from django.core import signals
 from django.template.defaultfilters import slugify
 
-from dbtemplates.conf import settings
+from ..conf import settings
 
 if TYPE_CHECKING:
     from ..models import Template as DBTemplate

@@ -12,10 +12,10 @@ from django.shortcuts import render
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
 
-from dbtemplates.conf import settings
-from dbtemplates.models import Template, add_template_to_cache, remove_cached_template
-from dbtemplates.utils.template import check_template_syntax
-from dbtemplates.widgets import HtmlEditor
+from .conf import settings
+from .models import Template, add_template_to_cache, remove_cached_template
+from .utils.template import check_template_syntax
+from .widgets import HtmlEditor
 
 if settings.DBTEMPLATES_USE_REVERSION:
     from reversion.admin import VersionAdmin as TemplateModelAdmin

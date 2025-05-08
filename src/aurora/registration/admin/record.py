@@ -3,6 +3,7 @@ import logging
 from typing import TYPE_CHECKING, Any, Iterable
 
 from admin_extra_buttons.decorators import button, link
+from adminfilters.dates import DateRangeFilter
 from adminfilters.filters import AutoCompleteFilter, NumberFilter, ValueFilter
 from django.conf import settings
 from django.shortcuts import render
@@ -11,7 +12,7 @@ from smart_admin.modeladmin import SmartModelAdmin
 
 from ...core.utils import is_root
 from ..forms import DecryptForm
-from .filters import DateRangeFilter, HourFilter
+from .filters import HourFilter
 from .paginator import LargeTablePaginator
 
 if TYPE_CHECKING:
