@@ -23,16 +23,22 @@
     {% else %}
         <h1>Import Users</h1>
         {% if results.created %}
-            <h3>The following user have been added to HOPE</h3>
-            {{ results.created|join:", " }}
+            <div id="imported">
+                <h3>The following user have been added to HOPE</h3>
+                <div>{{ results.created|join:", " }}</div>
+            </div>
         {% endif %}
         {% if results.updated %}
-            <h3>The following users have been found in HOPE and have been updated (role added)</h3>
-            {{ results.updated|join:", " }}
+            <div id="updated">
+                <h3>The following users have been found in HOPE and have been updated (role added)</h3>
+                <div>{{ results.updated|join:", " }}</div>
+            </div>
         {% endif %}
-       {% if results.missing %}
-            <h3 class="errors">The following users have not been found in the ActiveDirectory</h3>
-            {{ results.missing|join:", " }}
+        {% if results.missing %}
+            <div id="missing">
+                <h3 class="errors">The following users have not been found in the ActiveDirectory</h3>
+                <div>{{ results.missing|join:", " }}</div>
+            </div>
         {% endif %}
     {% endif %}
 {% endblock content %}

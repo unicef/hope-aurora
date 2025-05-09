@@ -28,6 +28,7 @@ CONSTANCE_CONFIG = OrderedDict(
         "ADMIN_SYNC_REMOTE_SERVER": ("", "production server url", str),
         "ADMIN_SYNC_REMOTE_ADMIN_URL": ("/admin/", "", str),
         "ADMIN_SYNC_LOCAL_ADMIN_URL": ("/admin/", "", str),
+        "GRAPH_API_ENABLED": (True, "", bool),
         "LOG_POST_ERRORS": (False, "", bool),
         "MINIFY_IGNORE_PATH": (r"", "regex for ignored path", str),
         "BASE_TEMPLATE": ("base_lean.html", "Default base template", str),

@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 import pytest
 
 from aurora.registration.strategies import (
@@ -6,7 +8,6 @@ from aurora.registration.strategies import (
     SaveToDB,
     TransactionTestStrategy,
 )
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from aurora.registration.models import Registration

@@ -17,6 +17,10 @@ DJANGO_USER_MAP = {
 }
 
 
+class MicrosoftGraphAPIError(Exception):
+    pass
+
+
 class MicrosoftGraphAPI:
     def __init__(self) -> None:
         self.azure_client_id = settings.SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_KEY
@@ -24,7 +28,7 @@ class MicrosoftGraphAPI:
 
     def get_token(self) -> str:
         if not self.azure_client_id or not self.azure_client_secret:
-            raise Exception("Configure AZURE_CLIENT_KEY and/or AZURE_CLIENT_SECRET")
+            raise MicrosoftGraphAPIError("Configure AZURE_CLIENT_KEY and/or AZURE_CLIENT_SECRET")
 
         post_dict = {
             "grant_type": "client_credentials",
@@ -35,9 +39,8 @@ class MicrosoftGraphAPI:
         response = requests.post(settings.AZURE_TOKEN_URL, post_dict, timeout=60)
 
         if response.status_code != 200:
-            raise Exception(
-                f"Unable to fetch token from Azure. {response.status_code} {response.content.decode('utf-8')}"
-            )
+            logger.error(f"Unable to fetch token from Azure. {response.status_code} {response.content.decode('utf-8')}")
+            raise MicrosoftGraphAPIError("Unable to fetch token from Azure.")
 
         json_response = response.json()
         return json_response["access_token"]
@@ -66,7 +69,7 @@ class MicrosoftGraphAPI:
                 value = data["value"][0]
             else:
                 logger.error("You must provide 'uuid' or 'email' argument.")
-                raise ValueError("You must provide 'uuid' or 'email' argument.")
+                raise MicrosoftGraphAPIError("You must provide 'uuid' or 'email' argument.")
         except IndexError as e:
             logger.error(f"User not found using email={email},uuid={uuid}")
             raise Http404("User not found") from e

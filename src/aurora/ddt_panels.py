@@ -1,8 +1,6 @@
-import io
 from typing import TYPE_CHECKING
 
 from debug_toolbar.panels import Panel
-from django.core.management import call_command
 from django.template import Context, Template
 from django.utils.translation import gettext_lazy as _
 
@@ -34,36 +32,6 @@ TEMPLATE2 = """
 {{stdout}}
 </pre>
 """
-
-
-class MigrationPanel(Panel):
-    name = "migrations"
-    has_content = True
-
-    def nav_title(self) -> "_StrPromise":
-        return _("Migrations")
-
-    def title(self) -> "_StrPromise":
-        return _("Migrations Panel")
-
-    def url(self) -> str:
-        return ""
-
-    @property
-    def enabled(self) -> bool:
-        return True
-
-    @property
-    def content(self) -> str:
-        out = io.StringIO()
-        call_command("showmigrations", stdout=out, no_color=True)
-        context = Context(
-            {
-                "stdout": out.getvalue(),
-            }
-        )
-        template = Template(TEMPLATE2)
-        return template.render(context)
 
 
 class StatePanel(Panel):
