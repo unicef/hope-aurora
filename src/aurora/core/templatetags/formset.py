@@ -1,6 +1,6 @@
 import logging
 
-import markdown as md
+import markdown as mkd
 from django.template import Library
 
 from aurora.i18n.get_text import gettext as _
@@ -41,13 +41,13 @@ def formset_config(formset):
 @register.filter()
 def markdown(value):
     if value:
-        return md.markdown(value, extensions=["markdown.extensions.fenced_code"])
+        return mkd.markdown(value, extensions=["markdown.extensions.fenced_code"])
     return ""
 
 
-@register.filter(name="md")
-def _md(value):
+@register.filter()
+def md(value):
     if value:
-        p = md.markdown(value, extensions=["markdown.extensions.fenced_code"])
+        p = mkd.markdown(value, extensions=["markdown.extensions.fenced_code"])
         return p.replace("<p>", "").replace("</p>", "")
     return ""

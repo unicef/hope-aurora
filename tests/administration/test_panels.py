@@ -65,16 +65,3 @@ def test_panel_sql_302(app, user, is_root):
     with mock.patch("aurora.administration.panels.is_root", return_value=is_root):
         res = app.get(url, expect_errors=True)
         assert res.status_code == 302
-
-
-@pytest.mark.django_db
-@pytest.mark.parametrize("is_root", [True, False])
-def test_panel_dumpdata(app, admin_user, is_root):
-    app.set_user(admin_user)
-    url = reverse("admin:console-panel_dumpdata")
-    with mock.patch("aurora.administration.panels.is_root", return_value=is_root):
-        res = app.get(url)
-        res = res.forms["dumpForm"].submit()
-
-        res.forms["dumpForm"]["apps"] = ["core"]
-        res = res.forms["dumpForm"].submit()

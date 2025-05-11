@@ -4,7 +4,7 @@ from unittest import mock
 import pytest
 from requests import HTTPError
 
-from aurora.security.microsoft_graph import MicrosoftGraphAPI
+from aurora.security.microsoft_graph import MicrosoftGraphAPI, MicrosoftGraphAPIError
 
 # Note in case cassettes need to be refreshed
 #  See. https://github.com/getsentry/responses?tab=readme-ov-file#record-responses-to-files
@@ -64,5 +64,5 @@ def test_get_results_401(file_mocked_responses, api):
 
 def test_get_results_unknown(mocked_responses, api):
     with mock.patch("aurora.security.microsoft_graph.Response.raise_for_status", side_effect=HTTPError):
-        with pytest.raises(ValueError, match=r"You must provide 'uuid' or 'email' argument."):
+        with pytest.raises(MicrosoftGraphAPIError, match=r"You must provide 'uuid' or 'email' argument."):
             api.get_user_data()

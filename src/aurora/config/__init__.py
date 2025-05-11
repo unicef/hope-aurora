@@ -1,10 +1,6 @@
 import uuid
-from typing import Any
-from urllib.parse import urlencode, urlparse
 
 from smart_env import SmartEnv
-
-from aurora.core.flags import parse_bool
 
 
 def parse_bookmarks(value: str) -> str:
@@ -101,27 +97,4 @@ OPTIONS = {
     "USE_X_FORWARDED_HOST": (bool, "false"),
 }
 
-
-class SmartEnv2(SmartEnv):
-    def cache_url(
-        self, var: str = SmartEnv.DEFAULT_CACHE_ENV, default: str = SmartEnv.NOTSET, backend: Any = None
-    ) -> dict[str, Any]:
-        v = self.str(var, default)
-        if v.startswith("redisraw://"):
-            scheme, string = v.split("redisraw://")
-            host, *options = string.split(",")
-            config = dict([v.split("=", 1) for v in options])
-            if parse_bool(config.get("ssl", "false")):
-                scheme = "rediss"
-            else:
-                scheme = "redis"
-            auth = ""
-            credentials = [config.pop("user", ""), config.pop("password", "")]
-            if credentials[0] or credentials[1]:
-                auth = f"{':'.join(credentials)}@"
-            new_url = f"{scheme}://{auth}{host}/?{urlencode(config)}"
-            return self.cache_url_config(urlparse(new_url), backend=backend)
-        return super().cache_url(var, default, backend)
-
-
-env = SmartEnv2(**OPTIONS)
+env = SmartEnv(**OPTIONS)
