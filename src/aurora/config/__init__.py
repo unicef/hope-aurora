@@ -99,6 +99,10 @@ OPTIONS = {
     "TRANSLATOR_SERVICE": (str, ""),
     "USE_HTTPS": (bool, False),
     "USE_X_FORWARDED_HOST": (bool, "false"),
+    "BITCASTER_APP_SLUG": (str, ""),
+    "BITCASTER_PRJ_SLUG": (str, ""),
+    "BITCASTER_BAE": (str, ""),
+
 }
 
 

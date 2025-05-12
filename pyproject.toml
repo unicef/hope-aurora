@@ -91,6 +91,7 @@ scripts.aurora = "aurora.cli:cli"
 
 [dependency-groups]
 dev = [
+  "bitcaster-sdk>=0.1.0",
   "check-manifest>=0.50",
   "check-wheel-contents>=0.6.1",
   "coverage",

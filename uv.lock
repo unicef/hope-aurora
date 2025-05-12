@@ -112,6 +112,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "bitcaster-sdk" },
     { name = "check-manifest" },
     { name = "check-wheel-contents" },
     { name = "coverage" },
@@ -240,6 +241,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "bitcaster-sdk", specifier = ">=0.1.0" },
     { name = "check-manifest", specifier = ">=0.50" },
     { name = "check-wheel-contents", specifier = ">=0.6.1" },
     { name = "coverage" },
@@ -383,6 +385,20 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/7c/58/1546c970afcd2a2428b1bfafecf2371d8951cc34b46701bea73f4280989e/billiard-4.2.1.tar.gz", hash = "sha256:12b641b0c539073fc8d3f5b8b7be998956665c4233c7c1fcd66a7e677c4fb36f", size = 155031, upload-time = "2024-09-21T13:40:22.491Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/30/da/43b15f28fe5f9e027b41c539abc5469052e9d48fd75f8ff094ba2a0ae767/billiard-4.2.1-py3-none-any.whl", hash = "sha256:40b59a4ac8806ba2c2369ea98d876bc6108b051c227baffd928c644d15d8f3cb", size = 86766, upload-time = "2024-09-21T13:40:20.188Z" },
+]
+
+[[package]]
+name = "bitcaster-sdk"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "click" },
+    { name = "humanfriendly" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/91/a4/33a31c21a017692e0526edfdc81f82285b6c8583be577445160bba20fad7/bitcaster_sdk-0.1.0.tar.gz", hash = "sha256:1212f7d761f6f8fc6808f27c46ce6564863ba0ef64d12a9e5d9bcfd63281a849", size = 7870, upload-time = "2024-08-20T06:59:13.465Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e5/3e/4f836a9df20219fd1f47b79248d986c2add29f281d73afba8c35640b27f8/bitcaster_sdk-0.1.0-py3-none-any.whl", hash = "sha256:0f21c0c172b3b4fd258bac4653ffc615cf4f5c3e5cb27449e3472c2292f4e317", size = 6792, upload-time = "2024-08-20T06:59:12.307Z" },
 ]
 
 [[package]]
@@ -1536,6 +1552,18 @@ version = "0.1.13"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/be/31/a76f4bfa885f93b8167cb4c85cf32b54d1f64384d0b897d45bc6d19b7b45/htmlmin2-0.1.13-py3-none-any.whl", hash = "sha256:75609f2a42e64f7ce57dbff28a39890363bde9e7e5885db633317efbdf8c79a2", size = 34486, upload-time = "2023-03-14T21:28:30.388Z" },
+]
+
+[[package]]
+name = "humanfriendly"
+version = "10.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pyreadline3", marker = "sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/cc/3f/2c29224acb2e2df4d2046e4c73ee2662023c58ff5b113c4c1adac0886c43/humanfriendly-10.0.tar.gz", hash = "sha256:6b0b831ce8f15f7300721aa49829fc4e83921a9a301cc7f606be6686a2288ddc", size = 360702, upload-time = "2021-09-17T21:40:43.31Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f0/0f/310fb31e39e2d734ccaa2c0fb981ee41f7bd5056ce9bc29b2248bd569169/humanfriendly-10.0-py2.py3-none-any.whl", hash = "sha256:1697e1a8a8f550fd43c2865cd84542fc175a61dcb779b6fee18cf6b6ccba1477", size = 86794, upload-time = "2021-09-17T21:40:39.897Z" },
 ]
 
 [[package]]
