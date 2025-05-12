@@ -17,10 +17,14 @@ if TYPE_CHECKING:
 
     from django.db.models import QuerySet
 
+    from aurora.types.counters.models import CollectCounter, CollectResult
+
 
 class CounterManager(models.Manager):
-    def collect(self, *, registrations: "Sequence[Registration] | None" = None) -> "tuple[QuerySet[Counter], dict]":
-        result = {"registration": 0, "records": 0, "days": 0, "details": {}}
+    def collect(
+        self, *, registrations: "Sequence[Registration] | None" = None
+    ) -> "tuple[list[QuerySet[Counter]], CollectResult]":
+        result: "CollectResult" = {"registration": 0, "records": 0, "days": 0, "details": {}}
         tz = pytz.timezone(settings.TIME_ZONE)
         today = timezone.now()
         yesterday = datetime.combine(today - timedelta(days=1), datetime.max.time()).astimezone(tz)
@@ -57,7 +61,7 @@ class CounterManager(models.Manager):
             querysets.append(historical_qs)
 
             # Process queries and update counters
-            counter = defaultdict(lambda: {"records": 0, "extra": {}})
+            counter: defaultdict[str, CollectCounter] = defaultdict(lambda: {"records": 0, "extra": {}})
             # Process both historical and today's data
             for qs in [historical_qs, today_qs]:
                 for match in qs.all():

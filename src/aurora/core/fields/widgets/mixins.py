@@ -1,6 +1,10 @@
 from django.utils.translation import get_language
 
 from aurora.state import state
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from aurora.core.models import FlexFormField
 
 
 class TailWindMixin:

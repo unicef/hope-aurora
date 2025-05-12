@@ -36,18 +36,3 @@ def formset_config(formset):
         config[e] = _(config[e])
         config["original"][e] = config[e]
     return config
-
-
-@register.filter()
-def markdown(value):
-    if value:
-        return mkd.markdown(value, extensions=["markdown.extensions.fenced_code"])
-    return ""
-
-
-@register.filter()
-def md(value):
-    if value:
-        p = mkd.markdown(value, extensions=["markdown.extensions.fenced_code"])
-        return p.replace("<p>", "").replace("</p>", "")
-    return ""

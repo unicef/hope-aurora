@@ -1,9 +1,9 @@
 import json
-from typing import TYPE_CHECKING, Any, reveal_type
+from typing import TYPE_CHECKING, Any, reveal_type, ClassVar
 
 from django import forms
 from django.core.cache import caches
-from django.forms import Media
+from django.forms import Media, Form
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.template.loader import get_template
@@ -18,8 +18,8 @@ from aurora.core.models import FlexForm, FlexFormField
 if TYPE_CHECKING:
     from django.contrib.admin import ModelAdmin
     from django.http import HttpRequest
-    from aurora.core.models import FlexFormForm
-
+    from aurora.types.core.models import FlexFormForm
+    from aurora.types.core.admin.form_editor import FormEditorForms, FormEditorTypes
 
 cache = caches["default"]
 
@@ -49,11 +49,15 @@ DEFAULTS: dict[str, Any] = {}
 
 
 def get_initial(form: "FlexForm", prefix: str) -> dict[str, Any]:
-    return DEFAULTS.get(prefix, {})
+    base = DEFAULTS.get(prefix, {})
+    for k, v in form.advanced.get(prefix, {}).items():
+        if v:
+            base[k] = v
+    return base
 
 
 class FormEditor:
-    FORMS = {
+    FORMS: "dict[str, FormEditorTypes]" = {
         "frm": FlexFormAttributesForm,
         "events": EventForm,
     }
@@ -62,6 +66,7 @@ class FormEditor:
         self.modeladmin = modeladmin
         self.request = request
         self.pk = pk
+        self.errors: dict[str, list[str]] = {}
         self.cache_key = f"/editor/form/{self.request.user.pk}/{self.pk}/"
 
     @cached_property
@@ -73,9 +78,10 @@ class FormEditor:
         return self.flex_form.get_form_class()
 
     def get_configuration(self) -> "HttpResponse":
+        return HttpResponse("aaaa", content_type="text/plain")
         # self.patched_form.get_instance()
-        rendered = json.dumps(self.flex_form.advanced, indent=4)
-        return HttpResponse(rendered, content_type="text/plain")
+        # rendered = json.dumps(self.flex_form.advanced, indent=4)
+        # return HttpResponse(rendered, content_type="text/plain")
 
     def get_code(self) -> "HttpResponse":
         from bs4 import BeautifulSoup, formatter
@@ -96,32 +102,40 @@ class FormEditor:
         ctx["code"] = highlight(pretty_html, HtmlLexer(), formatter2)
         return render(
             self.request,
-            "admin/core/flexformfield/field_editor/code.html",
+            "admin/core/flexform/form_editor/code.html",
             ctx,
             content_type="text/html",
         )
 
     def render(self) -> "HttpResponse":
         instance = self.patched_form
-        form_class = self.flex_form.get_form_class()
+        form_class: type[FlexFormBaseForm] = self.flex_form.get_form_class()
         ctx = self.get_context(self.request)
         if self.request.method == "POST":
             form = form_class(self.request.POST)
-            ctx["valid"] = form.is_valid()
+            ctx["valid"] = self.is_valid()
         else:
             form = form_class()
             ctx["valid"] = None
 
         ctx["form"] = form
         ctx["instance"] = instance
+        return render(self.request, "admin/core/flexform/form_editor/render.html", ctx)
 
-        return render(self.request, "admin/core/flexform/form_editor/preview.html", ctx)
-
-    def get_forms(self, data: dict[str, Any] | None = None) -> dict:
+    def get_forms(self, data: dict[str, Any] | None = None) -> "FormEditorForms":
+        ret: FormEditorForms
+        # Form: FlexFormAttributesForm | EventForm
         if data:
-            return {prefix: Form(data, prefix=prefix, form=self.flex_form) for prefix, Form in self.FORMS.items()}
-        if self.request.method == "POST":
-            return {
+            ret = {
+                prefix: Form(
+                    data,  # type: ignore[assignment]
+                    prefix=prefix,
+                    form=self.flex_form,
+                )
+                for prefix, Form in self.FORMS.items()
+            }
+        elif self.request.method == "POST":
+            ret = {  # type: ignore[assignment]
                 prefix: Form(
                     self.request.POST,
                     prefix=prefix,
@@ -130,24 +144,42 @@ class FormEditor:
                 )
                 for prefix, Form in self.FORMS.items()
             }
-        return {
-            prefix: Form(
-                prefix=prefix,
-                form=self.flex_form,
-                initial=get_initial(self.flex_form, prefix),
-            )
-            for prefix, Form in self.FORMS.items()
-        }
+        else:
+            ret = {  # type: ignore[assignment]
+                prefix: Form(
+                    prefix=prefix,
+                    form=self.flex_form,
+                    initial=get_initial(self.flex_form, prefix),
+                )
+                for prefix, Form in self.FORMS.items()
+            }
+        return ret
+
+    def is_valid(self) -> bool:
+        forms: FormEditorForms = self.get_forms()
+        if all(f.is_valid() for f in forms.values()):  # type: ignore[attr-defined]
+            return True
+        else:
+            self.errors = {prefix: frm.errors for prefix, frm in forms.items()}  # type: ignore[attr-defined]
+            return False
 
     def refresh(self) -> JsonResponse:
-        forms = self.get_forms()
-        if all(f.is_valid() for f in forms.values()):
+        if self.is_valid():
             data = self.request.POST.dict()
             data.pop("csrfmiddlewaretoken")
-            cache.set(self.cache_key, data)
+            return JsonResponse(data)
         else:
-            return JsonResponse({prefix: frm.errors for prefix, frm in forms.items()}, status=400)
-        return JsonResponse(data)
+            return JsonResponse(self.errors, status=400)
+
+    #
+    # forms: FormEditorForms = self.get_forms()
+    # if all(f.is_valid() for f in forms.values()):
+    #     data = self.request.POST.dict()
+    #     data.pop("csrfmiddlewaretoken")
+    #     cache.set(self.cache_key, data)
+    # else:
+    #     return JsonResponse({prefix: frm.errors for prefix, frm in forms.items()}, status=400)
+    # return JsonResponse(data)
 
     def get_context(self, request: "HttpRequest", pk: str | None = None, **kwargs) -> dict[str, Any]:
         return {
@@ -160,11 +192,12 @@ class FormEditor:
         ctx["forms_media"] = Media()
         for prefix, frm in self.get_forms().items():
             ctx[f"form_{prefix}"] = frm
-            ctx["forms_media"] += frm.media
+            ctx["forms_media"] += frm.media  # type: ignore[attr-defined]
         return render(request, "admin/core/flexform/form_editor/main.html", ctx)
 
-    def post(self, request: "HttpRequest", pk: str | None = None) -> "HttpResponse | None":
-        forms = self.get_forms()
-        if all(f.is_valid() for f in forms.values()):
+    def post(self, request: "HttpRequest", pk: str | None = None) -> "HttpResponseRedirect | None":
+        # forms: FormEditorForms = self.get_forms()
+        # if all(f.is_valid() for f in forms.values()):
+        if self.is_valid():
             return HttpResponseRedirect(".")
         return None

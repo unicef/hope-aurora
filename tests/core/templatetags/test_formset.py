@@ -2,7 +2,8 @@ import pytest
 from testutils.factories import FormSetFactory
 
 from aurora.core.models import FormSet
-from aurora.core.templatetags.formset import formset_config, markdown, md
+from aurora.core.templatetags.formset import formset_config
+from aurora.web.templatetags.aurora import markdown, md
 
 
 @pytest.fixture

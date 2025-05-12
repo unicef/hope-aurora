@@ -49,13 +49,13 @@ def test_jsonfy():
 
 
 def test_markdown():
-    assert aurora._markdown("**aa**") == "<p><strong>aa</strong></p>"
-    assert aurora._markdown("") == ""
+    assert aurora.markdown("**aa**") == "<p><strong>aa</strong></p>"
+    assert aurora.markdown("") == ""
 
 
 def test_md():
-    assert aurora._md("**aa**") == "<strong>aa</strong>"
-    assert aurora._md("") == ""
+    assert aurora.md("**aa**") == "<strong>aa</strong>"
+    assert aurora.md("") == ""
 
 
 def test_oneline():

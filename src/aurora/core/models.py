@@ -41,9 +41,8 @@ from .registry import field_registry, form_registry, import_custom_field
 from .utils import JSONEncoder, dict_setdefault, jsonfy, namify, underscore_to_camelcase
 
 if TYPE_CHECKING:
-    from typing import TypeVar
+    from ..types.core.models import FlexFormForm
 
-    FlexFormForm = TypeVar("FlexFormForm", bound=FlexFormBaseForm)
 
 logger = logging.getLogger(__name__)
 

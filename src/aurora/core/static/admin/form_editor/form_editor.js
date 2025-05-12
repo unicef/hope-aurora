@@ -24,24 +24,26 @@
         });
 
         function update() {
-            var formData = $("form").serialize();
+            var formData = $("#form_editor").serialize();
             $(".field-error").remove();
-            $.post(refreshUrl, formData)
-                .done(function (data) {
-                    $iFrame1[0].contentWindow.location = $iFrame1[0].contentWindow.location.href;
-                    $iFrame2[0].contentWindow.location = $iFrame2[0].contentWindow.location.href;
-                    $iFrame3[0].contentWindow.location = $iFrame3[0].contentWindow.location.href;
-                })
-                .fail(function (xhr) {
-                    var errors = xhr.responseJSON;
-                    var fieldErrors = errors.field;
-                    var kwargsErrors = errors.kwargs;
-                    var widget_kwargs = errors.widget_kwargs;
-                    var smart = errors.smart;
-                    for (const property in fieldErrors) {
-                        $(`#id_field-${property}`).before(`<div class="field-error">${fieldErrors[property]}</div>`);
-                    }
-                })
+            if (formData !== '') {
+                $.post(refreshUrl, formData)
+                    .done(function (data) {
+                        $iFrame1[0].contentWindow.location = $iFrame1[0].contentWindow.location.href;
+                        $iFrame2[0].contentWindow.location = $iFrame2[0].contentWindow.location.href;
+                        $iFrame3[0].contentWindow.location = $iFrame3[0].contentWindow.location.href;
+                    })
+                    .fail(function (xhr) {
+                        var errors = xhr.responseJSON;
+                        var fieldErrors = errors.field;
+                        var kwargsErrors = errors.kwargs;
+                        var widget_kwargs = errors.widget_kwargs;
+                        var smart = errors.smart;
+                        for (const property in fieldErrors) {
+                            $(`#id_field-${property}`).before(`<div class="field-error">${fieldErrors[property]}</div>`);
+                        }
+                    })
+            }
         }
 
         $('input[type=checkbox],input[type=radio]').on('click', function () {
