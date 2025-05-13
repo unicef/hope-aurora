@@ -1,18 +1,47 @@
 import pytest
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from aurora.registration.models import Registration
 from aurora.core.cache import cache
+from django.core.management import call_command
+
 from testutils.selenium import AuroraTestBrowser
 
 pytestmark = pytest.mark.selenium
 
 
-def test_health_registration_scenarios(
+@pytest.fixture
+def health_registration(db):
+    """
+    Loads data from 'custom.json' fixture and returns the
+    'Country1 Health Registration' Registration object.
+    """
+    call_command("loaddata", "tests/fixtures/custom.json")
+    try:
+        return Registration.objects.get(name="Country1 Health Registration")
+    except Registration.DoesNotExist:
+        pytest.fail(
+            "The 'Country1 Health Registration' was not found after loading 'tests/fixtures/custom.json'. "
+            "Please ensure the 'name' field in the JSON matches exactly."
+        )
+
+
+def _verify_formset_title_visibility(browser: AuroraTestBrowser, title: str):
+    """Helper to verify formset title visibility."""
+    selector = f"div[data-msgid='{title}']"
+    assert browser.is_element_present(selector), (
+        f"FormSet title container for '{title}' (selector: '{selector}') not found in the DOM."
+    )
+    assert browser.is_element_visible(selector), (
+        f"FormSet title container for '{title}' '{selector}' found in the DOM but is not visible."
+    )
+
+
+def test_health_registration_correct_submission(
     browser: AuroraTestBrowser,
     health_registration: Registration,
 ):
     """
-    Tests both correct and invalid submission scenarios for health registration.
+    Tests the correct submission scenario for health registration.
     """
     cache.clear()
 
@@ -26,23 +55,11 @@ def test_health_registration_scenarios(
         f"but found {len(all_formset_titles)}. Titles found: {all_formset_titles}"
     )
 
-    def verify_formset_title_visibility(title, index):
-        selector = f"div[data-msgid='{title}']"
-        assert browser.is_element_present(selector), (
-            f"FormSet title container for '{title}' (selector: '{selector}') not found in the DOM."
-        )
-        assert browser.is_element_visible(selector), (
-            f"FormSet title container for '{title}' '{selector}' found in the DOM but is not visible."
-        )
-
-    verify_formset_title_visibility(all_formset_titles[0], 0)
-    verify_formset_title_visibility(all_formset_titles[1], 1)
+    _verify_formset_title_visibility(browser, all_formset_titles[0])
+    _verify_formset_title_visibility(browser, all_formset_titles[1])
 
     enumerator_code_name = "intro-and-consent-0-enumerator_code"
-    try:
-        browser.find_element(f"input[name='{enumerator_code_name}']").send_keys("VWSBau3396")
-    except NoSuchElementException:
-        pytest.fail(f"Field '{enumerator_code_name}' not found on the form.")
+    browser.find_element(f"input[name='{enumerator_code_name}']").send_keys("VWSBau3396")
 
     who_to_register_name = "intro-and-consent-0-who_to_register"
     who_to_register_value = "myself"
@@ -79,19 +96,18 @@ def test_health_registration_scenarios(
             pytest.fail(f"Required field '{field_id}' ({field_type}) not found on the form.")
 
     submit_button_selector = "//input[@type='submit' and @data-msgid='Save']"
-    try:
-        browser.find_element(submit_button_selector, by="xpath").click()
-    except NoSuchElementException:
-        pytest.fail(f"Save button (e.g., XPath '{submit_button_selector}') not found on the registration form.")
-
+    browser.find_element(submit_button_selector, by="xpath").click()
     register_another_selector = "a[data-msgid='register another household']"
-    try:
-        browser.wait_for_text("Register Another Household", selector=register_another_selector, timeout=5)
-    except TimeoutException:
-        pytest.fail(
-            "Registration submission did not complete successfully - 'Register Another Household' link not found"
-        )
+    browser.wait_for_text("Register Another Household", selector=register_another_selector, timeout=5)
 
+
+def test_health_registration_invalid_submission(
+    browser: AuroraTestBrowser,
+    health_registration: Registration,
+):
+    """
+    Tests the invalid submission scenario for health registration.
+    """
     # Scenario 2: Invalid health registration
     # Re-open the URL to ensure a fresh form state for the invalid scenario
     browser.open(health_registration.get_absolute_url())
@@ -103,8 +119,8 @@ def test_health_registration_scenarios(
         f"but found {len(all_formset_titles_invalid)}. Titles found: {all_formset_titles_invalid}"
     )
 
-    verify_formset_title_visibility(all_formset_titles_invalid[0], 0)  # Re-verify for the new page load
-    verify_formset_title_visibility(all_formset_titles_invalid[1], 1)  # Re-verify for the new page load
+    _verify_formset_title_visibility(browser, all_formset_titles_invalid[0])
+    _verify_formset_title_visibility(browser, all_formset_titles_invalid[1])
 
     enumerator_code_name_invalid = "intro-and-consent-0-enumerator_code"
     enumerator_code_selector_invalid = f"input[name='{enumerator_code_name_invalid}']"
@@ -129,7 +145,7 @@ def test_health_registration_scenarios(
             browser.assert_element_present(select2_container_selector)
             browser.select2_select(field_id, text_to_select)
             browser.sleep(1)
-        except Exception as e:
+        except WebDriverException as e:
             is_required = False
             if field_type == "State":
                 admin2_field_info = next(
@@ -167,16 +183,8 @@ def test_health_registration_scenarios(
 
     enumerator_error_message = "Enter a valid value"
     enumerator_error_selector = f"#id_{enumerator_code_name_invalid}_error"
-    try:
-        browser.wait_for_element_visible(enumerator_error_selector, timeout=10)
-        browser.assert_text(enumerator_error_message, selector=enumerator_error_selector)
-    except TimeoutException:
-        pytest.fail(f"Validation error '{enumerator_error_message}' for enumerator code not found or not visible.")
+    browser.assert_text(enumerator_error_message, selector=enumerator_error_selector)
 
     consent_error_message = "This field is required."
     consent_error_selector = f"#id_{consent_checkbox_name_invalid}_error"
-    try:
-        browser.wait_for_element_visible(consent_error_selector, timeout=10)
-        browser.assert_text(consent_error_message, selector=consent_error_selector)
-    except TimeoutException:
-        pytest.fail(f"Validation error '{consent_error_message}' for consent checkbox not found or not visible.")
+    browser.assert_text(consent_error_message, selector=consent_error_selector)

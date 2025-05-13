@@ -6,11 +6,9 @@ import pytest
 import responses
 from coverage.exceptions import CoverageWarning
 from django import forms
-from django.core.management import call_command
 from django.core.files.storage import default_storage
 
 from aurora.core.fields import CompilationTimeField, SmartFileField
-from aurora.registration.models import Registration
 
 ALL = {"darwin"}
 
@@ -184,19 +182,3 @@ class EnhRequestsMock(responses.RequestsMock):
 def mocked_responses():
     with EnhRequestsMock() as rsps:
         yield rsps
-
-
-@pytest.fixture
-def health_registration(db):
-    """
-    Loads data from 'custom.json' fixture and returns the
-    'Country1 Health Registration' Registration object.
-    """
-    call_command("loaddata", "tests/fixtures/custom.json")
-    try:
-        return Registration.objects.get(name="Country1 Health Registration")
-    except Registration.DoesNotExist:
-        pytest.fail(
-            "The 'Country1 Health Registration' was not found after loading 'tests/fixtures/custom.json'. "
-            "Please ensure the 'name' field in the JSON matches exactly."
-        )
