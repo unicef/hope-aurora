@@ -37,6 +37,7 @@ from aurora.core.utils import (
     is_root,
     namify,
 )
+from aurora.exceptions import ExportError
 from aurora.i18n.forms import TemplateForm, TranslationForm
 from aurora.registration.admin.filters import (
     OrganizationFilter,
@@ -205,19 +206,19 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
                         .values("fields", "id", "ignored", "timestamp", "registration_id")
                     )
                     if qs.count() >= 5000:
-                        raise Exception("Too many records please change your filters. (max 5000)")
+                        raise ExportError("Too many records please change your filters. (max 5000)")
                     valid = fmt_form.cleaned_data
                     records = [build_dict(r, **valid) for r in qs]
                     if not records:
-                        raise Exception("No records matching filtering criteria")
-                    skipped = []
-                    all_fields = []
+                        raise ExportError("No records matching filtering criteria")
+                    skipped = set()
+                    all_fields = set()
                     for r in records:
                         for field_name in r:
-                            if field_name not in skipped and field_name in exclude_fields:
-                                skipped.append(field_name)
-                            elif field_name not in all_fields and field_name in include_fields:
-                                all_fields.append(field_name)
+                            if field_name in exclude_fields:
+                                skipped.add(field_name)
+                            elif include_fields and field_name in include_fields:
+                                all_fields.add(field_name)
                     if "export" in request.POST:
                         csv_options = opts_form.cleaned_data
                         add_header = csv_options.pop("header")
@@ -242,9 +243,11 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
                     ctx["all_fields"] = sorted(set(all_fields))
                     ctx["skipped"] = skipped
                     ctx["qs"] = records[:10]
+            except ExportError as e:
+                self.message_user(request, str(e), level=messages.ERROR)
             except Exception as e:
                 logger.exception(e)
-                self.message_error_to_user(request, e)
+                self.message_user(request, "Unhandled Error", level=messages.ERROR)
         else:
             form = RegistrationExportForm(initial={"include": ".*"})
             opts_form = CSVOptionsForm(prefix="csv", initial=CSVOptionsForm.defaults)
@@ -260,7 +263,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
         obj = self.get_object(request, pk)
         obj.save()
 
-    @choice(order=900, visible=lambda c: [], change_list=False)
+    @choice(order=900, visible=lambda c: is_root(c.context["request"]), change_list=False)
     def encryption(self, button):
         original = button.context["original"]
         colors = ["#DC6C6C", "white"]
@@ -284,7 +287,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
         self.object.encrypt_data = not self.object.encrypt_data
         self.object.save()
 
-    @view()
+    @view(label="Remove Key")
     def removekey(self, request, pk):
         ctx = self.get_common_context(request, pk, title="Remove Encryption Key")
         if request.method == "POST":
@@ -625,13 +628,13 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
         )
 
     @view(permission=is_root, html_attrs={"class": "aeb-warn"})
-    def view_collected_data(self, button, pk):
+    def view_collected_data(self, button, pk: str) -> HttpResponse:
         base = reverse("admin:registration_record_changelist")
         url = f"{base}?registration__exact={pk}"
         return HttpResponseRedirect(url)
 
     @view()
-    def james_fake_data(self, request, pk):
+    def james_fake_data(self, request, pk: str) -> HttpResponse:
         reg = self.get_object(request, pk)
         data = cache.get(f"james_{pk}", version=get_system_cache_version())
         if not data:
@@ -642,7 +645,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
         return HttpResponse(data)
 
     @view()
-    def james_editor(self, request, pk):
+    def james_editor(self, request, pk) -> HttpResponse:
         ctx = self.get_common_context(request, pk, title="JAMESPath Editor")
         if request.method == "POST":
             form = JamesForm(request.POST, instance=ctx["original"])
@@ -661,7 +664,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
         return render(request, "admin/registration/registration/james_editor.html", ctx)
 
     @button(visible=False)
-    def test(self, request, pk):
+    def test(self, request, pk) -> HttpResponse:
         ctx = self.get_common_context(request, pk, title="Test")
         form = self.object.flex_form.get_form_class()
         ctx["registration"] = self.object

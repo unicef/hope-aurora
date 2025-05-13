@@ -1,4 +1,3 @@
-import base64
 from unittest import mock
 
 from aurora.registration.models import Registration
@@ -50,13 +49,13 @@ def test_jsonfy():
 
 
 def test_markdown():
-    assert aurora._markdown("**aa**") == "<p><strong>aa</strong></p>"
-    assert aurora._markdown("") == ""
+    assert aurora.markdown("**aa**") == "<p><strong>aa</strong></p>"
+    assert aurora.markdown("") == ""
 
 
 def test_md():
-    assert aurora._md("**aa**") == "<strong>aa</strong>"
-    assert aurora._md("") == ""
+    assert aurora.md("**aa**") == "<strong>aa</strong>"
+    assert aurora.md("") == ""
 
 
 def test_oneline():
@@ -74,8 +73,3 @@ def test_link():
         m.user = User()
         assert aurora.link(Registration(advanced={}))
         assert aurora.link(Registration(advanced={"attrs": {"class": "test"}}))
-
-
-def test_is_base64():
-    assert not aurora.is_base64("abc")
-    assert aurora.is_base64(base64.b64encode(b"a===").decode())

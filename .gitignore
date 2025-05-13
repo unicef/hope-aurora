@@ -2,7 +2,7 @@
 !.git
 ~*
 *.min.min.js
-*.py[ico]
+*.py[co]
 *.db
 *.egg-info
 __pycache__

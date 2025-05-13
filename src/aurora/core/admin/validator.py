@@ -8,7 +8,6 @@ from django.contrib.admin import register
 from django.core.cache import caches
 from smart_admin.modeladmin import SmartModelAdmin
 
-from ...administration.mixin import LoadDumpMixin
 from ..admin_sync import SyncMixin
 from ..fields.widgets import JavascriptEditor
 from ..forms import ValidatorForm
@@ -34,12 +33,12 @@ class ValidatorTestForm(forms.Form):
 
 
 @register(Validator)
-class ValidatorAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin[Validator]):
+class ValidatorAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin[Validator]):  # type: ignore[misc]
     form = ValidatorForm
     list_editable = ("trace", "active", "draft")
     list_display = ("label", "name", "target", "used_by", "trace", "active", "draft")
     list_filter = ("target", "active", "draft", "trace")
-    readonly_fields = ("version", "last_update_date")
+    readonly_fields = ("version", "last_update_date", "code")
     search_fields = ("name",)
     DEFAULTS = {
         Validator.FORM: {},  # cleaned data
@@ -57,10 +56,6 @@ class ValidatorAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartMod
     change_form_template = None
     inlines = []
 
-    def save_model(self, request: "AuthHttpRequest", obj: Validator, form: Any, change: Any) -> None:
-        super().save_model(request, obj, form, change)
-        cache.set(f"validator-{request.user.pk}-{obj.pk}-status", obj.STATUS_UNKNOWN)
-
     def used_by(self, obj: Validator) -> str | None:
         if obj.target == Validator.FORM:
             return ", ".join(obj.flexform_set.values_list("name", flat=True))
@@ -70,21 +65,15 @@ class ValidatorAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, SmartMod
             return ", ".join(obj.formset_set.values_list("name", flat=True))
         if obj.target == Validator.MODULE:
             return ", ".join(obj.validator_for.values_list("name", flat=True))
-        if obj.target == Validator.SCRIPT:
-            return ", ".join(obj.script_for.values_list("name", flat=True))
-        return None
+        # obj.target == Validator.SCRIPT:
+        return ", ".join(obj.script_for.values_list("name", flat=True))
 
     @button()  # type: ignore[arg-type]
     def test(self, request: "HttpRequest", pk: str) -> "HttpResponse":
         ctx = self.get_common_context(request, pk)
         original = ctx["original"]
-        stored = cache.get(f"validator-{request.user.pk}-{original.pk}-payload")
-        ctx["traced"] = stored
         ctx["title"] = f"Test {original.target} validator: {original.name}"
-        if stored:
-            param = json.loads(stored)
-        else:
-            param = self.DEFAULTS[original.target]
+        param = self.DEFAULTS[original.target]
 
         if request.method == "POST":
             form = ValidatorTestForm(request.POST)

@@ -78,7 +78,7 @@ class ChartView(UserPassesTestMixin, View):
             raise PermissionDenied("----")
         return reg
 
-    def handle_no_permission(self) -> "HttpResponse":
+    def handle_no_permission(self) -> "HttpResponseRedirect":
         return HttpResponseRedirect("/")
 
 
@@ -129,10 +129,10 @@ class MonthlyChartView(ChartView):
         if not m:
             month = timezone.now().month
             year = timezone.now().year
-            date = timezone.now()
+            date = timezone.now().date()
         else:
-            year, month = m.split("-")
-            date = datetime(int(year), int(month), 1).date()
+            year, month = map(int, m.split("-"))
+            date = datetime(year, month, 1).date()
 
         context = {
             "date": date,

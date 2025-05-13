@@ -10,8 +10,11 @@ from django.contrib.flatpages.models import FlatPage
 from django.utils import timezone
 from factory import LazyAttribute, PostGenerationMethodCall
 from factory.base import FactoryMetaClass
+from factory.declarations import BaseDeclaration
+from faker import Faker
 from rest_framework.authtoken.models import TokenProxy
 from social_django.models import Association, Nonce, UserSocialAuth
+
 from strategy_field.utils import fqn
 
 import dbtemplates.models as dbtemplates
@@ -29,6 +32,8 @@ from aurora.counters.models import Counter
 from aurora.i18n.models import Message
 from aurora.registration.models import Record, Registration
 from aurora.security.models import AuroraRole
+
+faker = Faker()
 
 factories_registry = {}
 
@@ -178,11 +183,20 @@ class RegistrationFactory(AutoRegisterModelFactory):
         django_get_or_create = ("name", "project")
 
 
+class JsonFields(BaseDeclaration):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def evaluate(self, instance, step, extra):
+        return {"last_name": faker.last_name(), "first_name": faker.first_name()}
+
+
 class RecordFactory(AutoRegisterModelFactory):
     registration = factory.SubFactory(RegistrationFactory)
     timestamp = factory.Faker(
         "date_time_between_dates", datetime_start="-1y", datetime_end=timezone.now(), tzinfo=pytz.UTC
     )
+    fields = JsonFields()
 
     class Meta:
         model = Record

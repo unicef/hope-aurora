@@ -23,11 +23,9 @@ class AuroraAdminConfig(AppConfig):
             panel_sysinfo,
         )
 
-        from .panels import panel_dumpdata, panel_loaddata, panel_sql
+        from .panels import panel_sql
 
         site.enable_nav_sidebar = False
-        site.register_panel(panel_loaddata)
-        site.register_panel(panel_dumpdata)
         site.register_panel(panel_migrations)
         site.register_panel(panel_sysinfo)
         site.register_panel(panel_email)

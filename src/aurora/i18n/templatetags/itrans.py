@@ -68,7 +68,7 @@ class BlockTranslateNode(Node):
     trimmed: bool
     asvar: str | None
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         extra_context: dict[str, FilterExpression],
         singular: list[Token],
@@ -104,7 +104,7 @@ class BlockTranslateNode(Node):
             msg = translation.trim_whitespace(msg)
         return msg, variables
 
-    def render(self, context: Context, nested: bool = False) -> str:
+    def render(self, context: Context, nested: bool = False) -> str:  # noqa: C901
         if self.message_context:
             message_context = self.message_context.resolve(context)
         else:
@@ -278,7 +278,7 @@ def do_block_translate(parser: Parser, token: Token) -> BlockTranslateNode:  # n
             try:
                 value = remaining_bits.pop(0)
                 value: FilterExpression | None = parser.compile_filter(value)  # type: ignore[no-redef]
-            except Exception:
+            except Exception:  # noqa: BLE001
                 raise TemplateSyntaxError('"context" in %r tag expected exactly one argument.' % bits[0]) from None
         elif option == "trimmed":
             value = True

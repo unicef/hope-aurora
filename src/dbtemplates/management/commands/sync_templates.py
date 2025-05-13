@@ -79,7 +79,7 @@ class Command(BaseCommand):
 
         try:
             site = Site.objects.get_current()
-        except Exception:
+        except Exception:  # noqa: BLE001
             raise CommandError(
                 "Please make sure to have the sites contrib app installed and setup with a site object"
             ) from None

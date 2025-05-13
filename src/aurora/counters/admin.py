@@ -1,5 +1,5 @@
 import logging
-from typing import Iterable
+from typing import TYPE_CHECKING, Iterable
 
 from admin_extra_buttons.decorators import button
 from adminfilters.autocomplete import LinkedAutoCompleteFilter
@@ -13,10 +13,13 @@ from ..core.utils import is_root
 from ..registration.admin.paginator import LargeTablePaginator
 from .models import Counter
 
+if TYPE_CHECKING:
+    from ..types.http import AuthHttpRequest
+
 logger = logging.getLogger(__name__)
 
 
-def get_token(request: "HttpRequest") -> str:
+def get_token(request: "AuthHttpRequest") -> str:
     return str(request.user.last_login.utcnow().timestamp())
 
 
@@ -55,12 +58,12 @@ class CounterAdmin(SmartModelAdmin):
     def has_change_permission(self, request: "HttpRequest", obj: "Counter|None" = None) -> bool:
         return is_root(request)
 
-    @button()
+    @button()  # type: ignore[arg-type]
     def chart(self, request: "HttpRequest") -> "HttpResponse":
         return HttpResponseRedirect(reverse("charts:index"))
 
-    @button()
-    def collect(self, request: "HttpRequest") -> "HttpResponse":
+    @button()  # type: ignore[arg-type]
+    def collect(self, request: "HttpRequest") -> "HttpResponse":  # type: ignore[return]
         try:
             with atomic():
                 querysets, result = Counter.objects.collect()

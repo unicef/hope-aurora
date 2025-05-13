@@ -78,7 +78,7 @@ class TransactionTestStrategy(SaveToDB):
                 raise ArithmeticError
         except ArithmeticError:
             pass
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             ctx["exception"] = e
 
         return render(state.request, "registration/test_registration.html", ctx)
@@ -95,7 +95,7 @@ class SaveAndDisplayTestStrategy(SaveToDB):
                 record = super().save(fields_data, **kwargs)
                 ctx["record"] = record
                 ctx["admin_url"] = reverse("admin:registration_record_change", args=[record.pk])
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             ctx["exception"] = e
 
         return render(state.request, "registration/test_registration.html", ctx)

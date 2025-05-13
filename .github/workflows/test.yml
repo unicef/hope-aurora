@@ -143,21 +143,21 @@ jobs:
         verbose: false
         name: codecov-${{env.GITHUB_REF_NAME}}
 
-  release:
-    needs: [ test ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: DockerHub login
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build Distro
-        run:
-            aurora --version
-#            cd docker && make build
-#            docker push ${{needs.test.outputs.image}}
-#            docker inspect ${{needs.test.outputs.image}} | jq -r '.[0].Config.Labels'
-#            echo "::notice::✅ Image ${{needs.test.outputs.image}} built and pushed"
+#  release:
+#    needs: [ test ]
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#      - name: DockerHub login
+#        uses: docker/login-action@v3
+#        with:
+#          username: ${{ secrets.DOCKERHUB_USERNAME }}
+#          password: ${{ secrets.DOCKERHUB_TOKEN }}
+#      - name: Build Distro
+#        run:
+#            aurora --version
+##            cd docker && make build
+##            docker push ${{needs.test.outputs.image}}
+##            docker inspect ${{needs.test.outputs.image}} | jq -r '.[0].Config.Labels'
+##            echo "::notice::✅ Image ${{needs.test.outputs.image}} built and pushed"

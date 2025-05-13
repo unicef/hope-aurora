@@ -24,7 +24,7 @@ DEBUG_TOOLBAR_PANELS = [
     "debug_toolbar.panels.history.HistoryPanel",
     "debug_toolbar.panels.versions.VersionsPanel",
     "aurora.ddt_panels.StatePanel",
-    "aurora.ddt_panels.MigrationPanel",
+    # "aurora.ddt_panels.MigrationPanel",
     # "debug_toolbar.panels.timer.TimerPanel",
     "flags.panels.FlagsPanel",
     # "flags.panels.FlagChecksPanel",

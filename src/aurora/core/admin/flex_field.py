@@ -16,7 +16,6 @@ from jsoneditor.forms import JSONEditor
 from smart_admin.modeladmin import SmartModelAdmin
 from strategy_field import admin  # noqa: E402, I001, F401
 
-from ...administration.mixin import LoadDumpMixin
 from ..admin_sync import SyncMixin
 from ..forms import Select2Widget
 from ..models import FIELD_KWARGS, FlexFormField
@@ -29,6 +28,7 @@ if TYPE_CHECKING:
     from django.db.models import Field as DBField
     from django.forms import TypedChoiceField
     from django.forms.fields import Field as FormField
+    from django.utils.datastructures import _ListOrTuple
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +63,7 @@ class FlexFormFieldForm(forms.ModelForm):
 
 
 @register(FlexFormField)
-class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, OrderableAdmin, SmartModelAdmin):
+class FlexFormFieldAdmin(SyncMixin, ConcurrencyVersionAdmin, OrderableAdmin, SmartModelAdmin):  # type: ignore[misc]
     search_fields = ("name_deterministic", "label")
     list_display = ("label", "name", "flex_form", "type_name", "required", "enabled")
     list_editable = ["required", "enabled"]
@@ -91,7 +91,7 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             .select_related("flex_form")
         )
 
-    def get_readonly_fields(self, request: "HttpRequest", obj: "Model|None" = None) -> list[str] | tuple[str]:
+    def get_readonly_fields(self, request: "HttpRequest", obj: "Model|None" = None) -> "_ListOrTuple[str]":
         return super().get_readonly_fields(request, obj) if is_root(request) else []
 
     def formfield_for_dbfield(self, db_field: "DBField", request: "HttpRequest", **kwargs) -> "FormField | None":
@@ -107,9 +107,14 @@ class FlexFormFieldAdmin(LoadDumpMixin, SyncMixin, ConcurrencyVersionAdmin, Orde
             return db_field.formfield(**kwargs)  # type: ignore[return-value]
         return super().formfield_for_choice_field(db_field, request, **kwargs)
 
-    def get_changeform_initial_data(self, request: "HttpRequest") -> dict[str, str | list[str]]:
+    def get_changeform_initial_data(self, request: "HttpRequest") -> dict[str, str | list[str] | None]:
         initial = super().get_changeform_initial_data(request)
-        initial.setdefault("advanced", FlexFormField.FLEX_FIELD_DEFAULT_ATTRS)
+        current: dict
+        if current := initial.get("advanced"):  # type: ignore[assignment]
+            ret = FlexFormField.FLEX_FIELD_DEFAULT_ATTRS.copy()
+            initial["advanced"] = ret.update(**current)
+        else:
+            initial["advanced"] = FlexFormField.FLEX_FIELD_DEFAULT_ATTRS  # type: ignore[assignment]
         return initial
 
     @button(label="editor")  # type: ignore[arg-type]

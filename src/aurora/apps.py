@@ -1,4 +1,7 @@
 from django.apps import AppConfig
+from django.core import checks
+
+from .checks import check_azure_credentials
 
 
 class Config(AppConfig):
@@ -6,4 +9,4 @@ class Config(AppConfig):
     default = True
 
     def ready(self) -> None:
-        pass
+        checks.register(check_azure_credentials, "aaa")

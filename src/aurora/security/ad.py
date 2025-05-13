@@ -17,7 +17,7 @@ from requests import HTTPError
 
 from aurora.core.models import Organization, Project
 from aurora.registration.models import Registration
-from aurora.security.microsoft_graph import MicrosoftGraphAPI
+from aurora.security.microsoft_graph import MicrosoftGraphAPI, MicrosoftGraphAPIError
 from aurora.security.models import AuroraRole, User
 
 if TYPE_CHECKING:
@@ -25,12 +25,12 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# NOTE: add after UserModel migration "ad_uuid": "id",
 DJANGO_USER_MAP = {
     "username": "mail",
     "email": "mail",
     "first_name": "givenName",
     "last_name": "surname",
-    "ad_uuid": "id",
 }
 
 
@@ -134,7 +134,7 @@ class ADUSerMixin(ExtraButtonsMixin, admin.ModelAdmin[User]):
             self.message_user(request, str(e), messages.ERROR)
 
     @button(permission="account.can_load_from_ad")  # type: ignore[arg-type]
-    def load_ad_users(self, request: "AuthHttpRequest") -> TemplateResponse:
+    def load_ad_users(self, request: "AuthHttpRequest") -> TemplateResponse:  # noqa: C901, PLR0912, PLR0915
         ctx = self.get_common_context(
             request,
             None,
@@ -199,8 +199,12 @@ class ADUSerMixin(ExtraButtonsMixin, admin.ModelAdmin[User]):
                 AuroraRole.objects.bulk_create(users_role_to_bulk_create, ignore_conflicts=True)
                 ctx["results"] = results
                 return TemplateResponse(request, "admin/aurorauser/load_users.html", ctx)
+            except MicrosoftGraphAPIError as e:
+                self.message_user(request, str(e), messages.ERROR)
             except Exception as e:
                 logger.exception(e)
-                self.message_user(request, str(e), messages.ERROR)
+                raise
+                self.message_user(request, "UnHandled Error", messages.ERROR)
+
         ctx["form"] = form
         return TemplateResponse(request, "admin/aurorauser/load_users.html", ctx)

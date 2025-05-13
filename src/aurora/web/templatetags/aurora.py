@@ -5,11 +5,10 @@ import logging
 import re
 from typing import Any
 
-import markdown as md
+import markdown as mkd
 from PIL import Image, UnidentifiedImageError
 from django.template import Context, Library, Node
 from django.template.base import NodeList, Parser
-from django.utils.safestring import mark_safe
 
 from ...core.flags import parse_bool
 from ...core.utils import dict_get_nested, dict_setdefault, oneline
@@ -129,17 +128,17 @@ def link(registration: Registration) -> str:
     }
 
 
-@register.filter(name="markdown")
-def _markdown(value: str) -> str:
+@register.filter()
+def markdown(value: str) -> str:
     if value:
-        return mark_safe(md.markdown(value, extensions=["markdown.extensions.fenced_code"]))  # noqa: S308
+        return mkd.markdown(value, extensions=["markdown.extensions.fenced_code"])
     return ""
 
 
-@register.filter(name="md")
-def _md(value: str) -> str:
+@register.filter()
+def md(value: str) -> str:
     if value:
-        p = md.markdown(value, extensions=["markdown.extensions.fenced_code"])
+        p = mkd.markdown(value, extensions=["markdown.extensions.fenced_code"])
         return p.replace("<p>", "").replace("</p>", "")
     return ""
 

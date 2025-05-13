@@ -137,7 +137,7 @@ class RegistrationViewSet(SmartViewSet):
         return response
 
     @action(detail=True)
-    def csv(self, request: Request, pk: str) -> HttpResponse:
+    def csv(self, request: Request, pk: str) -> HttpResponse:  # noqa: C901, PLR0912
         r"""
         Return a CSV json for registration information.
 

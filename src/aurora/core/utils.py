@@ -19,7 +19,7 @@ from sys import getsizeof, stderr
 from typing import Mapping, Any
 
 import faker
-import qrcode
+from PIL.Image import Resampling
 from constance import config
 from dateutil.relativedelta import relativedelta
 from django import forms
@@ -37,6 +37,9 @@ from django.utils.html import format_html
 from django.utils.text import slugify
 from django.utils.timezone import is_aware
 from flags.state import flag_enabled
+from qrcode import constants
+from qrcode.main import QRCode
+from qrcode.util import QRData
 
 from aurora import VERSION
 from aurora.state import state
@@ -55,8 +58,7 @@ def has_token(request, *args, **kwargs):
 
 def is_root(request, *args, **kwargs):
     if hasattr(request, "user"):
-        # return flag_enabled("IS_ROOT")
-        return request.user.is_superuser and has_token(request)
+        return request.user.is_superuser and flag_enabled("IS_ROOT")
     return False
 
 
@@ -194,19 +196,19 @@ def get_bookmarks(request):
     return quick_links
 
 
-def get_qrcode(content):
+def get_qrcode(content: QRData | bytes | str) -> str:
     logo_link = Path(settings.BASE_DIR) / "web/static/unicef_logo.jpeg"
     from PIL import Image
 
-    logo = Image.open(logo_link)
+    file_logo = Image.open(logo_link)
     basewidth = 100
-    wpercent = basewidth / float(logo.size[0])
-    hsize = int(float(logo.size[1]) * float(wpercent))
-    logo = logo.resize((basewidth, hsize), Image.LANCZOS)
-    qr_code = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H)
+    wpercent = basewidth / float(file_logo.size[0])
+    hsize = int(float(file_logo.size[1]) * float(wpercent))
+    logo = file_logo.resize((basewidth, hsize), Resampling.LANCZOS)
+    qr_code = QRCode(error_correction=constants.ERROR_CORRECT_H)
     qr_code.add_data(content)
     qr_code.make()
-    qr_img = qr_code.make_image(fill_color="black", back_color="white").convert("RGB")
+    qr_img = qr_code.make_image(fill_color="black", back_color="white").convert("RGB")  # type: ignore[union-attr]
 
     # set size of QR code
     pos = ((qr_img.size[0] - logo.size[0]) // 2, (qr_img.size[1] - logo.size[1]) // 2)

@@ -12,7 +12,7 @@
 {% block content_title %}<h1>Form: {{ original.name }}</h1>{% endblock %}
 
 {% block action-content %}
-    <form method="post">
+    <form method="post" id="form_editor">
         <div id="formEditor">
             <div class="submit-row sticky">
                 <div>
@@ -26,8 +26,7 @@
                 <div class="panel output sticky">
                     <iframe id="widget_display" src="{% url "admin:core_flexform_widget_display" original.pk %}"></iframe>
                     <iframe id="widget_code" src="{% url "admin:core_flexform_widget_code" original.pk %}"></iframe>
-                    {# <iframe id="widget_attrs" #}
-                    {# src="{% url "admin:core_flexform_widget_attrs" original.pk %}"></iframe> #}
+                     <iframe id="widget_attrs" src="{% url "admin:core_flexform_widget_attrs" original.pk %}"></iframe>
                 </div>
                 <div class="panel settings">
                     <table>

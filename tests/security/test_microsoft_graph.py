@@ -3,38 +3,16 @@ from unittest import mock
 
 import pytest
 from requests import HTTPError
-from responses import _recorder
 
-from aurora.security.microsoft_graph import MicrosoftGraphAPI
+from aurora.security.microsoft_graph import MicrosoftGraphAPI, MicrosoftGraphAPIError
 
 # Note in case cassettes need to be refreshed
 #  See. https://github.com/getsentry/responses?tab=readme-ov-file#record-responses-to-files
 
 
-def get_markers_dict(request) -> dict[str, list]:
-    return {x.name: x.args[0] for x in request.node.own_markers}
-
-
 @pytest.fixture
 def api():
     return MicrosoftGraphAPI()
-
-
-@pytest.fixture
-def file_mocked_responses(request: pytest.FixtureRequest, mocked_responses):
-    markers = get_markers_dict(request)
-    file_path = markers.get("file_path")
-    record = markers.get("record", False)
-    if file_path:
-        if record:
-            _recorder.recorder.start()
-        else:
-            mocked_responses._add_from_file(file_path)
-    yield
-    if file_path and record:
-        _recorder.recorder.dump_to_file(file_path)
-        _recorder.recorder.stop()
-        _recorder.recorder.reset()
 
 
 @pytest.mark.file_path(Path(__file__).parent / "api.yaml")
@@ -86,5 +64,5 @@ def test_get_results_401(file_mocked_responses, api):
 
 def test_get_results_unknown(mocked_responses, api):
     with mock.patch("aurora.security.microsoft_graph.Response.raise_for_status", side_effect=HTTPError):
-        with pytest.raises(ValueError, match=r"You must provide 'uuid' or 'email' argument."):
+        with pytest.raises(MicrosoftGraphAPIError, match=r"You must provide 'uuid' or 'email' argument."):
             api.get_user_data()
