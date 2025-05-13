@@ -42,5 +42,5 @@ class SQLForm(forms.Form):
             raise
         except Exception as e:
             logger.exception(e)
-            raise ValidationError("ErrorExcuting command") from e
+            raise ValidationError("Error Executing command") from e
         return value

@@ -39,11 +39,12 @@ def save_expression(request: "AuthHttpRequest") -> JsonResponse:
     if form.is_valid():
         name = request.POST["name"]
         profile: UserProfile = request.user.profile
-        sql_stms = profile.custom_fields.get("sql_stm", {})
-        if len(sql_stms) < 5:
-            sql_stms[name] = form.cleaned_data["command"]
-            profile.custom_fields["sql_stm"] = sql_stms
-            profile.save()
+        sql_stms = profile.custom_fields.get("sql_stm", [])
+        if len(sql_stms) >= 5:
+            sql_stms = sql_stms[1:]
+        sql_stms.append((name, form.cleaned_data["command"]))
+        profile.custom_fields["sql_stm"] = sql_stms
+        profile.save()
 
         response = {"message": "Saved"}
     else:
