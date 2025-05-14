@@ -265,11 +265,6 @@ STORAGES = {
     },
 }
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "web/static"),
-    os.path.join(BASE_DIR, "flatpages/static"),
-]
-
 # -------- Added Settings
 ADMINS = env("ADMINS")
 AUTHENTICATION_BACKENDS = [

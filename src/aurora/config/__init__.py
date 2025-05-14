@@ -88,7 +88,8 @@ OPTIONS = {
     "SMART_ADMIN_BOOKMARKS": (parse_bookmarks, ""),
     "STATICFILES_STORAGE": (
         str,
-        "aurora.web.storage.ForgivingManifestStaticFilesStorage",
+        # "aurora.web.storage.ForgivingManifestStaticFilesStorage",
+        "django.contrib.staticfiles.storage.StaticFilesStorage",
     ),
     "STATIC_ROOT": (str, "/tmp/static/"),  # noqa
     "STATIC_URL": (str, "static/"),
