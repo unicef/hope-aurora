@@ -76,6 +76,7 @@ dependencies = [
   "msgpack>=1.1",
   "natural-keys",
   "pillow",
+  "pre-commit>=4.2",
   "psycopg2-binary",
   "pygments",
   "pyquery",
@@ -179,6 +180,9 @@ packages = [
 
 [tool.uv]
 package = true
+
+[tool.uv.sources]
+django-admin-sync = { path = "../../saxix/django-admin-sync" }
 
 [tool.nitpick]
 style = [

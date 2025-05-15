@@ -12,6 +12,7 @@
 {% block body_top %}
     <div class="ml-5 text-xl breadcrumbs">
         {% block breadcrumbs %}
+        &gt;<a href="{% url "index" %}">home</a>
         &gt;<a href="{% url "charts:index" %}">charts</a>
         {% endblock breadcrumbs %}
     </div>

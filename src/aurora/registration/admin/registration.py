@@ -6,7 +6,6 @@ from hashlib import md5
 from typing import TYPE_CHECKING
 
 from admin_extra_buttons.decorators import button, choice, view
-from admin_sync.mixin import SyncMixin
 from adminfilters.mixin import AdminAutoCompleteSearchMixin
 from dateutil.utils import today
 from django import forms
@@ -24,6 +23,8 @@ from django.urls import reverse, translate_url
 from django.utils.text import slugify
 from django_redis import get_redis_connection
 from jsoneditor.forms import JSONEditor
+
+from aurora.core.admin_sync import SyncMixin
 from smart_admin.modeladmin import SmartModelAdmin
 
 from aurora.core.admin.base import ConcurrencyVersionAdmin

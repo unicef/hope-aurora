@@ -38,7 +38,7 @@ class ValidatorAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin[Validat
     list_editable = ("trace", "active", "draft")
     list_display = ("label", "name", "target", "used_by", "trace", "active", "draft")
     list_filter = ("target", "active", "draft", "trace")
-    readonly_fields = ("version", "last_update_date", "code")
+    readonly_fields = ("version", "last_update_date")
     search_fields = ("name",)
     DEFAULTS = {
         Validator.FORM: {},  # cleaned data

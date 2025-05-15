@@ -193,9 +193,9 @@ def test_menu_encryption_symmetric(mock_state, browser: AuroraTestBrowser, regis
         browser.login()
         browser.open(url)
         browser.select_option_by_text("#btn-encryption", "Enable Symmetric")
-        assert browser.get_text("ul.messagelist") == "Symmetric Encryption Enabled"
+        assert browser.get_text("ul.info") == "Symmetric Encryption Enabled"
         browser.select_option_by_text("#btn-encryption", "Disable Symmetric")
-        assert browser.get_text("ul.messagelist") == "Encryption Not Enabled"
+        assert browser.get_text("ul.info") == "Encryption Not Enabled"
 
 
 def test_menu_encryption_asymmetric(mock_state, browser: AuroraTestBrowser, registration):
@@ -208,6 +208,6 @@ def test_menu_encryption_asymmetric(mock_state, browser: AuroraTestBrowser, regi
         browser.click("input[type=submit][value='Generate'")
         assert browser.get_text("#content h1").startswith("Key Pair Generated")
         browser.click_link_text("Done")
-        assert browser.get_text("ul.messagelist") == "RSA Encryption Enabled"
+        assert browser.get_text("ul.info") == "RSA Encryption Enabled"
         browser.select_option_by_text("#btn-encryption", "Remove Key")
         browser.click("#btn-remove")

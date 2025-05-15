@@ -1,5 +1,1 @@
-.submit-row a.button {
-  padding: 10px 15px;
-}
-
-/*# sourceMappingURL=aurora_admin.css.map */
+.submit-row a.button{padding:10px 15px}ul.info{padding:0;margin:0}ul.info li{display:block;font-weight:800;font-size:1rem;padding:10px 10px 10px 65px;margin:0 0 10px 0;background:var(--message-success-bg);background-size:16px auto;color:var(--body-fg);word-break:break-word}ul.info li.warning{background-color:var(--message-error-bg);background-size:14px auto}/*# sourceMappingURL=aurora_admin.css.map */
