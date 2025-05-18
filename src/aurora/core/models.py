@@ -214,7 +214,7 @@ _.is_adult = function(d) { return !_.is_child(d)};
 
     def debug(self, value, exc: Exception = None):
         error = None
-        hash = md5(value).hexdigest()
+        hsh = md5(value, usedforsecurity=False).hexdigest()
         if exc:
             if hasattr(exc, "error_dict"):
                 error = self.jspickle(
@@ -224,8 +224,8 @@ _.is_adult = function(d) { return !_.is_child(d)};
                 error = self.jspickle({"Error": exc.messages})
             else:
                 error = self.jspickle({"Error": str(exc)})
-        cache.set(f"validator-{state.request.user.pk}-{hash}-{self.pk}-error", error)
-        cache.set(f"validator-{state.request.user.pk}-{hash}-{self.pk}-payload", self.jspickle(value))
+        cache.set(f"validator-{state.request.user.pk}-{hsh}-{self.pk}-error", error)
+        cache.set(f"validator-{state.request.user.pk}-{hsh}-{self.pk}-payload", self.jspickle(value))
 
     def validate(self, value, registration=None):
         if value and (self.active or (self.draft and state.request.user.is_staff)):
