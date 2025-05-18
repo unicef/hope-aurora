@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING, Never, TypeVar
 
-from django.contrib.sites.models import Site
 from django.core import signals
 from django.template.defaultfilters import slugify
 
@@ -28,6 +27,8 @@ cache = get_cache_backend()
 
 
 def get_cache_key(name: str) -> str:
+    from django.contrib.sites.models import Site
+
     current_site = Site.objects.get_current()
     return "dbtemplates::%s::%s" % (slugify(name), current_site.pk)
 

@@ -1,18 +1,22 @@
 import logging
 from typing import Iterable
 
-from django.contrib.sites.models import Site
 from django.db import router
 from django.template import Origin, TemplateDoesNotExist
 from django.template.loaders.base import Loader as BaseLoader
 
-from dbtemplates.models import Template
-from dbtemplates.utils.cache import (
+from .models import Template
+from .utils.cache import (
     cache,
     get_cache_key,
     get_cache_notfound_key,
     set_and_return,
 )
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from django.contrib.sites.models import Site
+
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +63,8 @@ class Loader(BaseLoader):
         # * If all of the above steps have failed we generate a new key
         #   in the cache indicating that queries failed, with the current
         #   timestamp.
+        from django.contrib.sites.models import Site
+
         if template_name.startswith("debug_toolbar/"):
             raise TemplateDoesNotExist(template_name)
         site = Site.objects.get_current()

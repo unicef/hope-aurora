@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Any
 
 from admin_extra_buttons.decorators import button, view
-from admin_sync.mixin import SyncMixin
+from admin_sync.mixins import SyncPushMixin
 from django.conf import settings
 from django.shortcuts import render
 from smart_admin.modeladmin import SmartModelAdmin
@@ -17,7 +17,7 @@ INITIAL_CONTENT = """
 """
 
 
-class FlatPageAdmin(SyncMixin, SmartModelAdmin):
+class FlatPageAdmin(SyncPushMixin, SmartModelAdmin):
     form = FlatPageForm
     list_display = (
         "title",

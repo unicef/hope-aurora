@@ -75,7 +75,7 @@ class FlexFormFieldInline(OrderableAdmin, TabularInline):
 
 
 @register(FlexForm)
-class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):  # type: ignore[misc]
+class FlexFormAdmin(ConcurrencyVersionAdmin, SmartModelAdmin):
     SYNC_COOKIE = "sync"
     inlines = [
         FlexFormFieldInline,

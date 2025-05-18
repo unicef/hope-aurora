@@ -1,5 +1,4 @@
 from django.contrib.sites.managers import CurrentSiteManager
-from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models import signals
 from django.template import TemplateDoesNotExist
@@ -28,7 +27,7 @@ class Template(NaturalKeyModel, models.Model):
         help_text=_("Example: 'flatpages/default.html'"),
     )
     content = models.TextField(_("content"), blank=True)
-    sites = models.ManyToManyField(Site, verbose_name=_("sites"), blank=True)
+    sites = models.ManyToManyField("sites.Site", verbose_name=_("sites"), blank=True)
     creation_date = models.DateTimeField(_("creation date"), default=now)
     last_changed = models.DateTimeField(_("last changed"), default=now)
     active = models.BooleanField(default=True, blank=True)
@@ -73,6 +72,8 @@ def add_default_site(instance: Template, **kwargs) -> None:
     Called via Django's signal
     If the template in the database was added or changed, only if DBTEMPLATES_ADD_DEFAULT_SITE setting is set.
     """
+    from django.contrib.sites.models import Site
+
     if not settings.DBTEMPLATES_ADD_DEFAULT_SITE:
         return
     current_site = Site.objects.get_current()

@@ -63,7 +63,7 @@ class FlexFormFieldForm(forms.ModelForm):
 
 
 @register(FlexFormField)
-class FlexFormFieldAdmin(SyncMixin, ConcurrencyVersionAdmin, OrderableAdmin, SmartModelAdmin):  # type: ignore[misc]
+class FlexFormFieldAdmin(ConcurrencyVersionAdmin, OrderableAdmin, SmartModelAdmin):
     search_fields = ("name_deterministic", "label")
     list_display = ("label", "name", "flex_form", "type_name", "required", "enabled")
     list_editable = ["required", "enabled"]
@@ -110,11 +110,11 @@ class FlexFormFieldAdmin(SyncMixin, ConcurrencyVersionAdmin, OrderableAdmin, Sma
     def get_changeform_initial_data(self, request: "HttpRequest") -> dict[str, str | list[str] | None]:
         initial = super().get_changeform_initial_data(request)
         current: dict
-        if current := initial.get("advanced"):  # type: ignore[assignment]
+        if current := initial.get("advanced"):
             ret = FlexFormField.FLEX_FIELD_DEFAULT_ATTRS.copy()
             initial["advanced"] = ret.update(**current)
         else:
-            initial["advanced"] = FlexFormField.FLEX_FIELD_DEFAULT_ATTRS  # type: ignore[assignment]
+            initial["advanced"] = FlexFormField.FLEX_FIELD_DEFAULT_ATTRS
         return initial
 
     @button(label="editor")  # type: ignore[arg-type]

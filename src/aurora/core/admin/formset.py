@@ -21,7 +21,7 @@ cache = caches["default"]
 
 
 @register(FormSet)
-class FormSetAdmin(SyncMixin, SmartModelAdmin):
+class FormSetAdmin(SmartModelAdmin):
     list_display = (
         "name",
         "title",

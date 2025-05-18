@@ -1,6 +1,8 @@
 import json
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
+
+from django.contrib.admin.options import InlineModelAdmin
 
 from admin_extra_buttons.decorators import button
 from django import forms
@@ -33,7 +35,7 @@ class ValidatorTestForm(forms.Form):
 
 
 @register(Validator)
-class ValidatorAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin[Validator]):  # type: ignore[misc]
+class ValidatorAdmin(ConcurrencyVersionAdmin, SmartModelAdmin[Validator]):
     form = ValidatorForm
     list_editable = ("trace", "active", "draft")
     list_display = ("label", "name", "target", "used_by", "trace", "active", "draft")
@@ -54,7 +56,7 @@ class ValidatorAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin[Validat
     }
     object_history_template = "reversion-compare/object_history.html"
     change_form_template = None
-    inlines = []
+    # inlines = []
 
     def used_by(self, obj: Validator) -> str | None:
         if obj.target == Validator.FORM:

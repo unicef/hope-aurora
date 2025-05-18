@@ -2,7 +2,8 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 from admin_extra_buttons.decorators import button
-from admin_sync.utils import is_local
+
+# from admin_sync.utils import is_local
 from concurrency.api import disable_concurrency
 from django.conf import settings
 from django.core.cache import caches
@@ -44,4 +45,4 @@ class ConcurrencyVersionAdmin(CompareVersionAdmin):
 
     def has_change_permission(self, request: "HttpRequest", obj: "Model|None" = None) -> bool:
         orig = super().has_change_permission(request, obj)
-        return orig and (settings.DEBUG or is_root(request) or is_local(request))
+        return orig and (settings.DEBUG or is_root(request))

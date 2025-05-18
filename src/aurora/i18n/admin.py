@@ -81,7 +81,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[Message]:
         return (
-            super()
+            super()  # type: ignore[return-value]
             .get_queryset(request)
             .defer(
                 "msgcode",
@@ -261,7 +261,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
 
     @button()  # type: ignore[arg-type]
     def siblings(self, request: HttpRequest, pk: str) -> HttpResponse:
-        obj = self.get_object(request, pk)
+        obj: Message = self.get_object(request, pk)  # type: ignore[assignment]
         cl = reverse("admin:i18n_message_changelist")
         return HttpResponseRedirect(f"{cl}?msgcode__exact={obj.msgcode}")
 

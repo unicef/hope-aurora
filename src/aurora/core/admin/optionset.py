@@ -25,7 +25,7 @@ cache = caches["default"]
 
 
 @register(OptionSet)
-class OptionSetAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):  # type: ignore[misc]
+class OptionSetAdmin(ConcurrencyVersionAdmin, SmartModelAdmin):
     list_display = (
         "name",
         "id",

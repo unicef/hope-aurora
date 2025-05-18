@@ -1,5 +1,5 @@
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable
 
 from adminfilters.mixin import AdminAutoCompleteSearchMixin
 from django.contrib.admin import register
@@ -32,7 +32,7 @@ class OrganizationAdmin(SyncMixin, AdminAutoCompleteSearchMixin, LinkedObjectsMi
 
     def get_queryset(self, request: "HttpRequest") -> "QuerySet[Organization]":
         return (
-            super()
+            super()  # type: ignore[return-value]
             .get_queryset(request)
             .annotate(
                 name_deterministic=Collate("name", "und-x-icu"),
@@ -42,9 +42,7 @@ class OrganizationAdmin(SyncMixin, AdminAutoCompleteSearchMixin, LinkedObjectsMi
     def admin_sync_show_inspect(self) -> bool:
         return True
 
-    def get_readonly_fields(
-        self, request: "HttpRequest", obj: "Organization|None" = None
-    ) -> list[str] | tuple[str, ...]:
+    def get_readonly_fields(self, request: "HttpRequest", obj: "Organization|None" = None) -> Iterable[str]:  # type: ignore[override]
         ro = super().get_readonly_fields(request, obj)
         if obj and obj.pk:
             ro = list(ro) + ["slug"]

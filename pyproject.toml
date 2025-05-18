@@ -32,7 +32,7 @@ dependencies = [
   "django==5.2.*",
   "django-admin-extra-buttons",
   "django-admin-ordering",
-  "django-admin-sync",
+  "django-admin-sync>=0.8",
   "django-adminactions",
   "django-adminfilters",
   "django-anymail[mailjet]",
@@ -180,9 +180,6 @@ packages = [
 
 [tool.uv]
 package = true
-
-[tool.uv.sources]
-django-admin-sync = { path = "../../saxix/django-admin-sync" }
 
 [tool.nitpick]
 style = [

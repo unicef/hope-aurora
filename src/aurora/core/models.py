@@ -2,6 +2,7 @@ import json
 import logging
 import re
 from datetime import date, datetime, time
+from hashlib import md5
 from inspect import isclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Never, Generator
@@ -211,9 +212,9 @@ _.is_adult = function(d) { return !_.is_child(d)};
             return jsonfy(value)
         return value
 
-    def monitor(self, status, value, exc: Exception = None):
-        cache.set(f"validator-{state.request.user.pk}-{self.pk}-status", status)
+    def debug(self, value, exc: Exception = None):
         error = None
+        hash = md5(value).hexdigest()
         if exc:
             if hasattr(exc, "error_dict"):
                 error = self.jspickle(
@@ -223,18 +224,24 @@ _.is_adult = function(d) { return !_.is_child(d)};
                 error = self.jspickle({"Error": exc.messages})
             else:
                 error = self.jspickle({"Error": str(exc)})
-        cache.set(f"validator-{state.request.user.pk}-{self.pk}-error", error)
-        cache.set(f"validator-{state.request.user.pk}-{self.pk}-payload", self.jspickle(value))
+        cache.set(f"validator-{state.request.user.pk}-{hash}-{self.pk}-error", error)
+        cache.set(f"validator-{state.request.user.pk}-{hash}-{self.pk}-payload", self.jspickle(value))
 
     def validate(self, value, registration=None):
         if value and (self.active or (self.draft and state.request.user.is_staff)):
             engine = DukPYValidator(self.code)
-            engine.validate(value)
+            try:
+                engine.validate(value)
+            except Exception as e:
+                if self.trace:
+                    self.debug(value, e)
+                else:
+                    raise
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not self.name:
             self.name = namify(self.label)
-        super().save(force_insert, force_update, using, update_fields)
+        super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
 
     def get_script_url(self):
         return reverse("api:validator-script", args=[self.pk])

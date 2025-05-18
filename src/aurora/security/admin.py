@@ -1,8 +1,7 @@
 import logging
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING
 
 from admin_extra_buttons.decorators import button
-from admin_sync.exceptions import SyncError
 from admin_sync.protocol import LoadDumpProtocol
 from adminactions.helpers import AdminActionPermMixin
 from adminfilters.autocomplete import AutoCompleteFilter
@@ -22,8 +21,6 @@ from .forms import AuroraRoleForm
 from .utils import generate_pwd
 
 if TYPE_CHECKING:
-    from admin_sync.types import Collectable
-    from django.db.models import Model
     from django.http import HttpRequest, HttpResponse
 
     from ..types.http import AuthHttpRequest
@@ -44,15 +41,7 @@ def generate_passwords(modeladmin, request: "HttpRequest", queryset):  # noqa
 
 
 class GroupProtocol(LoadDumpProtocol):
-    def collect(self, data: "Collectable") -> "Iterable[Model]":
-        from django.contrib.auth.models import Group
-
-        if len(data) == 0:
-            raise SyncError("Empty queryset")  # pragma: no cover
-
-        if not isinstance(data[0], Group):  # pragma: no cover
-            raise ValueError("GroupProtocol can be used only for Registration")
-        return list(data)
+    pass
 
 
 class GroupAdmin(AdminActionPermMixin, SyncMixin, GroupAdmin_):  # type: ignore[misc]
@@ -104,7 +93,7 @@ class UserProfileAdmin(SmartModelAdmin):
     raw_id_fields = ("user",)
 
 
-class AuroraRoleAdmin(SyncMixin, SmartModelAdmin):
+class AuroraRoleAdmin(SmartModelAdmin):
     list_display = ("organization", "project", "registration", "user", "role")
     list_filter = (
         ("organization", AutoCompleteFilter),

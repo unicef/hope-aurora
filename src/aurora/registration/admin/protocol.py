@@ -1,5 +1,7 @@
 import logging
-from typing import TYPE_CHECKING, Any, Iterable
+from typing import TYPE_CHECKING, Any, Iterable, ClassVar, Protocol
+
+from django.core.serializers import get_serializer
 
 from admin_sync.collector import ForeignKeysCollector
 from admin_sync.exceptions import ProtocolError, SyncError
@@ -7,45 +9,39 @@ from admin_sync.protocol import LoadDumpProtocol
 from django.core.serializers.json import Deserializer as JsonDeserializer
 from django.db import connections, transaction
 from django.db.models import Model, Q
+from django.core.serializers.jsonl import Serializer as JsonLSerializer, Deserializer as JsonLDeserializer
 
 if TYPE_CHECKING:
     from admin_sync.types import Collectable
+    from django.core.serializers.base import Serializer, Deserializer
 
 logger = logging.getLogger(__name__)
 
 
 class AuroraSyncRegistrationProtocol(LoadDumpProtocol):
-    def serialize(self, data: Iterable) -> str:
-        return super().serialize(data)
-
-    def deserialize(self, payload: str) -> list[list[Any]]:
-        processed = []
-        try:
-            connection = connections[self.using]
-            with connection.constraint_checks_disabled(), transaction.atomic(self.using):
-                objects = JsonDeserializer(
-                    payload,
-                    ignorenonexistent=True,
-                    handle_forward_references=True,
-                )
-                for obj in objects:
-                    obj.save(using=self.using)
-                    processed.append(
-                        [
-                            obj.object._meta.object_name,
-                            str(obj.object.pk),
-                            str(obj.object),
-                        ]
-                    )
-        except Exception as e:
-            logger.exception(e)
-            raise ProtocolError(e) from None
-        return processed
+    # def serialize(self, data: Iterable) -> Any:
+    #     data = self.collect(data)
+    #     return self.serializer.serialize(data, use_natural_foreign_keys=True, use_natural_primary_keys=True)
+    #
+    # def deserialize(self, payload: str) -> list[list[Any]]:
+    #     processed = []
+    #     try:
+    #         connection = connections[self.using]
+    #         with connection.constraint_checks_disabled(), transaction.atomic(self.using):
+    #             objects = self.deserializer_class(payload, ignorenonexistent=True, handle_forward_references=True)
+    #             for obj in objects:
+    #                 obj.save(using=self.using)
+    #                 processed.append([obj.object._meta.object_name, str(obj.object.pk)])
+    #     except Exception as e:
+    #         logger.exception(e)
+    #         raise ProtocolError(e) from None
+    #     return processed
 
     def collect(self, data: "Collectable", collect_related: bool = True) -> "Iterable[Model]":
         from aurora.core.models import FlexFormField, FormSet
         from aurora.registration.models import Registration
 
+        reg: Registration
         if len(data) == 0:
             raise SyncError("Empty queryset")  # pragma: no cover
 
@@ -53,6 +49,8 @@ class AuroraSyncRegistrationProtocol(LoadDumpProtocol):
             raise ValueError("AuroraSyncRegistrationProtocol can be used only for Registration")
         return_value = []
         for reg in list(data):
+            return_value.extend([reg.project.organization, reg.project])
+
             c = ForeignKeysCollector(False)
             c.collect([reg.flex_form, reg.validator, reg])
             c.add(reg.scripts.all())

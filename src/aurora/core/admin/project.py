@@ -33,7 +33,7 @@ class ProjectAdmin(SyncMixin, AdminAutoCompleteSearchMixin, LinkedObjectsMixin, 
 
     def get_queryset(self, request: "HttpRequest") -> "QuerySet[Project]":
         return (
-            super()
+            super()  # type: ignore[return-value]
             .get_queryset(request)
             .annotate(
                 name_deterministic=Collate("name", "und-x-icu"),
@@ -41,7 +41,7 @@ class ProjectAdmin(SyncMixin, AdminAutoCompleteSearchMixin, LinkedObjectsMixin, 
             .select_related("organization")
         )
 
-    def get_readonly_fields(self, request: "HttpRequest", obj: "Project|None" = None) -> list[str] | tuple[str, ...]:
+    def get_readonly_fields(self, request: "HttpRequest", obj: "Project|None" = None) -> list[str] | tuple[str, ...]:  # type: ignore[override]
         ro = super().get_readonly_fields(request, obj)
         if obj and obj.pk:
             ro = list(ro) + ["slug"]
