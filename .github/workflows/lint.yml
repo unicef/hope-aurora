@@ -19,31 +19,34 @@ concurrency:
 
 permissions:
   contents: read
+  id-token: write
+  attestations: write
 
 jobs:
   changes:
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
-    name: check files
+    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name) || github.event_name == 'create'
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 1
+    defaults:
+      run:
+        shell: bash
     outputs:
-      lint: ${{ steps.changes.outputs.lint }}
-      docker: ${{ steps.changes.outputs.docker_base }}
+      run_tests: ${{ steps.changes.outputs.run_tests }}
     steps:
-      - run: git config --global --add safe.directory $(realpath .)
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4.1.7
       - id: changes
-        name: Check for backend file changes
-        uses: dorny/paths-filter@v3
+        name: Check for file changes
+        uses: dorny/paths-filter@0bc4621a3135347011ad047f9ecf449bf72ce2bd   # v3.0.0
         with:
           base: ${{ github.ref }}
           token: ${{ github.token }}
           filters: .github/file-filters.yml
 
   lint:
-    needs: changes
+    #    needs: changes
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false && needs.changes.outputs.lint
+    #    if: ${{ (!env.ACT) || (github.event.pull_request.draft == false && needs.changes.outputs.lint) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -54,27 +57,38 @@ jobs:
         run: tox -e lint
 
   mypy:
-    needs: changes
+    #    needs: changes
+    #    if: github.event.act || (github.event.pull_request.draft == false && needs.changes.outputs.lint)
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false && needs.changes.outputs.lint
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - run: pip install tox
-      - name: Check Python Package structure
+      - name: Restore cached vEnv
+        id: cache-venv-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: ./.tox
+          key: ${{ runner.os }}-venv
+      - name: Static Code checks
         run: tox -e mypy
-
+      - name: Save vEnv
+        id: cache-venv-save
+        uses: actions/cache/save@v4
+        with:
+          path: ./.tox
+          key: ${{ runner.os }}-venv
   package:
-    needs: changes
+    #    needs: changes
+    #    if: github.event.act || (github.event.pull_request.draft == false && needs.changes.outputs.lint)
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false && needs.changes.outputs.lint
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
       - run: pip install tox
       - name: Check Python Package structure
         run: tox -e pkg_meta

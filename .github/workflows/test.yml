@@ -50,7 +50,7 @@ jobs:
         filters: .github/file-filters.yml
   test:
     needs: [changes]
-    if: needs.changes.outputs.run_tests == 'true'
+#    if: needs.changes.outputs.run_tests == 'true'
     runs-on: ubuntu-latest
     services:
       redis:
@@ -91,7 +91,7 @@ jobs:
         cache-dependency-glob: |
           **/pyproject.toml
           **/uv.lock
-#          activate-environment: true
+        #          activate-environment: true
         python-version: 3.12
     - name: Restore cached vEnv
       id: cache-venv-restore
@@ -116,7 +116,7 @@ jobs:
 
     - name: Run Test suite
       run: |
-        uv run tox -e d52
+        uv run tox -e test
 
     - name: Archive selenium results
       uses: actions/upload-artifact@v4
