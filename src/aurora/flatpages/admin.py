@@ -1,10 +1,11 @@
 from typing import TYPE_CHECKING, Any
 
 from admin_extra_buttons.decorators import button, view
-from admin_sync.mixin import SyncMixin
 from django.conf import settings
 from django.shortcuts import render
 from smart_admin.modeladmin import SmartModelAdmin
+
+from aurora.core.admin_sync import SyncModelAdmin
 
 from .forms import FlatPageForm
 
@@ -17,7 +18,7 @@ INITIAL_CONTENT = """
 """
 
 
-class FlatPageAdmin(SyncMixin, SmartModelAdmin):
+class FlatPageAdmin(SyncModelAdmin, SmartModelAdmin):
     form = FlatPageForm
     list_display = (
         "title",

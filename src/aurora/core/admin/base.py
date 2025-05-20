@@ -2,12 +2,12 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 from admin_extra_buttons.decorators import button
-from admin_sync.utils import is_local
 from concurrency.api import disable_concurrency
 from django.conf import settings
 from django.core.cache import caches
 from reversion_compare.admin import CompareVersionAdmin
 
+from ..admin_sync import is_local
 from ..utils import is_root
 
 if TYPE_CHECKING:
