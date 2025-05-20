@@ -8,7 +8,6 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.static import serve
 
-from aurora.core.views import service_worker
 from aurora.web.views.sites import error_404
 
 actions.add_to_site(admin.site)
@@ -35,8 +34,6 @@ urlpatterns = [
     path("mdeditor/", include("mdeditor.urls")),
     path("i18n/", include("aurora.i18n.urls")),
     path("__debug__/", include(debug_toolbar.urls)),
-    path(r"serviceworker.js", service_worker, name="serviceworker"),
-    path(r"sysinfo/", include("django_sysinfo.urls")),
 ]
 
 urlpatterns += i18n_patterns(
