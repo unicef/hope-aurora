@@ -1,5 +1,4 @@
 .*
-!.git
 ~*
 *.min.min.js
 *.py[co]
@@ -21,6 +20,7 @@ package.json
 Makefile
 
 !tests/.coveragerc
+!.git
 !.gitignore
 !.dockerignore
 !.github

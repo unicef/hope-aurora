@@ -6,6 +6,9 @@ resolution-markers = [
     "python_full_version < '3.13'",
 ]
 
+[options]
+prerelease-mode = "explicit"
+
 [[package]]
 name = "amqp"
 version = "5.3.1"
@@ -186,7 +189,7 @@ requires-dist = [
     { name = "django", specifier = "==5.2.*" },
     { name = "django-admin-extra-buttons" },
     { name = "django-admin-ordering" },
-    { name = "django-admin-sync", specifier = ">=0.8" },
+    { name = "django-admin-sync", specifier = ">=0.9" },
     { name = "django-adminactions" },
     { name = "django-adminfilters" },
     { name = "django-anymail", extras = ["mailjet"] },
@@ -849,14 +852,14 @@ wheels = [
 
 [[package]]
 name = "django-admin-extra-buttons"
-version = "2.1"
+version = "2.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django-stubs" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a6/71/287eda9e4b3281b65712a929f9931b297ec0f6c632006517388d3e520d12/django_admin_extra_buttons-2.1.tar.gz", hash = "sha256:488c53e8f61c60ec3eb9bec10dbdbb8181a3d15dbf4ae42381efd8944db9671d", size = 13980, upload-time = "2025-04-04T17:40:06.073Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/26/5f/ed95a22ea69fdb661896f42bc2d3343685e5126c8206464004c674d5ac3f/django_admin_extra_buttons-2.1.1.tar.gz", hash = "sha256:3c9e5cdcf05c7c8003748c07960a56bb77c46a85a9bef2714777a715397f3288", size = 12903, upload-time = "2025-05-20T11:43:51.339Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bd/d2/90415b15a8e7dec4aea8035e3de70c1bbdf6363b91dfccae993928fe618c/django_admin_extra_buttons-2.1-py3-none-any.whl", hash = "sha256:1fd57628f478034e7da673ce58062b5f3a67921afbbadf77cbf41475599b4c66", size = 21732, upload-time = "2025-04-04T17:40:04.842Z" },
+    { url = "https://files.pythonhosted.org/packages/18/8f/db79e3fc78e5ac4972d760d43fedf99ad4bf7ed410031c6de0c72b237c41/django_admin_extra_buttons-2.1.1-py3-none-any.whl", hash = "sha256:4ebd96d67c1992d8d81ed6816545a9035007e00dec64b58bbd73f3ac3999e7e6", size = 21748, upload-time = "2025-05-20T11:43:48.745Z" },
 ]
 
 [[package]]
@@ -873,19 +876,18 @@ wheels = [
 
 [[package]]
 name = "django-admin-sync"
-version = "0.8"
+version = "0.9"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django-admin-extra-buttons" },
     { name = "django-concurrency" },
     { name = "django-stubs" },
-    { name = "natural-keys" },
     { name = "pytz" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6c/0e/2407745eadafada4ade39e1c12283974f66e2be633694b7cadb409b7de14/django_admin_sync-0.8.tar.gz", hash = "sha256:87945f9306575bba587d8f4407c53dc0c83e8e83d0eb0c060f31d68ed400dd1a", size = 9056, upload-time = "2025-05-18T11:09:44.496Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c2/78/270cb874c647b0645f06a1628b6f3d543e65de9de3d2aa49de8984213e53/django_admin_sync-0.9.tar.gz", hash = "sha256:47be9a595576723adc1062efa7810847b2c967d764cf8ce14ee9936a27656aa3", size = 9605, upload-time = "2025-05-20T15:35:00.897Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/33/bf/92511ccd3b64a617af528198abde61bcd36ee39a5b0d999bb2185336181d/django_admin_sync-0.8-py3-none-any.whl", hash = "sha256:9afe7a29d420045d66326e27cc1c43e03cd32af40d2c007abab3e3728e83ccfa", size = 16779, upload-time = "2025-05-18T11:09:42.778Z" },
+    { url = "https://files.pythonhosted.org/packages/7c/6d/691ecb9601b33d08168228afbfa086bd22572b7c9bbf1e1ea1f58801daf9/django_admin_sync-0.9-py3-none-any.whl", hash = "sha256:70ec06fdecca4cb9806278b7e412ef563e3f5e855874ef50d6020191ac6bb83e", size = 16851, upload-time = "2025-05-20T15:34:57.881Z" },
 ]
 
 [[package]]
@@ -3118,15 +3120,15 @@ wheels = [
 
 [[package]]
 name = "sentry-sdk"
-version = "2.28.0"
+version = "2.29.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "certifi" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5e/bb/6a41b2e0e9121bed4d2ec68d50568ab95c49f4744156a9bbb789c866c66d/sentry_sdk-2.28.0.tar.gz", hash = "sha256:14d2b73bc93afaf2a9412490329099e6217761cbab13b6ee8bc0e82927e1504e", size = 325052, upload-time = "2025-05-12T07:53:12.785Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/22/67/d552a5f8e5a6a56b2feea6529e2d8ccd54349084c84176d5a1f7295044bc/sentry_sdk-2.29.1.tar.gz", hash = "sha256:8d4a0206b95fa5fe85e5e7517ed662e3888374bdc342c00e435e10e6d831aa6d", size = 325518, upload-time = "2025-05-19T14:27:38.512Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9b/4e/b1575833094c088dfdef63fbca794518860fcbc8002aadf51ebe8b6a387f/sentry_sdk-2.28.0-py2.py3-none-any.whl", hash = "sha256:51496e6cb3cb625b99c8e08907c67a9112360259b0ef08470e532c3ab184a232", size = 341693, upload-time = "2025-05-12T07:53:10.882Z" },
+    { url = "https://files.pythonhosted.org/packages/f0/e5/da07b0bd832cefd52d16f2b9bbbe31624d57552602c06631686b93ccb1bd/sentry_sdk-2.29.1-py2.py3-none-any.whl", hash = "sha256:90862fe0616ded4572da6c9dadb363121a1ae49a49e21c418f0634e9d10b4c19", size = 341553, upload-time = "2025-05-19T14:27:36.882Z" },
 ]
 
 [[package]]
