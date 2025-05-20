@@ -7,7 +7,6 @@ import bitcaster_sdk
 from aurora.config import env
 
 logger = logging.getLogger(__name__)
-bitcaster_sdk.init()
 
 
 class BitcasterEvents(TextChoices):
@@ -24,10 +23,11 @@ class BitcasterEventManager:
     """
 
     def __init__(
-        self, project: str | None = env("BITCASTER_PRJ_SLUG"), application: str | None = env("BITCASTER_APP_SLUG")
+            self, project: str | None = env("BITCASTER_PRJ_SLUG"), application: str | None = env("BITCASTER_APP_SLUG")
     ) -> None:
         self.project = project
         self.application = application
+        bitcaster_sdk.init()
 
     CONTEXT = {
         BitcasterEvents.USER_REGISTERED: {
