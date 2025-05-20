@@ -102,7 +102,7 @@ OPTIONS = {
     "BITCASTER_APP_SLUG": (str, ""),
     "BITCASTER_PRJ_SLUG": (str, ""),
     "BITCASTER_BAE": (str, ""),
-
+    "BITCASTER_ENABLED": (bool, False)
 }
 
 

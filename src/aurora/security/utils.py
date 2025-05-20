@@ -6,6 +6,8 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
 
+from aurora.config import env
+
 if TYPE_CHECKING:
     from aurora.security.models import User
 
@@ -31,5 +33,13 @@ def generate_pwd(user_pk: str) -> str | None:
     recipient_list = [
         user.email,
     ]
-    send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list)
-    return f"{subject} sent to {user.first_name}!"
+    if env("BITCASTER_ENABLED"):
+        from aurora.core.bitcaster import BitcasterEvents
+        from aurora.core.bitcaster import BitcasterEventManager
+
+        bitcaster_manager = BitcasterEventManager()
+        bitcaster_manager.trigger(BitcasterEvents.GENERATE_PASSWORD,
+                                  {"user": user.first_name, "email": user.email, "pwd": pwd, "login_url": 'http://register.unicef.org'})
+    else:
+        send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list)
+        return f"{subject} sent to {user.first_name}!"
