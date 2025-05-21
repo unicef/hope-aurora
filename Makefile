@@ -37,23 +37,22 @@ i18n:  ## i18n support
 
 create-db:
 	dropdb -p 5432 --if-exists aurora
+	dropdb -p 5432 --if-exists aurora_remote
 	createdb -p 5432 aurora
+	createdb -p 5432 aurora_remote
 
 reset-db: create-db
 	./manage.py migrate
 
-reset-migrations:
-	@find src -name 000[1-9]*.py -type f -delete
-	./manage.py makemigrations aurora
-	./manage.py makemigrations i18n
-	./manage.py makemigrations security
-	./manage.py makemigrations core
-	./manage.py makemigrations registration
-	./manage.py makemigrations counters
-	./manage.py makemigrations dbtemplates
-
-	$(MAKE) create-db
 
 build:
 	rm -f dist/*
 	uv build
+
+local:
+	DATABASE_URL=postgres://postgres:@127.0.0.1/aurora python manage.py upgrade
+	DATABASE_URL=postgres://postgres:@127.0.0.1/aurora python manage.py runserver 127.0.0.1:8000
+
+remote:
+	DATABASE_URL=postgres://postgres:@127.0.0.1/aurora_remote python manage.py upgrade --organization UNICEF
+	DATABASE_URL=postgres://postgres:@127.0.0.1/aurora_remote python manage.py runserver 127.0.0.1:8001
