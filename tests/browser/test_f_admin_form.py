@@ -1,12 +1,12 @@
-import pytest
+from typing import TYPE_CHECKING
 
+import pytest
 from testutils.factories import FlexFormFieldFactory, FormFactory
 from testutils.selenium import AuroraTestBrowser
 
 from aurora.core.fields import (
     MultiCheckboxField,
 )
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from aurora.core.models import FlexForm

@@ -13,8 +13,9 @@ from ..models import Project
 from .protocols import AuroraSyncProjectProtocol
 
 if TYPE_CHECKING:
-    from django.db.models import QuerySet
+    from django.db.models import QuerySet, Model
     from django.http import HttpRequest
+    from django.utils.datastructures import _ListOrTuple
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ class ProjectAdmin(SyncMixin, AdminAutoCompleteSearchMixin, LinkedObjectsMixin, 
     protocol_class = AuroraSyncProjectProtocol
     autocomplete_fields = ["parent"]
 
-    def get_queryset(self, request: "HttpRequest") -> "QuerySet[Project]":
+    def get_queryset(self, request: "HttpRequest") -> "QuerySet":
         return (
             super()
             .get_queryset(request)
@@ -41,7 +42,7 @@ class ProjectAdmin(SyncMixin, AdminAutoCompleteSearchMixin, LinkedObjectsMixin, 
             .select_related("organization")
         )
 
-    def get_readonly_fields(self, request: "HttpRequest", obj: "Project|None" = None) -> list[str] | tuple[str, ...]:
+    def get_readonly_fields(self, request: "HttpRequest", obj: "Model|None" = None) -> "_ListOrTuple[str]":
         ro = super().get_readonly_fields(request, obj)
         if obj and obj.pk:
             ro = list(ro) + ["slug"]

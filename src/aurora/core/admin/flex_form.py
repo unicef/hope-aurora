@@ -14,6 +14,7 @@ from django.http import HttpRequest, HttpResponse
 from smart_admin.modeladmin import SmartModelAdmin
 
 from ..admin_sync import SyncMixin
+from ..forms import FlexFormBaseForm
 from ..models import FlexForm, FlexFormField, FormSet
 from ..utils import render
 from .base import ConcurrencyVersionAdmin
@@ -75,7 +76,7 @@ class FlexFormFieldInline(OrderableAdmin, TabularInline):
 
 
 @register(FlexForm)
-class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):  # type: ignore[misc]
+class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin[FlexForm]):
     SYNC_COOKIE = "sync"
     inlines = [
         FlexFormFieldInline,
@@ -100,10 +101,11 @@ class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):  # typ
     autocomplete_fields = ("validator", "project")
     ordering = ("name",)
     save_as = True
+    object: FlexForm
 
     def get_queryset(self, request: "HttpRequest") -> "QuerySet[FlexForm]":
         return (
-            super()
+            super()  # type: ignore[return-value]
             .get_queryset(request)
             .annotate(name_deterministic=Collate("name", "und-x-icu"))
             .prefetch_related("registration_set")
@@ -166,7 +168,7 @@ class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):  # typ
     @button()  # type: ignore[arg-type]
     def test(self, request: HttpRequest, pk: str) -> "HttpResponse":
         ctx = self.get_common_context(request, pk)
-        form_class = self.object.get_form_class()
+        form_class: type[FlexFormBaseForm] = self.object.get_form_class()
         if request.method == "POST":
             form = form_class(request.POST, initial=self.object.get_initial())
             if form.is_valid():

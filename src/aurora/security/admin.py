@@ -1,5 +1,5 @@
 import logging
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Collection
 
 from admin_extra_buttons.decorators import button
 from admin_sync.exceptions import SyncError
@@ -44,13 +44,13 @@ def generate_passwords(modeladmin, request: "HttpRequest", queryset):  # noqa
 
 
 class GroupProtocol(LoadDumpProtocol):
-    def collect(self, data: "Collectable") -> "Iterable[Model]":
+    def collect(self, data: "Collectable") -> "Collection[Model]":
         from django.contrib.auth.models import Group
 
-        if len(data) == 0:
+        if not data:
             raise SyncError("Empty queryset")  # pragma: no cover
 
-        if not isinstance(data[0], Group):  # pragma: no cover
+        if isinstance(data, list) and not isinstance(data[0], Group):  # pragma: no cover
             raise ValueError("GroupProtocol can be used only for Registration")
         return list(data)
 

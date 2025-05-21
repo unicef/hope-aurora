@@ -120,7 +120,7 @@ class RegistrationViewSet(SmartViewSet):
             flt = RecordFilter(request.GET, queryset=queryset)
             if flt.form.is_valid():
                 queryset = flt.filter_queryset(queryset)
-            page = self.paginate_queryset(queryset)
+            page = self.paginate_queryset(queryset)  # type: ignore[arg-type]
 
             if page is None:
                 serializer = DataTableRecordSerializer(

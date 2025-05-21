@@ -25,7 +25,7 @@ cache = caches["default"]
 
 
 @register(OptionSet)
-class OptionSetAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):  # type: ignore[misc]
+class OptionSetAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
     list_display = (
         "name",
         "id",
@@ -40,7 +40,7 @@ class OptionSetAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):  # ty
     object_history_template = "reversion-compare/object_history.html"
     exclude = ("columns",)
 
-    def get_queryset(self, request: "HttpRequest") -> "QuerySet[OptionSet]":
+    def get_queryset(self, request: "HttpRequest") -> "QuerySet":
         return super().get_queryset(request).annotate(name_deterministic=Collate("name", "und-x-icu"))
 
     @button()  # type: ignore[arg-type]

@@ -185,7 +185,7 @@ requires-dist = [
     { name = "django", specifier = "==5.2.*" },
     { name = "django-admin-extra-buttons" },
     { name = "django-admin-ordering" },
-    { name = "django-admin-sync" },
+    { name = "django-admin-sync", specifier = ">=0.9" },
     { name = "django-adminactions" },
     { name = "django-adminfilters" },
     { name = "django-anymail", extras = ["mailjet"] },
@@ -871,13 +871,19 @@ wheels = [
 
 [[package]]
 name = "django-admin-sync"
-version = "0.7.1"
+version = "0.9"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django-admin-extra-buttons" },
+    { name = "django-concurrency" },
+    { name = "django-stubs" },
+    { name = "pytz" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b4/c6/bffb6bba06b5d0399d385cd0532034d462a30832ce7f7a5071c705e232d3/django-admin-sync-0.7.1.tar.gz", hash = "sha256:70c1ff70affd05c62bbf809572ff28648e869c059294656c05364e7036cebe32", size = 45516, upload-time = "2023-01-21T06:01:28.24Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c2/78/270cb874c647b0645f06a1628b6f3d543e65de9de3d2aa49de8984213e53/django_admin_sync-0.9.tar.gz", hash = "sha256:47be9a595576723adc1062efa7810847b2c967d764cf8ce14ee9936a27656aa3", size = 9605, upload-time = "2025-05-20T15:35:00.897Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7c/6d/691ecb9601b33d08168228afbfa086bd22572b7c9bbf1e1ea1f58801daf9/django_admin_sync-0.9-py3-none-any.whl", hash = "sha256:70ec06fdecca4cb9806278b7e412ef563e3f5e855874ef50d6020191ac6bb83e", size = 16851, upload-time = "2025-05-20T15:34:57.881Z" },
+]
 
 [[package]]
 name = "django-adminactions"

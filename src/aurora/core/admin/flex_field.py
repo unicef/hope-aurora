@@ -63,7 +63,7 @@ class FlexFormFieldForm(forms.ModelForm):
 
 
 @register(FlexFormField)
-class FlexFormFieldAdmin(SyncMixin, ConcurrencyVersionAdmin, OrderableAdmin, SmartModelAdmin):  # type: ignore[misc]
+class FlexFormFieldAdmin(SyncMixin, ConcurrencyVersionAdmin, OrderableAdmin, SmartModelAdmin[FlexFormField]):
     search_fields = ("name_deterministic", "label")
     list_display = ("label", "name", "flex_form", "type_name", "required", "enabled")
     list_editable = ["required", "enabled"]
@@ -85,7 +85,7 @@ class FlexFormFieldAdmin(SyncMixin, ConcurrencyVersionAdmin, OrderableAdmin, Sma
 
     def get_queryset(self, request: "HttpRequest") -> "QuerySet[FlexFormField]":
         return (
-            super()
+            super()  # type: ignore[return-value]
             .get_queryset(request)
             .annotate(name_deterministic=Collate("name", "und-x-icu"))
             .select_related("flex_form")

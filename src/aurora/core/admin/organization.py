@@ -13,8 +13,9 @@ from ..models import Organization
 from .protocols import AuroraSyncOrganizationProtocol
 
 if TYPE_CHECKING:
-    from django.db.models import QuerySet
+    from django.db.models import QuerySet, Model
     from django.http import HttpRequest
+    from django.utils.datastructures import _ListOrTuple
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ class OrganizationAdmin(SyncMixin, AdminAutoCompleteSearchMixin, LinkedObjectsMi
     protocol_class = AuroraSyncOrganizationProtocol
     change_list_template = "admin/core/organization/change_list.html"
 
-    def get_queryset(self, request: "HttpRequest") -> "QuerySet[Organization]":
+    def get_queryset(self, request: "HttpRequest") -> "QuerySet":
         return (
             super()
             .get_queryset(request)
@@ -42,9 +43,7 @@ class OrganizationAdmin(SyncMixin, AdminAutoCompleteSearchMixin, LinkedObjectsMi
     def admin_sync_show_inspect(self) -> bool:
         return True
 
-    def get_readonly_fields(
-        self, request: "HttpRequest", obj: "Organization|None" = None
-    ) -> list[str] | tuple[str, ...]:
+    def get_readonly_fields(self, request: "HttpRequest", obj: "Model|None" = None) -> "_ListOrTuple[str]":
         ro = super().get_readonly_fields(request, obj)
         if obj and obj.pk:
             ro = list(ro) + ["slug"]
