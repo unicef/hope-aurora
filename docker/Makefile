@@ -1,5 +1,6 @@
 # envs to set before use this script
 .ONESHELL:
+DOCKER_IMAGE_NAME := unicef/hope-aurora
 VERSION := $(shell aurora --version | tr -d "Aurora, version, " | tr -ds "\+" "-")
 BUILD_DATE:="$(shell date +"%Y-%m-%d %H:%M")"
 SOURCE_COMMIT=$(shell git rev-parse --short HEAD)
@@ -23,6 +24,7 @@ help:
 			--cache-from ${DOCKER_IMAGE_NAME}:${VERSION}-production \
 			--cache-to type=inline,mode=max \
 			--target ${STAGE} \
+			--platform=linux/amd64 \
 			${BUILD_OPTIONS} \
 			-t ${DOCKER_IMAGE} \
 			-f docker/Dockerfile2 .
