@@ -1,8 +1,9 @@
-from typing import TYPE_CHECKING, Iterable, Collection, final
+from typing import TYPE_CHECKING, Collection, Iterable, final
 
 from admin_sync.collector import ForeignKeysCollector
 from admin_sync.exceptions import SyncError
 from admin_sync.protocol import LoadDumpProtocol
+
 from aurora.core.models import Organization, Project
 
 if TYPE_CHECKING:

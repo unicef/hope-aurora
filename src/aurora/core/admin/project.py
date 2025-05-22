@@ -13,7 +13,7 @@ from ..models import Project
 from .protocols import AuroraSyncProjectProtocol
 
 if TYPE_CHECKING:
-    from django.db.models import QuerySet, Model
+    from django.db.models import Model, QuerySet
     from django.http import HttpRequest
     from django.utils.datastructures import _ListOrTuple
 

@@ -1,14 +1,16 @@
 import pytest
 from django.contrib.auth.models import AnonymousUser
+from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
 from django.http import Http404
+from django.urls import reverse
 from testutils.factories import FlatPageFactory
 
 from aurora.flatpages.views import flatpage, render_flatpage
 
 
 @pytest.fixture
-def page(db):
+def page(db) -> FlatPage:
     pg = FlatPageFactory(url="/url/")
     pg.sites.add(Site.objects.get_current())
     return pg
@@ -30,7 +32,13 @@ def test_flatpages(rf, page, url):
     assert flatpage(req, url)
 
 
-def test_render_flatpage(rf, page):
+def test_flatpages_view(django_app, page: "FlatPage"):
+    url = reverse("flatpage", args=[page.url])
+    res = django_app.get(url)
+    assert res.status_code == 200
+
+
+def test_render_flatpage(rf, page: "FlatPage"):
     req = rf.get("/")
     req.user = AnonymousUser()
     assert render_flatpage(req, page)

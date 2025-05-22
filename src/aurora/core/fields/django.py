@@ -1,4 +1,5 @@
 from django import forms
+
 from .mixins import ConfigurableSmartField
 from .widgets import SmartDateWidget, SmartTextWidget
 

@@ -1,15 +1,15 @@
 import json
-from typing import TYPE_CHECKING, Any, reveal_type, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, reveal_type
 
+from admin_extra_buttons.mixins import ExtraButtonsMixin
 from django import forms
 from django.core.cache import caches
-from django.forms import Media, Form
+from django.forms import Form, Media
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.template.loader import get_template
 from django.utils.functional import cached_property
 
-from admin_extra_buttons.mixins import ExtraButtonsMixin
 from aurora.core.admin.editor import FlexEditor
 from aurora.core.fields.widgets import JavascriptEditor
 from aurora.core.forms import FlexFormBaseForm
@@ -18,8 +18,9 @@ from aurora.core.models import FlexForm, FlexFormField
 if TYPE_CHECKING:
     from django.contrib.admin import ModelAdmin
     from django.http import HttpRequest
-    from aurora.types.core.models import FlexFormForm
+
     from aurora.types.core.admin.form_editor import FormEditorForms, FormEditorTypes
+    from aurora.types.core.models import FlexFormForm
 
 cache = caches["default"]
 

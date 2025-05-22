@@ -9,7 +9,7 @@ from django import forms
 from django.contrib import messages
 from django.contrib.admin import register
 from django.core.cache import caches
-from django.db.models import JSONField, QuerySet, Model
+from django.db.models import JSONField, Model, QuerySet
 from django.db.models.functions import Collate
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from jsoneditor.forms import JSONEditor

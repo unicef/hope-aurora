@@ -1,4 +1,5 @@
 import csv
+from typing import TYPE_CHECKING
 
 from adminactions.api import delimiters, quotes
 from django import forms
@@ -10,10 +11,7 @@ from django.utils import formats
 from django.utils.translation import gettext as _
 
 from .fields.widgets import JavascriptEditor
-
 from .version_media import VersionMedia
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .models import CustomFieldType, FormSet

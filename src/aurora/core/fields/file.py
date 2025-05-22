@@ -2,6 +2,7 @@ from django import forms
 from django.conf import settings
 
 from aurora.i18n.get_text import gettext as _
+
 from .mixins import ConfigurableSmartField
 
 

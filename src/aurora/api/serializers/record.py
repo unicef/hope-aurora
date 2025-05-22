@@ -57,5 +57,5 @@ class DataTableRecordSerializer(serializers.ModelSerializer):
         fields["flatten"] = serializers.SerializerMethodField(read_only=True, default="N/A")
         return fields
 
-    def get_flatten(self, obj: Record) -> dict[str, Any]:
-        return build_dict(obj)
+    def get_flatten(self, data: dict[str, Any]) -> dict[str, Any]:
+        return build_dict(data)

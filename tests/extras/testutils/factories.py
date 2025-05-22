@@ -250,7 +250,7 @@ class AssociationFactory(AutoRegisterModelFactory):
 
 
 class TemplateFactory(AutoRegisterModelFactory):
-    name = factory.Sequence(lambda d: "Template-%s" % d)
+    name = factory.Sequence(lambda d: "Template-%s.html" % d)
     content = ""
 
     class Meta:

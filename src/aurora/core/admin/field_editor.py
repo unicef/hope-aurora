@@ -1,6 +1,7 @@
 import json
 from typing import TYPE_CHECKING, Any
 
+from admin_extra_buttons.mixins import ExtraButtonsMixin
 from django import forms
 from django.conf import settings
 from django.core.cache import caches
@@ -9,7 +10,6 @@ from django.shortcuts import render
 from django.template import Context, Template
 from django.utils.functional import cached_property
 
-from admin_extra_buttons.mixins import ExtraButtonsMixin
 from aurora.core.admin.editor import FlexEditor
 from aurora.core.fields.widgets import JavascriptEditor
 from aurora.core.forms import FlexFormBaseForm, VersionMedia

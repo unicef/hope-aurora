@@ -4,7 +4,6 @@ from django.urls import path
 from .views import (
     HomeView,
     LoginRouter,
-    MaintenanceView,
     PageView,
     ProbeView,
     QRCodeView,
@@ -19,7 +18,6 @@ urlpatterns = [
     path("logged-in/", LoginRouter.as_view(), name="logged-in"),
     path("page/<str:page>/", PageView.as_view(), name="page"),
     path("probe/", ProbeView.as_view(), name="probe"),
-    path("maintenance", MaintenanceView.as_view(), name="maintenance"),
     path("qrcode/", QRCodeView.as_view(), name="qrcode"),
     path("offline/", offline, name="offline"),
 ]

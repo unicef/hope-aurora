@@ -1,12 +1,9 @@
 import logging
 from collections import OrderedDict
 from functools import wraps
-from typing import Any, TypeVar
+from typing import Any
 
 from aurora.state import state
-
-from typing import TYPE_CHECKING
-
 
 logger = logging.getLogger(__name__)
 

@@ -17,6 +17,7 @@ from .base import ConcurrencyVersionAdmin
 
 if TYPE_CHECKING:
     from django.http import HttpRequest, HttpResponse
+
     from ...types.http import AuthHttpRequest
 
 

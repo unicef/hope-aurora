@@ -28,6 +28,7 @@ from ..serializers.record import DataTableRecordSerializer
 from .base import SmartViewSet
 
 if TYPE_CHECKING:
+    from django_stubs_ext import ValuesQuerySet
     from rest_framework.permissions import _SupportsHasPermission
 
 
@@ -180,7 +181,7 @@ class RegistrationViewSet(SmartViewSet):
                 filters, exclude = form.cleaned_data["filters"]
                 include_fields = form.cleaned_data["include"]
                 exclude_fields = form.cleaned_data["exclude"]
-                qs = (
+                qs: "ValuesQuerySet" = (
                     Record.objects.filter(registration__pk=pk)
                     .defer(
                         "storage",

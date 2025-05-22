@@ -1,9 +1,10 @@
+from typing import TYPE_CHECKING
+
 from django import forms
 from django.utils.translation import get_language
 
 from aurora.core.utils import oneline
 from aurora.state import state
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from aurora.core.models import FlexFormField

@@ -2,8 +2,9 @@ import secrets
 
 from django import forms
 
-from .mixins import ConfigurableSmartField
 from aurora.core.fields.widgets.captcha import CaptchaWidget
+
+from .mixins import ConfigurableSmartField
 
 NUMBERS = "0123456789"
 TYPES = ["bw", "wb"]
