@@ -110,6 +110,7 @@ RUN --mount=type=cache,target=/root/.uv-cache \
     uv --cache-dir=/root/.uv-cache pip install --no-deps /app/docker-wheel/*.* \
     && rm -fr /app/* dist/* \
 
+EXPOSE 80
 EXPOSE 8000
 ENTRYPOINT exec entrypoint.sh "$0" "$@"
 CMD ["run"]

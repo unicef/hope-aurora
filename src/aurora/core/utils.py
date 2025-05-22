@@ -61,10 +61,11 @@ def has_token(request, *args, **kwargs):
     )
 
 
-def is_root(request, *args, **kwargs):
+def is_root(request, *args, **kwargs) -> bool:
+    ret = False
     if hasattr(request, "user"):
-        return request.user.is_superuser and flag_enabled("IS_ROOT")
-    return False
+        ret = request.user.is_superuser and flag_enabled("IS_ROOT")
+    return ret
 
 
 @keep_lazy_text
