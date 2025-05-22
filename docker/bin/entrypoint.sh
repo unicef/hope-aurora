@@ -15,6 +15,7 @@ export DOLLAR='$'
 
 mkdir -p /var/run /var/nginx ${NGINX_CACHE_DIR} ${MEDIA_ROOT} ${STATIC_ROOT}
 echo "created support dirs /var/run '${MEDIA_ROOT}' '${STATIC_ROOT}' "
+echo "Startup command is: '$1'"
 
 case "$1" in
     "run")
