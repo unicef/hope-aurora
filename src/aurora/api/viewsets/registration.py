@@ -121,7 +121,7 @@ class RegistrationViewSet(SmartViewSet):
             flt = RecordFilter(request.GET, queryset=queryset)
             if flt.form.is_valid():
                 queryset = flt.filter_queryset(queryset)
-            page = self.paginate_queryset(queryset)  # type: ignore[arg-type]
+            page = self.paginate_queryset(queryset)
 
             if page is None:
                 serializer = DataTableRecordSerializer(
@@ -181,8 +181,8 @@ class RegistrationViewSet(SmartViewSet):
                 filters, exclude = form.cleaned_data["filters"]
                 include_fields = form.cleaned_data["include"]
                 exclude_fields = form.cleaned_data["exclude"]
-                qs: "ValuesQuerySet" = (
-                    Record.objects.filter(registration__pk=pk)
+                qs: "ValuesQuerySet[Record, dict]" = (
+                    Record.objects.filter(registration__pk=pk)  # type: ignore[assignment]
                     .defer(
                         "storage",
                         "counters",
