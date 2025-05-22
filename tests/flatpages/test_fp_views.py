@@ -3,7 +3,6 @@ from django.contrib.auth.models import AnonymousUser
 from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
 from django.http import Http404
-from django.urls import reverse
 from testutils.factories import FlatPageFactory
 
 from aurora.flatpages.views import flatpage, render_flatpage
@@ -33,7 +32,7 @@ def test_flatpages(rf, page, url):
 
 
 def test_flatpages_view(django_app, page: "FlatPage"):
-    url = reverse("flatpage", args=[page.url])
+    url = page.get_absolute_url()
     res = django_app.get(url)
     assert res.status_code == 200
 
