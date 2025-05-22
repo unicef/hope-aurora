@@ -70,17 +70,13 @@ jobs:
           cache-dependency-glob: |
             **/pyproject.toml
             **/uv.lock
-      #          activate-environment: true
           python-version: 3.13.1
-#
-#      - uses: actions/setup-python@v5
-#        with:
-#          python-version: '3.13.1'
-      - run: pip install tox
+
+      - run: uv sync
       - name: Check Python Package structure
         run: |
-          tox --version
-          tox -re mypy
+          uv run tox --version
+          uv run tox -re mypy
 
   package:
     needs: changes
