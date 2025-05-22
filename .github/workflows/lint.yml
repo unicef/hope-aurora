@@ -60,23 +60,13 @@ jobs:
     if: github.event.pull_request.draft == false && needs.changes.outputs.mypy
     steps:
       - uses: actions/checkout@v4
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-python@v5
         with:
-          version: latest
-          enable-cache: true
-          prune-cache: false
-          cache-local-path: ./uv-cache
-          cache-dependency-glob: |
-            **/pyproject.toml
-            **/uv.lock
-          python-version: 3.13.1
-
-      - run: uv sync
+          python-version: '3.13.1'
+      - run: pip install tox==4.26.0
       - name: Check Python Package structure
         run: |
-          uv run tox --version
-          uv run tox -re mypy
+          tox -re mypy
 
   package:
     needs: changes

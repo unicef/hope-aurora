@@ -180,9 +180,9 @@ requires-dist = [
     { name = "celery" },
     { name = "channels", extras = ["daphne"] },
     { name = "channels-redis" },
-    { name = "cryptography" },
+    { name = "cryptography", specifier = ">=45" },
     { name = "django", specifier = "==5.2.*" },
-    { name = "django-admin-extra-buttons" },
+    { name = "django-admin-extra-buttons", specifier = ">=2.1.1" },
     { name = "django-admin-ordering" },
     { name = "django-admin-sync", specifier = ">=0.9" },
     { name = "django-adminactions" },
@@ -257,7 +257,7 @@ dev = [
     { name = "pytest-xdist" },
     { name = "responses" },
     { name = "seleniumbase" },
-    { name = "tox", specifier = "==4.26.0" },
+    { name = "tox", specifier = "==4.26" },
     { name = "watchdog" },
 ]
 docs = [
