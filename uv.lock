@@ -158,6 +158,7 @@ docs = [
     { name = "pymdown-extensions" },
 ]
 mypy = [
+    { name = "django-stubs", extra = ["compatible-mypy"] },
     { name = "djangorestframework-stubs" },
     { name = "lxml-stubs" },
     { name = "mypy" },
@@ -285,6 +286,7 @@ docs = [
     { name = "pymdown-extensions", specifier = ">=10.7.1" },
 ]
 mypy = [
+    { name = "django-stubs", extras = ["compatible-mypy"] },
     { name = "djangorestframework-stubs" },
     { name = "lxml-stubs" },
     { name = "mypy" },
