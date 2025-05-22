@@ -28,7 +28,8 @@ jobs:
     timeout-minutes: 3
     outputs:
       lint: ${{ steps.changes.outputs.lint }}
-      docker: ${{ steps.changes.outputs.docker_base }}
+      mypy: ${{ steps.changes.outputs.mypy }}
+      package: ${{ steps.changes.outputs.package }}
     steps:
       - run: git config --global --add safe.directory $(realpath .)
       - uses: actions/checkout@v4
@@ -56,15 +57,15 @@ jobs:
   mypy:
     needs: changes
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false && needs.changes.outputs.lint
+    if: github.event.pull_request.draft == false && needs.changes.outputs.mypy
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13.1'
       - run: pip install tox
       - name: Check Python Package structure
-        run: tox -e mypy
+        run: tox -re mypy
 
   package:
     needs: changes

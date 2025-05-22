@@ -4,7 +4,7 @@ docker: &docker
   - added|modified: './docker/*'
 
 dependencies: &dependencies
-  - 'pdm.lock'
+  - 'uv.lock'
   - 'pyproject.toml'
 
 actions: &actions
@@ -19,9 +19,14 @@ changelog:
   - added|modified: 'changes/**'
   - 'CHANGELOG.md'
 
+package:
+  - *python
+  - *dependencies
+
 mypy:
   - *python
   - 'mypy.ini'
+  - 'uv.lock'
 
 run_tests:
   - *actions
@@ -35,7 +40,6 @@ migrations:
 
 lint:
   - *python
-  - '.flake8'
   - 'pyproject.toml'
 
 docs:
