@@ -109,8 +109,7 @@ dev = [
   "pytest-xdist",
   "responses",
   "seleniumbase",
-  "tox",
-  "types-jmespath>=1.0.2.20240106",
+  "tox==4.26",
   "watchdog",
 ]
 
