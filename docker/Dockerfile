@@ -4,7 +4,6 @@ ARG VERSION
 ARG GIT_SHA
 
 RUN apt-get update \
-#    && apt-get upgrade \
     && apt-get install -y --no-install-recommends \
                 gdal-bin \
                 gettext \
@@ -49,50 +48,7 @@ zlib1g-dev  \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends gnupg wget curl unzip && \
-    wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
-    echo "deb http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google.list && \
-    apt-get update -y && \
-    apt-get install -y --no-install-recommends google-chrome-stable && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /var/cache/apt/* && \
-    CHROME_VERSION=$(google-chrome --product-version) && \
-    wget -q --continue -P /chromedriver "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$CHROME_VERSION/linux64/chromedriver-linux64.zip" && \
-    unzip /chromedriver/chromedriver* -d /usr/local/bin/ && \
-    rm -rf /chromedriver
-
 RUN pip install --no-cache-dir uv uwsgi
-
-# ------- tests -------
-FROM builder AS tests
-ARG BUILD_DATE
-ARG VERSION
-ARG GIT_SHA
-
-LABEL distro="tests"
-LABEL org.opencontainers.image.created="$BUILD_DATE"
-LABEL org.opencontainers.image.version="$VERSION"
-
-
-ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin \
-    DJANGO_SETTINGS_MODULE=aurora.config.settings \
-    PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONPATH=""\
-    UV_PROJECT_ENVIRONMENT=/venv \
-    VIRTUAL_ENV=/venv \
-    UWSGI_PROCESSES=4
-
-WORKDIR /app
-ADD uv.lock README.md MANIFEST.in pyproject.toml /app/
-ADD src /app/src/
-
-RUN --mount=type=cache,target=/root/.uv-cache \
-      uv sync --cache-dir=/root/.uv-cache \
-        --python=/usr/local/bin/python \
-        --python-preference=system \
-        --frozen
 
 # ------- production only deps-------
 FROM builder AS production
@@ -100,6 +56,7 @@ FROM builder AS production
 WORKDIR /app
 COPY uv.lock README.md MANIFEST.in pyproject.toml /app/
 COPY src /app/src/
+COPY src/aurora/version.py /app/src/aurora/version.py
 ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -107,10 +64,11 @@ ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin \
     UV_PROJECT_ENVIRONMENT=/venv \
     VIRTUAL_ENV=/venv
 
-RUN --mount=type=cache,target=/root/.uv-cache \
-    uv sync --cache-dir=/root/.uv-cache \
+RUN uv sync \
         --python=/usr/local/bin/python \
         --python-preference=system \
+        --no-install-package aurora \
+        --no-install-project \
         --no-dev --no-editable --frozen
 
 
@@ -142,15 +100,17 @@ ADD docker/bin/* /usr/local/bin/
 
 ADD uv.lock README.md MANIFEST.in pyproject.toml /app/
 ADD src /app/src/
+ADD docker-wheel /app/docker-wheel/
+COPY src/aurora/version.py /app/src/aurora/version.py
 
 COPY --from=production /venv /venv
 COPY --from=builder /usr/local/bin/uwsgi /usr/local/bin/uv /usr/local/bin/
 
 RUN --mount=type=cache,target=/root/.uv-cache \
-    uv build \
-    && uv --cache-dir=/root/.uv-cache pip install --no-deps dist/*.whl \
+    uv --cache-dir=/root/.uv-cache pip install --no-deps /app/docker-wheel/*.* \
     && rm -fr /app/* dist/* \
 
+EXPOSE 80
 EXPOSE 8000
 ENTRYPOINT exec entrypoint.sh "$0" "$@"
 CMD ["run"]

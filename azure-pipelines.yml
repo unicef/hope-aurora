@@ -12,7 +12,7 @@ resources:
 
 variables:
   - name: Docker.filePath
-    value: "**/docker/Dockerfile2"
+    value: "**/docker/Dockerfile"
   - name: Docker.repository
     value: "flex-registration"
   - name: buildDate
