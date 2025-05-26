@@ -174,10 +174,6 @@ include = [
   "src/dbtemplates/**/*.*",
 ]
 
-[tool.hatch.build.targets.wheel]
-only-packages = false
-only-include = [  ]
-
 [tool.uv]
 package = true
 no-binary = true
