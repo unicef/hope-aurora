@@ -84,8 +84,11 @@ dependencies = [
   "social-auth-app-django",
   "sqlparse",
 ]
+
 urls.Documentation = "https://unicef.github.io/hope-aurora/"
 urls.Homepage = "https://github.com/unicef/hope-aurora"
+urls.Issues = "https://github.com/unicef/hope-aurora/issues"
+urls.Repository = "https://github.com/unicef/hope-aurora"
 
 scripts.aurora = "aurora.cli:cli"
 
@@ -130,7 +133,6 @@ docs = [
   "mkdocs-link-marker>=0.1.3",
   "mkdocs-macros-plugin>=1.0.5",
   "mkdocs-material>=9.5.36",
-  "mkdocs-minify-plugin>=0.8",
   "mkdocs-redirects>=1.2.1",
   "mkdocs-simple-hooks>=0.1.5",
   "mkdocstrings[python]>=0.24.1",
@@ -158,6 +160,7 @@ mypy = [
 
 [tool.hatch]
 build.hooks.vcs.version-file = "src/aurora/version.py"
+build.skip-excluded-dirs = true
 version.source = "vcs"
 raw-options = { root = "../.." }
 
@@ -172,13 +175,12 @@ include = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = [
-  "src/aurora",
-  "src/dbtemplates",
-]
+only-packages = false
+only-include = [  ]
 
 [tool.uv]
 package = true
+no-binary = true
 
 [tool.nitpick]
 style = [
