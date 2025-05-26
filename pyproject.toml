@@ -6,7 +6,7 @@ requires = [
 ]
 
 [project]
-name = "unicef-hope-aurora"
+name = "aurora"
 description = ""
 readme = "README.md"
 license = { text = "MIT" }
@@ -94,8 +94,6 @@ scripts.aurora = "aurora.cli:cli"
 
 [dependency-groups]
 dev = [
-  "check-manifest>=0.50",
-  "check-wheel-contents>=0.6.1",
   "coverage",
   "django-webtest>=1.9.13",
   "factory-boy",
@@ -112,7 +110,7 @@ dev = [
   "pytest-xdist",
   "responses",
   "seleniumbase",
-  "tox==4.26",
+  "tox>=4.2",
   "watchdog",
 ]
 
@@ -158,20 +156,30 @@ mypy = [
   "types-requests",
 ]
 
-[tool.hatch]
-build.hooks.vcs.version-file = "src/aurora/version.py"
-build.skip-excluded-dirs = true
-version.source = "vcs"
-raw-options = { root = "../.." }
+[tool.hatch.build]
+hooks.vcs.version-file = "src/aurora/version.py"
+skip-excluded-dirs = true
 
-[tool.hatch.version.raw-options]
-local_scheme = "no-local-version"
+[tool.hatch.version]
+source = "vcs"
+path = "src/aurora/version.py"
+raw-options = { local_scheme = "no-local-version", root = "." }
+
+[tool.hatch.metadata]
+allow-direct-references = false
 
 [tool.hatch.build.targets.sdist]
 ignore-vcs = true
 include = [
   "src/aurora/**/*.*",
   "src/dbtemplates/**/*.*",
+]
+
+[tool.hatch.build.targets.wheel]
+only-packages = false
+packages = [
+  "src/aurora",
+  "src/dbtemplates",
 ]
 
 [tool.uv]

@@ -19,11 +19,11 @@ echo "Startup command is: '$1'"
 
 case "$1" in
     "run")
-        envsubst < /conf/nginx.conf.tpl > /conf/nginx.conf && nginx -tc /conf/nginx.conf
+        envsubst < /conf/nginx.conf.tpl > /conf/nginx.conf && /usr/sbin/nginx -tc /conf/nginx.conf
 
         django-admin upgrade --no-input
 
-        nginx -c /conf/nginx.conf
+        /usr/sbin/nginx -c /conf/nginx.conf
         exec uwsgi --ini /conf/uwsgi.ini
 
     ;;
