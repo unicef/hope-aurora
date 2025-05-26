@@ -6,7 +6,7 @@ requires = [
 ]
 
 [project]
-name = "aurora"
+name = "unicef-hope-aurora"
 description = ""
 readme = "README.md"
 license = { text = "MIT" }

@@ -49,7 +49,7 @@ RUN pip install uwsgi
 FROM base_os AS dist
 COPY --from=builder /usr/local/bin/uwsgi /usr/local/bin/
 
-ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin \
+ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin:/usr/sbin \
     VERSION=$VERSION \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \

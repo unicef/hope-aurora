@@ -7,7 +7,7 @@ STAGE?=dist
 TAG?=${VERSION}
 
 help:
-	@echo "Docke"
+	@echo "Docker"
 
 build: ## build docker image
 	@cd .. && uv build --wheel -o docker/conf
