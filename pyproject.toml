@@ -109,7 +109,7 @@ dev = [
   #  "pytest-xdist",
   "responses",
   "seleniumbase==4.38.2",
-  #  "tox>=4.2",
+  "tox>=4.2",
   #  "watchdog",
 ]
 
