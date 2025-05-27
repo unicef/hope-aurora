@@ -12,7 +12,7 @@ resources:
 
 variables:
   - name: Docker.filePath
-    value: "**/docker/Dockerfile2"
+    value: "**/docker/Dockerfile"
   - name: Docker.repository
     value: "flex-registration"
   - name: buildDate
@@ -51,12 +51,6 @@ stages:
           vmImage: ubuntu-latest
         displayName: "Build and Push"
         steps:
-          - script: curl -LsSf https://astral.sh/uv/install.sh | sh
-            displayName: "Install uv"
-
-          - script: uv build --sdist -o docker-wheel
-            displayName: "Build package"
-
           - task: Docker@2
             inputs:
               containerRegistry: '$(Docker.registry)'
