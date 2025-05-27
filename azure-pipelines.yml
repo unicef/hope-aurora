@@ -64,6 +64,13 @@ stages:
             env: { sourceVersion: $(Build.SourceVersion) }
             displayName: Git Hash 7-digit
             continueOnError: true # for first build, no cache
+
+          - script: curl -LsSf https://astral.sh/uv/install.sh | sh
+            displayName: "Install uv"
+
+          - script: cd .. && uv build --sdist
+            displayName: "Build package"
+
           - task: Docker@2
             displayName: Build
             inputs:
