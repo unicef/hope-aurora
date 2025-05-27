@@ -143,21 +143,17 @@ jobs:
         verbose: false
         name: codecov-${{env.GITHUB_REF_NAME}}
 
-#  release:
-#    needs: [ test ]
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v4
-#      - name: DockerHub login
-#        uses: docker/login-action@v3
-#        with:
-#          username: ${{ secrets.DOCKERHUB_USERNAME }}
-#          password: ${{ secrets.DOCKERHUB_TOKEN }}
-#      - name: Build Distro
-#        run:
-#            aurora --version
-##            cd docker && make build
-##            docker push ${{needs.test.outputs.image}}
-##            docker inspect ${{needs.test.outputs.image}} | jq -r '.[0].Config.Labels'
-##            echo "::notice::✅ Image ${{needs.test.outputs.image}} built and pushed"
+    - run: uv build --wheel
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: package
+        path: dist/*
+
+    - name: Trigger dockerize workflow
+      run: |
+        curl -X POST \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          https://api.github.com/repos/${{ github.repository }}/actions/workflows/dockerize.yml/dispatches \
+          -d "{\"ref\":\"refs/tags/${{ github.ref_name }}\", \"inputs\": {\"version\": \"\", \"tag\": \"${{ github.ref_name }}\"}"
