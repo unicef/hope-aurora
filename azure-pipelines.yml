@@ -68,7 +68,7 @@ stages:
           - script: curl -LsSf https://astral.sh/uv/install.sh | sh
             displayName: "Install uv"
 
-          - script: cd .. && uv build --sdist
+          - script: uv build --sdist
             displayName: "Build package"
 
           - task: Docker@2
