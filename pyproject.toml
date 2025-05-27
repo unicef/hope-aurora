@@ -38,11 +38,11 @@ dependencies = [
   "django-anymail[mailjet]",
   "django-appconf",
   #  "django-bitfield",
-  #  "django-click",
+  "django-click",
   #  "django-concurrency",
   "django-constance",
   "django-cors-headers",
-  #  "django-csp",
+  "django-csp",
   "django-debug-toolbar",
   "django-filter",
   "django-flags",
@@ -67,25 +67,24 @@ dependencies = [
   "django-sysinfo",
   "django-tinymce",
   "djangorestframework",
-  #  "djangorestframework-datatables",
+  "djangorestframework-datatables",
   "dukpy>=0.5",
-  #  "faker",
+  "faker",
   "jmespath",
   #  "jsonpickle",
-  #  "markdown",
+  "markdown",
   #  "msgpack>=1.1",
   "natural-keys",
   #  "pillow",
   "psycopg2-binary",
   #  "pygments",
-  #  "pyquery",
+  "pyquery",
   "qrcode",
   "sentry-sdk",
   "setuptools",
   "social-auth-app-django",
   #  "sqlparse",
 ]
-
 urls.Documentation = "https://unicef.github.io/hope-aurora/"
 urls.Homepage = "https://github.com/unicef/hope-aurora"
 urls.Issues = "https://github.com/unicef/hope-aurora/issues"
@@ -96,13 +95,12 @@ scripts.aurora = "aurora.cli:cli"
 [dependency-groups]
 dev = [
   "coverage",
-  #  "django-webtest>=1.9.13",
+  "django-webtest>=1.9.13",
   "factory-boy",
-  #  "freezegun",
+  "freezegun",
   #  "pdbpp",
   #  "pip-licenses>=5",
-  #  "pre-commit",
-  #  "pyquery",
+  "pre-commit",
   "pytest",
   "pytest-cov",
   "pytest-django",
@@ -157,17 +155,13 @@ mypy = [
   "types-requests",
 ]
 
-[tool.hatch.build]
-hooks.vcs.version-file = "src/aurora/version.py"
-skip-excluded-dirs = true
+[tool.hatch]
+build.hooks.vcs.version-file = "src/aurora/version.py"
+version.source = "vcs"
+raw-options = { root = "../.." }
 
-[tool.hatch.version]
-source = "vcs"
-path = "src/aurora/version.py"
-raw-options = { local_scheme = "no-local-version", root = "." }
-
-[tool.hatch.metadata]
-allow-direct-references = false
+[tool.hatch.version.raw-options]
+local_scheme = "no-local-version"
 
 [tool.hatch.build.targets.sdist]
 ignore-vcs = true
@@ -177,7 +171,6 @@ include = [
 ]
 
 [tool.hatch.build.targets.wheel]
-only-packages = false
 packages = [
   "src/aurora",
   "src/dbtemplates",
@@ -185,7 +178,6 @@ packages = [
 
 [tool.uv]
 package = true
-no-binary = true
 
 [tool.nitpick]
 style = [
