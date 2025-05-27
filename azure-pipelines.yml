@@ -68,7 +68,9 @@ stages:
           - script: curl -LsSf https://astral.sh/uv/install.sh | sh
             displayName: "Install uv"
 
-          - script: uv build --sdist
+          - script: |
+              export VERSION=$(uvx --with hatch-vcs hatchling metadata version)
+              uv build --wheel -o docker/conf
             displayName: "Build package"
 
           - task: Docker@2
