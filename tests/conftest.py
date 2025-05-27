@@ -5,10 +5,7 @@ import warnings
 import pytest
 import responses
 from coverage.exceptions import CoverageWarning
-from django import forms
-from django.core.files.storage import default_storage
 
-from aurora.core.fields import CompilationTimeField, SmartFileField
 
 ALL = {"darwin"}
 
@@ -52,6 +49,8 @@ def pytest_configure(config):
 def simple_form(db):
     from aurora.core.cache import cache
     from aurora.core.models import Validator
+    from django import forms
+    from aurora.core.fields import CompilationTimeField
 
     cache.clear()
 
@@ -94,6 +93,8 @@ def simple_form(db):
 @pytest.fixture
 def complex_form():
     from aurora.core.models import Validator
+    from django import forms
+    from aurora.core.fields import SmartFileField
 
     v1, __ = Validator.objects.get_or_create(
         name="length_2_8",
@@ -137,6 +138,8 @@ def complex_form():
 @pytest.fixture
 def mock_storage(monkeypatch):
     """Mocks the backend storage system by not actually accessing media"""
+
+    from django.core.files.storage import default_storage
 
     def clean_name(name):
         return os.path.splitext(os.path.basename(name))[0]

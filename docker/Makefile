@@ -1,38 +1,22 @@
 # envs to set before use this script
 .ONESHELL:
-VERSION := $(shell aurora --version | tr -d "Aurora, version, " | tr -ds "\+" "-")
+VERSION:=$(shell cd .. && uvx --with hatch-vcs hatchling metadata version)
 BUILD_DATE:="$(shell date +"%Y-%m-%d %H:%M")"
 SOURCE_COMMIT=$(shell git rev-parse --short HEAD)
 STAGE?=dist
 TAG?=${VERSION}
 
 help:
-	@echo "Docke"
+	@echo "Docker"
 
-.build:
-	cd .. && rm -fr ./docker-wheel/*
-	cd .. && uv build --sdist -o ./docker-wheel
-	cd .. && uv sync
+build: ## build docker image
+	@cd .. && uv build --wheel -o docker/conf
 	DOCKER_BUILDKIT=1 cd .. && docker build \
-			--build-arg BUILDKIT_INLINE_CACHE=1 \
 			--build-arg VERSION=${VERSION} \
-			--build-arg BUILD_DATE=${BUILD_DATE} \
-			--build-arg PACKAGE=./docker-wheel \
-			--cache-from ${DOCKER_IMAGE_NAME}:${VERSION}-base \
-			--cache-from ${DOCKER_IMAGE_NAME}:${VERSION}-builder \
-			--cache-from ${DOCKER_IMAGE_NAME}:${VERSION}-production \
-			--cache-to type=inline,mode=max \
-			--target ${STAGE} \
-			${BUILD_OPTIONS} \
-			-t ${DOCKER_IMAGE} \
+			--platform=linux/amd64 \
+			-t unicef/hope-aurora:${VERSION} \
 			-f docker/Dockerfile2 .
-	docker images | grep "${DOCKER_IMAGE_NAME}" | grep ${VERSION}
-	docker inspect ${DOCKER_IMAGE} | jq -r '.[0].Config.Labels'
-
-
-build:
-	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION} \
-	$(MAKE) .build ## build image
+	docker images | grep "${DOCKER_IMAGE}" | grep ${VERSION}
 
 
 .build-stage:

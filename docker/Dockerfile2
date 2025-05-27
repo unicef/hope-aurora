@@ -1,30 +1,26 @@
-FROM python:3.12-slim-bookworm AS base
-ARG BUILD_DATE
+FROM python:3.12-slim-bookworm AS base_os
 ARG VERSION
-ARG GIT_SHA
+ARG DISTDIR
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-                gdal-bin \
-                gettext \
-                git-core \
-                libmagic1 \
-                libxml2 \
-                locales \
-                locales-all \
-                nginx \
-                postgresql-client \
-                postgresql-client-15 \
-                python3-gdal \
-                python3-psycopg2 \
-    && locale-gen --no-purge uk_UA.UTF-8 \
-    && apt-get clean
-
+RUN set -x \
+  && runtimeDeps=" \
+    nginx \
+    gettext \
+    libmagic1 \
+    libxml2 \
+    libldap-2.5-0 \
+  " \
+  && buildDeps=" \
+wget \
+" \
+  && apt-get update && apt-get install -y --no-install-recommends ${buildDeps} ${runtimeDeps} \
+  && apt-get purge -y --auto-remove $buildDeps
 
 RUN groupadd --gid 1024 unicef \
     && adduser --disabled-login --disabled-password --no-create-home --ingroup unicef -q hope
 
-FROM base AS builder
+# ------- builder -------
+FROM base_os AS builder
 RUN set -x \
     && buildDeps="build-essential \
 cmake \
@@ -34,12 +30,12 @@ git \
 libfontconfig1 \
 libgconf-2-4 \
 libglib2.0-0 \
+libldap2-dev \
 libnss3 \
-libpcre2-dev \
+libsasl2-dev \
 libssl-dev \
-libjpeg-dev \
-libpq-dev \
 libxml2-dev  \
+libzbar-dev \
 python3-dev \
 zlib1g-dev  \
 " \
@@ -48,76 +44,38 @@ zlib1g-dev  \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir uv uwsgi
+RUN pip install uwsgi
 
-# ------- production only deps-------
-FROM builder AS production
+FROM base_os AS dist
+COPY --from=builder /usr/local/bin/uwsgi /usr/local/bin/
 
-WORKDIR /app
-COPY uv.lock README.md MANIFEST.in pyproject.toml /app/
-COPY src /app/src/
-COPY src/aurora/version.py /app/src/aurora/version.py
-ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin \
+ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin:/usr/sbin \
+    VERSION=$VERSION \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONPATH=""\
-    UV_PROJECT_ENVIRONMENT=/venv \
-    VIRTUAL_ENV=/venv
-
-RUN uv sync \
-        --python=/usr/local/bin/python \
-        --python-preference=system \
-        --no-install-package aurora \
-        --no-install-project \
-        --no-dev --no-editable --frozen
-
-
-FROM base AS dist
-ARG BUILD_DATE
-ARG VERSION
-ARG GIT_SHA
-
-ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin:/usr/sbin/:/usr/local/sbin/ \
-    BUILD_DATE="${BUILD_DATE}" \
-    DJANGO_SETTINGS_MODULE=aurora.config.settings \
-    GIT_SHA="${GIT_SHA}" \
-    MEDIA_ROOT=/var/aurora/media \
-    PGSSLCERT="/tmp/postgresql.crt" \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONPATH=""\
-    PYTHONUNBUFFERED=1 \
-    STATIC_ROOT=/var/aurora/static/ \
+    DJANGO_SETTINGS_MODULE="aurora.config.settings" \
     STATIC_URL="/static/" \
-    UWSGI_PROCESSES=4 \
+    PYTHONPATH=""\
+    PGSSLCERT="/tmp/postgresql.crt" \
     UV_PROJECT_ENVIRONMENT=/venv \
     VIRTUAL_ENV=/venv \
-    VERSION="${VERSION}"
+    UWSGI_PROCESSES=4
 
-
+RUN <<EOF cat> /RELEASE
+{"version": "$VERSION",
+}
+EOF
 WORKDIR /app
 ADD docker/conf /conf/
 ADD docker/bin/* /usr/local/bin/
 
-ADD uv.lock README.md MANIFEST.in pyproject.toml /app/
-ADD src /app/src/
-ADD docker-wheel /app/docker-wheel/
-COPY src/aurora/version.py /app/src/aurora/version.py
+RUN python3 -m venv /venv \
+    && /venv/bin/pip install --find-links=/conf/ "unicef-hope-aurora==${VERSION}"
 
-COPY --from=production /venv /venv
-COPY --from=builder /usr/local/bin/uwsgi /usr/local/bin/uv /usr/local/bin/
-
-RUN --mount=type=cache,target=/root/.uv-cache \
-    uv --cache-dir=/root/.uv-cache pip install --no-deps /app/docker-wheel/*.* \
-    && rm -fr /app/* dist/* \
-
-EXPOSE 80
 EXPOSE 8000
-ENTRYPOINT exec entrypoint.sh "$0" "$@"
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["run"]
 
-LABEL distro="final"
-LABEL maintainer="hope@unicef.org"
-LABEL cheksum="$CHECKSUM"
 
 LABEL org.opencontainers.image.authors="hope@unicef.org"
 LABEL org.opencontainers.image.created="$BUILD_DATE"
