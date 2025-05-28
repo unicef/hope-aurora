@@ -124,6 +124,7 @@ jobs:
       id: retry
       with:
         max_attempts: 2
+        timeout_minutes: 5
         retry_on: error
         command: uv run tox -e d52
 
