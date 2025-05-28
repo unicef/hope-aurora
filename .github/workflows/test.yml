@@ -122,9 +122,7 @@ jobs:
     - name: Run Test suite
       uses: nick-fields/retry@v3
       id: retry
-      continue-on-error: true
       with:
-        timeout_seconds: 15
         max_attempts: 2
         retry_on: error
         command: uv run tox -e d52
@@ -171,6 +169,7 @@ jobs:
       run: |
         echo "::notice title=Ref::${{github.ref}}"
         echo "::notice title=Tag::${{ github.ref_name }}"
+        echo "::notice title=Version::${{steps.build.outputs.VERSION}}"
         curl -X POST \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
