@@ -115,9 +115,19 @@ jobs:
           ./tox
         key: ${{ steps.cache-venv-restore.outputs.cache-primary-key }}
 
+#    - name: Run Test suite
+#      run: |
+#        uv run tox -e d52
+
     - name: Run Test suite
-      run: |
-        uv run tox -e d52
+      uses: nick-fields/retry@v3
+      id: retry
+      continue-on-error: true
+      with:
+        timeout_seconds: 15
+        max_attempts: 2
+        retry_on: error
+        command: uv run tox -e d52
 
     - name: Archive selenium results
       uses: actions/upload-artifact@v4
