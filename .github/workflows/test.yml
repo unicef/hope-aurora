@@ -156,6 +156,7 @@ jobs:
 
     - name: build
       run: |
+          git fetch --tags origin
           uv build --wheel
           version=$( uvx --with hatch-vcs hatchling metadata version )
           echo "name=$version" >> $GITHUB_OUTPUT
