@@ -149,6 +149,7 @@ jobs:
         name: codecov-${{env.GITHUB_REF_NAME}}
 
     - name: build
+      id: build
       run: |
           git fetch --tags origin
           uv build --wheel
@@ -165,7 +166,7 @@ jobs:
       run: |
         echo "::notice title=Ref::${{github.ref}}"
         echo "::notice title=Tag::${{ github.ref_name }}"
-        echo "::notice title=Version::${{steps.build.outputs.VERSION}}"
+        echo "::notice title=Ver::${{steps.build.outputs.VERSION}}"
         curl -X POST \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
