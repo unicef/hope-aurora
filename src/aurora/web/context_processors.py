@@ -18,7 +18,7 @@ def smart(request: "HttpRequest") -> dict[str, Any]:
         "project": {
             "build_date": os.environ.get("BUILD_DATE", "no date"),
             "version": __version__,
-            "commit": os.environ.get("GIT_HASH", "<dev>"),
+            "commit": os.environ.get("GIT_SHA", "<dev>")[:8],
             "debug": settings.DEBUG,
             "env": settings.SMART_ADMIN_HEADER,
             "sentry_dsn": settings.SENTRY_DSN,

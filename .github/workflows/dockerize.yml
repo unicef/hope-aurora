@@ -10,6 +10,10 @@ on:
       tag:
         description: 'Docker tag'
         required: false
+      latest:
+        description: 'Is this the latest docker image'
+        required: false
+        type: boolean
 
 
 concurrency:
@@ -70,5 +74,7 @@ jobs:
           context: .
           file: docker/Dockerfile
           push: true
-          tags: unicef/hope-aurora:${{ steps.inputs.outputs.tag }}
+          tags: |
+            unicef/hope-aurora:${{ steps.inputs.outputs.tag }}
+            ${{ github.event.inputs.latest == 'true' && 'unicef/hope-aurora:latest'  || null}}
           build-args: VERSION=${{ steps.inputs.outputs.version }}

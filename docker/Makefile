@@ -13,6 +13,8 @@ build: ## build docker image
 	@cd .. && uv build --wheel -o docker/conf
 	DOCKER_BUILDKIT=1 cd .. && docker build \
 			--build-arg VERSION=${VERSION} \
+			--build-arg GIT_SHA=${SOURCE_COMMIT} \
+			--build-arg BUILD_DATE=${BUILD_DATE} \
 			--platform=linux/amd64 \
 			-t unicef/hope-aurora:${VERSION} \
 			-f docker/Dockerfile2 .

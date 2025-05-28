@@ -1,6 +1,7 @@
 FROM python:3.12-slim-bookworm AS base_os
 ARG VERSION
 ARG GIT_SHA
+ARG BUILD_DATE
 
 RUN set -x \
   && runtimeDeps=" \
@@ -56,6 +57,7 @@ ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin:/usr/sbin \
     DJANGO_SETTINGS_MODULE="aurora.config.settings" \
     STATIC_URL="/static/" \
     PYTHONPATH=""\
+    GIT_SHA=$GIT_SHA \
     PGSSLCERT="/tmp/postgresql.crt" \
     UV_PROJECT_ENVIRONMENT=/venv \
     VIRTUAL_ENV=/venv \
@@ -63,6 +65,8 @@ ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin:/usr/sbin \
 
 RUN <<EOF cat> /RELEASE
 {"version": "$VERSION",
+  "commit": "$GIT_SHA"
+  "date": "$BUILD_DATE"
 }
 EOF
 WORKDIR /app
