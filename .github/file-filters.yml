@@ -22,6 +22,7 @@ changelog:
 package: &package
   - *python
   - *dependencies
+  - './.github/workflows/test.yml'
 
 dockerize: &dockerize
   - *package
