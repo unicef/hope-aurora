@@ -154,7 +154,7 @@ jobs:
           git fetch --tags origin
           uv build --wheel
           version=$( uvx --with hatch-vcs hatchling metadata version )
-          echo "name=$version" >> $GITHUB_OUTPUT
+          echo "version=$version" >> $GITHUB_OUTPUT
           echo "::notice title=VERSION::$version"
 
     - uses: actions/upload-artifact@v4
@@ -166,9 +166,10 @@ jobs:
       run: |
         echo "::notice title=Ref::${{github.ref}}"
         echo "::notice title=Tag::${{ github.ref_name }}"
-        echo "::notice title=Ver::${{steps.build.outputs.VERSION}}"
+        echo "::notice title=Ver::${{steps.build.outputs.version}}"
+
         curl -X POST \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
           https://api.github.com/repos/${{ github.repository }}/actions/workflows/dockerize.yml/dispatches \
-          -d "{\"ref\":\"${{ github.ref }}\", \"inputs\": {\"version\": \"${{ steps.build.outputs.VERSION }}\", \"tag\": \"${{ github.ref_name }}\"}"
+          -d "{\"ref\":\"${{ github.ref }}\", \"inputs\": {\"version\": \"${{ steps.build.outputs.version }}\", \"tag\": \"${{ github.ref_name }}\"}"
