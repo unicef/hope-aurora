@@ -23,10 +23,11 @@ package: &package
   - *python
   - *dependencies
 
-dockerize: &dockerize
+dockerize:
   - *package
   - *docker
   - '.github/workflows/test.yml'
+  - '.github/workflows/dockerize.yml'
 
 mypy:
   - *python
