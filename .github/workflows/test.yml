@@ -115,18 +115,10 @@ jobs:
           ./tox
         key: ${{ steps.cache-venv-restore.outputs.cache-primary-key }}
 
-#    - name: Run Test suite
-#      run: |
-#        uv run tox -e d52
-
     - name: Run Test suite
-      uses: nick-fields/retry@v3
-      id: retry
-      with:
-        max_attempts: 2
-        timeout_minutes: 5
-        retry_on: error
-        command: uv run tox -e d52
+      continue-on-error: true
+      run: |
+        uv run tox -e d52
 
     - name: Archive selenium results
       uses: actions/upload-artifact@v4
@@ -136,8 +128,11 @@ jobs:
         path: latest_logs
         retention-days: 5
 
+    - name: Stop further steps
+      if: failure()
+      run: exit 1
+
     - name: Upload test results to Codecov
-      if: ${{ !cancelled() }}
       uses: codecov/test-results-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
