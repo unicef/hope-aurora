@@ -1,4 +1,6 @@
-from random import randint
+from pathlib import Path
+from random import choice, randint
+from unittest import mock
 
 import factory.fuzzy
 import pytz
@@ -7,6 +9,7 @@ from django.contrib.admin.models import LogEntry
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.flatpages.models import FlatPage
+from django.core.files.base import ContentFile
 from django.utils import timezone
 from factory import LazyAttribute, PostGenerationMethodCall
 from factory.base import FactoryMetaClass
@@ -17,6 +20,7 @@ from social_django.models import Association, Nonce, UserSocialAuth
 from strategy_field.utils import fqn
 
 import dbtemplates.models as dbtemplates
+
 from aurora.core.models import (
     CustomFieldType,
     FlexForm,
@@ -27,12 +31,14 @@ from aurora.core.models import (
     Project,
     Validator,
 )
+from aurora.core.utils import safe_json, jsonfy
 from aurora.counters.models import Counter
 from aurora.i18n.models import Message
 from aurora.registration.models import Record, Registration
+from aurora.registration.storage import router
 from aurora.security.models import AuroraRole
 
-faker = Faker()
+fake = Faker()
 
 factories_registry = {}
 
@@ -46,6 +52,30 @@ class AutoRegisterFactoryMetaClass(FactoryMetaClass):
 
 class AutoRegisterModelFactory(factory.django.DjangoModelFactory, metaclass=AutoRegisterFactoryMetaClass):
     pass
+
+
+class RandomFile:
+    def __init__(self, path: Path | str):
+        self.folder = Path(path)
+        self.images = list(self.folder.glob("*.jpg"))
+
+    def __call__(self, *args, **kwargs):
+        selection = choice(self.images)
+        return ContentFile(selection.read_bytes(), selection.name)
+
+
+def get_random_fields():
+    return {
+        "last_name": fake.last_name(),
+        "first_name": fake.first_name(),
+        "date_of_birth": fake.date_of_birth().strftime("%Y-%m-%d"),
+    }
+
+
+def get_random_files():
+    return {
+        "image1": RandomFile(Path(__file__).parent / "images")(),
+    }
 
 
 def get_factory_for_model(_model):
@@ -187,7 +217,14 @@ class JsonFields(BaseDeclaration):
         super().__init__(**kwargs)
 
     def evaluate(self, instance, step, extra):
-        return {"last_name": faker.last_name(), "first_name": faker.first_name()}
+        ds = get_random_fields()
+        return jsonfy(router.decompress(ds)[0])
+
+
+class FilesField(BaseDeclaration):
+    def evaluate(self, instance, step, extra):
+        ds = get_random_files()
+        return safe_json(router.decompress(ds)[1]).encode()
 
 
 class RecordFactory(AutoRegisterModelFactory):
@@ -196,9 +233,16 @@ class RecordFactory(AutoRegisterModelFactory):
         "date_time_between_dates", datetime_start="-1y", datetime_end=timezone.now(), tzinfo=pytz.UTC
     )
     fields = JsonFields()
+    files = FilesField()
 
     class Meta:
         model = Record
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        with mock.patch("aurora.registration.models.get_client_ip") as mock_get_client_ip:
+            mock_get_client_ip.side_effect = lambda x: fake.ipv4()
+            return super()._create(model_class, *args, **kwargs)
 
 
 class CounterFactory(AutoRegisterModelFactory):

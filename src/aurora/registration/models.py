@@ -371,6 +371,16 @@ class Record(models.Model):
         return get_registration_id(self)
 
     @property
+    def attachments(self) -> dict[str, typing.Any]:
+        files = {}
+        f = self.files
+        if f:
+            if not isinstance(f, bytes):
+                f = self.files.tobytes()
+            files = json.loads(f.decode())
+        return files
+
+    @property
     def data(self) -> dict[str, typing.Any]:
         if self.registration.public_key:
             return {"Forbidden": "Cannot access encrypted data"}

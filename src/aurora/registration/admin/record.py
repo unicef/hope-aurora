@@ -53,12 +53,12 @@ class RecordAdmin(SmartModelAdmin):
         "registration",
     ]
 
-    def get_actions(self, request: "HttpRequest") -> dict:
-        return {}
+    # def get_actions(self, request: "HttpRequest") -> dict:
+    #     return {}
 
     def get_queryset(self, request: "HttpRequest") -> "QuerySet":
         qs = super().get_queryset(request)
-        return qs.select_related("registration", "registrar")
+        return qs.defer("fields", "files").select_related("registration", "registrar")
 
     def get_common_context(self, request: "HttpRequest", pk: str | None = None, **kwargs) -> dict[str, Any]:
         return super().get_common_context(request, pk, is_root=is_root(request), **kwargs)

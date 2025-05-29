@@ -16,7 +16,7 @@ def registration(simple_form) -> "TestRegistration":
     from testutils.factories import RegistrationFactory
 
     reg = RegistrationFactory(name="registration #1", flex_form=simple_form, intro="intro", footer="footer")
-    RecordFactory(registration=reg)
+    RecordFactory.create_batch(size=102, registration=reg)
     return reg
 
 
@@ -58,3 +58,19 @@ def test_registration_csv(registration: "TestRegistration", client):
 
     res = client.get(f"/api/registration/{registration.pk}/csv/?download=1", format="json")
     assert res.status_code == 200
+
+
+@pytest.mark.parametrize("serializer", ["", "files", "fields", "full", "storage", "-invalid"])
+def test_registration_records_serializer(registration: "TestRegistration", client, serializer: str):
+    url = f"/api/registration/{registration.pk}/records/?ser={serializer}"
+    res = client.get(url, format="json")
+    assert res.status_code == 200
+    assert res.json()
+
+
+@pytest.mark.parametrize("serializer", ["", "files", "fields", "full", "storage", "-invalid"])
+def test_registration_records_pages(registration: "TestRegistration", client, serializer: str):
+    url = f"/api/registration/{registration.pk}/records/?ser={serializer}&page_size=10&page=2"
+    res = client.get(url, format="json")
+    assert res.status_code == 200
+    assert res.json()
