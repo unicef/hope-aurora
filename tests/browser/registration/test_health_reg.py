@@ -95,8 +95,8 @@ def test_health_registration_correct_submission(
                     )
             pytest.fail(f"Required field '{field_id}' ({field_type}) not found on the form.")
 
-    submit_button_selector = "//input[@type='submit' and @data-msgid='Save']"
-    browser.find_element(submit_button_selector, by="xpath").click()
+    submit_button_selector = "input[type='submit'][data-msgid='Save']"
+    browser.find_element(submit_button_selector).click()
     register_another_selector = "a[data-msgid='register another household']"
     browser.wait_for_text("Register Another Household", selector=register_another_selector, timeout=5)
 
@@ -177,9 +177,9 @@ def test_health_registration_invalid_submission(
             if is_required:
                 pytest.fail(f"Required field '{field_id}' ({field_type}) not found or interaction failed: {e}")
 
-    submit_button_selector_invalid = "//input[@type='submit' and @data-msgid='Save']"
-    browser.assert_element_present(submit_button_selector_invalid, by="xpath")
-    browser.click(submit_button_selector_invalid, by="xpath")
+    submit_button_selector_invalid = "input[type='submit'][data-msgid='Save']"
+    browser.assert_element_present(submit_button_selector_invalid)
+    browser.click(submit_button_selector_invalid)
 
     enumerator_error_message = "Enter a valid value"
     enumerator_error_selector = f"#id_{enumerator_code_name_invalid}_error"
