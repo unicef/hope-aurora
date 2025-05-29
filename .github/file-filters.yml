@@ -8,7 +8,7 @@ dependencies: &dependencies
   - 'pyproject.toml'
 
 actions: &actions
-  - added|modified: './.github/**/*'
+  - added|modified: '.github/**/*'
 
 python: &python
   - added|modified: 'src/**'
@@ -19,9 +19,15 @@ changelog:
   - added|modified: 'changes/**'
   - 'CHANGELOG.md'
 
-package:
+package: &package
   - *python
   - *dependencies
+
+dockerize:
+  - *package
+  - *docker
+  - '.github/workflows/test.yml'
+  - '.github/workflows/dockerize.yml'
 
 mypy:
   - *python
