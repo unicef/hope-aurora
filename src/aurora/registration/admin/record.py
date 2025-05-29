@@ -95,7 +95,8 @@ class RecordAdmin(SmartModelAdmin):
     @button(label="inspect", permission=is_root)
     def inspect(self, request: "HttpRequest", pk: str) -> "HttpResponse":
         ctx = self.get_common_context(request, pk, title="Inspect")
-        ctx["files_as_dict"] = json.loads(self.object.files.tobytes().decode())
+        if self.object.files:
+            ctx["files_as_dict"] = json.loads(self.object.files.tobytes().decode())
         return render(request, "admin/registration/record/inspect.html", ctx)
 
     @button(permission=is_root)

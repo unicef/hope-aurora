@@ -4,11 +4,11 @@ docker: &docker
   - added|modified: './docker/*'
 
 dependencies: &dependencies
-  - 'pdm.lock'
+  - 'uv.lock'
   - 'pyproject.toml'
 
 actions: &actions
-  - added|modified: './.github/**/*'
+  - added|modified: '.github/**/*'
 
 python: &python
   - added|modified: 'src/**'
@@ -19,9 +19,20 @@ changelog:
   - added|modified: 'changes/**'
   - 'CHANGELOG.md'
 
+package: &package
+  - *python
+  - *dependencies
+
+dockerize:
+  - *package
+  - *docker
+  - '.github/workflows/test.yml'
+  - '.github/workflows/dockerize.yml'
+
 mypy:
   - *python
   - 'mypy.ini'
+  - 'uv.lock'
 
 run_tests:
   - *actions
@@ -35,7 +46,6 @@ migrations:
 
 lint:
   - *python
-  - '.flake8'
   - 'pyproject.toml'
 
 docs:

@@ -2,7 +2,7 @@ import time
 from typing import Any
 
 from django.conf import settings
-from django.http import HttpResponse, JsonResponse, HttpRequest
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils.cache import get_conditional_response
@@ -17,8 +17,8 @@ from aurora.core.utils import get_etag
 from aurora.state import state
 
 
-def filter_optionset(obj: OptionSet, pk, term, lang, parent=None):
-    def _filter(record):
+def filter_optionset(obj: OptionSet, pk: str, term: str, lang: str, parent: str | None = None) -> dict[str, Any]:
+    def _filter(record: dict[str, Any]) -> bool:
         valid = True
         if pk:
             valid = valid and record["pk"].lower() == pk.lower()

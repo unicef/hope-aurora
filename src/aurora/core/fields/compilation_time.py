@@ -3,6 +3,7 @@ from django.conf import settings
 from django.forms import widgets
 
 from aurora.core.version_media import VersionMedia
+
 from .mixins import ConfigurableSmartField
 
 

@@ -51,3 +51,46 @@ def test_change(mock_state: State, browser: AuroraTestBrowser, records: "list[Re
 
     with mock.patch("aurora.registration.admin.record.is_root", return_value=True):
         browser.open(url)
+
+
+def test_button_receipt(mock_state: State, browser: AuroraTestBrowser, records: "list[Record]", settings):
+    record: Record = records[0]
+    browser.login()
+    url = reverse("admin:registration_record_change", args=[record.pk])
+    with mock.patch("aurora.registration.admin.record.is_root", return_value=True):
+        browser.open(url)
+        browser.click("#btn-receipt")
+        assert browser.get_text("#registration-id") == record.unicef_id
+
+
+def test_button_preview(mock_state: State, browser: AuroraTestBrowser, records: "list[Record]", settings):
+    settings.ROOT_TOKEN = "123"
+    settings.FLAGS = {"IS_ROOT": [("boolean", True)]}
+    record: Record = records[0]
+    url = reverse("admin:registration_record_change", args=[record.pk])
+    browser.login()
+    browser.open(url)
+    browser.click("#btn-preview")
+    assert browser.get_text("#content h1") == "Preview "
+
+
+def test_button_inspect(mock_state: State, browser: AuroraTestBrowser, records: "list[Record]", settings):
+    settings.ROOT_TOKEN = "123"
+    settings.FLAGS = {"IS_ROOT": [("boolean", True)]}
+    record: Record = records[0]
+    url = reverse("admin:registration_record_change", args=[record.pk])
+    browser.login()
+    browser.open(url)
+    browser.click("#btn-inspect")
+    assert browser.get_text("#content h1") == "Inspect "
+
+
+def test_button_decrypt(mock_state: State, browser: AuroraTestBrowser, records: "list[Record]", settings):
+    settings.ROOT_TOKEN = "123"
+    settings.FLAGS = {"IS_ROOT": [("boolean", True)]}
+    record: Record = records[0]
+    url = reverse("admin:registration_record_change", args=[record.pk])
+    browser.login()
+    browser.open(url)
+    browser.click("#btn-decrypt")
+    assert browser.get_text("#content h1") == "To decrypt you need to provide Registration Private Key "

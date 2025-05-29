@@ -6,18 +6,6 @@ from django.forms.fields import CharField, DateField
 from . import widgets
 from .captcha import CaptchaField
 from .compilation_time import CompilationTimeField
-from .document import DocumentField
-from .file import SmartFileField
-from .gis import LocationField
-from .hidden import HiddenField
-from .label import LabelOnlyField
-from .mixins import SmartFormField, ConfigurableSmartField
-from .multi_checkbox import MultiCheckboxField
-from .radio import RadioField, YesNoChoice, YesNoRadio
-from .remote_ip import RemoteIpField
-from .select import AjaxSelectField, SelectField, SmartSelectWidget
-from .uba import UBANameEnquiryField
-from .webcam import WebcamField
 from .django import (
     BooleanField,
     CharField,
@@ -35,6 +23,18 @@ from .django import (
     TimeField,
     URLField,
 )
+from .document import DocumentField
+from .file import SmartFileField
+from .gis import LocationField
+from .hidden import HiddenField
+from .label import LabelOnlyField
+from .mixins import ConfigurableSmartField, SmartFormField
+from .multi_checkbox import MultiCheckboxField
+from .radio import RadioField, YesNoChoice, YesNoRadio
+from .remote_ip import RemoteIpField
+from .select import AjaxSelectField, SelectField, SmartSelectWidget
+from .uba import UBANameEnquiryField
+from .webcam import WebcamField
 
 WIDGET_FOR_FORMFIELD_DEFAULTS: dict[type[ConfigurableSmartField], dict[str, Any]] = {
     # weird issues from mypy. does not recognize it as ConfigurableSmartField

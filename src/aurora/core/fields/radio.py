@@ -1,8 +1,8 @@
 from django import forms
 from django.forms import RadioSelect
 
-from .widgets import RadioWidget, YesNoRadioWidget
 from .mixins import ConfigurableSmartField
+from .widgets import RadioWidget, YesNoRadioWidget
 
 
 class RadioField(ConfigurableSmartField, forms.ChoiceField):

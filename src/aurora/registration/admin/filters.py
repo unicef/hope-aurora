@@ -9,11 +9,12 @@ from django.contrib.admin.options import IncorrectLookupParameters
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
+from aurora.core.admin.filters import ProjectFilter
+
 if TYPE_CHECKING:
     from django.contrib.admin import ModelAdmin
     from django.db.models import QuerySet
     from django.http import HttpRequest
-
 
 logger = logging.getLogger(__name__)
 
@@ -22,18 +23,8 @@ class OrganizationFilter(AutoCompleteFilter):
     pass
 
 
-class RegistrationProjectFilter(AutoCompleteFilter):
-    fk_name = "project__organization__exact"
-
-    def has_output(self) -> bool:
-        return "project__organization__exact" in self.request.GET
-
-    def get_url(self) -> str:
-        url = reverse("%s:autocomplete" % self.admin_site.name)
-        if self.fk_name in self.request.GET:
-            oid = self.request.GET[self.fk_name]
-            return f"{url}?oid={oid}"
-        return url
+class RegistrationProjectFilter(ProjectFilter):
+    pass
 
 
 class HourFilter(SimpleListFilter):
@@ -58,44 +49,3 @@ class HourFilter(SimpleListFilter):
             queryset = queryset.filter(timestamp__gte=offset)
 
         return queryset
-
-
-# class DateRangeFilter(NumberFilter):
-#     rex1 = re.compile(r"^(>=|<=|>|<|=)?(\d{4}-\d{2}-\d{2})$")
-#     re_range = re.compile(r"^(\d{4}-\d{2}-\d{2})..(\d{4}-\d{2}-\d{2})$")
-#     re_list = re.compile(r"(\d{4}-\d{2}-\d{2}),?")
-#     re_unlike = re.compile(r"^(<>)(?P<date>\d{4}-\d{2}-\d{2})$")
-#
-#     def queryset(self, request: "HttpRequest", queryset: "QuerySet") -> "QuerySet":
-#         if self.value() and self.value()[0]:
-#             raw_value = self.value()[0]
-#             m1 = self.rex1.match(raw_value)
-#             m_range = self.re_range.match(raw_value)
-#             m_list = self.re_list.match(raw_value)
-#             m_unlike = self.re_unlike.match(raw_value)
-#             if m_unlike and m_unlike.groups():
-#                 match = "%s__date__exact" % self.field.name
-#                 op, value = self.re_unlike.match(raw_value).groups()
-#                 queryset = queryset.exclude(**{match: value})
-#             else:
-#                 if m1 and m1.groups():
-#                     op, value = self.rex1.match(raw_value).groups()
-#                     match = "%s__date__%s" % (self.field.name, self.map[op or "="])
-#                     self.filters = {match: value}
-#                 elif m_range and m_range.groups():
-#                     start, end = self.re_range.match(raw_value).groups()
-#                     self.filters = {
-#                         f"{self.field.name}__date__gte": start,
-#                         f"{self.field.name}__date__lte": end,
-#                     }
-#                 elif m_list and m_list.groups():
-#                     value = raw_value.split(",")
-#                     match = "%s__date__in" % self.field.name
-#                     self.filters = {match: value}
-#                 else:  # pragma: no cover
-#                     raise IncorrectLookupParameters()
-#                 try:
-#                     queryset = queryset.filter(**self.filters)
-#                 except Exception:
-#                     raise IncorrectLookupParameters(self.value()) from None
-#         return queryset

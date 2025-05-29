@@ -5,13 +5,14 @@ from typing import Any
 from constance import config
 from django.conf import settings
 from django.db.models import QuerySet
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseBase
 from django.template.response import TemplateResponse
 from django.utils.cache import get_conditional_response
 from django.utils.decorators import method_decorator
 from django.utils.translation import get_language
 from django.views import View
 from django.views.decorators.cache import cache_control
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 
 from aurora.core.utils import get_etag, get_qrcode, render
@@ -44,7 +45,7 @@ def get_active_registrations() -> QuerySet[Registration]:
 
 
 class PageView(TemplateView):
-    template_name = "index.html"
+    template_name = None
 
     def get_template_names(self) -> list[str]:
         return [f"{self.kwargs['page']}.html"]
@@ -96,7 +97,11 @@ class QRCodeView(TemplateView):
 
 
 class ProbeView(View):
-    http_method_names = ["get", "head"]
+    http_method_names = ["get", "head", "post"]
+
+    @csrf_exempt
+    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> "HttpResponseBase":
+        return super().dispatch(request, *args, **kwargs)
 
     def head(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         return HttpResponse("Ok")
@@ -105,14 +110,4 @@ class ProbeView(View):
         return HttpResponse("Ok")
 
     def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
-        return self.get(request, *args, **kwargs)
-
-
-class MaintenanceView(TemplateView):
-    template_name = "maintenance.html"
-
-    def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
-        if not config.MAINTENANCE_MODE:
-            return HttpResponseRedirect("/")
-        context = self.get_context_data(**kwargs)
-        return self.render_to_response(context)
+        return HttpResponse("Ok")

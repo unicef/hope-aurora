@@ -74,12 +74,13 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
         ),
     )
     actions = ("approve", "rehash", "publish_action")
+    object: Message
 
     def approve(self, request: HttpRequest, queryset: QuerySet[Message]) -> None:
         num = queryset.update(draft=False)
         self.message_user(request, f"{num} Messages have been approved")
 
-    def get_queryset(self, request: HttpRequest) -> QuerySet[Message]:
+    def get_queryset(self, request: HttpRequest) -> QuerySet:
         return (
             super()
             .get_queryset(request)
@@ -261,7 +262,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
 
     @button()  # type: ignore[arg-type]
     def siblings(self, request: HttpRequest, pk: str) -> HttpResponse:
-        obj = self.get_object(request, pk)
+        obj: Message = self.get_object(request, pk)  # type: ignore[assignment]
         cl = reverse("admin:i18n_message_changelist")
         return HttpResponseRedirect(f"{cl}?msgcode__exact={obj.msgcode}")
 

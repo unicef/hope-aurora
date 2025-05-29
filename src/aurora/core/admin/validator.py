@@ -17,6 +17,7 @@ from .base import ConcurrencyVersionAdmin
 
 if TYPE_CHECKING:
     from django.http import HttpRequest, HttpResponse
+
     from ...types.http import AuthHttpRequest
 
 
@@ -33,7 +34,7 @@ class ValidatorTestForm(forms.Form):
 
 
 @register(Validator)
-class ValidatorAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin[Validator]):  # type: ignore[misc]
+class ValidatorAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin[Validator]):
     form = ValidatorForm
     list_editable = ("trace", "active", "draft")
     list_display = ("label", "name", "target", "used_by", "trace", "active", "draft")
@@ -55,6 +56,7 @@ class ValidatorAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin[Validat
     object_history_template = "reversion-compare/object_history.html"
     change_form_template = None
     inlines = []
+    object: Validator
 
     def used_by(self, obj: Validator) -> str | None:
         if obj.target == Validator.FORM:

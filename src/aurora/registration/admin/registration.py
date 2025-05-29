@@ -6,7 +6,7 @@ from hashlib import md5
 from typing import TYPE_CHECKING
 
 from admin_extra_buttons.decorators import button, choice, view
-from admin_sync.mixin import SyncMixin
+from aurora.core.admin_sync import SyncModelAdmin
 from adminfilters.mixin import AdminAutoCompleteSearchMixin
 from dateutil.utils import today
 from django import forms
@@ -64,7 +64,7 @@ def can_export_data(request, obj, handler=None):
     return (obj.export_allowed and request.user.has_perm("registration.export_data", obj)) or is_root(request)
 
 
-class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, SyncMixin, SmartModelAdmin):
+class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, SyncModelAdmin, SmartModelAdmin):
     search_fields = ("name_deterministic", "title", "slug")
     date_hierarchy = "start"
     list_filter = (

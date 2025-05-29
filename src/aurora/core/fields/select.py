@@ -6,8 +6,8 @@ from django import forms
 from django.forms import BoundField
 from django.urls import NoReverseMatch, reverse
 from django.utils.translation import get_language
-from .mixins import ConfigurableSmartField
 
+from .mixins import ConfigurableSmartField
 from .widgets.selected import AjaxSelectWidget, SmartSelectWidget
 
 logger = logging.getLogger(__name__)

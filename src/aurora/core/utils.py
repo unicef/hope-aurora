@@ -16,7 +16,7 @@ from hashlib import md5
 from itertools import chain
 from pathlib import Path
 from sys import getsizeof, stderr
-from typing import Mapping, Any
+from typing import Any, Mapping
 
 import faker
 from PIL.Image import Resampling
@@ -26,7 +26,7 @@ from django import forms
 from django.conf import settings
 from django.core.files.utils import FileProxyMixin
 from django.core.serializers.json import DjangoJSONEncoder
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 from django.template import loader
 from django.template.defaultfilters import date
 from django.urls import reverse
@@ -43,6 +43,11 @@ from qrcode.util import QRData
 
 from aurora import VERSION
 from aurora.state import state
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from aurora.registration.models import Record
+
 
 UNDEFINED = object()
 
@@ -56,10 +61,11 @@ def has_token(request, *args, **kwargs):
     )
 
 
-def is_root(request, *args, **kwargs):
+def is_root(request, *args, **kwargs) -> bool:
+    ret = False
     if hasattr(request, "user"):
-        return request.user.is_superuser and flag_enabled("IS_ROOT")
-    return False
+        ret = request.user.is_superuser and flag_enabled("IS_ROOT")
+    return ret
 
 
 @keep_lazy_text
@@ -461,14 +467,14 @@ def never_ever_cache(decorated_function):
     return wrapper
 
 
-def get_session_id(request=None):
+def get_session_id(request: "HttpRequest|None" = None) -> str:
     r = request or state.request
     if r and r.user.is_authenticated:
         return r.session.session_key
     return ""
 
 
-def flatten_dict(d, parent_key="", sep="_") -> dict:
+def flatten_dict(d: Mapping[str, Any], parent_key: str = "", sep: str = "_") -> dict[str, Any]:
     items: list[tuple[str, Any]] = []
     if isinstance(d, dict):
         for k, v in d.items():
@@ -487,7 +493,7 @@ def flatten_dict(d, parent_key="", sep="_") -> dict:
     return dict(items)
 
 
-def build_dict(r, **options):
+def build_dict(r: dict[str, Any], **options) -> dict[str, Any]:
     d = flatten_dict(r["fields"])
     if "datetime_format" in options:
         d["timestamp"] = date(r["timestamp"], options["datetime_format"])
@@ -501,10 +507,10 @@ def build_dict(r, **options):
     return d
 
 
-def get_registration_id(record):
+def get_registration_id(record: "Record") -> str:
     ts = record.timestamp.strftime("%Y%m%d")
     return f"HOPE-{ts}-{record.registration_id}/{record.id}"
 
 
-def oneline(value):
+def oneline(value: str) -> str:
     return value.replace("\r\n", ";").replace("\n", ";").replace("\r", ";").replace(";;", ";")

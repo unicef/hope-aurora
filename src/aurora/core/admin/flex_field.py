@@ -9,7 +9,7 @@ from django import forms
 from django.contrib import messages
 from django.contrib.admin import register
 from django.core.cache import caches
-from django.db.models import JSONField, QuerySet, Model
+from django.db.models import JSONField, Model, QuerySet
 from django.db.models.functions import Collate
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from jsoneditor.forms import JSONEditor
@@ -63,7 +63,7 @@ class FlexFormFieldForm(forms.ModelForm):
 
 
 @register(FlexFormField)
-class FlexFormFieldAdmin(SyncMixin, ConcurrencyVersionAdmin, OrderableAdmin, SmartModelAdmin):  # type: ignore[misc]
+class FlexFormFieldAdmin(SyncMixin, ConcurrencyVersionAdmin, OrderableAdmin, SmartModelAdmin[FlexFormField]):
     search_fields = ("name_deterministic", "label")
     list_display = ("label", "name", "flex_form", "type_name", "required", "enabled")
     list_editable = ["required", "enabled"]
@@ -85,7 +85,7 @@ class FlexFormFieldAdmin(SyncMixin, ConcurrencyVersionAdmin, OrderableAdmin, Sma
 
     def get_queryset(self, request: "HttpRequest") -> "QuerySet[FlexFormField]":
         return (
-            super()
+            super()  # type: ignore[return-value]
             .get_queryset(request)
             .annotate(name_deterministic=Collate("name", "und-x-icu"))
             .select_related("flex_form")

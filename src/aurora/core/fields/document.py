@@ -1,9 +1,8 @@
 from django import forms
 from django.utils.translation import gettext as _
 
-from .mixins import MultiValueWidgetMixin
+from .mixins import ConfigurableSmartField, MultiValueWidgetMixin
 from .widgets import SmartTextWidget
-from .mixins import ConfigurableSmartField
 
 
 class DocumentCountryInput(SmartTextWidget):

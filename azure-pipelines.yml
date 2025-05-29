@@ -51,12 +51,6 @@ stages:
           vmImage: ubuntu-latest
         displayName: "Build and Push"
         steps:
-          - script: curl -LsSf https://astral.sh/uv/install.sh | sh
-            displayName: "Install uv"
-
-          - script: uv build --sdist -o docker-wheel
-            displayName: "Build package"
-
           - task: Docker@2
             inputs:
               containerRegistry: '$(Docker.registry)'
@@ -70,6 +64,18 @@ stages:
             env: { sourceVersion: $(Build.SourceVersion) }
             displayName: Git Hash 7-digit
             continueOnError: true # for first build, no cache
+
+          - script: curl -LsSf https://astral.sh/uv/install.sh | sh
+            displayName: "Install uv"
+
+          - script: |
+              VERSION=$(uvx --with hatch-vcs hatchling metadata version)
+              echo "##vso[task.setvariable variable=VERSION;isOutput=true]$VERSION"
+              echo "##[endgroup]"
+              uv build --wheel -o docker/conf
+            displayName: "Build package"
+            name: SetVersion
+
           - task: Docker@2
             displayName: Build
             inputs:
@@ -77,8 +83,10 @@ stages:
               dockerfile: $(Docker.filePath)
               repository: $(Docker.repository)
               buildContext: "**/.."
-#              arguments: '--build-arg VERSION=$(Build.SourceVersion) --build-arg BUILD_DATE="$(buildDate)" --cache-from=$(Docker.registry).azurecr.io/$(Docker.repository):latest'
-              arguments: '--build-arg GIT_HASH="$(commitHash)" --build-arg BUILD_DATE="$(buildDate)" --cache-from=$(Docker.registry).azurecr.io/$(Docker.repository):latest'
+              arguments: >
+                --build-arg VERSION="$(SetVersion.VERSION)"
+                --build-arg GIT_SHA="$(commitHash)"
+                --build-arg BUILD_DATE="$(buildDate)"
               tags: |
                 $(Build.BuildId)
                 $(Build.SourceVersion)

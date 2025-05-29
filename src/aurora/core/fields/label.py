@@ -1,7 +1,7 @@
 from django import forms
 
-from .widgets.mixins import TailWindMixin
 from .mixins import ConfigurableSmartField
+from .widgets.mixins import TailWindMixin
 
 
 class LabelOnlyWidget(TailWindMixin, forms.TextInput):

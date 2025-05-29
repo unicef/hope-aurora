@@ -1,6 +1,7 @@
 from django import forms
 
 from aurora.core.fields.widgets.mixins import SmartWidgetMixin
+
 from .mixins import ConfigurableSmartField
 
 

@@ -40,7 +40,7 @@ def test_flexform_changelist(app, flex_form):
     assert res.status_code == 200
 
 
-def test_validator_editor(request, app, flex_form):
+def test_flexform_editor(request, app, flex_form):
     url = reverse("admin:core_flexform_form_editor", args=[flex_form.id])
     with mock.patch("aurora.security.admin.is_root", return_value=True):
         app.get(url)

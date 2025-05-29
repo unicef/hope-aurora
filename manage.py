@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import datetime
 import os
 import sys
 
@@ -6,6 +7,9 @@ import sys
 def main() -> None:
     """Run administrative tasks."""
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "aurora.config.settings")
+    os.environ.setdefault("BUILD_DATE", datetime.datetime.today().strftime("%Y-%m-%d %H:%M"))
+    with open(".git/refs/heads/master") as f:
+        os.environ.setdefault("GIT_SHA", f.read())
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

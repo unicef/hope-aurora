@@ -14,7 +14,6 @@ from factory.declarations import BaseDeclaration
 from faker import Faker
 from rest_framework.authtoken.models import TokenProxy
 from social_django.models import Association, Nonce, UserSocialAuth
-
 from strategy_field.utils import fqn
 
 import dbtemplates.models as dbtemplates
@@ -251,7 +250,7 @@ class AssociationFactory(AutoRegisterModelFactory):
 
 
 class TemplateFactory(AutoRegisterModelFactory):
-    name = factory.Sequence(lambda d: "Template-%s" % d)
+    name = factory.Sequence(lambda d: "Template-%s.html" % d)
     content = ""
 
     class Meta:

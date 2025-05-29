@@ -1,9 +1,13 @@
+from typing import TYPE_CHECKING
+
 from django.conf import settings
 from django.contrib.auth.backends import ModelBackend
 from django.db import IntegrityError
-from django.http import HttpRequest
 
 from aurora.security.models import User
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest
 
 
 class AnyUserAuthBackend(ModelBackend):  # pragma: no cover

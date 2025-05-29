@@ -9,7 +9,7 @@ def parse_bookmarks(value: str) -> str:
 
 def parse_emails(value: str) -> list[tuple[str, str]]:
     admins = value.split(",")
-    return [(a.split("@")[0].strip(), a.strip()) for a in admins]
+    return [(a.split("@")[0].strip(), a.strip()) for a in admins if a.strip()]
 
 
 OPTIONS = {
@@ -88,7 +88,8 @@ OPTIONS = {
     "SMART_ADMIN_BOOKMARKS": (parse_bookmarks, ""),
     "STATICFILES_STORAGE": (
         str,
-        "aurora.web.storage.ForgivingManifestStaticFilesStorage",
+        # "aurora.web.storage.ForgivingManifestStaticFilesStorage",
+        "django.contrib.staticfiles.storage.StaticFilesStorage",
     ),
     "STATIC_ROOT": (str, "/tmp/static/"),  # noqa
     "STATIC_URL": (str, "static/"),

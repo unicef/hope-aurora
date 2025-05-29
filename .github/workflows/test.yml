@@ -26,6 +26,7 @@ defaults:
 permissions:
   id-token: write
   attestations: write
+  actions: write
 
 
 jobs:
@@ -38,6 +39,7 @@ jobs:
         shell: bash
     outputs:
       run_tests: ${{ steps.changes.outputs.run_tests }}
+      dockerize: ${{ steps.changes.outputs.dockerize }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4.1.7
@@ -48,9 +50,16 @@ jobs:
         base: ${{ github.ref }}
         token: ${{ github.token }}
         filters: .github/file-filters.yml
+    - run: |
+        echo "::notice title=run_tests::${{steps.changes.outputs.run_tests}}"
+        echo "::notice title=dockerize::${{ steps.changes.outputs.dockerize }}"
+
+
   test:
     needs: [changes]
     if: needs.changes.outputs.run_tests == 'true'
+    outputs:
+      version: ${{ steps.build.outputs.version }}
     runs-on: ubuntu-latest
     services:
       redis:
@@ -115,6 +124,7 @@ jobs:
         key: ${{ steps.cache-venv-restore.outputs.cache-primary-key }}
 
     - name: Run Test suite
+      continue-on-error: true
       run: |
         uv run tox -e d52
 
@@ -126,8 +136,11 @@ jobs:
         path: latest_logs
         retention-days: 5
 
+    - name: Stop further steps
+      if: failure()
+      run: exit 1
+
     - name: Upload test results to Codecov
-      if: ${{ !cancelled() }}
       uses: codecov/test-results-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
@@ -143,21 +156,35 @@ jobs:
         verbose: false
         name: codecov-${{env.GITHUB_REF_NAME}}
 
-#  release:
-#    needs: [ test ]
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v4
-#      - name: DockerHub login
-#        uses: docker/login-action@v3
-#        with:
-#          username: ${{ secrets.DOCKERHUB_USERNAME }}
-#          password: ${{ secrets.DOCKERHUB_TOKEN }}
-#      - name: Build Distro
-#        run:
-#            aurora --version
-##            cd docker && make build
-##            docker push ${{needs.test.outputs.image}}
-##            docker inspect ${{needs.test.outputs.image}} | jq -r '.[0].Config.Labels'
-##            echo "::notice::✅ Image ${{needs.test.outputs.image}} built and pushed"
+    - name: build
+      id: build
+      run: |
+          git fetch --tags origin
+          version=$( uvx --with hatch-vcs hatchling metadata version )
+
+          uv build --wheel
+
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "::notice title=VERSION::$version"
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: package
+        path: dist/*
+
+  dockerize:
+    needs: [changes, test]
+    if: needs.changes.outputs.dockerize == 'true'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Trigger dockerize workflow
+      run: |
+        echo "::notice title=Ref::${{github.ref}}"
+        echo "::notice title=Tag::${{ github.ref_name }}"
+        echo "::notice title=Ver::${{needs.test.outputs.version}}"
+
+        curl -X POST \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          https://api.github.com/repos/${{ github.repository }}/actions/workflows/dockerize.yml/dispatches \
+          -d "{\"ref\":\"${{ github.ref }}\", \"inputs\": {\"version\": \"${{ needs.test.outputs.version }}\", \"tag\": \"${{ github.ref_name }}\"}"

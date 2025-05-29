@@ -57,12 +57,9 @@ class DukPYValidator(JsValidator):
         import dukpy
 
         pickled = self.jspickle(field_value or "")
-        code = f"""{self.LIB};
-var value = {pickled};
-{self.code}
-"""
+        code = [self.LIB, f"var value = {pickled}", self.code]
         try:
-            return dukpy.evaljs(code)
+            return dukpy.evaljs(";".join(code))
         except JSRuntimeError as e:
             logger.exception(e)
             raise JSEngineError() from e

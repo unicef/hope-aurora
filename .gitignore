@@ -8,9 +8,11 @@
 __pycache__
 dist/
 build/
-/latest_logs
-/downloaded_files
-/archived_logs
+latest_logs/
+downloaded_files/
+archived_logs/
+docker/conf/*.whl
+
 
 coverage.xml
 junit.xml

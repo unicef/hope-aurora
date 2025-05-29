@@ -1,7 +1,7 @@
 import logging
 
 from admin_extra_buttons.decorators import button, view
-from admin_sync.mixin import PublishMixin, SyncMixin
+from admin_sync.mixins import SyncModelAdmin
 from adminfilters.mixin import AdminFiltersMixin
 from adminfilters.value import ValueFilter
 from django import forms
@@ -60,7 +60,7 @@ class TemplateAdminForm(forms.ModelForm):
         fields = ("name", "content", "sites", "creation_date", "last_changed")
 
 
-class TemplateAdmin(SyncMixin, AdminFiltersMixin, PublishMixin, TemplateModelAdmin):
+class TemplateAdmin(SyncModelAdmin, AdminFiltersMixin, TemplateModelAdmin):
     form = TemplateAdminForm
     fieldsets = (
         (

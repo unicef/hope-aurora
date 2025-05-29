@@ -28,6 +28,7 @@ from ..serializers.record import DataTableRecordSerializer
 from .base import SmartViewSet
 
 if TYPE_CHECKING:
+    from django_stubs_ext import ValuesQuerySet
     from rest_framework.permissions import _SupportsHasPermission
 
 
@@ -120,7 +121,7 @@ class RegistrationViewSet(SmartViewSet):
             flt = RecordFilter(request.GET, queryset=queryset)
             if flt.form.is_valid():
                 queryset = flt.filter_queryset(queryset)
-            page = self.paginate_queryset(queryset)
+            page = self.paginate_queryset(queryset)  # type: ignore[arg-type]
 
             if page is None:
                 serializer = DataTableRecordSerializer(
@@ -180,8 +181,8 @@ class RegistrationViewSet(SmartViewSet):
                 filters, exclude = form.cleaned_data["filters"]
                 include_fields = form.cleaned_data["include"]
                 exclude_fields = form.cleaned_data["exclude"]
-                qs = (
-                    Record.objects.filter(registration__pk=pk)
+                qs: "ValuesQuerySet[Record, dict]" = (
+                    Record.objects.filter(registration__pk=pk)  # type: ignore[assignment]
                     .defer(
                         "storage",
                         "counters",
