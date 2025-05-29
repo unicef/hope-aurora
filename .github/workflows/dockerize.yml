@@ -72,7 +72,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: docker/Dockerfile
+          file: docker/Dockerfile2
           push: true
           tags: |
             unicef/hope-aurora:${{ steps.inputs.outputs.tag }}
