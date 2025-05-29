@@ -19,12 +19,22 @@ def client(admin_user):
     return client
 
 
+@pytest.fixture
+def anonymous_client(db):
+    return APIClient()
+
+
 def test_router_auth(client):
     res = client.get("/api/", format="json")
     assert res.status_code == 200
 
 
-def test_router_denied(client):
-    client.credentials(HTTP_AUTHORIZATION="")
-    res = client.get("/api/", format="json")
+def test_router_denied(anonymous_client):
+    anonymous_client.credentials(HTTP_AUTHORIZATION="")
+    res = anonymous_client.get("/api/", format="json")
+    assert res.status_code == 401
+
+
+def test_router_no_auth(anonymous_client):
+    res = anonymous_client.get("/api/", format="json")
     assert res.status_code == 401

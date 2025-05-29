@@ -1,11 +1,11 @@
-from typing import Mapping
+from typing import Mapping, Any
 
 from rest_framework import serializers
 from rest_framework.fields import Field
 from rest_framework.reverse import reverse
 from rest_framework.utils.model_meta import FieldInfo
 
-from ...registration.models import Registration
+from ...registration.models import Record, Registration
 
 
 class RegistrationDetailSerializer(serializers.HyperlinkedModelSerializer):
@@ -37,3 +37,37 @@ class RegistrationDetailSerializer(serializers.HyperlinkedModelSerializer):
 
 class RegistrationListSerializer(RegistrationDetailSerializer):
     pass
+
+
+class RegistrationRecordSerializerFields(serializers.ModelSerializer):
+    class Meta:
+        model = Record
+        fields = ("pk", "fields", "remote_ip", "timestamp")
+
+
+class RegistrationRecordSerializerFiles(serializers.ModelSerializer):
+    files = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Record
+        fields = ("pk", "files")
+
+    def get_files(self, obj: Record) -> dict[str, Any]:
+        return obj.attachments
+
+
+class RegistrationRecordSerializerStorage(serializers.ModelSerializer):
+    storage = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Record
+        fields = ("pk", "storage")
+
+    def get_storage(self, obj: Record) -> str:
+        return obj.files.tobytes().decode()  # type: ignore[union-attr]
+
+
+class RegistrationRecordSerializerFull(serializers.ModelSerializer):
+    class Meta:
+        model = Record
+        fields = ("pk", "data", "remote_ip", "timestamp")

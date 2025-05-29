@@ -23,14 +23,19 @@ from rest_framework.serializers import Serializer
 
 from ...core.utils import build_dict, get_etag, get_session_id
 from ...registration.models import Record, Registration
-from ..serializers import RegistrationDetailSerializer, RegistrationListSerializer
-from ..serializers.record import DataTableRecordSerializer
+from ..serializers import (
+    RegistrationDetailSerializer,
+    RegistrationListSerializer,
+    RegistrationRecordSerializerFields,
+    RegistrationRecordSerializerFiles,
+    RegistrationRecordSerializerFull,
+    RegistrationRecordSerializerStorage,
+)
 from .base import SmartViewSet
 
 if TYPE_CHECKING:
     from django_stubs_ext import ValuesQuerySet
     from rest_framework.permissions import _SupportsHasPermission
-
 
 logger = logging.getLogger(__name__)
 
@@ -38,8 +43,13 @@ logger = logging.getLogger(__name__)
 class RecordPageNumberPagination(PageNumberPagination):
     request: Request
     page: Page
+    page_size_query_param = "page_size"
 
-    def get_paginated_response(self, data: list[dict[str, Any]]) -> Response:
+    def get_page_size(self, request: Request) -> int:
+        pg = super().get_page_size(request)
+        return min(100, pg)
+
+    def get_paginated_response(self, data: list[dict[str, Any]] | dict[str, Any]) -> Response:
         return Response(
             OrderedDict(
                 [
@@ -58,6 +68,14 @@ class RecordFilter(filters.FilterSet):
 
 
 class RegistrationViewSet(SmartViewSet):
+    RecordSerializerMap = {
+        "fields": RegistrationRecordSerializerFields,
+        "files": RegistrationRecordSerializerFiles,
+        "full": RegistrationRecordSerializerFull,
+        "storage": RegistrationRecordSerializerStorage,
+    }
+    allowed_serializers = RecordSerializerMap.keys()
+
     queryset = Registration.objects.all()
 
     def get_serializer_class(self) -> type[Serializer]:
@@ -109,30 +127,29 @@ class RegistrationViewSet(SmartViewSet):
             os.environ.get("BUILD_DATE", ""),
         )
         response = get_conditional_response(request, str(self.res_etag))
+        paginator = RecordPageNumberPagination()
         if response is None:
-            queryset = (
-                Record.objects.defer(
-                    "files",
-                    "storage",
-                )
-                .filter(registration=obj)
-                .values()
-            )
+            selected_serializer = request.GET.get("ser", "fields")
+            if selected_serializer not in self.allowed_serializers:
+                selected_serializer = "fields"
+            serializer_class = self.RecordSerializerMap.get(selected_serializer) or RegistrationRecordSerializerFields
+            qs = Record.objects.filter(registration=obj)
+            queryset = qs.defer("files", "storage")
+
             flt = RecordFilter(request.GET, queryset=queryset)
             if flt.form.is_valid():
                 queryset = flt.filter_queryset(queryset)
-            page = self.paginate_queryset(queryset)  # type: ignore[arg-type]
+            page = paginator.paginate_queryset(queryset, request, self)  # type: ignore[arg-type]
 
             if page is None:
-                serializer = DataTableRecordSerializer(
+                serializer = serializer_class(
                     queryset,
                     many=True,
                     context={"request": request},
-                    metadata=obj.metadata,
                 )
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            serializer = DataTableRecordSerializer(page, many=True, context={"request": request}, metadata=obj.metadata)
-            response = self.get_paginated_response(serializer.data)
+            serializer = serializer_class(page, many=True, context={"request": request})
+            response = paginator.get_paginated_response(serializer.data)
         response.headers.setdefault("ETag", self.res_etag)
         response.headers.setdefault("Cache-Control", "private, max-age=120")
         return response
