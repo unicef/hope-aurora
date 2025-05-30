@@ -24,34 +24,6 @@ build: ## build docker image
 			-f docker/Dockerfile2 .
 	docker images | grep "${DOCKER_IMAGE}" | grep ${VERSION}
 
-#
-#.build-stage:
-#	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION}-${STAGE} \
-#	$(MAKE) .build
-#
-#base:
-#	STAGE=base $(MAKE) .build-stage
-#
-#builder:
-#	STAGE=builder $(MAKE) .build-stage
-#
-#
-#tests:
-#	STAGE=tests $(MAKE) .build-stage
-#
-#production:
-#	STAGE=production $(MAKE) .build-stage
-#
-#dist:
-#	STAGE=dist $(MAKE) .build-stage
-#
-#
-#step1: base
-#step2: builder
-#step3: tests
-#step4: production
-#step5: dist
-#
 .run:
 	cd .. && docker run \
 	 		--rm \
@@ -81,26 +53,9 @@ check:
 	CMD='sh /usr/local/bin/check.sh' \
 	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION} \
 	$(MAKE) .run
-#
-#run:
-#	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${TAG} \
-# 	CMD='run' \
-#	$(MAKE) .run
-#
-#
+
 shell:
 	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION} \
 	RUN_OPTIONS="-it" \
  	CMD='/bin/bash' \
 	$(MAKE) .run
-#
-#
-#run-tests:
-#	CMD='pytest tests/ -x -n auto -v --maxfail=5 --migrations' \
-#	RUN_OPTIONS="-it -v ./output/:/app/output \
-#              -v ./src/:/app/src \
-#              -v ./tests:/app/tests \
-#              -v ./pytest.ini:/app/pytest.ini" \
-#	TAG="tests" \
-#	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION}-tests \
-#	$(MAKE) .run

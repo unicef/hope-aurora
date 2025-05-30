@@ -41,7 +41,7 @@ jobs:
         uses: actions/checkout@v4.1.7
         with:
           ref: ${{ github.event.inputs.version }}
-          fetch-depth: 0 # Opzionale: utile se hai bisogno della cronologia completa dei commit, ma aumenta i tempi di checkout
+          fetch-depth: 0
 
       - name: Set target input
         id: inputs
