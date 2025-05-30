@@ -52,7 +52,6 @@ jobs:
             tag="$version"
           fi
           BUILD_DATE=$(date +"%Y-%m-%d %H:%M")
-          COMMIT_SHA=$(git rev-parse --short "$GITHUB_SHA")
 
           echo "version=$version" >> $GITHUB_OUTPUT
           echo "tag=$tag" >> $GITHUB_OUTPUT
