@@ -43,8 +43,7 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4.1.7
-      with:
-        fetch-depth: 0 # Clona l'intera cronologia, inclusi tutti i tag
+
     - id: changes
       name: Check for file changes
       uses: dorny/paths-filter@0bc4621a3135347011ad047f9ecf449bf72ce2bd   # v3.0.0
@@ -52,10 +51,6 @@ jobs:
         base: ${{ github.ref }}
         token: ${{ github.token }}
         filters: .github/file-filters.yml
-    - run: |
-        echo "::notice title=run_tests::${{steps.changes.outputs.run_tests}}"
-        echo "::notice title=dockerize::${{ steps.changes.outputs.dockerize }}"
-
 
   test:
     needs: [changes]
@@ -91,6 +86,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Install the latest version of uv
       uses: astral-sh/setup-uv@v6
@@ -103,12 +100,13 @@ jobs:
           **/pyproject.toml
           **/uv.lock
         python-version: 3.12
+
     - name: Restore cached vEnv
       id: cache-venv-restore
       uses: actions/cache/restore@v4
       with:
         path: |
-          ./venv
+          ./uv-cache
           ./tox
         key: ${{ runner.os }}-venv
 
@@ -120,7 +118,7 @@ jobs:
       uses: actions/cache/save@v4
       with:
         path: |
-          ./venv
+          ./uv-cache
           ./tox
         key: ${{ steps.cache-venv-restore.outputs.cache-primary-key }}
 
