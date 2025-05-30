@@ -10,44 +10,48 @@ help:
 	@echo "Docker"
 
 build: ## build docker image
-	@cd .. && uv build --wheel -o docker/conf
+	@cd .. && uv build
 	DOCKER_BUILDKIT=1 cd .. && docker build \
+			--progress=plain \
 			--build-arg VERSION=${VERSION} \
 			--build-arg GIT_SHA=${SOURCE_COMMIT} \
 			--build-arg BUILD_DATE=${BUILD_DATE} \
 			--platform=linux/amd64 \
+			--cache-from unicef/hope-aurora:local \
+			--cache-from unicef/hope-aurora:latest \
 			-t unicef/hope-aurora:${VERSION} \
+			-t unicef/hope-aurora:local \
 			-f docker/Dockerfile2 .
 	docker images | grep "${DOCKER_IMAGE}" | grep ${VERSION}
 
-
-.build-stage:
-	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION}-${STAGE} \
-	$(MAKE) .build
-
-base:
-	STAGE=base $(MAKE) .build-stage
-
-builder:
-	STAGE=builder $(MAKE) .build-stage
-
-
-tests:
-	STAGE=tests $(MAKE) .build-stage
-
-production:
-	STAGE=production $(MAKE) .build-stage
-
-dist:
-	STAGE=dist $(MAKE) .build-stage
-
-
-step1: base
-step2: builder
-step3: tests
-step4: production
-step5: dist
-
+#
+#.build-stage:
+#	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION}-${STAGE} \
+#	$(MAKE) .build
+#
+#base:
+#	STAGE=base $(MAKE) .build-stage
+#
+#builder:
+#	STAGE=builder $(MAKE) .build-stage
+#
+#
+#tests:
+#	STAGE=tests $(MAKE) .build-stage
+#
+#production:
+#	STAGE=production $(MAKE) .build-stage
+#
+#dist:
+#	STAGE=dist $(MAKE) .build-stage
+#
+#
+#step1: base
+#step2: builder
+#step3: tests
+#step4: production
+#step5: dist
+#
 .run:
 	cd .. && docker run \
 	 		--rm \
@@ -63,43 +67,40 @@ step5: dist
 			-e DEBUG="1" \
 			-e DJANGO_ADMIN_URL=admin/ \
 			-e DJANGO_SETTINGS_MODULE=aurora.config.settings \
+			-e FERNET_KEY=123 \
 			-e LOGGING_LEVEL="DEBUG" \
 			-e SECRET_KEY="super-secret-key-just-for-testing" \
 			-e SENTRY_DSN="${SENTRY_DSN}" \
 			-e SOCIAL_AUTH_REDIRECT_IS_HTTPS="False" \
-			-e SUPERUSERS="sax," \
-			-v ./docker/conf/:/conf \
+			-e SESSION_COOKIE_DOMAIN=
 			${RUN_OPTIONS} \
 			-t ${DOCKER_IMAGE} \
 			${CMD}
 
 check:
-	CMD='check.sh' \
-	RUN_OPTIONS="-it -v \
-	 			-v ./src/:/app/src \
-	" \
-	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION}-tests \
+	CMD='sh /usr/local/bin/check.sh' \
+	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION} \
 	$(MAKE) .run
-
-run:
-	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${TAG} \
- 	CMD='run' \
-	$(MAKE) .run
-
-
+#
+#run:
+#	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${TAG} \
+# 	CMD='run' \
+#	$(MAKE) .run
+#
+#
 shell:
-	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${TAG} \
+	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION} \
 	RUN_OPTIONS="-it" \
  	CMD='/bin/bash' \
 	$(MAKE) .run
-
-
-run-tests:
-	CMD='pytest tests/ -x -n auto -v --maxfail=5 --migrations' \
-	RUN_OPTIONS="-it -v ./output/:/app/output \
-              -v ./src/:/app/src \
-              -v ./tests:/app/tests \
-              -v ./pytest.ini:/app/pytest.ini" \
-	TAG="tests" \
-	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION}-tests \
-	$(MAKE) .run
+#
+#
+#run-tests:
+#	CMD='pytest tests/ -x -n auto -v --maxfail=5 --migrations' \
+#	RUN_OPTIONS="-it -v ./output/:/app/output \
+#              -v ./src/:/app/src \
+#              -v ./tests:/app/tests \
+#              -v ./pytest.ini:/app/pytest.ini" \
+#	TAG="tests" \
+#	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION}-tests \
+#	$(MAKE) .run

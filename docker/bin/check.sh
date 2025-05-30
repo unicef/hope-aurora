@@ -1,3 +1,6 @@
 #!/bin/bash
 
-django-admin upgrade --deploy
+aurora --version
+uwsgi --version
+
+django-admin check --deploy

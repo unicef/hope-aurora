@@ -20,8 +20,8 @@ wget \
 RUN groupadd --gid 1024 unicef \
     && adduser --disabled-login --disabled-password --no-create-home --ingroup unicef -q hope
 
-# ------- builder -------
-FROM base_os AS builder
+# ------- deps -------
+FROM base_os AS deps
 RUN set -x \
     && buildDeps="build-essential \
 cmake \
@@ -45,10 +45,33 @@ zlib1g-dev  \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install uwsgi
+RUN pip install uwsgi uv
+
+# ------- builder -------
+FROM deps AS builder
+ENV VIRTUAL_ENV=/venv \
+    UV_PROJECT_ENVIRONMENT=/venv
+
+RUN <<EOF cat> /RELEASE
+{"version": "$VERSION",
+  "commit": "$GIT_SHA"
+  "date": "$BUILD_DATE"
+}
+EOF
+WORKDIR /code
+COPY . /code
+
+RUN uv venv $VIRTUAL_ENV \
+    && uv sync --frozen --no-editable
+
+RUN ls /venv/lib/python3.12/site-packages/aurora/
 
 FROM base_os AS dist
+ADD docker/conf /conf/
+ADD docker/bin/* /usr/local/bin/
+
 COPY --from=builder /usr/local/bin/uwsgi /usr/local/bin/
+COPY --from=builder /venv /venv
 
 ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin:/usr/sbin \
     VERSION=$VERSION \
@@ -59,22 +82,7 @@ ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin:/usr/sbin \
     PYTHONPATH=""\
     GIT_SHA=$GIT_SHA \
     PGSSLCERT="/tmp/postgresql.crt" \
-    UV_PROJECT_ENVIRONMENT=/venv \
-    VIRTUAL_ENV=/venv \
     UWSGI_PROCESSES=4
-
-RUN <<EOF cat> /RELEASE
-{"version": "$VERSION",
-  "commit": "$GIT_SHA"
-  "date": "$BUILD_DATE"
-}
-EOF
-WORKDIR /app
-ADD docker/conf /conf/
-ADD docker/bin/* /usr/local/bin/
-
-RUN python3 -m venv /venv \
-    && /venv/bin/pip install --find-links=/conf/ "unicef-hope-aurora==${VERSION}"
 
 EXPOSE 8000
 ENTRYPOINT ["docker-entrypoint.sh"]

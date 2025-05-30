@@ -1,0 +1,58 @@
+x-env: &env
+  environment:
+    - ADMIN_EMAIL=admin@example.com
+    - ADMIN_PASSWORD=password
+    - ALLOWED_HOSTS=*
+    - CACHE_DEFAULT=redis://redis:6379/0
+    - CELERY_BROKER_URL=redis://host.docker.internal:6379/0
+    - CSRF_COOKIE_SECURE=False
+    - CSRF_TRUSTED_ORIGINS=http://localhost:8000
+    - DATABASE_URL=postgres://postgres:password@db:5432/auroora
+    - DEBUG=1
+    - DEFAULT_ORGANIZATION=UNICEF
+    - DJANGO_ADMIN_URL=admin/
+    - DJANGO_SETTINGS_MODULE=aurora.config.settings
+    - FERNET_KEY=123
+    - LOGGING_LEVEL=DEBUG
+    - POSTGRES_DB=auroora
+    - POSTGRES_HOST_AUTH_METHOD=trust
+    - POSTGRES_USER=postgres
+    - SECRET_KEY=super-secret-key-just-for-testing
+    - SESSION_COOKIE_DOMAIN=http://localhost:8000
+    - SOCIAL_AUTH_REDIRECT_IS_HTTPS=False
+
+services:
+  aurora:
+    image: unicef/hope-aurora:local
+    <<: [ *env ]
+    ports:
+      - 8000:8000
+    platform: linux/amd64
+    command: "run"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/healthcheck" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:16
+    <<: [ *env ]
+    restart: always
+    platform: linux/amd64
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres", "-d", "auroora" ]
+      start_period: 5s
+      start_interval: 1s
+      interval: 5s
+      timeout: 4s
+      retries: 5
+
+  redis:
+    image: redis
+    platform: linux/amd64
+    <<: [ *env ]
+    restart: always

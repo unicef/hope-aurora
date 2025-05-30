@@ -169,11 +169,17 @@ include = [
   "src/aurora/**/*.*",
   "src/dbtemplates/**/*.*",
 ]
+exclude = [
+  "~*",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = [
   "src/aurora",
   "src/dbtemplates",
+]
+exclude = [
+  "~*",
 ]
 
 [tool.uv]

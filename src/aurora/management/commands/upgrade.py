@@ -105,19 +105,11 @@ def upgrade(  # noqa: PLR0912,  PLR0915, C901, PLR0913
                 else:
                     username, __ = admin_email.split("@")
                     if User.objects.filter(username=username).exists():
-                        click.echo("User with this name already exists")
+                        click.secho("User with this name already exists", fg="yellow")
                     else:
                         try:
-                            call_command(
-                                "createsuperuser",
-                                interactive=False,
-                                username=username,
-                                email=admin_email,
-                                verbosity=verbosity,
-                            )
-                            u = User.objects.get(username=username)
-                            u.set_password(admin_password)
-                            u.save()
+                            User.objects.create_superuser(username=username, email=admin_email, password=admin_password)
+                            click.secho(f"Superuser {username} created", fg="green")
                         except CommandError:
                             raise
 
