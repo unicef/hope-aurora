@@ -84,7 +84,7 @@ UA33;UA03;Admin3.1\r
 
 @pytest.fixture
 def records(registration):
-    return RecordFactory.create_batch(1000, registration=registration)
+    return RecordFactory.create_batch(100, files=None, registration=registration)
 
 
 def test_changelist(mock_state, browser: AuroraTestBrowser, registration):

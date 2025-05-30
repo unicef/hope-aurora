@@ -20,7 +20,7 @@ pytestmark = pytest.mark.selenium
 @pytest.fixture
 def records():
     reg = RegistrationFactory()
-    return RecordFactory.create_batch(100, registration=reg)
+    return RecordFactory.create_batch(100, files=None, registration=reg)
 
 
 def test_changelist(mock_state: State, browser: AuroraTestBrowser, records: "list[Record]", settings):
