@@ -1,8 +1,16 @@
 name: Lint
 on:
+  workflow_dispatch:
   push:
     branches:
       - '**'
+  pull_request:
+    types: [ synchronize, opened, reopened, ready_for_review ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '*.ini'
+      - '*.toml'
 
 defaults:
   run:
