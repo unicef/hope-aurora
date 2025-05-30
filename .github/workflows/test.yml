@@ -197,12 +197,6 @@ jobs:
             MESSAGE=$(echo "$JSON_RESPONSE" | jq -r '.message // "No message provided."')
             DOC_URL=$(echo "$JSON_RESPONSE" | jq -r '.documentation_url // "No documentation URL provided."')
 
-            read -r -d '' ERROR_MESSAGE << EOF
-            Error: API call failed with status $STATUS.
-
-            Message: $MESSAGE
-
-            Documentation: $DOC_URL
-            EOF
+            printf "::error::Error: $MESSAGE.\n- Documentation: $DOC_URL\n"
             exit 1
         fi
