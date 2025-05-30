@@ -143,7 +143,10 @@ stages:
                             -AZURE_TENANT_ID $(KEY_VALUT_AZURE_TENANT_KEY)
                             -SENTRY_DSN $(SENTRY_DSN)
                             -SENTRY_ENVIRONMENT $(SENTRY_ENVIRONMENT)
-                            -MATOMO_ID $(MATOMO_ID)"
+                            -MATOMO_ID $(MATOMO_ID)
+                            -CSRF_COOKIE_SECURE $(CSRF_COOKIE_SECURE)
+                            -CSRF_TRUSTED_ORIGINS $(CSRF_TRUSTED_ORIGINS)
+                            -DEFAULT_ORGANIZATION $(DEFAULT_ORGANIZATION)"
           - script: |
               curl -X POST -H 'Content-type: application/json' --data '$SLACK_NOTIFICATION_COMPLETE_PAYLOAD' $SLACK_WEBHOOK_URL
             displayName: "Slack complete notification"
