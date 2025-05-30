@@ -182,21 +182,21 @@ jobs:
               "inputs": {"git_reference": "${{ needs.test.outputs.commit }}", \
               "tag": "${{ github.ref_name }}"}')
         CURL_EXIT_CODE=$?
-
         if [[ $CURL_EXIT_CODE -ne 0 ]]; then
-          echo "Error: cURL command failed with exit code $CURL_EXIT_CODE." >&2
-          echo "cURL output: $JSON_RESPONSE" >&2
+          printf "::error::cURL failed %d.\nOutput cURL: %s\n" "$CURL_EXIT_CODE" "$RES"
           exit 1
         fi
 
-        # Check if the status is 200 or 201
-        if [[ "$STATUS" == "200" ]]; then
-            echo "API call successful! Status: $STATUS"
-            echo "Full response: $JSON_RESPONSE"
-        else
-            MESSAGE=$(echo "$JSON_RESPONSE" | jq -r '.message // "No message provided."')
-            DOC_URL=$(echo "$JSON_RESPONSE" | jq -r '.documentation_url // "No documentation URL provided."')
+        STATUS=$(echo "$RES" | jq -r '.status // "N/A"')
+        MESSAGE=$(echo "$RES" | jq -r '.message // "No message provided."')
 
-            printf "::error::Error: $MESSAGE.\n- Documentation: $DOC_URL\n"
+        if [[ "$STATUS" == "N/A" && "$RES" != "" ]]; then
+          printf "::error::Error: Uknown response.\nResponse is: %s\n" "$RES"
+          exit 1
+        fi
+        if [[ "$STATUS" == "200" || "$STATUS" == "201" || "$STATUS" == "204" ]]; then
+            echo "::notice:: API call to 'dockerize.yml' successed! Status: $STATUS"
+        else
+            printf "::error::Error: API call to 'dockerize.yml' failed with status %s.\Message: %s\n" "$STATUS" "$MESSAGE"
             exit 1
         fi
