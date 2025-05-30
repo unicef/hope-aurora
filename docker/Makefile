@@ -49,12 +49,12 @@ build: ## build docker image
 			-t ${DOCKER_IMAGE} \
 			${CMD}
 
-check:
+check: ## Check docker build
 	CMD='sh /usr/local/bin/check.sh' \
 	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION} \
 	$(MAKE) .run
 
-shell:
+shell:  ## Run shell into docker
 	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION} \
 	RUN_OPTIONS="-it" \
  	CMD='/bin/bash' \
