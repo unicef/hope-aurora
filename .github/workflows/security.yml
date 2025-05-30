@@ -1,17 +1,9 @@
 name: Security
 on:
   push:
-    branches:
-      - develop
-      - master
-      - staging
-      - release/*
-      - feature/*
-      - bugfix/*
-      - hotfix/*
-#  pull_request:
-#    branches: [develop, master]
-#    types: [synchronize, opened, reopened, ready_for_review]
+  pull_request:
+    branches: [develop]
+    types: [synchronize, opened, reopened, ready_for_review]
 
 defaults:
   run:

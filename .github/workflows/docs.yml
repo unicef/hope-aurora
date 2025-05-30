@@ -4,8 +4,21 @@ on:
   push:
     branches:
       - develop
-      - staging
-      - master
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yaml'
+      - './github/workflows/docs.yml'
+  pull_request:
+    branches:
+      - develop
+    types:
+      - opened
+      - synchronize
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yaml'
+      - './github/workflows/docs.yml'
+
   schedule:
     - cron: '37 23 * * 2'
 
@@ -61,6 +74,7 @@ jobs:
   # Deployment job
   deploy:
     needs: generate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
