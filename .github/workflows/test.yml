@@ -165,7 +165,8 @@ jobs:
           echo "version=$version" >> $GITHUB_OUTPUT
           echo "::notice title=VERSION:: Build local package $version"
 
-    - uses: actions/upload-artifact@v4
+    - name: Store package $version
+      uses: actions/upload-artifact@v4
       with:
         name: package
         path: dist/*

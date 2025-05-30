@@ -52,6 +52,7 @@ jobs:
           echo "tag=$tag" >> $GITHUB_OUTPUT
           echo "build_date=$BUILD_DATE" >> $GITHUB_OUTPUT
           echo "commmit_sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
+
       - uses: actions/download-artifact@v4
         continue-on-error: true
         with:
