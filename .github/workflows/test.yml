@@ -174,8 +174,35 @@ jobs:
         echo "::notice title=Ver::${{needs.test.outputs.version}}"
         echo "::notice title=Commit::${{needs.test.outputs.commit}}"
 
-        curl -X POST \
+        RES=$(curl -X POST \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
           https://api.github.com/repos/${{ github.repository }}/actions/workflows/dockerize.yml/dispatches \
-          -d "{\"ref\":\"${{ github.ref }}\", \"inputs\": {\"git_reference\": \"${{ needs.test.outputs.commit }}\", \"tag\": \"${{ github.ref_name }}\"}"
+          -d '{"ref":"${{ github.ref }}", \
+              "inputs": {"git_reference": "${{ needs.test.outputs.commit }}", \
+              "tag": "${{ github.ref_name }}"}')
+        CURL_EXIT_CODE=$?
+
+        if [[ $CURL_EXIT_CODE -ne 0 ]]; then
+          echo "Error: cURL command failed with exit code $CURL_EXIT_CODE." >&2
+          echo "cURL output: $JSON_RESPONSE" >&2
+          exit 1
+        fi
+
+        # Check if the status is 200 or 201
+        if [[ "$STATUS" == "200" ]]; then
+            echo "API call successful! Status: $STATUS"
+            echo "Full response: $JSON_RESPONSE"
+        else
+            MESSAGE=$(echo "$JSON_RESPONSE" | jq -r '.message // "No message provided."')
+            DOC_URL=$(echo "$JSON_RESPONSE" | jq -r '.documentation_url // "No documentation URL provided."')
+
+            read -r -d '' ERROR_MESSAGE << EOF
+            Error: API call failed with status $STATUS.
+
+            Message: $MESSAGE
+
+            Documentation: $DOC_URL
+            EOF
+            exit 1
+        fi
