@@ -49,7 +49,7 @@ jobs:
     needs: [changes]
     if: needs.changes.outputs.run_tests == 'true'
     outputs:
-      version: ${{ steps.build.outputs.version }}
+      commit: ${{ steps.build.outputs.commit }}
     runs-on: ubuntu-latest
     services:
       redis:
@@ -197,6 +197,6 @@ jobs:
         if [[ "$STATUS" == "200" || "$STATUS" == "201" || "$STATUS" == "204" ]]; then
             echo "::notice:: API call to 'dockerize.yml' successed! Status: $STATUS"
         else
-            printf "::error::Error: API call to 'dockerize.yml' failed with status %s.\Message: %s\n" "$STATUS" "$MESSAGE"
+            printf "::error::Error: API call to 'dockerize.yml' failed with status %s.\nMessage: %s\n" "$STATUS" "$MESSAGE"
             exit 1
         fi

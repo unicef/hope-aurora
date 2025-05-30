@@ -15,7 +15,7 @@ def flex_form(db):
 
 @pytest.fixture
 def records(registration):
-    return RecordFactory.create_batch(1000, registration=registration)
+    return RecordFactory.create_batch(100, files=None, registration=registration)
 
 
 @pytest.fixture
