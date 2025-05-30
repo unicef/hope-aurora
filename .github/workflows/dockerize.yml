@@ -4,7 +4,7 @@ name: Build Docker
 on:
   workflow_dispatch:
     inputs:
-      version:
+      git_reference:
         description: 'Branch, Tag, or Commit SHA to deploy (e.g., main, develop, v1.0.0, a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0)'
         required: true
         type: string
@@ -44,15 +44,17 @@ jobs:
           fetch-depth: 0
 
       - name: Set target input
-        id: inputs
+        id: config
         run: |
-          version="${{ github.event.inputs.version }}"
+          version=$(uvx --with hatch-vcs hatchling metadata version)
+          git_reference="${{ github.event.inputs.git_reference }}"
           tag="${{ github.event.inputs.tag }}"
           if [ -z "$tag" ]; then
-            tag="$version"
+            tag="$git_reference"
           fi
           BUILD_DATE=$(date +"%Y-%m-%d %H:%M")
 
+          echo "git_reference=$git_reference" >> $GITHUB_OUTPUT
           echo "version=$version" >> $GITHUB_OUTPUT
           echo "tag=$tag" >> $GITHUB_OUTPUT
           echo "build_date=$BUILD_DATE" >> $GITHUB_OUTPUT
@@ -72,7 +74,7 @@ jobs:
         with:
           platforms: linux/amd64
 
-      - name: Build and push tag ${{ steps.inputs.outputs.tag }} (v${{ steps.inputs.outputs.version }})
+      - name: Build and push tag ${{ steps.config.outputs.tag }} (v${{ steps.config.outputs.git_reference }})
         uses: docker/build-push-action@v6
         id: build
         with:
@@ -80,17 +82,16 @@ jobs:
           file: docker/Dockerfile2
           push: true
           tags: |
-            unicef/hope-aurora:${{ steps.inputs.outputs.tag }}
+            unicef/hope-aurora:${{ steps.config.outputs.tag }}
             ${{ github.event.inputs.latest == 'true' && 'unicef/hope-aurora:latest' || null}}
           build-args: |
-            VERSION=${{ steps.inputs.outputs.version }}
-            BUILD_DATE=${{ steps.inputs.outputs.build_date }}
-            GIT_SHA=${{ steps.inputs.outputs.commmit_sha }}
+            VERSION=${{ steps.config.outputs.git_reference }}
+            BUILD_DATE=${{ steps.config.outputs.build_date }}
+            GIT_SHA=${{ steps.config.outputs.commmit_sha }}
 
-      - name: build
-        id: build
+      - name: Info
         run: |
-            echo "::notice title=VERSION:: Successfully built unicef/hope-aurora:${{ steps.inputs.outputs.tag }}"
+            echo "::notice title=VERSION:: Successfully built unicef/hope-aurora:${{ steps.config.outputs.tag }}"
             echo "::notice title=ImageId:: ${{ steps.build.outputs.imageid }}"
             echo "::notice title=Metadata:: ${{ steps.build.outputs.metadata }}"
-            echo "::notice title=Version :: ${{ steps.inputs.outputs.version }}"
+            echo "::notice title=Version :: ${{ steps.config.outputs.version }}"
