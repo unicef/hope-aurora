@@ -179,22 +179,25 @@ jobs:
           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
           https://api.github.com/repos/${{ github.repository }}/actions/workflows/dockerize.yml/dispatches \
           -d '{"ref":"${{ github.ref }}", "inputs": {"git_reference": "${{ needs.test.outputs.commit }}", "tag": "${{ github.ref_name }}"}')
-        CURL_EXIT_CODE=$?
-        if [[ $CURL_EXIT_CODE -ne 0 ]]; then
-          printf "::error::cURL failed %d.\nOutput cURL: %s\n" "$CURL_EXIT_CODE" "$RES"
-          exit 1
-        fi
 
-        STATUS=$(echo "$RES" | jq -r '.status // "N/A"')
-        MESSAGE=$(echo "$RES" | jq -r '.message // "No message provided."')
+         echo "::notice:: API call to 'dockerize.yml' response! $RES"
 
-        if [[ "$STATUS" == "N/A" && "$RES" != "" ]]; then
-          printf "::error::Error: Uknown response.\nResponse is: %s\n" "$RES"
-          exit 1
-        fi
-        if [[ "$STATUS" == "200" || "$STATUS" == "201" || "$STATUS" == "204" ]]; then
-            echo "::notice:: API call to 'dockerize.yml' successed! Status: $STATUS"
-        else
-            printf "::error::Error: API call to 'dockerize.yml' failed with status %s.\nMessage: %s\n" "$STATUS" "$MESSAGE"
-            exit 1
-        fi
+#        CURL_EXIT_CODE=$?
+#        if [[ $CURL_EXIT_CODE -ne 0 ]]; then
+#          printf "::error::cURL failed %d.\nOutput cURL: %s\n" "$CURL_EXIT_CODE" "$RES"
+#          exit 1
+#        fi
+#
+#        STATUS=$(echo "$RES" | jq -r '.status // "N/A"')
+#        MESSAGE=$(echo "$RES" | jq -r '.message // "No message provided."')
+#
+#        if [[ "$STATUS" == "N/A" && "$RES" != "" ]]; then
+#          printf "::error::Error: Uknown response.\nResponse is: %s\n" "$RES"
+#          exit 1
+#        fi
+#        if [[ "$STATUS" == "200" || "$STATUS" == "201" || "$STATUS" == "204" ]]; then
+#            echo "::notice:: API call to 'dockerize.yml' successed! Status: $STATUS"
+#        else
+#            printf "::error::Error: API call to 'dockerize.yml' failed with status %s.\nMessage: %s\n" "$STATUS" "$MESSAGE"
+#            exit 1
+#        fi

@@ -96,5 +96,4 @@ jobs:
         run: |
             echo "::notice title=VERSION:: Successfully built unicef/hope-aurora:${{ steps.config.outputs.tag }}"
             echo "::notice title=ImageId:: ${{ steps.build.outputs.imageid }}"
-            echo "::notice title=Metadata:: ${{ steps.build.outputs.metadata }}"
             echo "::notice title=Version :: ${{ steps.config.outputs.version }}"
