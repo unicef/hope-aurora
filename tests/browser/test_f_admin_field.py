@@ -76,7 +76,6 @@ def test_boolean_field(browser: AuroraTestBrowser):
         field_type=BooleanField,
         advanced={"smart": {"visible": True}},
     )
-    browser.open("/admin/")
     browser.login()
     browser.click_link("Flex Fields")
     browser.click_link(fld.label)
@@ -101,7 +100,6 @@ def test_multicheckboxfield_field(browser: AuroraTestBrowser):
         choices="a,b,c",
         advanced={"smart": {"visible": True}},
     )
-    browser.open("/admin/")
     browser.login()
     browser.click_link("Flex Fields")
     browser.click_link(fld.label)
