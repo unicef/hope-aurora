@@ -151,12 +151,16 @@ jobs:
     - name: build
       id: build
       run: |
-          version=$( uvx --with hatch-vcs hatchling metadata version )
+          VERSION=$( uvx --with hatch-vcs hatchling metadata version )
+          COMMIT_SHA=$(git rev-parse "$GITHUB_SHA")
 
           uv build --wheel
 
-          echo "version=$version" >> $GITHUB_OUTPUT
-          echo "::notice title=VERSION:: Build local package $version"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "commit=$COMMIT_SHA" >> $GITHUB_OUTPUT
+
+          echo "::notice title=VERSION:: Build local package $VERSION"
+          echo "::notice title=COMMIT:: Build local package $COMMIT_SHA"
 
     - name: Store package $version
       uses: actions/upload-artifact@v4
@@ -176,10 +180,10 @@ jobs:
         echo "::notice title=Ref::${{github.ref}}"
         echo "::notice title=Tag::${{ github.ref_name }}"
         echo "::notice title=Ver::${{needs.test.outputs.version}}"
-        COMMIT_SHA=$(git rev-parse "$GITHUB_SHA")
+        echo "::notice title=Commit::${{needs.test.outputs.commit}}"
 
         curl -X POST \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
           https://api.github.com/repos/${{ github.repository }}/actions/workflows/dockerize.yml/dispatches \
-          -d "{\"ref\":\"${{ github.ref }}\", \"inputs\": {\"version\": \"${{ env.GITHUB_SHA }}\", \"tag\": \"${{ github.ref_name }}\"}"
+          -d "{\"ref\":\"${{ github.ref }}\", \"inputs\": {\"version\": \"${{ needs.test.outputs.commit }}\", \"tag\": \"${{ github.ref_name }}\"}"
