@@ -43,6 +43,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4.1.7
+      with:
+        fetch-depth: 0 # Clona l'intera cronologia, inclusi tutti i tag
     - id: changes
       name: Check for file changes
       uses: dorny/paths-filter@0bc4621a3135347011ad047f9ecf449bf72ce2bd   # v3.0.0
@@ -159,7 +161,6 @@ jobs:
     - name: build
       id: build
       run: |
-          git fetch --tags origin
           version=$( uvx --with hatch-vcs hatchling metadata version )
 
           uv build --wheel
