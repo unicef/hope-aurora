@@ -58,13 +58,6 @@ jobs:
           echo "build_date=$BUILD_DATE" >> $GITHUB_OUTPUT
           echo "commmit_sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
 
-      - uses: actions/download-artifact@v4
-        continue-on-error: true
-        with:
-          name: package
-          path: docker/conf
-          pattern: '*.whl'
-
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -81,6 +74,7 @@ jobs:
 
       - name: Build and push tag ${{ steps.inputs.outputs.tag }} (v${{ steps.inputs.outputs.version }})
         uses: docker/build-push-action@v6
+        id: build
         with:
           context: .
           file: docker/Dockerfile2
@@ -92,3 +86,11 @@ jobs:
             VERSION=${{ steps.inputs.outputs.version }}
             BUILD_DATE=${{ steps.inputs.outputs.build_date }}
             GIT_SHA=${{ steps.inputs.outputs.commmit_sha }}
+
+      - name: build
+        id: build
+        run: |
+            echo "::notice title=VERSION:: Successfully built unicef/hope-aurora:${{ steps.inputs.outputs.tag }}"
+            echo "::notice title=ImageId:: ${{ steps.build.outputs.imageid }}"
+            echo "::notice title=Metadata:: ${{ steps.build.outputs.metadata }}"
+            echo "::notice title=Version :: ${{ steps.inputs.outputs.version }}"

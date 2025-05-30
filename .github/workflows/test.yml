@@ -162,14 +162,6 @@ jobs:
           echo "::notice title=VERSION:: Build local package $VERSION"
           echo "::notice title=COMMIT:: Build local package $COMMIT_SHA"
 
-    - name: Store package $version
-      uses: actions/upload-artifact@v4
-      with:
-        name: package
-        path: |
-          dist/*
-          uv.lock
-
   dockerize:
     needs: [changes, test]
     if: needs.changes.outputs.dockerize == 'true'
