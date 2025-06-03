@@ -1,0 +1,15 @@
+{% load static %}{% block footer %}
+    <footer class="">
+        <div class="h-18 align-middle">
+            <div class="inline-flex mt-4">
+                Aurora {{ aurora.version }} - {{ aurora.build_date }} - {{ aurora.commit }} - {{ LANGUAGE_CODE }}
+            </div>
+            <div class="inline-flex align-middle">
+                <img id="darkmode" alt="dark mode" class="w-8 cursor-pointer" src="{% static "images/off.svg" %}">
+                <span class="hidden align-middle pt-1 px-1 dark:inline-flex">dark</span>
+                <span class="dark:hidden align-middle pt-1 inline-flex">light</span>
+            </div>
+        </div>
+    </footer>
+
+{% endblock footer %}

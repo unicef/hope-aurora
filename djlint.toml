@@ -1,0 +1,6 @@
+profile="django"
+check=true
+lint=true
+format_css=true
+quiet=false
+use_gitignore=true

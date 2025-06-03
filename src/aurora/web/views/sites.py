@@ -18,6 +18,8 @@ from django.views.generic import TemplateView
 from aurora.core.utils import get_etag, get_qrcode, render
 from aurora.registration.models import Registration
 
+from .mixins import MediaMixin
+
 logger = logging.getLogger(__name__)
 
 
@@ -44,7 +46,7 @@ def get_active_registrations() -> QuerySet[Registration]:
     return Registration.objects.filter(active=True, show_in_homepage=True)
 
 
-class PageView(TemplateView):
+class PageView(MediaMixin, TemplateView):
     template_name = None
 
     def get_template_names(self) -> list[str]:
@@ -62,7 +64,7 @@ class PageView(TemplateView):
 
 
 @method_decorator(cache_control(public=True), name="dispatch")
-class HomeView(TemplateView):
+class HomeView(MediaMixin, TemplateView):
     template_name = "home.html"
 
     def get_template_names(self) -> list[str]:

@@ -1,4 +1,3 @@
-import os
 from itertools import chain
 from typing import Iterable
 
@@ -6,6 +5,8 @@ from django import forms
 from django.forms import Media
 from django.utils.html import format_html, html_safe
 from django.utils.safestring import SafeString
+
+import aurora
 
 
 @html_safe
@@ -21,7 +22,7 @@ class VersionMedia(forms.Media):
         # To keep rendering order consistent, we can't just iterate over items().
         # We need to sort the keys, and iterate over the sorted list.
         media = sorted(self._css)
-        version = os.environ.get("VERSION", "dev")
+        version = aurora.__version__
         return chain.from_iterable(
             [
                 format_html(

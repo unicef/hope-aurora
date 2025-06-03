@@ -32,6 +32,5 @@ document.addEventListener("DOMContentLoaded", function (event) {
             element.appendChild(document.createTextNode(text));
             element.style.backgroundColor = color;
             document.body.prepend(element);
-            console.log(11111, element)
         }
     });

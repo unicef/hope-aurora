@@ -6,7 +6,6 @@
         $.ajax({url: url_version, async:false, success: function (data) {
             url = data.url
         }});
-        console.log(`Found Optionset for ${target.attr("name")} as ${url}`)
         return url;
     };
     window._select2 = {
@@ -69,7 +68,7 @@
     $(function () {
         var CACHE = {};
         var $targets = $(".ajaxSelect");
-        console.log("Select2 library loaded", window._select2);
+        // console.log("Select2 library loaded", window._select2);
         $targets.each(function (i, e) {
             _select2.collect_subscribers(e);
             // var $target = $(e);

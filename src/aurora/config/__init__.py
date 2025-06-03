@@ -53,6 +53,8 @@ OPTIONS = {
     "EMAIL_USE_LOCALTIME": (bool, False),
     "EMAIL_USE_SSL": (bool, False),
     "EMAIL_USE_TLS": (bool, True),
+    "EXTRA_INSTALLED_APPS": (list, []),
+    "EXTRA_MIDDLEWARES": (list, []),
     "FERNET_KEY": (str, "", uuid.uuid4().hex, True),
     "FRONT_DOOR_ALLOWED_PATHS": (str, ".*"),
     "FRONT_DOOR_ENABLED": (bool, False),

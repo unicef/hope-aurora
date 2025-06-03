@@ -16,10 +16,8 @@ docker/conf/*.whl
 
 coverage.xml
 junit.xml
-package-lock.json
 
 node_modules
-package.json
 Makefile
 
 !tests/.coveragerc

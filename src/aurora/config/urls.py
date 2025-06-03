@@ -39,6 +39,9 @@ urlpatterns = [
     path(r"sysinfo/", include("django_sysinfo.urls")),
 ]
 
+if "django_browser_reload" in settings.INSTALLED_APPS:
+    urlpatterns += [path("__reload__/", include("django_browser_reload.urls"))]
+
 urlpatterns += i18n_patterns(
     path("", include("aurora.registration.urls")),
     path("", include("aurora.core.urls")),

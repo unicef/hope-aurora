@@ -78,7 +78,9 @@ INSTALLED_APPS = [
     "dbtemplates",
     "admin_sync",
     "anymail",
+    "tailwind",
     # ---
+    "aurora.web.theme",
     "aurora.apps.Config",
     "aurora.flatpages.apps.Config",
     "aurora.i18n",
@@ -86,7 +88,8 @@ INSTALLED_APPS = [
     "aurora.core",
     "aurora.registration",
     "aurora.counters",
-]
+] + env("EXTRA_INSTALLED_APPS")
+
 FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 MIDDLEWARE = [
     # "django.middleware.cache.UpdateCacheMiddleware",
@@ -109,7 +112,7 @@ MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "hijack.middleware.HijackUserMiddleware",
     "csp.middleware.CSPMiddleware",
-]
+] + env("EXTRA_MIDDLEWARES")
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
 ROOT_URLCONF = "aurora.config.urls"
@@ -124,13 +127,8 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
-            PACKAGE_DIR / "administration/templates",
-            PACKAGE_DIR / "admin/ui/templates",
             PACKAGE_DIR / "api/templates",
-            PACKAGE_DIR / "registration/templates",
-            PACKAGE_DIR / "flatpages/templates",
-            PACKAGE_DIR / "core/templates",
-            PACKAGE_DIR / "web/templates",
+            PACKAGE_DIR / "templates",
         ],
         "APP_DIRS": False,
         "OPTIONS": {

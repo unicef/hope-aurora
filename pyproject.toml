@@ -23,6 +23,7 @@ classifiers = [
 dynamic = [
   "version",
 ]
+
 dependencies = [
   #  "beautifulsoup4",
   #  "celery",
@@ -65,6 +66,7 @@ dependencies = [
   "django-strategy-field>=3.2.1",
   "django-stubs[compatible-mypy]",
   "django-sysinfo",
+  "django-tailwind[reload]>=4.0.1",
   "django-tinymce",
   "djangorestframework",
   "djangorestframework-datatables",
@@ -96,10 +98,12 @@ scripts.aurora = "aurora.cli:cli"
 dev = [
   "coverage",
   "django-webtest>=1.9.13",
+  "djlint>=1.36.4",
   "factory-boy",
   "freezegun",
   #  "pdbpp",
   #  "pip-licenses>=5",
+  "hatch>=1.14.1",
   "pre-commit",
   "pytest",
   "pytest-cov",
@@ -160,6 +164,10 @@ build.hooks.vcs.version-file = "src/aurora/version.py"
 version.source = "vcs"
 raw-options = { root = "../.." }
 
+#[tool.hatch.build.hooks.custom]
+#path = "dev_tools/hatch_tailwind_hook.py"
+#class = "TailwindBuildHook"
+
 [tool.hatch.version.raw-options]
 local_scheme = "no-local-version"
 
@@ -171,6 +179,7 @@ include = [
 ]
 exclude = [
   "~*",
+  "src/aurora/web*/theme/static_src/node_modules/*.*",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -180,6 +189,7 @@ packages = [
 ]
 exclude = [
   "~*",
+  "src/aurora/web*/theme/static_src/*.*",
 ]
 
 [tool.uv]

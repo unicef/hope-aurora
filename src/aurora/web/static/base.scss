@@ -1,23 +1,19 @@
 $base-color: #0da7e6;
 $color-error: #ff9898;
 
-* {
-
-}
-
 .CodeMirror-wrapping {
   textarea {
     background-color: white;
   }
 }
 
-.select2 {
-  &.select2-container {
-    &.select2-container--default {
-      width: 100% !important;
-    }
-  }
-}
+//.select2 {
+//  &.select2-container {
+//    &.select2-container--default {
+//      width: 100% !important;
+//    }
+//  }
+//}
 
 .fs-counter-container {
   display: flex;
@@ -165,22 +161,19 @@ $color-error: #ff9898;
   }
 }
 
-body {
-  font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
-  font-size: 10pt;
+//body {
+//  header.header {
+//    //position: fixed;
+//    background-color: white;
+//    width: 100%;
+//    z-index: 900;
+//    //margin-bottom: 30px;
+//  }
+//}
 
-  header.header {
-    //position: fixed;
-    background-color: white;
-    width: 100%;
-    z-index: 900;
-    //margin-bottom: 30px;
-  }
-}
-
-.btn {
-
-}
+//.btn {
+//
+//}
 
 .bg-red {
   background-color: $color-error;
@@ -190,9 +183,9 @@ body {
   background-color: $color-error;
 }
 
-span.required {
-  color: #c90a0a;
-}
+//span.required {
+//  color: #c90a0a;
+//}
 
 ul.errorlist {
   li {

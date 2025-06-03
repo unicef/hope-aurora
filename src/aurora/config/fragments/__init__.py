@@ -25,4 +25,5 @@ from .smart_admin import *  # noqa
 from .social_auth import *  # noqa
 from .strategy import *  # noqa
 from .sysinfo import *  # noqa
+from .tailwind import *  # noqa
 from .translator import *  # noqa

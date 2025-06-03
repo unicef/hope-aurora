@@ -15,6 +15,7 @@ from django.contrib.auth import get_user_model
 from django.core import signing
 from django.core.exceptions import ValidationError
 from django.forms import Form, Media
+from django.forms.widgets import Script
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -35,6 +36,7 @@ from aurora.core.version_media import VersionMedia
 from aurora.i18n.get_text import gettext as _
 from aurora.registration.models import Record, Registration
 from aurora.state import state
+from aurora.web.views.mixins import MediaMixin
 
 if TYPE_CHECKING:
     from django.http import HttpRequest
@@ -167,7 +169,7 @@ def check_access(view_func: Callable[[Any, ...], Any]) -> Callable[[Any, ...], H
 
 
 @method_decorator(csrf_exempt, name="dispatch")
-class RegisterView(RegistrationMixin, FormView):
+class RegisterView(RegistrationMixin, MediaMixin, FormView):
     template_name = "registration/register.html"
 
     def get_template_names(self) -> list[str]:
@@ -243,14 +245,6 @@ class RegisterView(RegistrationMixin, FormView):
             "registration/survey%s.js" % extra,
             "page%s.js" % extra,
         ]
-        if self.request.user.is_staff:
-            js_files.extend(
-                [
-                    "i18n/i18n_edit.js",
-                    "edit%s.js" % extra,
-                ]
-            )
-
         mine = VersionMedia(js=js_files)
 
         return mine + m
@@ -266,7 +260,7 @@ class RegisterView(RegistrationMixin, FormView):
         kwargs["time"] = timezone.now().time()
 
         ctx = super().get_context_data(**kwargs)
-        ctx["media"] = self.media
+        # ctx["media"] = self.media
         return ctx
 
     def validate(self, cleaned_data: dict[str, Any]) -> bool:

@@ -1,0 +1,138 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/**
+  * A catch-all path to Django template files, JavaScript, and Python files
+  * that contain Tailwind CSS classes and will be scanned by Tailwind to generate the final CSS file.
+  *
+  * If your final CSS file is not being updated after code changes, you may want to broaden or narrow
+  * the scope of this path.
+*/
+@config "../tailwind.config.js";
+@source "../../../../**/*.{html,py,js}";
+
+body {
+  font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+  font-size: 10pt;
+  @apply bg-white;
+  @apply dark:bg-slate-800 dark:text-white;
+}
+
+header {
+  @apply border-b border-gray-200 sticky top-0 w-full;
+  position: fixed;
+  z-index: 900;
+}
+
+footer {
+  @apply text-black;
+  @apply dark:text-white;
+  @apply mx-4 border-t h-18 align-middle justify-center text-center;
+  img {
+    @apply w-8;
+  }
+}
+
+section {
+  @apply text-black;
+  @apply dark:text-gray-400;
+
+}
+#charts{
+  @apply min-h-screen w-full bg-gray-100;
+  @apply dark:bg-slate-800 dark:text-white;
+  .breadcrumbs{
+    @apply pl-5 text-xl mt-28;
+  }
+}
+
+#formContainer {
+  @apply min-h-screen flex justify-center bg-gray-100 pb-10  mt-8;
+  @apply dark:bg-slate-800 dark:text-white;
+  .required-label {
+    @apply lowercase font-thin text-xs text-red-600;
+    @apply dark:text-red-400;
+  }
+
+  .content {
+    @apply bg-white shadow-md rounded px-2 sm:px-8 pt-6 pb-8 mb-4;
+    @apply dark:bg-slate-700 dark:text-white;
+    @apply dark:shadow-gray-700;
+
+    .form-container {
+      label {
+        @apply bg-white;
+        @apply dark:bg-slate-700 dark:text-white;
+      }
+    }
+
+    .form-container {
+      @apply w-full my-5 p-3 border border-gray-400;
+      .formset {
+        .formset-description {
+          @apply w-full mt-4 text-sm leading-7 text-gray-800;
+          @apply bg-white;
+          @apply dark:bg-slate-700 dark:text-white;
+        }
+      }
+
+      fieldset {
+        @apply w-full;
+        .field-container {
+          @apply w-full;
+          input, label {
+            @apply text-sm;
+          }
+
+          input[type=text], select {
+            @apply w-full border-1 border-gray-200 ;
+            @apply bg-white;
+            &.aurora-field {
+              @apply shadow rounded appearance-none py-1 px-3 my-1 cursor-pointer text-gray-700 leading-tight focus:outline-none
+            }
+          }
+
+
+        }
+      }
+    }
+
+    .select2-dropdown {
+      @apply bg-red-800;
+      .select2-search {
+        @apply bg-red-800;
+        input {
+          @apply bg-red-800;
+        }
+      }
+
+      .select2-results {
+        @apply bg-red-800;
+        .select2-results__options {
+          @apply bg-red-800;
+
+        }
+      }
+    }
+  }
+
+  .submit-row {
+    input[type=submit], input[type=button], {
+      @apply bg-blue-500 px-4 text-white;
+      @apply dark:bg-blue-500 px-4 text-white;
+
+      &:hover, &:active {
+        box-shadow: 0 0 0 3px rgb(66 153 225 / 50%);
+        outline: 2px solid transparent;
+        outline-offset: 2px;
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+        background-color: rgba(124, 124, 124, 0.67);
+        color: black;
+
+      }
+    }
+  }
+}

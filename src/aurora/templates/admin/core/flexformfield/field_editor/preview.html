@@ -1,0 +1,39 @@
+{% load aurora static tailwind_tags %}
+<style>
+    body {
+        background-color: white;
+    }
+</style>
+ {% tailwind_css %}
+<link rel="stylesheet" href="{% static "base.css" %}">
+<script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+{# <script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script> #}
+{# <script src="{% static "admin/js/jquery.init.js" %}"></script> #}
+{# <script src="{% static "jquery.compat.js" %}"></script> #}
+{# <script src="{% static "smart_validation.js" %}"></script> #}
+{# <script src="{% static "smart.js" %}"></script> #}
+{# <script src="{% static "smart_field.js" %}"></script> #}
+{{ form.media }}
+{% if request.method == "POST" %}
+    {% if valid %}
+        <div class="w-full text-capitalize m-auto text-center text-xl border rounded bg-green-200">Success</div>
+        <pre class="p-2 border m-2 bg-gray-200">{{ data }}</pre>
+    {% elif error %}
+        <div class="mb-10 w-full text-capitalize m-auto text-center alert-message text-xl border rounded">please fix the
+            errors below
+        </div>
+    {% endif %}
+{% endif %}
+<div id="formContainer" class="p-2">
+    <form method="post" id="registrationForm" action=".">
+        {% csrf_token %}
+        <div class="form-container">
+        {% for field in form %}
+            {% include "smart/_fieldset.html" %}
+        {% endfor %}
+        <div class="submit-row">
+            <input style="background-color: cornflowerblue" type="submit" value="Submit">
+        </div>
+        </div>
+    </form>
+</div>

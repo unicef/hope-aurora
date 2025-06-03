@@ -15,7 +15,7 @@ def smart(request: "HttpRequest") -> dict[str, Any]:
         "session_id": get_session_id(),
         "user_is_root": is_root(request),
         "user_has_token": has_token(request),
-        "project": {
+        "aurora": {
             "build_date": os.environ.get("BUILD_DATE", "no date"),
             "version": __version__,
             "commit": os.environ.get("GIT_SHA", "<dev>")[:8],

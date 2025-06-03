@@ -1,11 +1,11 @@
 {% extends "counters/index.html" %}{% load static %}
 {% block breadcrumbs %}
     {{ block.super }}
-    &gt;<a class="org" href="{% url "charts:org-index" organization.slug %}">{{ organization }}</a>
+    &gt; <a class="org" href="{% url "charts:org-index" organization.slug %}">{{ organization }}</a>
 {% endblock breadcrumbs %}
 
-{% block body %}
-    <div class="min-h-screen flex w-wull bg-gray-100 pb-10">
+{% block charts-content %}
+    <div class="min-h-screen flex pb-10">
         <div class="w-full m-20 lg:w-1/2 mt-5">
             <ul>
                 {% for project in projects %}
@@ -14,5 +14,4 @@
             </ul>
         </div>
     </div>
-
-{% endblock body %}
+{% endblock charts-content %}

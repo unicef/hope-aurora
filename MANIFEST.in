@@ -11,12 +11,13 @@ exclude uv.lock
 recursive-include src/aurora *.*
 recursive-include src/dbtemplates *.*
 
-
 recursive-exclude tests *
+recursive-exclude static_src *.*
 
 prune **/~*
 prune docker
 prune docs
+prune static_src
 
 global-exclude .*
 global-exclude *~

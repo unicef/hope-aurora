@@ -1,0 +1,40 @@
+{% extends "base.html" %}{% load aurora formset itrans l10n static %}
+{% block meta %}
+    <meta name="Description" content="Module: '{{ registration.title }}' Version: {{ registration.version }} - Form version: {{ form.flex_form.version }}">
+    <meta name="Project" content="{{ registration.project }}">
+    <meta name="Organization" content="{{ registration.project.organization }}">
+    <meta name="Survey" content="{{ registration.slug }}">
+    <meta name="RegId" content="{{ registration.pk }}">
+    <meta name="Version" content="{{ registration.version }}">
+    <meta name="User" content="{% if user.is_authenticated %}{{ session_id }}{% endif %}">
+    <meta name="Language" content="{{ LANGUAGE_CODE }}">
+{% endblock meta %}
+
+{% block cache %}{% endblock %}
+
+{% block head %}
+    {{ block.super }}
+    {% if registration %}<script src="{% url 'javascript-catalog' registration.locale %}"></script>{% endif %}
+{% endblock head %}
+
+{% block header %}
+    {{ block.super }}
+    <div id="loading" class="h-screen flex justify-center bg-gray-100 pb-10">
+        Loading...
+    </div>
+    <div class="flex flex-row px-5">
+    {% if registration.locales|length > 1 %}
+    <div class="flex-grow">
+        {% include "i18n/_select_language.html" with languages=registration.languages %}
+    </div>
+    {% endif %}
+    {% if user.is_authenticated and registration.protected %}
+    <div class="flex-shrink"><a href="{% url "logout" %}">logout</a></div>
+    {% endif %}
+    </div>
+{# {% endif %} #}
+{% endblock header %}
+
+{% block body %}
+    {% include "smart/_form.html" %}
+{% endblock body %}

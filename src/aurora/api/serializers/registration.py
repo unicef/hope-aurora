@@ -1,4 +1,4 @@
-from typing import Mapping, Any
+from typing import Any, Mapping
 
 from rest_framework import serializers
 from rest_framework.fields import Field

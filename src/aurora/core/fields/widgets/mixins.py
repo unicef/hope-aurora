@@ -9,10 +9,7 @@ if TYPE_CHECKING:
 
 
 class TailWindMixin:
-    default_class = (
-        "shadow appearance-none border rounded w-full py-2 px-3 my-1 cursor-pointer "
-        "text-gray-700 leading-tight focus:outline-none focus:shadow-outline "
-    )
+    default_class = "aurora-field"
 
     def __init__(self, attrs=None, **kwargs):
         attrs = {
