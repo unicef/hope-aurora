@@ -91,7 +91,7 @@ jobs:
             unicef/hope-aurora:${{ steps.config.outputs.tag }}
             ${{ github.event.inputs.latest == 'true' && 'unicef/hope-aurora:latest' || null}}
           build-args: |
-            VERSION=${{ steps.config.outputs.git_reference }}
+            VERSION=${{ steps.config.outputs.version }}
             BUILD_DATE=${{ steps.config.outputs.build_date }}
             GIT_SHA=${{ steps.config.outputs.commmit_sha }}
 
