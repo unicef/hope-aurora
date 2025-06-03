@@ -2,7 +2,6 @@ from typing import Callable
 
 from mypy.plugin import ClassDefContext, Plugin
 from mypy.plugins.common import add_attribute_to_class
-
 from mypy.types import AnyType, TypeOfAny
 
 

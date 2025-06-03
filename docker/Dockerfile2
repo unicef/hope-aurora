@@ -91,7 +91,7 @@ CMD ["run"]
 
 LABEL org.opencontainers.image.authors="hope@unicef.org"
 LABEL org.opencontainers.image.created="$BUILD_DATE"
-LABEL org.opencontainers.image.description="Bitcaster"
+LABEL org.opencontainers.image.description="Aurora"
 LABEL org.opencontainers.image.documentation="https://unicef.github.io/hope-aurora/"
 LABEL org.opencontainers.image.licenses="https://github.com/unicef/hope-aurora/blob/${GIT_SHA:-develop}/LICENSE.md"
 LABEL org.opencontainers.image.revision=$GIT_SHA

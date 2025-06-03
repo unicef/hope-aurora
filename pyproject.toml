@@ -104,6 +104,7 @@ dev = [
   #  "pdbpp",
   #  "pip-licenses>=5",
   "hatch>=1.14.1",
+  "ipdb>=0.13.13",
   "pre-commit",
   "pytest",
   "pytest-cov",

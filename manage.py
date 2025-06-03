@@ -2,14 +2,17 @@
 import datetime
 import os
 import sys
+from pathlib import Path
 
 
 def main() -> None:
     """Run administrative tasks."""
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "aurora.config.settings")
     os.environ.setdefault("BUILD_DATE", datetime.datetime.today().strftime("%Y-%m-%d %H:%M"))
-    with open(".git/refs/heads/master") as f:
-        os.environ.setdefault("GIT_SHA", f.read())
+    git_info_file = Path(__file__).parent / ".git/refs/heads/master"
+    if git_info_file.exists():
+        with git_info_file.open("r") as f:
+            os.environ.setdefault("GIT_SHA", f.read())
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

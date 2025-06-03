@@ -50,6 +50,7 @@ jobs:
     if: needs.changes.outputs.run_tests == 'true'
     outputs:
       commit: ${{ steps.build.outputs.commit }}
+      version: ${{ steps.build.outputs.version }}
     runs-on: ubuntu-latest
     services:
       redis:

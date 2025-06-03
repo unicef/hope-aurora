@@ -84,6 +84,9 @@ jobs:
           context: .
           file: docker/Dockerfile2
           push: true
+          labels: |
+            "version=${{ steps.config.outputs.version }}"
+            "commit=${{ steps.config.outputs.commmit_sha }}"
           tags: |
             unicef/hope-aurora:${{ steps.config.outputs.tag }}
             ${{ github.event.inputs.latest == 'true' && 'unicef/hope-aurora:latest' || null}}

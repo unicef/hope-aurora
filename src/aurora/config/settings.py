@@ -271,7 +271,7 @@ AUTHENTICATION_BACKENDS = [
     # "aurora.security.backend.OrganizationAuthBackend",
     # "django.contrib.auth.backends.ModelBackend",
     "social_core.backends.azuread_tenant.AzureADTenantOAuth2",
-] + env("AUTHENTICATION_BACKENDS")
+] + env("EXTRA_AUTHENTICATION_BACKENDS")
 
 CSRF_COOKIE_NAME = env("CSRF_COOKIE_NAME")
 CSRF_HEADER_NAME = "HTTP_X_CSRFTOKEN"
