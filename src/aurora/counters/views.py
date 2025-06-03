@@ -3,7 +3,7 @@ from typing import Any
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.forms import Media
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.utils import timezone
@@ -20,12 +20,9 @@ from aurora.web.views.mixins import MediaMixin
 User = get_user_model()
 
 
-class ChartBase(MediaMixin, LoginRequiredMixin, UserPassesTestMixin, TemplateView):
-    def test_func(self) -> bool:
+class ChartBase(MediaMixin, LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
+    def has_permission(self) -> bool:
         return self.request.user.has_perm("counters.view_counter")
-
-    def handle_no_permission(self) -> "HttpResponse":
-        return HttpResponse(status=403)
 
     @cached_property
     def registration(self) -> "Registration":
