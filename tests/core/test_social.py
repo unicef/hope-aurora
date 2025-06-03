@@ -8,7 +8,7 @@ from django.urls import reverse
 from social_core.exceptions import InvalidEmail
 
 from aurora.core.authentication import create_user, require_email, social_details, user_details
-from aurora.core.backends import User
+from aurora.security.models import User
 
 
 @override_settings(SOCIAL_AUTH_GOOGLE_OAUTH2_KEY="1", SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET="2")
