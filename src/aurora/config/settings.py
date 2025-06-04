@@ -1,4 +1,3 @@
-import logging
 import mimetypes
 import os
 from pathlib import Path
@@ -176,15 +175,6 @@ ro_conn.update(
 DATABASES = {"default": main_conn, "read_only": ro_conn}
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
-
-# Password validation
-# https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
-
-try:
-    if REDIS_CONNSTR := env("REDIS_CONNSTR"):
-        os.environ["CACHE_DEFAULT"] = f"redisraw://{REDIS_CONNSTR},client_class=django_redis.client.DefaultClient"
-except Exception as e:  # pragma: no cover
-    logging.exception(e)
 
 CACHES = {
     "default": env.cache_url("CACHE_DEFAULT"),
