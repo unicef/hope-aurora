@@ -39,6 +39,5 @@ def test_charts_user_navigation(browser: AuroraTestBrowser, admin_user, data):
     browser.click_with_offset("#myChart", 60, 200, mark=True)
     browser.click("button#prev")
     browser.click("button#next")
-    browser.find_element("div.breadcrumbs a.month").click()
     browser.click_link_text(reg.project.name)
     browser.click_link_text(reg.organization.name)

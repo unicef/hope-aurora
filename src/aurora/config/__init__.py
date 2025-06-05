@@ -77,7 +77,7 @@ OPTIONS = {
     "ROOT_KEY": (str, ""),
     "ROOT_TOKEN": (str, ""),
     "SECRET_KEY": (str, "", "", True),
-    "SECURE_HSTS_PRELOAD": (bool, "", "", True),
+    "SECURE_HSTS_PRELOAD": (bool, False, "", True),
     "SENTRY_DSN": (str, ""),
     "SENTRY_ENVIRONMENT": (str, ""),
     "SENTRY_PROJECT": (str, ""),
