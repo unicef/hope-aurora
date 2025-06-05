@@ -169,7 +169,7 @@ jobs:
             vkey: ${{ secrets.VERACODE_API_KEY }}
             command: "scan" 
             type: "image"
-            source: ${{ vars.DOCKERHUB_ORGANIZATION }}/unicef/hope-aurora:${{ needs.build.outputs.tag }}
+            source: unicef/hope-aurora:${{ needs.build.outputs.tag }}
             format: "json"
             debug: false
             fail_build: true  
