@@ -1,11 +1,20 @@
 import base64
 import json
+import os
+from hashlib import md5
 from pathlib import Path
 from typing import TYPE_CHECKING
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
+from constance import config
+from django.conf import settings
+from django.urls import reverse
+from django.utils import translation
+from testutils.factories import RecordFactory, ValidatorFactory
 from webtest import Upload
+
+from aurora.state import state
 
 if TYPE_CHECKING:
     from aurora.registration.models import Record
@@ -376,3 +385,314 @@ def test_register_protected_registration(django_app, user, protected_registratio
     with user_grant_permissions(user, "registration.register", protected_registration):
         res = django_app.get(url, user=user.username)
     assert res.status_code == 200
+
+
+@pytest.mark.django_db
+def test_registration_data_view_registration_property(simple_registration):
+    from aurora.registration.views.data import RegistrationDataView
+    from django.http import Http404
+
+    view = RegistrationDataView()
+    view.kwargs = {"slug": simple_registration.slug}
+    assert view.registration == simple_registration
+
+    view = RegistrationDataView()
+    view.kwargs = {"pk": simple_registration.pk}
+    assert view.registration == simple_registration
+
+    view = RegistrationDataView()
+    view.kwargs = {}
+    with pytest.raises(Http404):
+        _ = view.registration
+
+    view = RegistrationDataView()
+    view.kwargs = {"slug": "non-existent-slug"}
+    with pytest.raises(Http404):
+        _ = view.registration
+
+
+@pytest.mark.django_db
+def test_registrations_view_get(django_app, simple_registration):
+    url = reverse("registrations")
+    res = django_app.get(url)
+    assert res.status_code == 200
+    assert simple_registration.name in res.text
+
+
+@pytest.mark.django_db
+def test_registrations_view_post(django_app, simple_registration, complex_registration):
+    url = reverse("registrations")
+    from aurora.registration.models import Registration
+
+    assert not Registration.objects.filter(is_pwa_enabled=True).exists()
+
+    res = django_app.get(url)
+    form = res.form
+    form["slug"] = simple_registration.slug
+    res = form.submit()
+    assert res.status_code == 200
+    assert simple_registration.name in res.text
+
+    simple_registration.refresh_from_db()
+    assert simple_registration.is_pwa_enabled is True
+
+    res = django_app.get(url)
+    form = res.form
+    form["slug"] = complex_registration.slug
+    res = form.submit()
+    assert res.status_code == 200
+    assert complex_registration.name in res.text
+
+    simple_registration.refresh_from_db()
+    complex_registration.refresh_from_db()
+    assert simple_registration.is_pwa_enabled is False
+    assert complex_registration.is_pwa_enabled is True
+
+
+@pytest.mark.django_db
+def test_get_pwa_enabled(django_app, simple_registration):
+    url = reverse("get_pwa_enabled")
+
+    res = django_app.get(url)
+    assert res.status_code == 200
+    data = res.json
+    assert data["slug"] is None
+    assert data["version"] is None
+    assert data["publicKey"] is None
+    assert data["optionsSets"] is None
+
+    simple_registration.is_pwa_enabled = True
+    simple_registration.save(update_fields=["is_pwa_enabled"])
+
+    res = django_app.get(url)
+    assert res.status_code == 200
+    data = res.json
+    assert data["slug"] == simple_registration.slug
+    assert data["version"] == simple_registration.version
+    assert data["publicKey"] == simple_registration.public_key
+    assert data["optionsSets"] == simple_registration.option_set_links
+
+
+@pytest.mark.django_db
+def test_authorize_cookie(django_app, user):
+    from django.core import signing
+    import json
+
+    url = reverse("authorize_cookie")
+
+    signed_data = signing.dumps(
+        {"_auth_user_id": user.id},
+        salt="django.contrib.sessions.backends.signed_cookies"
+    )
+    res = django_app.post(url, json.dumps(signed_data), content_type="application/json")
+    assert res.status_code == 200
+    assert res.json["authorized"] is True
+
+    signed_data = signing.dumps(
+        {"_auth_user_id": 999999},
+        salt="django.contrib.sessions.backends.signed_cookies"
+    )
+    res = django_app.post(url, json.dumps(signed_data), content_type="application/json")
+    assert res.status_code == 200
+    assert res.json["authorized"] is False
+
+    res = django_app.post(url, "invalid json", content_type="application/json")
+    assert res.status_code == 200
+    assert res.json["authorized"] is False
+
+    res = django_app.post(url, "invalid signature", content_type="application/json")
+    assert res.status_code == 200
+    assert res.json["authorized"] is False
+
+
+@pytest.mark.django_db
+def test_registrations_view_unsupported_method(django_app):
+    url = reverse("registrations")
+
+    res = django_app.head(url, expect_errors=True)
+    assert res.status_code == 405
+
+    res = django_app.options(url, expect_errors=True)
+    assert res.status_code == 405
+
+
+@pytest.mark.django_db
+def test_register_auth_view(django_app, simple_registration, user):
+    url = reverse("register-auth", kwargs={"slug": simple_registration.slug})
+
+    res = django_app.get(url)
+    assert res.status_code == 200
+    data = res.json
+    assert data["registration"]["name"] == simple_registration.name
+    assert data["registration"]["locale"] == simple_registration.locale
+    assert data["registration"]["protected"] == simple_registration.protected
+    assert data["project"]["build_date"] == os.environ.get("BUILD_DATE", "")
+    assert data["project"]["version"] == os.environ.get("VERSION", "")
+    assert data["project"]["debug"] == settings.DEBUG
+    assert data["project"]["env"] == settings.SMART_ADMIN_HEADER
+    assert data["project"]["sentry_dsn"] == settings.SENTRY_DSN
+    assert data["project"]["cache"] == config.CACHE_VERSION
+    assert "has_token" in data["project"]
+    assert data["user"]["username"] == ""
+    assert data["user"]["anonymous"] is True
+
+    res = django_app.get(url, user=user.username)
+    assert res.status_code == 200
+    data = res.json
+    assert data["user"]["username"] == user.username
+    assert data["user"]["anonymous"] is False
+
+    simple_registration.active = False
+    simple_registration.save(update_fields=["active"])
+
+    user.is_staff = True
+    user.save(update_fields=["is_staff"])
+    res = django_app.get(url, user=user.username)
+    assert res.status_code == 200
+
+    user.is_staff = False
+    user.save(update_fields=["is_staff"])
+    res = django_app.get(url, user=user.username, expect_errors=True)
+    assert res.status_code == 404
+
+    url = reverse("register-auth", kwargs={"slug": "non-existent"})
+    res = django_app.get(url, expect_errors=True)
+    assert res.status_code == 404
+
+
+@pytest.mark.django_db
+def test_qr_verify(django_app, simple_registration):
+    mock_request = Mock()
+    mock_request.META = {"REMOTE_ADDR": "127.0.0.1"}
+    state.request = mock_request
+
+    record = RecordFactory(registration=simple_registration, storage=b"test storage")
+
+    correct_hash = md5(record.storage).hexdigest()
+
+    url = reverse("register-verify", kwargs={"pk": record.pk, "hash": correct_hash})
+    res = django_app.get(url)
+    assert res.status_code == 200
+    assert res.context["valid"] is True
+    assert res.context["record"] == record
+
+    incorrect_hash = "incorrect_hash"
+    url = reverse("register-verify", kwargs={"pk": record.pk, "hash": incorrect_hash})
+    res = django_app.get(url)
+    assert res.status_code == 200
+    assert res.context["valid"] is False
+    assert res.context["record"] == record
+
+
+@pytest.mark.django_db
+@patch('aurora.registration.views.registration.state')
+def test_register_complete_view_record_not_found(mock_state, django_app, simple_registration):
+    mock_state.collect_messages = False
+    url = reverse("register-done", kwargs={"reg": simple_registration.pk, "rec": 999999})
+    res = django_app.get(url, expect_errors=True)
+    assert res.status_code == 404
+
+    mock_state.collect_messages = True
+    url = reverse("register-done", kwargs={"reg": simple_registration.pk, "rec": 999999})
+    res = django_app.get(url, expect_errors=True)
+    assert res.status_code == 404
+
+
+@pytest.mark.django_db
+def test_register_complete_view_context_data(django_app, simple_registration):
+    from constance.test import override_config
+    from aurora.core.utils import get_qrcode
+
+    record = RecordFactory(registration=simple_registration)
+    url = reverse("register-done", kwargs={"reg": simple_registration.pk, "rec": record.pk})
+
+    with override_config(QRCODE=True):
+        res = django_app.get(url)
+        assert res.status_code == 200
+        context = res.context
+        assert context["record"] == record
+        assert context["registration_url"] == simple_registration.get_absolute_url()
+        assert context["qrcode"] is not None
+        assert context["url"] is not None
+
+        expected_hash = md5(str(record.fields).encode()).hexdigest()
+        base_url = f"http://testserver{url}"
+        expected_url = f"{base_url}/{expected_hash}"
+        assert context["url"] == base_url
+        assert context["qrcode"] == get_qrcode(expected_url)
+
+    with override_config(QRCODE=False):
+        res = django_app.get(url)
+        assert res.status_code == 200
+        context = res.context
+        assert context["record"] == record
+        assert context["registration_url"] == simple_registration.get_absolute_url()
+        assert context["qrcode"] is None
+        assert context["url"] is None
+
+
+@pytest.mark.django_db
+def test_register_router(django_app, simple_registration):
+    url = reverse("registration-router")
+
+    res = django_app.post(url, {"slug": simple_registration.slug})
+    assert res.status_code == 302
+    assert res.headers["location"].startswith(f"/en-us/register/{simple_registration.slug}/1/")
+
+    res = django_app.post(url, {"slug": "non-existent"}, expect_errors=True)
+    assert res.status_code == 404
+
+    simple_registration.locales = ["fr", "de"]
+    simple_registration.locale = "fr"
+    simple_registration.save(update_fields=["locales", "locale"])
+
+    with translation.override("en"):
+        res = django_app.post(url, {"slug": simple_registration.slug})
+        assert res.status_code == 302
+        assert res.headers["location"].startswith(f"/fr/register/{simple_registration.slug}/1/")
+
+    with translation.override("de"):
+        res = django_app.post(url, {"slug": simple_registration.slug})
+        assert res.status_code == 302
+        assert res.headers["location"].startswith(f"/fr/register/{simple_registration.slug}/1/")
+
+
+@pytest.mark.django_db
+def test_register_router_methods(django_app):
+    from aurora.registration.views.registration import RegisterRouter
+    from django.forms import Form
+
+    view = RegisterRouter()
+    assert view.get_template_names() == []
+
+    assert view.get_form() is None
+    assert view.get_form(Form) is None
+
+
+@pytest.mark.django_db
+def test_register_view_get(django_app, simple_registration):
+    from aurora.state import state
+    from django.utils import translation
+    from django.urls import reverse
+
+    url = reverse("register", kwargs={"slug": simple_registration.slug})
+
+    state.collect_messages = True
+    res = django_app.get(url)
+    assert res.status_code == 200
+    assert "ETag" in res.headers
+    state.collect_messages = False
+
+    simple_registration.locales = ["fr", "de"]
+    simple_registration.locale = "fr"
+    simple_registration.save(update_fields=["locales", "locale"])
+
+    with translation.override("en"):
+        res = django_app.get(url)
+        assert res.status_code == 302
+        assert res.headers["location"].startswith(f"/fr/register/{simple_registration.slug}/1/")
+
+    with translation.override("de"):
+        res = django_app.get(url)
+        assert res.status_code == 302
+        assert res.headers["location"].startswith(f"/fr/register/{simple_registration.slug}/1/")
