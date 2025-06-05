@@ -36,18 +36,24 @@ build: ## build docker image
 			-e CSRF_COOKIE_SECURE=False \
 			-e CSRF_TRUSTED_ORIGINS=http://localhost \
 			-e DATABASE_URL="postgres://postgres:@host.docker.internal:5432/aurora" \
-			-e DEBUG="1" \
+			-e DEBUG="0" \
 			-e DJANGO_ADMIN_URL=admin/ \
 			-e DJANGO_SETTINGS_MODULE=aurora.config.settings \
 			-e FERNET_KEY=123 \
 			-e LOGGING_LEVEL="DEBUG" \
-			-e SECRET_KEY="super-secret-key-just-for-testing" \
+			-e SECRET_KEY="really-unsafe-super-secret-key-just-for-testing" \
 			-e SENTRY_DSN="${SENTRY_DSN}" \
 			-e SOCIAL_AUTH_REDIRECT_IS_HTTPS="False" \
-			-e SESSION_COOKIE_DOMAIN=
+			-e SECURE_HSTS_PRELOAD=1 \
+			-e SESSION_COOKIE_DOMAIN= \
+			-e SESSION_COOKIE_SECURE=false \
 			${RUN_OPTIONS} \
 			-t ${DOCKER_IMAGE} \
 			${CMD}
+
+run: ## Run docker build
+	DOCKER_IMAGE=${DOCKER_IMAGE_NAME}:${VERSION} \
+	$(MAKE) .run
 
 check: ## Check docker build
 	CMD='sh /usr/local/bin/check.sh' \

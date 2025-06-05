@@ -180,23 +180,20 @@ CACHES = {
     "default": env.cache_url("CACHE_DEFAULT"),
 }
 
-if DEBUG:  # pragma: no cover
-    AUTH_PASSWORD_VALIDATORS = []
-else:  # pragma: no cover
-    AUTH_PASSWORD_VALIDATORS = [
-        {
-            "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-        },
-        {
-            "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-        },
-        {
-            "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-        },
-        {
-            "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-        },
-    ]
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
@@ -257,9 +254,6 @@ STORAGES = {
 ADMINS = env("ADMINS")
 AUTHENTICATION_BACKENDS = [
     "aurora.security.backend.AuroraAuthBackend",
-    # "aurora.security.backend.RegistrationAuthBackend",
-    # "aurora.security.backend.OrganizationAuthBackend",
-    # "django.contrib.auth.backends.ModelBackend",
     "social_core.backends.azuread_tenant.AzureADTenantOAuth2",
 ] + env("EXTRA_AUTHENTICATION_BACKENDS")
 
@@ -268,6 +262,7 @@ CSRF_HEADER_NAME = "HTTP_X_CSRFTOKEN"
 CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
 CSRF_COOKIE_SECURE = env("CSRF_COOKIE_SECURE")
 
+SECURE_HSTS_PRELOAD = env("SECURE_HSTS_PRELOAD")
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = env("USE_X_FORWARDED_HOST")
 
