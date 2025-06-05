@@ -35,8 +35,9 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.config.outputs.tag }}
     steps:
-
       - name: Checkout code
         uses: actions/checkout@v4.1.7
         with:
@@ -168,7 +169,7 @@ jobs:
             vkey: ${{ secrets.VERACODE_API_KEY }}
             command: "scan" 
             type: "image"
-            source: ${{ vars.DOCKERHUB_ORGANIZATION }}/unicef/hope-aurora:${{ steps.config.outputs.tag }}
+            source: ${{ vars.DOCKERHUB_ORGANIZATION }}/unicef/hope-aurora:${{ needs.build.outputs.tag }}
             format: "json"
             debug: false
             fail_build: true  
