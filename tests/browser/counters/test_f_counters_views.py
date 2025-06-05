@@ -37,7 +37,10 @@ def test_charts_user_navigation(browser: AuroraTestBrowser, admin_user, data):
     browser.scroll_to_top()
     # mark the point just for debugging purpose. To find int in the screenshot
     browser.click_with_offset("#myChart", 60, 200, mark=True)
+    browser.scroll_to_top()
     browser.click("button#prev")
     browser.click("button#next")
+    browser.scroll_to_top()
     browser.click_link_text(reg.project.name)
+    browser.scroll_to_top()
     browser.click_link_text(reg.organization.name)
