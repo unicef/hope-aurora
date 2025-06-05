@@ -15,8 +15,7 @@ from django.contrib.auth import get_user_model
 from django.core import signing
 from django.core.exceptions import ValidationError
 from django.forms import Form, Media
-from django.forms.widgets import Script
-from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone, translation
@@ -107,7 +106,7 @@ class RegisterCompleteView(TemplateView):
 
 class BinaryFile:
     def __init__(self, content: bytes) -> None:
-        self.content = content
+        self.content = content  # pragma: no cover
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -119,7 +118,14 @@ class RegisterRouter(FormView):
         return None
 
     def post(self, request: "HttpRequest", *args, **kwargs) -> HttpResponse:
-        r = Registration.objects.only("slug", "version", "locale").get(slug=request.POST["slug"])
+        slug = request.POST.get("slug")
+        try:
+            # use _base_manager to avoid overwritten get_queryset method of RegistrationManager
+            # that leads to django.core.exceptions.FieldError
+            r = Registration._base_manager.only("slug", "version", "locale").get(slug=slug)
+        except Registration.DoesNotExist:
+            raise Http404
+
         language = translation.get_language()
         if language not in r.all_locales:
             language = r.locale
@@ -391,7 +397,8 @@ def registrations(request: "HttpRequest") -> "HttpResponse|None":
             "registration/registrations.html",
             {"registrations": registration_objs},
         )
-    return None
+
+    return HttpResponseNotAllowed(["GET", "POST"])
 
 
 def get_pwa_enabled(request: "HttpRequest") -> "HttpResponse":
