@@ -145,10 +145,6 @@ jobs:
         verbose: false
         name: codecov-${{env.GITHUB_REF_NAME}}
 
-    - name: Stop further steps
-      if: failure()
-      run: exit 1
-
     - name: build
       id: build
       run: |
