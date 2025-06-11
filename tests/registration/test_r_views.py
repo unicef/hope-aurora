@@ -12,6 +12,7 @@ from django.conf import settings
 from django.urls import reverse
 from django.utils import translation
 from testutils.factories import RecordFactory, ValidatorFactory
+from testutils.perms import user_grant_permissions
 from webtest import Upload
 
 from aurora.state import state
@@ -696,3 +697,18 @@ def test_register_view_get(django_app, simple_registration):
         res = django_app.get(url)
         assert res.status_code == 302
         assert res.headers["location"].startswith(f"/fr/register/{simple_registration.slug}/1/")
+
+
+@pytest.mark.django_db
+def test_register_view_check_access(django_app, simple_registration, user):
+    url = reverse("register", kwargs={"slug": simple_registration.slug})
+
+    simple_registration.protected = True
+    simple_registration.save(update_fields=["protected"])
+    res = django_app.get(url)
+    assert res.status_code == 302
+    assert res.headers["location"].startswith("/login?next=")
+
+    res = django_app.get(url, user=user.username)
+    assert res.status_code == 302
+    assert res.headers["location"].startswith("/login?next=")
