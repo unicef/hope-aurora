@@ -2,10 +2,13 @@ import csv
 import io
 import json
 import logging
+from datetime import timedelta
 from hashlib import md5
 from typing import TYPE_CHECKING
 
 from admin_extra_buttons.decorators import button, choice, view
+from django.utils import timezone
+
 from aurora.core.admin_sync import SyncModelAdmin
 from adminfilters.mixin import AdminAutoCompleteSearchMixin
 from dateutil.utils import today
@@ -52,9 +55,9 @@ from aurora.registration.forms import (
     RegistrationForm,
 )
 from aurora.registration.models import Record, Registration
+from aurora.tasks import remove_records
 
 logger = logging.getLogger(__name__)
-
 
 if TYPE_CHECKING:
     from django.template import Template
@@ -152,7 +155,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
     def get_readonly_fields(self, request, obj=None):
         ro = super().get_readonly_fields(request, obj)
         if obj and obj.pk and not is_root(request):
-            ro = list(ro) + ["slug", "export_allowed"]
+            ro = list(ro) + ["slug", "export_allowed", "archived"]
         return ro
 
     def secure(self, obj):
@@ -178,6 +181,26 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
             )
             + base
         )
+
+    @button()
+    def archive(self, request: HttpRequest, pk: str) -> HttpResponse:
+        ctx = self.get_common_context(request, pk, title="Archive", clearable=False)
+        ctx["today"] = timezone.now()
+        reg: Registration = ctx["original"]
+        if reg.end:
+            ctx["clear_date"] = reg.end + timedelta(days=7)
+            ctx["clearable"] = ctx["today"] > ctx["clear_date"]
+
+        if request.method == "POST":
+            if "archive" in request.POST:
+                reg.archived = True
+                reg.active = False
+                if not reg.end:
+                    reg.end = timezone.now()
+                reg.save()
+            elif ctx["clearable"] and "clear" in request.POST:
+                remove_records.send(reg.pk)
+        return render(request, "admin/registration/registration/archive.html", ctx)
 
     @view(permission=can_export_data)
     def export_as_csv(self, request: HttpRequest, pk: str) -> HttpResponse:

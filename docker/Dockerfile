@@ -62,7 +62,7 @@ RUN apt-get update && \
     unzip /chromedriver/chromedriver* -d /usr/local/bin/ && \
     rm -rf /chromedriver
 
-RUN pip install --no-cache-dir uv uwsgi
+RUN pip install --no-cache-dir uv uwsgi circus
 
 # ------- tests -------
 FROM builder AS tests
@@ -144,7 +144,7 @@ ADD uv.lock README.md MANIFEST.in pyproject.toml /app/
 ADD src /app/src/
 
 COPY --from=production /venv /venv
-COPY --from=builder /usr/local/bin/uwsgi /usr/local/bin/uv /usr/local/bin/
+COPY --from=builder /usr/local/bin/uwsgi /usr/local/bin/uv /usr/local/bin/circus* /usr/local/bin/
 
 RUN --mount=type=cache,target=/root/.uv-cache \
     uv build \

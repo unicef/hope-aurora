@@ -12,6 +12,7 @@ from .cors import *  # noqa
 from .csp import *  # noqa
 from .dbtemplate import *  # noqa
 from .django_toolbar import *  # noqa
+from .dramatiq import *  # noqa
 from .flags import *  # noqa
 from .front_door import *  # noqa
 from .hijack import *  # noqa

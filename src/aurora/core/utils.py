@@ -64,7 +64,7 @@ def has_token(request, *args, **kwargs):
 def is_root(request, *args, **kwargs) -> bool:
     ret = False
     if hasattr(request, "user"):
-        ret = request.user.is_superuser and flag_enabled("IS_ROOT")
+        ret = request.user.is_superuser and flag_enabled("IS_ROOT", request=request)
     return ret
 
 

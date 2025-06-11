@@ -48,7 +48,7 @@ WIDGET_FOR_FORMFIELD_DEFAULTS: dict[type[ConfigurableSmartField], dict[str, Any]
     IntegerField: {"widget": widgets.NumberWidget},
     FloatField: {"widget": widgets.NumberWidget},
     ChoiceField: {"widget": SmartSelectWidget},
-    ImageField: {"widget": widgets.ImageWidget},
+    # ImageField: {"widget": widgets.ImageWidget},
     # forms.FileField: {"widget": widgets.UploadFileWidget},
     SelectField: {"widget": SmartSelectWidget},
     RadioField: {"widget": widgets.RadioWidget},

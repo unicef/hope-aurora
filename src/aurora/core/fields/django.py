@@ -1,7 +1,7 @@
 from django import forms
 
 from .mixins import ConfigurableSmartField
-from .widgets import SmartDateWidget, SmartTextWidget
+from .widgets import SmartDateWidget, SmartTextWidget, ImageWidget
 
 
 class BooleanField(ConfigurableSmartField, forms.BooleanField):
@@ -41,7 +41,7 @@ class GenericIPAddressField(ConfigurableSmartField, forms.GenericIPAddressField)
 
 
 class ImageField(ConfigurableSmartField, forms.ImageField):
-    pass
+    widget = ImageWidget
 
 
 class IntegerField(ConfigurableSmartField, forms.IntegerField):

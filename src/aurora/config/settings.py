@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     "reversion",  # https://github.com/etianen/django-reversion
     "reversion_compare",  # https://github.com/jedie/django-reversion-compare
     "django_filters",
+    "django_dramatiq",
+    "dramatiq_crontab",
     # ---
     "smart_admin.apps.SmartLogsConfig",
     "smart_admin.apps.SmartTemplateConfig",

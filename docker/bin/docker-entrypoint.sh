@@ -20,12 +20,8 @@ echo "Startup command is: '$1'"
 case "$1" in
     "run")
         envsubst < /conf/nginx.conf.tpl > /conf/nginx.conf && /usr/sbin/nginx -tc /conf/nginx.conf
-
         django-admin upgrade --no-input
-
-        /usr/sbin/nginx -c /conf/nginx.conf
-        exec uwsgi --ini /conf/uwsgi.ini
-
+        circusd /conf/circus.ini
     ;;
     "dev")
         until pg_isready -h db -p 5432;
@@ -39,7 +35,7 @@ case "$1" in
           do echo "waiting for database"; sleep 2; done;
         django-admin upgrade --no-input
     ;;
-*)
-exec "$@"
-;;
+    *)
+      exec "$@"
+    ;;
 esac

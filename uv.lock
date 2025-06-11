@@ -21,6 +21,18 @@ wheels = [
 ]
 
 [[package]]
+name = "apscheduler"
+version = "3.11.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "tzlocal" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4e/00/6d6814ddc19be2df62c8c898c4df6b5b1914f3bd024b780028caa392d186/apscheduler-3.11.0.tar.gz", hash = "sha256:4c622d250b0955a65d5d0eb91c33e6d43fd879834bf541e0a18661ae60460133", size = 107347, upload-time = "2024-11-24T19:39:26.463Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d0/ae/9a053dd9229c0fde6b1f1f33f609ccff1ee79ddda364c756a924c6d8563b/APScheduler-3.11.0-py3-none-any.whl", hash = "sha256:fc134ca32e50f5eadcc4938e3a4545ab19131435e851abb40b34d63d5141c6da", size = 64004, upload-time = "2024-11-24T19:39:24.442Z" },
+]
+
+[[package]]
 name = "asgiref"
 version = "3.8.1"
 source = { registry = "https://pypi.org/simple" }
@@ -598,6 +610,19 @@ wheels = [
 ]
 
 [[package]]
+name = "django-dramatiq"
+version = "0.13.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+    { name = "dramatiq" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a2/89/bb40b3287acea4e7451ee66a82a75bdeb3814252759d2e39c08c4a02a5f8/django_dramatiq-0.13.0.tar.gz", hash = "sha256:1cdf723ec6a223761985c0855b92fe40cca85d364914df6d99d3034f0f6cee15", size = 15535, upload-time = "2025-02-24T17:09:39.067Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d6/09/b19725f405621e41c119c6f4b43359c281ddd471794c215b754b8903f52c/django_dramatiq-0.13.0-py3-none-any.whl", hash = "sha256:855c590606c74bd478ad0a3a588667e3e73419e47e43ef2ae047dbebe19dff0b", size = 12376, upload-time = "2025-02-24T17:09:38.168Z" },
+]
+
+[[package]]
 name = "django-environ"
 version = "0.12.0"
 source = { registry = "https://pypi.org/simple" }
@@ -956,6 +981,42 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/ac/7a/cd851393291b12e7fe17cf5d4d8874b8ea133aebbe9235f5314aabc96a52/djlint-1.36.4-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:bda5014f295002363381969864addeb2db13955f1b26e772657c3b273ed7809f", size = 410972, upload-time = "2024-12-24T13:06:24.077Z" },
     { url = "https://files.pythonhosted.org/packages/6c/31/56469120394b970d4f079a552fde21ed27702ca729595ab0ed459eb6d240/djlint-1.36.4-cp313-cp313-win_amd64.whl", hash = "sha256:16ce37e085afe5a30953b2bd87cbe34c37843d94c701fc68a2dda06c1e428ff4", size = 362053, upload-time = "2024-12-24T13:06:25.432Z" },
     { url = "https://files.pythonhosted.org/packages/4b/67/f7aeea9be6fb3bd984487af8d0d80225a0b1e5f6f7126e3332d349fb13fe/djlint-1.36.4-py3-none-any.whl", hash = "sha256:e9699b8ac3057a6ed04fb90835b89bee954ed1959c01541ce4f8f729c938afdd", size = 52290, upload-time = "2024-12-24T13:06:33.76Z" },
+]
+
+[[package]]
+name = "dramatiq"
+version = "1.18.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "prometheus-client" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d9/9f/c8be928a88c387ed27344de089278e76d893dc71ad9e4b2a39a61deab0d8/dramatiq-1.18.0.tar.gz", hash = "sha256:5ea436b6e50dae64d4de04f1eb519ad239a6b1ba6315ba1dce1c0c4c1ebedfaf", size = 100868, upload-time = "2025-05-30T12:00:31.913Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ac/00/d9ea755cdeda3d498504775b62122b72ba282b91446fd58980171fb1084c/dramatiq-1.18.0-py3-none-any.whl", hash = "sha256:d360f608aa3cd06f5db714bfcd23825dc7098bacfee52aca536b0bb0faae3c69", size = 121231, upload-time = "2025-05-30T12:00:30.199Z" },
+]
+
+[package.optional-dependencies]
+redis = [
+    { name = "redis" },
+]
+
+[[package]]
+name = "dramatiq-crontab"
+version = "1.0.10"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "apscheduler" },
+    { name = "django" },
+    { name = "dramatiq" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/85/b5/874d2825ac6f536ef44fbb7e6d54b9e77b98ea74d72b4ead34ba07de7e2e/dramatiq_crontab-1.0.10.tar.gz", hash = "sha256:22c71b5f9e965fc050c0d78bb9f15e244cb3fb19ecc5219dec5178d269650e51", size = 8006, upload-time = "2025-04-11T13:25:22.247Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/78/ec/40e0312b6c34e837b8f16cea16029b76c5aa6839dd19469a04318e332898/dramatiq_crontab-1.0.10-py3-none-any.whl", hash = "sha256:fc382e833ca78d7228be030e302505b1bb76f8964183cb93d7e150d5d9183f15", size = 8704, upload-time = "2025-04-11T13:25:20.713Z" },
+]
+
+[package.optional-dependencies]
+sentry = [
+    { name = "sentry-sdk" },
 ]
 
 [[package]]
@@ -2047,6 +2108,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pika"
+version = "1.3.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/db/db/d4102f356af18f316c67f2cead8ece307f731dd63140e2c71f170ddacf9b/pika-1.3.2.tar.gz", hash = "sha256:b2a327ddddf8570b4965b3576ac77091b850262d34ce8c1d8cb4e4146aa4145f", size = 145029, upload-time = "2023-05-05T14:25:43.368Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f9/f3/f412836ec714d36f0f4ab581b84c491e3f42c6b5b97a6c6ed1817f3c16d0/pika-1.3.2-py3-none-any.whl", hash = "sha256:0779a7c1fafd805672796085560d290213a465e4f6f76a6fb19e378d8041a14f", size = 155415, upload-time = "2023-05-05T14:25:41.484Z" },
+]
+
+[[package]]
 name = "pillow"
 version = "11.2.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2128,6 +2198,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/08/39/679ca9b26c7bb2999ff122d50faa301e49af82ca9c066ec061cfbc0c6784/pre_commit-4.2.0.tar.gz", hash = "sha256:601283b9757afd87d40c4c4a9b2b5de9637a8ea02eaff7adc2d0fb4e04841146", size = 193424, upload-time = "2025-03-18T21:35:20.987Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/88/74/a88bf1b1efeae488a0c0b7bdf71429c313722d1fc0f377537fbe554e6180/pre_commit-4.2.0-py2.py3-none-any.whl", hash = "sha256:a009ca7205f1eb497d10b845e52c838a98b6cdd2102a6c8e4540e94ee75c58bd", size = 220707, upload-time = "2025-03-18T21:35:19.343Z" },
+]
+
+[[package]]
+name = "prometheus-client"
+version = "0.22.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/5e/cf/40dde0a2be27cc1eb41e333d1a674a74ce8b8b0457269cc640fd42b07cf7/prometheus_client-0.22.1.tar.gz", hash = "sha256:190f1331e783cf21eb60bca559354e0a4d4378facecf78f5428c39b675d20d28", size = 69746, upload-time = "2025-06-02T14:29:01.152Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/32/ae/ec06af4fe3ee72d16973474f122541746196aaa16cea6f66d18b963c6177/prometheus_client-0.22.1-py3-none-any.whl", hash = "sha256:cca895342e308174341b2cbf99a56bef291fbc0ef7b9e5412a0f26d653ba7094", size = 58694, upload-time = "2025-06-02T14:29:00.068Z" },
 ]
 
 [[package]]
@@ -3191,6 +3270,18 @@ wheels = [
 ]
 
 [[package]]
+name = "tzlocal"
+version = "5.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "tzdata", marker = "sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8b/2e/c14812d3d4d9cd1773c6be938f89e5735a1f11a9f184ac3639b93cef35d5/tzlocal-5.3.1.tar.gz", hash = "sha256:cceffc7edecefea1f595541dbd6e990cb1ea3d19bf01b2809f362a03dd7921fd", size = 30761, upload-time = "2025-03-05T21:17:41.549Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c2/14/e2a54fabd4f08cd7af1c07030603c3356b74da07f7cc056e600436edfa17/tzlocal-5.3.1-py3-none-any.whl", hash = "sha256:eb1a66c3ef5847adf7a834f1be0800581b683b5608e74f86ecbcef8ab91bb85d", size = 18026, upload-time = "2025-03-05T21:17:39.857Z" },
+]
+
+[[package]]
 name = "unicef-hope-aurora"
 source = { editable = "." }
 dependencies = [
@@ -3205,6 +3296,7 @@ dependencies = [
     { name = "django-cors-headers" },
     { name = "django-csp" },
     { name = "django-debug-toolbar" },
+    { name = "django-dramatiq" },
     { name = "django-filter" },
     { name = "django-flags" },
     { name = "django-front-door" },
@@ -3227,11 +3319,14 @@ dependencies = [
     { name = "django-tinymce" },
     { name = "djangorestframework" },
     { name = "djangorestframework-datatables" },
+    { name = "dramatiq", extra = ["redis"] },
+    { name = "dramatiq-crontab", extra = ["sentry"] },
     { name = "dukpy" },
     { name = "faker" },
     { name = "jmespath" },
     { name = "markdown" },
     { name = "natural-keys" },
+    { name = "pika" },
     { name = "psycopg2-binary" },
     { name = "pyquery" },
     { name = "qrcode" },
@@ -3312,6 +3407,7 @@ requires-dist = [
     { name = "django-cors-headers" },
     { name = "django-csp" },
     { name = "django-debug-toolbar" },
+    { name = "django-dramatiq", specifier = ">=0.13.0" },
     { name = "django-filter" },
     { name = "django-flags" },
     { name = "django-front-door" },
@@ -3334,11 +3430,14 @@ requires-dist = [
     { name = "django-tinymce" },
     { name = "djangorestframework" },
     { name = "djangorestframework-datatables" },
+    { name = "dramatiq", extras = ["redis"], specifier = ">=1.18.0" },
+    { name = "dramatiq-crontab", extras = ["sentry"], specifier = ">=1.0.10" },
     { name = "dukpy", specifier = ">=0.5" },
     { name = "faker" },
     { name = "jmespath" },
     { name = "markdown" },
     { name = "natural-keys" },
+    { name = "pika", specifier = ">=1.3.2" },
     { name = "psycopg2-binary" },
     { name = "pyquery" },
     { name = "qrcode" },

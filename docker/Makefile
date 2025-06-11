@@ -31,8 +31,8 @@ build: ## build docker image
 			-e ADMIN_EMAIL="${ADMIN_EMAIL}" \
 			-e ADMIN_PASSWORD="${ADMIN_PASSWORD}" \
 			-e ALLOWED_HOSTS="*" \
+			-e BROKER_URL="redis://host.docker.internal:6379/0" \
 			-e CACHE_DEFAULT="redis://host.docker.internal:6379/0" \
-			-e CELERY_BROKER_URL=redis://host.docker.internal:6379/0 \
 			-e CSRF_COOKIE_SECURE=False \
 			-e CSRF_TRUSTED_ORIGINS=http://localhost \
 			-e DATABASE_URL="postgres://postgres:@host.docker.internal:5432/aurora" \
@@ -47,6 +47,7 @@ build: ## build docker image
 			-e SECURE_HSTS_PRELOAD=1 \
 			-e SESSION_COOKIE_DOMAIN= \
 			-e SESSION_COOKIE_SECURE=false \
+			-v ./~data:/init-scripts \
 			${RUN_OPTIONS} \
 			-t ${DOCKER_IMAGE} \
 			${CMD}

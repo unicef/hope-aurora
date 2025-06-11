@@ -66,11 +66,13 @@ RUN uv venv $VIRTUAL_ENV \
 
 RUN ls /venv/lib/python3.12/site-packages/aurora/
 
+# ------- distro -------
 FROM base_os AS dist
 ADD docker/conf /conf/
 ADD docker/bin/* /usr/local/bin/
+RUN pip install circus
 
-COPY --from=builder /usr/local/bin/uwsgi /usr/local/bin/
+COPY --from=deps /usr/local/bin/uwsgi /usr/local/bin/
 COPY --from=builder /venv /venv
 
 ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin:/usr/sbin \
@@ -82,7 +84,11 @@ ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin:/usr/sbin \
     PYTHONPATH=""\
     GIT_SHA=$GIT_SHA \
     PGSSLCERT="/tmp/postgresql.crt" \
-    UWSGI_PROCESSES=4
+    UWSGI_PROCESSES=4\
+    START_APP="true" \
+    START_WORKER="false" \
+    START_CRON="false"
+
 
 EXPOSE 8000
 ENTRYPOINT ["docker-entrypoint.sh"]
