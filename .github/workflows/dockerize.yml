@@ -30,6 +30,7 @@ defaults:
 permissions:
   id-token: write
   attestations: write
+  security-events: write
 
 jobs:
 
