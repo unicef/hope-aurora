@@ -332,7 +332,7 @@ class RegisterView(RegistrationMixin, MediaMixin, FormView):
 
     def form_invalid(self, form: Form, formsets: dict[str, FormSet]) -> "HttpResponse":
         """If the form is invalid, render the invalid form."""
-        if config.LOG_POST_ERRORS:
+        if config.LOG_POST_ERRORS:  # pragma: no cover
             with sentry_sdk.push_scope() as scope:
                 scope.set_extra("errors", self.errors)
                 scope.set_extra("form.errors", form.errors)
