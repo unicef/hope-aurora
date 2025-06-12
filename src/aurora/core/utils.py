@@ -36,7 +36,7 @@ from django.utils.functional import keep_lazy_text
 from django.utils.html import format_html
 from django.utils.text import slugify
 from django.utils.timezone import is_aware
-from flags.state import flag_enabled
+from flags.state import flag_enabled, flag_state
 from qrcode import constants
 from qrcode.main import QRCode
 from qrcode.util import QRData
@@ -61,7 +61,7 @@ def has_token(request, *args, **kwargs):
     )
 
 
-def is_root(request, *args, **kwargs) -> bool:
+def is_root(request: HttpRequest, *args, **kwargs) -> bool:
     ret = False
     if hasattr(request, "user"):
         ret = request.user.is_superuser and flag_enabled("IS_ROOT", request=request)

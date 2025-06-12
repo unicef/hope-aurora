@@ -36,6 +36,7 @@ def test_register1(mock_state, browser: AuroraTestBrowser, registration):
     browser.click("input[name=date_of_birth")
     browser.wait_for_element_visible(".datepicker-grid")
     browser.click(".datepicker-grid>span.datepicker-cell.day.focused")
+    browser.click("input[name=name]")
     browser.type("input[name=name]", "name")
     browser.click("input[name=_save_form]")
     reg_id = browser.get_text("#registration-id")
@@ -46,6 +47,7 @@ def test_register2(mock_state, browser: AuroraTestBrowser, registration):
     url = registration.get_absolute_url()
     browser.open(url)
     browser.type("input[name=date_of_birth]", "1800-01-01")
+    browser.click("input[name=name]")
     browser.type("input[name=name]", "name")
     browser.click("input[name=_save_form]")
     assert browser.get_field_error("date_of_birth") == "the date should be after 1900"

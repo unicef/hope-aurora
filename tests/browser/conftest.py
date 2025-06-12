@@ -61,15 +61,15 @@ def browser(live_server, request) -> Generator[AuroraSeleniumTC, None, None]:
 @pytest.fixture
 def birth_after_1900(db):
     code = """
-    var limit1 = Date.parse("1900-01-01");
-    var today = new Date();
-    var dt = Date.parse(value);
-    if (dt < limit1)
-        "the date should be after 1900";
+var limit1 = Date.parse("1900-01-01");
+var today = new Date();
+var dt = Date.parse(value);
+if (dt < limit1)
+    "the date should be after 1900";
+else
+    if (dt > today)
+        "the date should be before today";
     else
-        if (dt > today)
-            "the date should be before today";
-        else
-            true
+        true
     """
     return ValidatorFactory(name="birth_after_1900", target=Validator.FIELD, active=True, code=code)
