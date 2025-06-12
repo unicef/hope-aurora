@@ -1,4 +1,7 @@
+from typing import Any
+
 from django import forms
+from django.core.exceptions import ValidationError
 
 from .mixins import ConfigurableSmartField
 from .widgets import SmartDateWidget, SmartTextWidget, ImageWidget
@@ -42,6 +45,16 @@ class GenericIPAddressField(ConfigurableSmartField, forms.GenericIPAddressField)
 
 class ImageField(ConfigurableSmartField, forms.ImageField):
     widget = ImageWidget
+
+    def __init__(self, *, max_length=None, allow_empty_file=False, **kwargs):
+        self.max_size = kwargs.pop("max_size", None)
+        super().__init__(max_length=max_length, allow_empty_file=allow_empty_file, **kwargs)
+
+    def clean(self, data: Any, initial: Any | None = None) -> Any:
+        image = super().clean(data, initial)
+        if self.max_size is not None and image.size > self.max_size:
+            raise ValidationError("Image too big.")
+        return image
 
 
 class IntegerField(ConfigurableSmartField, forms.IntegerField):

@@ -185,7 +185,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
     @button()
     def archive(self, request: HttpRequest, pk: str) -> HttpResponse:
         ctx = self.get_common_context(request, pk, title="Archive", clearable=False)
-        ctx["today"] = timezone.now()
+        ctx["today"] = timezone.now().date()
         reg: Registration = ctx["original"]
         if reg.end:
             ctx["clear_date"] = reg.end + timedelta(days=7)

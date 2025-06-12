@@ -12,6 +12,5 @@ SMART_ADMIN_SECTIONS = {
 }
 SMART_ADMIN_TITLE = "="
 SMART_ADMIN_HEADER = "Aurora"
-SMART_ADMIN_BOOKMARKS = "aurora.core.utils.get_bookmarks"
 
 SMART_ADMIN_PROFILE_LINK = True

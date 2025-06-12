@@ -2,7 +2,7 @@ import logging
 
 import dramatiq
 from django.db.transaction import atomic
-from dramatiq_crontab import interval
+from dramatiq_crontab import cron
 from sentry_sdk.crons import monitor
 
 from aurora.counters.models import Counter
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 @monitor(monitor_slug="collect-numbers")
-@interval(seconds=30)
+@cron("0 */2 * * *")
 @dramatiq.actor
 def collect() -> None:
     try:

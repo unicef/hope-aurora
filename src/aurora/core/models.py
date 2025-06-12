@@ -32,7 +32,7 @@ from ..i18n.get_text import gettext as _
 from ..i18n.models import I18NModel
 from ..state import state
 from .compat import RegexField, StrategyClassField
-from .fields import WIDGET_FOR_FORMFIELD_DEFAULTS, CharField, DateField, IntegerField, SmartFormField
+from .fields import WIDGET_FOR_FORMFIELD_DEFAULTS, CharField, DateField, IntegerField, SmartFormField, ImageField
 from .fields.mixins import ConfigurableSmartField, TailWindMixin
 from .forms import CustomFieldMixin, FlexFormBaseForm, SmartBaseFormSet
 from .js import DukPYValidator
@@ -456,7 +456,7 @@ FIELD_KWARGS = {
     },
     IntegerField: {"min_value": None, "max_value": None, "initial": None},
     DateField: {"initial": None},
-    # fields.LocationField: {},
+    ImageField: {"max_size": None},
     # fields.RemoteIpField: {},
     # fields.AjaxSelectField: {},
     # fields.SmartFileField: {},
@@ -578,7 +578,9 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
             field_type = self.field_type
             advanced = self.advanced.copy()
             # backward compatibility code
-            if "field" not in self.advanced:
+            if "field_kwargs" in self.advanced:
+                field_kwargs = self.advanced.get("field_kwargs", {}).copy()
+            elif "field" not in self.advanced:
                 field_kwargs = self.advanced.get("field", {}).copy()
             else:
                 field_kwargs = self.advanced.get("kwargs", {}).copy()
