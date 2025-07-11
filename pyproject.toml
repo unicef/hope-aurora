@@ -72,7 +72,7 @@ dependencies = [
   "qrcode",
   "sentry-sdk",
   "setuptools",
-  "social-auth-app-django",
+  "social-auth-app-django<5.5",       # breaks tests
 ]
 urls.Documentation = "https://unicef.github.io/hope-aurora/"
 urls.Homepage = "https://github.com/unicef/hope-aurora"
