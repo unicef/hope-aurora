@@ -103,7 +103,7 @@ COPY src /app/src/
 ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONPATH=""\
+    PYTHONPATH="" \
     UV_PROJECT_ENVIRONMENT=/venv \
     VIRTUAL_ENV=/venv
 
@@ -161,7 +161,7 @@ LABEL cheksum="$CHECKSUM"
 
 LABEL org.opencontainers.image.authors="hope@unicef.org"
 LABEL org.opencontainers.image.created="$BUILD_DATE"
-LABEL org.opencontainers.image.description="Bitcaster"
+LABEL org.opencontainers.image.description="Aurora"
 LABEL org.opencontainers.image.documentation="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
 LABEL org.opencontainers.image.licenses="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/blob/${GIT_SHA:-master}/LICENSE.md"
 LABEL org.opencontainers.image.revision=$GIT_SHA
