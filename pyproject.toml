@@ -44,7 +44,7 @@ dependencies = [
   "django-jsoneditor",
   "django-mdeditor",
   "django-mptt",
-  "django-redis<6",                   # fix incompatibility signal and DefaultClient
+  "django-redis<6",                             # fix incompatibility signal and DefaultClient
   "django-regex",
   "django-reversion",
   "django-reversion-compare",
@@ -54,12 +54,12 @@ dependencies = [
   "django-smart-env",
   "django-strategy-field>=3.2.1",
   "django-stubs[compatible-mypy]",
-  "djangorestframework-stubs[compatible-mypy]",
   "django-sysinfo",
   "django-tailwind[reload]>=4.0.1",
   "django-tinymce",
   "djangorestframework",
   "djangorestframework-datatables",
+  "djangorestframework-stubs[compatible-mypy]",
   "dramatiq[redis]>=1.18",
   "dramatiq-crontab[sentry]>=1.0.10",
   "dukpy>=0.5",
@@ -73,7 +73,7 @@ dependencies = [
   "qrcode",
   "sentry-sdk",
   "setuptools",
-  "social-auth-app-django<5.5",       # breaks tests
+  "social-auth-app-django<5.5",                 # breaks tests
 ]
 urls.Documentation = "https://unicef.github.io/hope-aurora/"
 urls.Homepage = "https://github.com/unicef/hope-aurora"
