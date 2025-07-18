@@ -214,7 +214,7 @@ def get_qrcode(content: QRData | bytes | str) -> str:
     qr_code = QRCode(error_correction=constants.ERROR_CORRECT_H)
     qr_code.add_data(content)
     qr_code.make()
-    qr_img = qr_code.make_image(fill_color="black", back_color="white").convert("RGB")
+    qr_img = qr_code.make_image(fill_color="black", back_color="white").convert("RGB")  # type: ignore[union-attr]
 
     # set size of QR code
     pos = ((qr_img.size[0] - logo.size[0]) // 2, (qr_img.size[1] - logo.size[1]) // 2)
