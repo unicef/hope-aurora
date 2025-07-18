@@ -4,7 +4,6 @@ import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 
-import aurora
 
 from .. import env
 
@@ -22,6 +21,5 @@ if SENTRY_DSN:
             DjangoIntegration(transaction_style="url"),
             sentry_logging,
         ],
-        release=aurora.VERSION,
         send_default_pii=True,
     )
