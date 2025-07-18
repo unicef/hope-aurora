@@ -45,7 +45,7 @@ class SelectField(ConfigurableSmartField, forms.ChoiceField):
                 value = []
         self._options = self.widget.choices = value
 
-    choices = property(_get_options, _set_options)  # type: ignore[assignment]
+    choices = property(_get_options, _set_options)
 
 
 class AjaxSelectField(ConfigurableSmartField, forms.Field):
