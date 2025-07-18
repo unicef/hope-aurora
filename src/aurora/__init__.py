@@ -1,8 +1,8 @@
 import django_stubs_ext as django_stubs
 
-from .version import __version__
+from .version import __version__  # noqa
 
 django_stubs.monkeypatch()
 
 
-VERSION = __version__
+VERSION = "1.7.0"  #  __version__
