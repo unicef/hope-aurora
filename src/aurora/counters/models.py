@@ -85,7 +85,7 @@ class CounterManager(models.Manager):
                 }
 
                 # Different handling for today vs. historical data
-                if today.date() == day.date():
+                if today.date() == day:
                     Counter.objects.update_or_create(registration=registration, day=day, defaults=defaults)
                 else:
                     Counter.objects.get_or_create(registration=registration, day=day, defaults=defaults)
