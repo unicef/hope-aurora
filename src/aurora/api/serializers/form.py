@@ -17,7 +17,17 @@ class FormSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = FlexForm
-        fields = ("id", "version", "last_update_date", "project", "name", "base_type", "validator", "advanced")
+        fields = (
+            "id",
+            "version",
+            "last_update_date",
+            "project",
+            "name",
+            "base_type",
+            "validator",
+            "advanced",
+            "fields",
+        )
 
     def to_representation(self, instance: FlexForm) -> dict[str, Any]:
         data = super().to_representation(instance)
