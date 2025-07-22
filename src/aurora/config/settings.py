@@ -178,8 +178,15 @@ DATABASES = {"default": main_conn, "read_only": ro_conn}
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
+CACHE_URL = env("CACHE_DEFAULT")
 CACHES = {
-    "default": env.cache_url("CACHE_DEFAULT"),
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": CACHE_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
 }
 
 AUTH_PASSWORD_VALIDATORS = [
