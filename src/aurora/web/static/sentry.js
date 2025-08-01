@@ -1,8 +1,9 @@
-var script = document.getElementById("script-sentry");
+const script = document.getElementById("script-sentry");
 const pk = $("meta[name=\"RegId\"]").attr("content");
 const slug = $("meta[name=\"Survey\"]").attr("content");
 const organization = $("meta[name=\"Organization\"]").attr("content");
 const project = $("meta[name=\"Project\"]").attr("content");
+
 Sentry.init({
     dsn: script.dsn,
     release: script.version,
