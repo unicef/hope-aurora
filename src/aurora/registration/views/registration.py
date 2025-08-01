@@ -232,6 +232,7 @@ class RegisterView(RegistrationMixin, MediaMixin, FormView):
     @property
     def media(self) -> Media:
         extra = "" if settings.DEBUG else ".min"
+        n = super().media
         m = self.registration.flex_form.get_form_class()().media
         for fs in self.get_formsets().values():
             m += fs.media
@@ -247,7 +248,7 @@ class RegisterView(RegistrationMixin, MediaMixin, FormView):
         ]
         mine = VersionMedia(js=js_files)
 
-        return mine + m
+        return mine + m + n
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         if "formsets" not in kwargs:
