@@ -1,18 +1,21 @@
 import logging
-from typing import Any, Iterable, Sequence
+from typing import TYPE_CHECKING, Any, Iterable
 
 from admin_sync.collector import ForeignKeysCollector
 from admin_sync.exceptions import ProtocolError, SyncError
 from admin_sync.protocol import LoadDumpProtocol
 from django.core.serializers.json import Deserializer as JsonDeserializer
 from django.db import connections, transaction
-from django.db.models import Q
+from django.db.models import Model, Q
+
+if TYPE_CHECKING:
+    from admin_sync.types import Collectable
 
 logger = logging.getLogger(__name__)
 
 
 class AuroraSyncRegistrationProtocol(LoadDumpProtocol):
-    def serialize(self, data: Iterable):
+    def serialize(self, data: Iterable) -> str:
         return super().serialize(data)
 
     def deserialize(self, payload: str) -> list[list[Any]]:
@@ -39,7 +42,7 @@ class AuroraSyncRegistrationProtocol(LoadDumpProtocol):
             raise ProtocolError(e) from None
         return processed
 
-    def collect(self, data: Sequence, collect_related=True):
+    def collect(self, data: "Collectable", collect_related: bool = True) -> "Iterable[Model]":
         from aurora.core.models import FlexFormField, FormSet
         from aurora.registration.models import Registration
 

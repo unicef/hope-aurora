@@ -3,14 +3,6 @@ from collections import OrderedDict
 from .. import env
 
 CONSTANCE_ADDITIONAL_FIELDS = {
-    "html_minify_select": [
-        "bitfield.forms.BitFormField",
-        {
-            "initial": 0,
-            "required": False,
-            "choices": (("html", "HTML"), ("line", "NEWLINE"), ("space", "SPACES")),
-        },
-    ],
     "write_only_input": [
         "django.forms.fields.CharField",
         {
@@ -36,20 +28,14 @@ CONSTANCE_CONFIG = OrderedDict(
         "ADMIN_SYNC_REMOTE_SERVER": ("", "production server url", str),
         "ADMIN_SYNC_REMOTE_ADMIN_URL": ("/admin/", "", str),
         "ADMIN_SYNC_LOCAL_ADMIN_URL": ("/admin/", "", str),
+        "GRAPH_API_ENABLED": (True, "", bool),
         "LOG_POST_ERRORS": (False, "", bool),
-        "MINIFY_RESPONSE": (0, "select yes or no", "html_minify_select"),
         "MINIFY_IGNORE_PATH": (r"", "regex for ignored path", str),
         "BASE_TEMPLATE": ("base_lean.html", "Default base template", str),
         "HOME_TEMPLATE": ("home.html", "Default home.html", str),
         "QRCODE": (True, "Enable QRCode generation", bool),
         "SHOW_REGISTER_ANOTHER": (True, "Enable QRCode generation", bool),
         "MAINTENANCE_MODE": (False, "set maintenance mode On/Off", bool),
-        "WAF_REGISTRATION_ALLOWED_HOSTNAMES": (
-            ".*",
-            "public website hostname (regex)",
-            str,
-        ),
-        "WAF_ADMIN_ALLOWED_HOSTNAMES": ("", "admin website hostname (regex)", "write_only_input"),
         "UBA_TOKEN_URL": ("", "UBA Token URL", str),
         "UBA_NAME_ENQUIRY_URL": ("", "UBA Name Enquiry Service URL", str),
         "UBA_USERNAME": ("", "UBA Username", str),

@@ -1,0 +1,47 @@
+responses:
+- response:
+    auto_calculate_content_length: false
+    body: '{"token_type":"Bearer","expires_in":"3599","ext_expires_in":"3599","expires_on":"1746569988","not_before":"1746566088","resource":"https://graph.microsoft.com","access_token":"eyJ0eXAiOiJKV1QiLCJub25jZSI6Ikt2UW1rRFhhR0ExZjhVWHhnMVgtM2puQ1VHUTJLbkFsTVdmRnVqWWI2NmciLCJhbGciOiJSUzI1NiIsIng1dCI6IkNOdjBPSTNSd3FsSEZFVm5hb01Bc2hDSDJYRSIsImtpZCI6IkNOdjBPSTNSd3FsSEZFVm5hb01Bc2hDSDJYRSJ9.eyJhdWQiOiJodHRwczovL2dyYXBoLm1pY3Jvc29mdC5jb20iLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC83NzQxMDE5NS0xNGUxLTRmYjgtOTA0Yi1hYjE4OTIwMjM2NjcvIiwiaWF0IjoxNzQ2NTY2MDg4LCJuYmYiOjE3NDY1NjYwODgsImV4cCI6MTc0NjU2OTk4OCwiYWlvIjoiazJSZ1lHZ1VrT3Y3Smp1UFZTcXFUUCtqVTBRaUFBPT0iLCJhcHBfZGlzcGxheW5hbWUiOiJ1bmktaG9wZS1kZXYiLCJhcHBpZCI6IjA2ZTUwYTg0LTI3YmUtNDkxMC1iMmVhLTQzMzgxOTc2Yzc5YSIsImFwcGlkYWNyIjoiMSIsImlkcCI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0Lzc3NDEwMTk1LTE0ZTEtNGZiOC05MDRiLWFiMTg5MjAyMzY2Ny8iLCJpZHR5cCI6ImFwcCIsIm9pZCI6IjdhYzNmMjljLWM3MzItNDE3OS1iNWY0LTQ0NmIxYTZjNzZkMiIsInJoIjoiMS5BUW9BbFFGQmQtRVV1RS1RUzZzWWtnSTJad01BQUFBQUFBQUF3QUFBQUFBQUFBQUtBQUFLQUEuIiwicm9sZXMiOlsiR3JvdXAuUmVhZC5BbGwiLCJVc2VyLlJlYWQuQWxsIl0sInN1YiI6IjdhYzNmMjljLWM3MzItNDE3OS1iNWY0LTQ0NmIxYTZjNzZkMiIsInRlbmFudF9yZWdpb25fc2NvcGUiOiJTQSIsInRpZCI6Ijc3NDEwMTk1LTE0ZTEtNGZiOC05MDRiLWFiMTg5MjAyMzY2NyIsInV0aSI6Ijd4WFpNbEJDSlUtclJudGczQWVHQVEiLCJ2ZXIiOiIxLjAiLCJ3aWRzIjpbIjA5OTdhMWQwLTBkMWQtNGFjYi1iNDA4LWQ1Y2E3MzEyMWU5MCJdLCJ4bXNfaWRyZWwiOiI3IDMwIiwieG1zX3RjZHQiOjEzNzExMjc5NDksInhtc190ZGJyIjoiRVUifQ.d2J5Pgsq8YXu-ZU1KXMAc2UuPXpV_ZlRVosfOjzCNKQjhXHYD4v9NU8ZrMXLzLB5DuTuumYN1SudA5wfbqi9it8wPUij5P3ZXzJCbiP5AVMTQ6KHzAQv1ezaOo-mSwd0FaNQZsHwPkGEvQjwqKUIq-OM8A0kNiZ3z-L0GpCLHA0_qaV5itGAyVsdJ0IdFU-8zafCB2VvD3A02URx-6ykATTsgfK_SJbrhytXfImsPSofZqYPP8rVh3oGLApS-lVh4bqPt--wd-3zJFA6Z-Gt6BvuztIWUGIcCTQeR7BIkvYa3Xcq3jmFQZeB5hoeSeEsva9lnHssQPg-PGSYJ19A4g"}'
+    content_type: text/plain
+    headers:
+      Cache-Control: no-store, no-cache
+      Content-Security-Policy-Report-Only: object-src 'none'; base-uri 'self'; script-src
+        'self' 'nonce-qp6EF3J-zUnR_eLi6C_Bmw' 'unsafe-inline' 'unsafe-eval' https://*.msauth.net
+        https://*.msftauth.net https://*.msftauthimages.net https://*.msauthimages.net
+        https://*.msidentity.com https://*.microsoftonline-p.com https://*.microsoftazuread-sso.com
+        https://*.azureedge.net https://*.outlook.com https://*.office.com https://*.office365.com
+        https://*.microsoft.com https://*.bing.com 'report-sample'; report-uri https://csp.microsoft.com/report/ESTS-UX-All
+      Expires: '-1'
+      P3P: CP="DSP CUR OTPi IND OTRi ONL FIN"
+      Pragma: no-cache
+      Set-Cookie: fpc=Am0QrFQtAU9EjkqHQGaynDgCKG_nAQAAAPRzrN8OAAAA; expires=Thu, 05-Jun-2025
+        21:19:48 GMT; path=/; secure; HttpOnly; SameSite=None, x-ms-gateway-slice=estsfd;
+        path=/; secure; samesite=none; httponly, stsservicecookie=estsfd; path=/;
+        secure; samesite=none; httponly
+      Strict-Transport-Security: max-age=31536000; includeSubDomains
+      X-Content-Type-Options: nosniff
+      X-XSS-Protection: '0'
+      x-ms-ests-server: 2.1.20663.10 - WEULR1 ProdSlices
+      x-ms-request-id: 32d915ef-4250-4f25-ab46-7b60dc078601
+      x-ms-srs: 1.P
+    method: POST
+    status: 200
+    url: https://login.microsoftonline.com/unicef.org/oauth2/token
+- response:
+    auto_calculate_content_length: false
+    body: '{"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#users/$entity","businessPhones":["-"],"displayName":"First
+      Last","givenName":"First","jobTitle":"Senior developer","mail":"saxix@unicef.org","mobilePhone":null,"officeLocation":"Geneva","preferredLanguage":null,"surname":"Last","userPrincipalName":"saxix@unicef.org","id":"21d2ecba-83e4-4e81-a93c-d44f55dd222e"}'
+    content_type: text/plain
+    headers:
+      Cache-Control: no-cache
+      OData-Version: '4.0'
+      Strict-Transport-Security: max-age=31536000
+      Transfer-Encoding: chunked
+      Vary: Accept-Encoding
+      client-request-id: a00063af-108d-4d07-850d-2f44308e11fc
+      request-id: a00063af-108d-4d07-850d-2f44308e11fc
+      x-ms-ags-diagnostic: '{"ServerInfo":{"DataCenter":"Switzerland North","Slice":"E","Ring":"3","ScaleUnit":"000","RoleInstance":"ZR1PEPF00000663"}}'
+      x-ms-resource-unit: '1'
+    method: GET
+    status: 200
+    url: https://graph.microsoft.com/v1.0/users/21d2ecba-83e4-4e81-a93c-d44f55dd222e

@@ -1,4 +1,5 @@
 import logging
+from typing import TYPE_CHECKING
 
 from admin_extra_buttons.decorators import button, view
 from admin_ordering.admin import OrderableAdmin
@@ -9,14 +10,20 @@ from django.contrib import messages
 from django.contrib.admin import TabularInline, register
 from django.core.cache import caches
 from django.db.models.functions import Collate
+from django.http import HttpRequest, HttpResponse
 from smart_admin.modeladmin import SmartModelAdmin
 
 from ..admin_sync import SyncMixin
+from ..forms import FlexFormBaseForm
 from ..models import FlexForm, FlexFormField, FormSet
 from ..utils import render
 from .base import ConcurrencyVersionAdmin
 from .filters import ProjectFilter, UsedByRegistration, UsedInRFormset
 from .form_editor import FormEditor
+
+if TYPE_CHECKING:
+    from django.db.models import QuerySet
+
 
 logger = logging.getLogger(__name__)
 
@@ -31,9 +38,6 @@ class FormSetInline(OrderableAdmin, TabularInline):
     show_change_link = True
     ordering_field = "ordering"
     ordering_field_hide_input = True
-
-    def formfield_for_dbfield(self, db_field, request, **kwargs):
-        return super().formfield_for_dbfield(db_field, request, **kwargs)
 
 
 class FlexFormFieldFormInline(forms.ModelForm):
@@ -54,13 +58,10 @@ class FlexFormFieldFormInline(forms.ModelForm):
             "advanced",
         )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         if self.instance.pk:
-            self.fields["name"].widget.attrs = {
-                "readonly": True,
-                "tyle": "background-color:#f8f8f8;border:none",
-            }
+            self.fields["name"].widget.attrs = {"readonly": True}
 
 
 class FlexFormFieldInline(OrderableAdmin, TabularInline):
@@ -73,12 +74,9 @@ class FlexFormFieldInline(OrderableAdmin, TabularInline):
     ordering_field = "ordering"
     ordering_field_hide_input = True
 
-    def formfield_for_choice_field(self, db_field, request, **kwargs):
-        return super().formfield_for_choice_field(db_field, request, **kwargs)
-
 
 @register(FlexForm)
-class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
+class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin[FlexForm]):
     SYNC_COOKIE = "sync"
     inlines = [
         FlexFormFieldInline,
@@ -103,10 +101,11 @@ class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
     autocomplete_fields = ("validator", "project")
     ordering = ("name",)
     save_as = True
+    object: FlexForm
 
-    def get_queryset(self, request):
+    def get_queryset(self, request: "HttpRequest") -> "QuerySet[FlexForm]":
         return (
-            super()
+            super()  # type: ignore[return-value]
             .get_queryset(request)
             .annotate(name_deterministic=Collate("name", "und-x-icu"))
             .prefetch_related("registration_set")
@@ -115,30 +114,30 @@ class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
             )
         )
 
-    def is_main(self, obj):
+    def is_main(self, obj: FlexForm) -> bool:
         return obj.registration_set.exists()
 
-    is_main.boolean = True
+    is_main.boolean = True  # type: ignore[attr-defined]
 
-    @button(html_attrs={"class": "aeb-danger"})
-    def invalidate_cache(self, request):
+    @button(html_attrs={"class": "aeb-danger"})  # type: ignore[arg-type]
+    def invalidate_cache(self, request: "HttpRequest") -> "HttpResponse":  # type: ignore[return]
         from ..cache import cache
 
         cache.clear()
 
-    @button(label="invalidate cache", html_attrs={"class": "aeb-warn"})
-    def invalidate_cache_single(self, request, pk):
+    @button(label="invalidate cache", html_attrs={"class": "aeb-warn"})  # type: ignore[arg-type]
+    def invalidate_cache_single(self, request: "HttpRequest", pk: str) -> "HttpResponse":  # type: ignore[return]
         obj = self.get_object(request, pk)
         obj.save()
 
-    @button()
-    def inspect(self, request, pk):
+    @button()  # type: ignore[arg-type]
+    def inspect(self, request: HttpRequest, pk: str) -> "HttpResponse":
         ctx = self.get_common_context(request, pk)
         ctx["title"] = str(ctx["original"])
         return render(request, "admin/core/flexform/inspect.html", ctx)
 
-    @button(label="editor")
-    def form_editor(self, request, pk):
+    @button(label="editor")  # type: ignore[arg-type]
+    def form_editor(self, request: HttpRequest, pk: str) -> "HttpResponse":
         self.editor = FormEditor(self, request, pk)
         if request.method == "POST":
             ret = self.editor.post(request, pk)
@@ -146,30 +145,30 @@ class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin):
             return ret
         return self.editor.get(request, pk)
 
-    @view()
-    def widget_attrs(self, request, pk):
+    @view()  # type: ignore[arg-type]
+    def widget_attrs(self, request: HttpRequest, pk: str) -> "HttpResponse":
         editor = FormEditor(self, request, pk)
         return editor.get_configuration()
 
-    @view()
-    def widget_refresh(self, request, pk):
+    @view()  # type: ignore[arg-type]
+    def widget_refresh(self, request: HttpRequest, pk: str) -> "HttpResponse":
         editor = FormEditor(self, request, pk)
         return editor.refresh()
 
-    @view()
-    def widget_code(self, request, pk):
+    @view()  # type: ignore[arg-type]
+    def widget_code(self, request: HttpRequest, pk: str) -> "HttpResponse":
         editor = FormEditor(self, request, pk)
         return editor.get_code()
 
-    @view()
-    def widget_display(self, request, pk):
+    @view()  # type: ignore[arg-type]
+    def widget_display(self, request: HttpRequest, pk: str) -> "HttpResponse":
         editor = FormEditor(self, request, pk)
         return editor.render()
 
-    @button()
-    def test(self, request, pk):
+    @button()  # type: ignore[arg-type]
+    def test(self, request: HttpRequest, pk: str) -> "HttpResponse":
         ctx = self.get_common_context(request, pk)
-        form_class = self.object.get_form_class()
+        form_class: type[FlexFormBaseForm] = self.object.get_form_class()
         if request.method == "POST":
             form = form_class(request.POST, initial=self.object.get_initial())
             if form.is_valid():

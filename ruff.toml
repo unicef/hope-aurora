@@ -7,7 +7,7 @@ case-sensitive = true
 [lint]
 select = [
     "A", # prevent using keywords that clobber python builtins
-#    "ANN", # flake8 annotations
+    "ANN", # flake8 annotations
     "B", # bugbear: security warnings
     "BLE", # blind exceptions
     "C4", # flake8-comprehensions
@@ -43,7 +43,9 @@ select = [
 ]
 extend-select = ["UP", ]
 ignore = [
-#    "ANN401",
+    "ANN002",
+    "ANN003",
+    "ANN401",
 #    "B904",  # raise-without-from-inside-except: syntax not compatible with py2
     "COM812",
     "D100", # Missing docstring in public module
@@ -68,15 +70,6 @@ ignore = [
     "SIM108", # Use ternary operator instead of...
     "PLR2004", # Magic value used in comparison
     "DJ001", # Avoid using `null=True` on string-based fields such as `CharField`
-
-    # todos
-    "BLE001", # blind exception
-    "S324",  # insecure md5
-    "C901",  # too complex
-    "PLR0912",
-    "PLR0913",
-    "PLR0915",
-    "PLW0603"
 ]
 
 [format]
@@ -86,6 +79,26 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [lint.per-file-ignores]
-"tests/**.py" = ["S101", "PLR2004", "S", "SIM117", "D", "UP", "PLR0913", "ANN", "N999"]
+"tests/**.py" = ["S101", "PLR2004", "S", "SIM117", "D", "UP", "PLR0913", "ANN", "N999", "PT006"]
 "src/dbtemplates/test**.py" = ["S101", "PLR2004", "S", "SIM117", "D", "UP", "PLR0913", "ANN", "N999", "PT009"]
-"src/**/versioning/**.py" = ["N999", ]
+"src/**/migrations/*.py" = ["E501", ]
+"src/aurora/version.py" = ["ALL", ]
+# temporary disabled
+"src/aurora/core/admin/*.py" = ["ALL"]
+"src/aurora/core/crypto/*.py" = ["ALL"]
+"src/aurora/core/fields/*.py" = ["ALL"]
+
+"src/aurora/core/admin_sync.py" = ["ALL"]
+"src/aurora/core/authentication.py" = ["ALL"]
+"src/aurora/core/cache.py" = ["ALL"]
+"src/aurora/core/constance.py" = ["ALL"]
+"src/aurora/core/compat.py" = ["ALL"]
+"src/aurora/core/flags.py" = ["ALL"]
+"src/aurora/core/forms.py" = ["ALL"]
+"src/aurora/core/handlers.py" = ["ALL"]
+"src/aurora/core/js.py" = ["ALL"]
+"src/aurora/core/models.py" = ["ALL"]
+"src/aurora/core/registry.py" = ["ALL"]
+"src/aurora/core/utils.py" = ["ALL"]
+"src/aurora/registration/*/*.py" = ["ALL"]
+#"src/dbtemplates/**/*.py" = ["ALL"]

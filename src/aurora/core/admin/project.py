@@ -1,4 +1,5 @@
 import logging
+from typing import TYPE_CHECKING
 
 from adminfilters.mixin import AdminAutoCompleteSearchMixin
 from django.contrib.admin import register
@@ -10,6 +11,11 @@ from smart_admin.mixins import LinkedObjectsMixin
 from ..admin_sync import SyncMixin
 from ..models import Project
 from .protocols import AuroraSyncProjectProtocol
+
+if TYPE_CHECKING:
+    from django.db.models import Model, QuerySet
+    from django.http import HttpRequest
+    from django.utils.datastructures import _ListOrTuple
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +30,9 @@ class ProjectAdmin(SyncMixin, AdminAutoCompleteSearchMixin, LinkedObjectsMixin, 
     mptt_indent_field = "name"
     search_fields = ("name_deterministic",)
     protocol_class = AuroraSyncProjectProtocol
-    autocomplete_fields = "parent, "
+    autocomplete_fields = ["parent"]
 
-    def get_queryset(self, request):
+    def get_queryset(self, request: "HttpRequest") -> "QuerySet":
         return (
             super()
             .get_queryset(request)
@@ -36,7 +42,7 @@ class ProjectAdmin(SyncMixin, AdminAutoCompleteSearchMixin, LinkedObjectsMixin, 
             .select_related("organization")
         )
 
-    def get_readonly_fields(self, request, obj=None):
+    def get_readonly_fields(self, request: "HttpRequest", obj: "Model|None" = None) -> "_ListOrTuple[str]":
         ro = super().get_readonly_fields(request, obj)
         if obj and obj.pk:
             ro = list(ro) + ["slug"]

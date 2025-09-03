@@ -1,7 +1,13 @@
+from typing import TYPE_CHECKING
+
 from django.template import Template, TemplateDoesNotExist, TemplateSyntaxError
+from django.template.loaders.base import Loader as BaseLoader
+
+if TYPE_CHECKING:
+    from dbtemplates.models import Template as DBTemplate
 
 
-def get_loaders():
+def get_loaders() -> list[BaseLoader]:
     from django.template.loader import _engine_list
 
     loaders = []
@@ -10,7 +16,7 @@ def get_loaders():
     return loaders
 
 
-def get_template_source(name):
+def get_template_source(name: str) -> Template:
     source = None
     for loader in get_loaders():
         if loader.__module__.startswith("dbtemplates."):
@@ -26,7 +32,7 @@ def get_template_source(name):
     return source
 
 
-def check_template_syntax(template):
+def check_template_syntax(template: "DBTemplate") -> tuple[bool, Exception | None]:
     try:
         Template(template.content)
     except TemplateSyntaxError as e:

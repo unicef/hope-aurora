@@ -1,45 +1,56 @@
 import os
+import time
+import warnings
 
 import pytest
-from django import forms
-from django.core.files.storage import default_storage
+import responses
+from coverage.exceptions import CoverageWarning
 
-from aurora.core.fields import CompilationTimeField, SmartFileField
 
-ALL = set("darwin".split())
+ALL = {"darwin"}
 
 
 @pytest.fixture(autouse=True)
 def configure_settings(settings):
-    from cryptography.fernet import Fernet
-
-    settings.FERNET_KEY = Fernet.generate_key()
-    settings.ADMINS = ["admin@demo.org"]
-    settings.CAPTCHA_TEST_MODE = True
+    warnings.filterwarnings("ignore", category=CoverageWarning)
 
 
 def pytest_configure(config):
+    from cryptography.fernet import Fernet
+
     os.environ["DEBUG"] = "0"
     os.environ["ADMINS"] = "admin@demo.org"
     os.environ["CAPTCHA_TEST_MODE"] = "true"
     os.environ["CSRF_COOKIE_SECURE"] = "false"
     os.environ["CSRF_TRUSTED_ORIGINS"] = "http://testserver"
+    os.environ["FRONT_DOOR_ENABLED"] = "false"
     os.environ["SECURE_SSL_REDIRECT"] = "false"
     os.environ["SESSION_COOKIE_DOMAIN"] = "http://testserver/"
     os.environ["SESSION_COOKIE_SECURE"] = "false"
     os.environ["SOCIAL_AUTH_REDIRECT_IS_HTTPS"] = "false"
-    os.environ["LOG_LEVEL"] = "CRITICAL"
+    os.environ["LOG_LEVEL"] = "DEBUG"
     os.environ["LOGGING_HANDLERS"] = "null"
-
+    os.environ["AZURE_CLIENT_SECRET"] = "secret"
+    os.environ["AZURE_CLIENT_KEY"] = "key"
     from django.conf import global_settings, settings
 
     settings.STORAGES = global_settings.STORAGES
+    settings.FERNET_KEY = Fernet.generate_key()
+    settings.CAPTCHA_TEST_MODE = True
+    settings.SESSION_COOKIE_SECURE = False
+    settings.DJANGO_ADMIN_URL = "admin/"
+    settings.CACHE_PREFIX = str(time.time())
+    settings.SOCIAL_AUTH_RESOURCE = "https://graph.microsoft.com"
+    settings.SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_KEY = "key"
+    settings.SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_SECRET = "secret"
 
 
 @pytest.fixture
 def simple_form(db):
     from aurora.core.cache import cache
     from aurora.core.models import Validator
+    from django import forms
+    from aurora.core.fields import CompilationTimeField
 
     cache.clear()
 
@@ -82,6 +93,8 @@ def simple_form(db):
 @pytest.fixture
 def complex_form():
     from aurora.core.models import Validator
+    from django import forms
+    from aurora.core.fields import SmartFileField
 
     v1, __ = Validator.objects.get_or_create(
         name="length_2_8",
@@ -126,6 +139,8 @@ def complex_form():
 def mock_storage(monkeypatch):
     """Mocks the backend storage system by not actually accessing media"""
 
+    from django.core.files.storage import default_storage
+
     def clean_name(name):
         return os.path.splitext(os.path.basename(name))[0]
 
@@ -148,7 +163,9 @@ def mock_storage(monkeypatch):
 def user(db):
     from testutils.factories import UserFactory
 
-    return UserFactory()
+    user = UserFactory()
+    user._password = "password"
+    return user
 
 
 @pytest.fixture
@@ -156,3 +173,15 @@ def staff_user():
     from testutils.factories import UserFactory
 
     return UserFactory(is_staff=True)
+
+
+class EnhRequestsMock(responses.RequestsMock):
+    def __init__(self, *args, **kwargs):
+        self.bc_prefix = kwargs.pop("bc_prefix", None)
+        super().__init__(*args, **kwargs)
+
+
+@pytest.fixture
+def mocked_responses():
+    with EnhRequestsMock() as rsps:
+        yield rsps

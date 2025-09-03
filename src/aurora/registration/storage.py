@@ -1,4 +1,5 @@
 import base64
+from typing import Any, Callable
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.files.utils import FileProxyMixin
@@ -8,7 +9,7 @@ from aurora.core.utils import apply_nested, merge_data
 marker = object()
 
 
-def clean_dict(d, filter_func):
+def clean_dict(d: dict[str, Any], filter_func: Callable[[dict], bool]) -> dict[str, Any]:
     ret = {}
     if filter_func(d):
         return ret
@@ -32,20 +33,20 @@ def clean_dict(d, filter_func):
 
 
 class Router:
-    def compress(self, fields, files):
+    def compress(self, fields: dict[str, Any], files: dict[str, Any]) -> dict[str, Any]:
         ff = apply_nested(
             files,
             lambda v, k: SimpleUploadedFile(k, v if isinstance(v, bytes) else v.encode()),
         )
         return merge_data(fields, ff)
 
-    def decompress(self, data):
-        def files_exclude(v, k):
+    def decompress(self, data: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+        def files_exclude(v: Any, __: Any) -> Any:
             if isinstance(v, FileProxyMixin):
                 return "::file::"
             return v
 
-        def files_keep(v, k):
+        def files_keep(v: Any, __: Any) -> bytes | object:
             if isinstance(v, FileProxyMixin):
                 return base64.b64encode(v.read())
             return marker

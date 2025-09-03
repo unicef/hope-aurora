@@ -1,5 +1,7 @@
 import logging
+from typing import Callable
 
+from django.http import HttpRequest, HttpResponse
 from django.utils import translation
 from django.utils.translation import get_language_from_request
 
@@ -9,10 +11,10 @@ logger = logging.getLogger(__name__)
 
 
 class I18NMiddleware:
-    def __init__(self, get_response):
+    def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
         self.get_response = get_response
 
-    def __call__(self, request):
+    def __call__(self, request: HttpRequest) -> HttpResponse:
         lang = get_language_from_request(request, check_path=True)
         state.collect_messages = "I18N_SESSION" in request.headers
 

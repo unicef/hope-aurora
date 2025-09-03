@@ -1,0 +1,29 @@
+{% extends "admin_extra_buttons/action_page.html" %}{% load aurora %}
+{% block extrahead %}
+
+{% endblock extrahead %}
+
+{% block breadcrumbs-active %}&rsaquo; <a href=".">{{ title }}</a>{% endblock %}
+
+{% block action-content %}
+    <form method="post">
+        {% if original.archived %}
+            <h1>This Registration has been archived</h1>
+            <fieldset>
+                <div>End Date: {{ original.end }}</div>
+                <div>Clear Date: {{ aa }}</div>
+            </fieldset>
+            {% if aa > today %}
+                <input type="submit" value="Remove Records" name="clear">
+            {% endif %}
+            <a href=".." type="button">Cancel</a>
+        {% else %}
+            {% csrf_token %}
+            <h1>Archive will lock any activity on this registration</h1>
+            <div>
+                <input type="submit" value="Archive" name="archive">
+                <a href=".." type="button">Cancel</a>
+            </div>
+        {% endif %}
+    </form>
+{% endblock action-content %}

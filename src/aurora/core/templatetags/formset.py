@@ -1,18 +1,22 @@
 import logging
+from typing import TYPE_CHECKING
 
-import markdown as md
 from django.template import Library
 
 from aurora.i18n.get_text import gettext as _
 
 from ...core.models import FormSet
 
+if TYPE_CHECKING:
+    from ..forms import SmartBaseFormSet
+
+
 logger = logging.getLogger(__name__)
 register = Library()
 
 
 @register.simple_tag()
-def formset_config(formset):
+def formset_config(formset: "SmartBaseFormSet") -> dict[str, str | bool | None]:
     default = {
         "formCssClass": f"form-container-{formset.prefix}",
         "counterPrefix": "",
@@ -36,18 +40,3 @@ def formset_config(formset):
         config[e] = _(config[e])
         config["original"][e] = config[e]
     return config
-
-
-@register.filter()
-def markdown(value):
-    if value:
-        return md.markdown(value, extensions=["markdown.extensions.fenced_code"])
-    return ""
-
-
-@register.filter(name="md")
-def _md(value):
-    if value:
-        p = md.markdown(value, extensions=["markdown.extensions.fenced_code"])
-        return p.replace("<p>", "").replace("</p>", "")
-    return ""

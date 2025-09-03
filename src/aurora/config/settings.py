@@ -1,4 +1,3 @@
-import logging
 import mimetypes
 import os
 from pathlib import Path
@@ -21,7 +20,7 @@ SECRET_KEY = env("SECRET_KEY")
 FERNET_KEY = env("FERNET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env("DEBUG")
+DEBUG: bool = env("DEBUG")
 DEBUG_PROPAGATE_EXCEPTIONS = env("DEBUG_PROPAGATE_EXCEPTIONS")
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
@@ -32,7 +31,7 @@ if not DJANGO_ADMIN_URL.endswith("/"):
 # Application definition
 SITE_ID = env("SITE_ID")
 INSTALLED_APPS = [
-    "daphne",
+    # "daphne",
     "smart_env",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -47,12 +46,15 @@ INSTALLED_APPS = [
     "reversion",  # https://github.com/etianen/django-reversion
     "reversion_compare",  # https://github.com/jedie/django-reversion-compare
     "django_filters",
+    "django_dramatiq",
+    "dramatiq_crontab",
     # ---
     "smart_admin.apps.SmartLogsConfig",
     "smart_admin.apps.SmartTemplateConfig",
     "smart_admin.apps.SmartAuthConfig",
     "smart_admin.apps.SmartConfig",
     "aurora.administration.apps.AuroraAdminConfig",
+    "aurora.web",
     "front_door.contrib",
     "hijack",
     "rest_framework",
@@ -77,16 +79,18 @@ INSTALLED_APPS = [
     "dbtemplates",
     "admin_sync",
     "anymail",
+    "tailwind",
     # ---
+    "aurora.web.theme",
     "aurora.apps.Config",
     "aurora.flatpages.apps.Config",
     "aurora.i18n",
-    "aurora.web",
     "aurora.security.apps.Config",
     "aurora.core",
     "aurora.registration",
     "aurora.counters",
-]
+] + env("EXTRA_INSTALLED_APPS")
+
 FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 MIDDLEWARE = [
     # "django.middleware.cache.UpdateCacheMiddleware",
@@ -94,7 +98,6 @@ MIDDLEWARE = [
     "aurora.web.middlewares.sentry.SentryMiddleware",
     "front_door.middleware.FrontDoorMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    "aurora.web.middlewares.maintenance.MaintenanceMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "aurora.web.middlewares.i18n.I18NMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -104,15 +107,13 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    # "aurora.web.middlewares.admin.AdminSiteMiddleware",
     # "aurora.web.middlewares.http2.HTTP2Middleware",
-    "aurora.web.middlewares.minify.HtmlMinMiddleware",
     "django.middleware.gzip.GZipMiddleware",
     # "django.middleware.cache.FetchFromCacheMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "hijack.middleware.HijackUserMiddleware",
     "csp.middleware.CSPMiddleware",
-]
+] + env("EXTRA_MIDDLEWARES")
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
 ROOT_URLCONF = "aurora.config.urls"
@@ -127,13 +128,8 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
-            PACKAGE_DIR / "administration/templates",
-            PACKAGE_DIR / "admin/ui/templates",
             PACKAGE_DIR / "api/templates",
-            PACKAGE_DIR / "registration/templates",
-            PACKAGE_DIR / "flatpages/templates",
-            PACKAGE_DIR / "core/templates",
-            PACKAGE_DIR / "web/templates",
+            PACKAGE_DIR / "templates",
         ],
         "APP_DIRS": False,
         "OPTIONS": {
@@ -147,7 +143,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "constance.context_processors.config",
-                "aurora.i18n.context_processors.itrans",
+                # "aurora.i18n.context_processors.itrans",
                 "aurora.web.context_processors.smart",
                 "django.template.context_processors.i18n",
                 # Social auth context_processors
@@ -182,36 +178,24 @@ DATABASES = {"default": main_conn, "read_only": ro_conn}
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-# Password validation
-# https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
-
-try:
-    if REDIS_CONNSTR := env("REDIS_CONNSTR"):
-        os.environ["CACHE_DEFAULT"] = f"redisraw://{REDIS_CONNSTR},client_class=django_redis.client.DefaultClient"
-except Exception as e:  # pragma: no cover
-    logging.exception(e)
-
 CACHES = {
     "default": env.cache_url("CACHE_DEFAULT"),
 }
 
-if DEBUG:  # pragma: no cover
-    AUTH_PASSWORD_VALIDATORS = []
-else:  # pragma: no cover
-    AUTH_PASSWORD_VALIDATORS = [
-        {
-            "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-        },
-        {
-            "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-        },
-        {
-            "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-        },
-        {
-            "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-        },
-    ]
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
@@ -242,10 +226,9 @@ LOCALE_PATHS = (str(PACKAGE_DIR / "LOCALE"),)
 
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 7  # 7 days
 SESSION_COOKIE_SAMESITE = "Lax"
-SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = env("SESSION_COOKIE_SECURE")
 SESSION_COOKIE_NAME = env("SESSION_COOKIE_NAME")
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
-SESSION_COOKIE_HTTPONLY = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_HTTPONLY = False  # for offline forms
 
@@ -269,26 +252,19 @@ STORAGES = {
     },
 }
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "web/static"),
-    os.path.join(BASE_DIR, "flatpages/static"),
-]
-
 # -------- Added Settings
 ADMINS = env("ADMINS")
 AUTHENTICATION_BACKENDS = [
     "aurora.security.backend.AuroraAuthBackend",
-    # "aurora.security.backend.RegistrationAuthBackend",
-    # "aurora.security.backend.OrganizationAuthBackend",
-    # "django.contrib.auth.backends.ModelBackend",
     "social_core.backends.azuread_tenant.AzureADTenantOAuth2",
-] + env("AUTHENTICATION_BACKENDS")
+] + env("EXTRA_AUTHENTICATION_BACKENDS")
 
 CSRF_COOKIE_NAME = env("CSRF_COOKIE_NAME")
 CSRF_HEADER_NAME = "HTTP_X_CSRFTOKEN"
 CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
 CSRF_COOKIE_SECURE = env("CSRF_COOKIE_SECURE")
 
+SECURE_HSTS_PRELOAD = env("SECURE_HSTS_PRELOAD")
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = env("USE_X_FORWARDED_HOST")
 
@@ -302,7 +278,6 @@ EMAIL_TIMEOUT = env("EMAIL_TIMEOUT")
 EMAIL_USE_SSL = env("EMAIL_USE_SSL")
 EMAIL_USE_TLS = env("EMAIL_USE_TLS")
 
-LOGIN_REDIRECT_URL = "index"
 LOGOUT_REDIRECT_URL = "index"
 
 LOGGING_HANDLERS = os.environ.get("LOG_HANDLER")
@@ -387,7 +362,7 @@ INTERNAL_IPS = env.list("INTERNAL_IPS")
 ROOT_TOKEN = env("ROOT_TOKEN")
 CSRF_FAILURE_VIEW = "aurora.web.views.sites.error_csrf"
 
-AUTH_USER_MODEL = "auth.User"
+AUTH_USER_MODEL = "security.User"
 
 LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/logged-in/"

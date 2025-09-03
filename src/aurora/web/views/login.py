@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UsernameField
 from django.contrib.auth.views import LoginView
-from django.http import HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import View
@@ -19,7 +19,7 @@ class RegistrarAuthenticationForm(AuthenticationForm):
 
 
 class LoginRouter(View):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         url = "/"
         if requested_form := request.COOKIES.get("aurora_form", None):
             url = reverse("register", args=[requested_form])

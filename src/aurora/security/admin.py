@@ -1,4 +1,5 @@
 import logging
+from typing import TYPE_CHECKING, Collection
 
 from admin_extra_buttons.decorators import button
 from admin_sync.exceptions import SyncError
@@ -20,10 +21,17 @@ from .ad import ADUSerMixin
 from .forms import AuroraRoleForm
 from .utils import generate_pwd
 
+if TYPE_CHECKING:
+    from admin_sync.types import Collectable
+    from django.db.models import Model
+    from django.http import HttpRequest, HttpResponse
+
+    from ..types.http import AuthHttpRequest
+
 logger = logging.getLogger(__name__)
 
 
-def generate_passwords(modeladmin, request, queryset):  # noqa
+def generate_passwords(modeladmin, request: "HttpRequest", queryset):  # noqa
     opts = modeladmin.model._meta
     perm = f"{opts.app_label}.add_aurorauser"
     if not request.user.has_perm(perm):
@@ -36,22 +44,22 @@ def generate_passwords(modeladmin, request, queryset):  # noqa
 
 
 class GroupProtocol(LoadDumpProtocol):
-    def collect(self, data):
+    def collect(self, data: "Collectable") -> "Collection[Model]":
         from django.contrib.auth.models import Group
 
-        if len(data) == 0:
+        if not data:
             raise SyncError("Empty queryset")  # pragma: no cover
 
-        if not isinstance(data[0], Group):  # pragma: no cover
+        if isinstance(data, list) and not isinstance(data[0], Group):  # pragma: no cover
             raise ValueError("GroupProtocol can be used only for Registration")
         return list(data)
 
 
-class GroupAdmin(AdminActionPermMixin, SyncMixin, GroupAdmin_):
+class GroupAdmin(AdminActionPermMixin, SyncMixin, GroupAdmin_):  # type: ignore[misc]
     protocol_class = GroupProtocol
 
 
-class UserAdmin(AdminActionPermMixin, ADUSerMixin, UserAdmin_):
+class UserAdmin(AdminActionPermMixin, ADUSerMixin, UserAdmin_):  # type: ignore[misc]
     list_display = (
         "username",
         "email",
@@ -77,13 +85,13 @@ class UserAdmin(AdminActionPermMixin, ADUSerMixin, UserAdmin_):
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
 
-    @button(permission=lambda req, obj, **kw: is_root(req) and can_hijack(req.user, obj))
-    def hijack(self, request, pk):
+    @button(permission=lambda req, obj, **kw: is_root(req) and can_hijack(req.user, obj))  # type: ignore[arg-type]
+    def hijack(self, request: "AuthHttpRequest", pk: str) -> "HttpResponse":  # type: ignore[return]
         hijacked = self.get_object(request, pk)
-        impersonate(request, hijacked)
+        impersonate(request, hijacked)  # type: ignore[arg-type]
 
-    @button()
-    def generate_password(self, request, pk):
+    @button()  # type: ignore[arg-type]
+    def generate_password(self, request: "HttpRequest", pk: str) -> "HttpResponse":  # type: ignore[return]
         message = generate_pwd(pk)
         self.message_user(request, message, messages.SUCCESS)
 

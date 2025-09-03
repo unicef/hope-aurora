@@ -1,22 +1,38 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING
 
+import pytz
+from django.conf import settings
 from django.db import models
 from django.db.models import Count
 from django.db.models.functions import ExtractHour, TruncDay
+from django.utils import timezone
 from django.utils.functional import cached_property
 
 from aurora.registration.models import Record, Registration
 
+if TYPE_CHECKING:
+    from typing import Sequence
+
+    from django.db.models import QuerySet
+
+    from aurora.types.counters.models import CollectCounter, CollectResult
+
 
 class CounterManager(models.Manager):
-    def collect(self, *, registrations=None):
-        result = {"registration": 0, "records": 0, "days": 0, "details": {}}
-        today = datetime.today()
-        yesterday = datetime.combine(today - timedelta(days=1), datetime.max.time())
+    def collect(
+        self, *, registrations: "Sequence[Registration] | None" = None
+    ) -> "tuple[list[QuerySet[Counter]], CollectResult]":
+        result: "CollectResult" = {"registration": 0, "records": 0, "days": 0, "details": {}}
+        tz = pytz.timezone(settings.TIME_ZONE)
+        today = timezone.now()
+        yesterday = datetime.combine(today - timedelta(days=1), datetime.max.time()).astimezone(tz)
         selection = Registration.objects.filter(archived=False)
+        if registrations:
+            selection = selection.filter(id__in=registrations)
 
-        def annotate(qs):
+        def annotate(qs: "QuerySet") -> "QuerySet":
             return (
                 qs.annotate(hour=ExtractHour("timestamp"), day=TruncDay("timestamp"))
                 .values("day", "hour")
@@ -24,47 +40,55 @@ class CounterManager(models.Manager):
                 .order_by("day", "hour")
             )
 
-        if registrations:
-            selection = selection.filter(id__in=registrations)
         querysets = []
         for registration in selection:
             result["registration"] += 1
             result["details"][registration.slug] = {"range": [], "days": 0}
-            latest = Counter.objects.filter(registration=registration).order_by("-day").first()
-            if latest:
-                latest = latest.day + timedelta(days=1)
+            last_counter = Counter.objects.filter(registration=registration).order_by("-day").first()
+
+            if last_counter:
+                start_date = last_counter.day + timedelta(days=1)
+                start_date = datetime.combine(start_date, datetime.min.time()).astimezone(tz)
             else:
-                latest = datetime.min
-            qs = annotate(Record.objects.filter(registration=registration, timestamp__range=(latest, yesterday)))
-            today_data = annotate(Record.objects.filter(registration=registration, timestamp__date=today))
-            querysets.append(qs)
-            counter = defaultdict(lambda: {"records": 0, "extra": {}})
-            for q in [qs, today_data]:
-                for match in q.all():
-                    counter[match["day"]]["records"] += match["c"]
-                    counter[match["day"]]["extra"][match["hour"]] = match["c"]
+                start_date = datetime(2000, 1, 1, tzinfo=tz)
+            # Query historical data
+            historical_qs = annotate(
+                Record.objects.filter(registration=registration, timestamp__range=(start_date, yesterday))
+            )
+            # Query today's data
+            today_start = today.replace(hour=0, minute=0, second=0, microsecond=0)
+            today_qs = annotate(Record.objects.filter(registration=registration, timestamp__gte=today_start))
+            querysets.append(historical_qs)
+
+            # Process queries and update counters
+            counter: defaultdict[str, CollectCounter] = defaultdict(lambda: {"records": 0, "extra": {}})
+            # Process both historical and today's data
+            for qs in [historical_qs, today_qs]:
+                for match in qs.all():
+                    day = match["day"]
+                    hour = match["hour"]
+                    count = match["c"]
+
+                    counter[day]["records"] += count
+                    counter[day]["extra"][hour] = count
                     result["days"] += 1
+
+            # Update database with counter information
             for day, values in counter.items():
-                result["records"] += values["records"]
+                records_count = values["records"]
+                result["records"] += records_count
                 result["details"][registration.slug]["days"] += 1
-                if today.date() == day.date():
-                    Counter.objects.update_or_create(
-                        registration=registration,
-                        day=day,
-                        defaults={
-                            "records": values["records"],
-                            "details": {"hours": values["extra"]},
-                        },
-                    )
+
+                defaults = {
+                    "records": records_count,
+                    "details": {"hours": values["extra"]},
+                }
+
+                # Different handling for today vs. historical data
+                if today.date() == day:
+                    Counter.objects.update_or_create(registration=registration, day=day, defaults=defaults)
                 else:
-                    Counter.objects.get_or_create(
-                        registration=registration,
-                        day=day,
-                        defaults={
-                            "records": values["records"],
-                            "details": {"hours": values["extra"]},
-                        },
-                    )
+                    Counter.objects.get_or_create(registration=registration, day=day, defaults=defaults)
         return querysets, result
 
 
@@ -81,12 +105,12 @@ class Counter(models.Model):
         get_latest_by = "day"
         ordering = ("-day",)
 
-    def __str__(self):
+    def __str__(self) -> str:
         try:
             return f"{self.registration} {self.day}"
-        except Exception:
+        except Exception:  # noqa: BLE001
             return f"Counter #{self.pk}"
 
     @cached_property
-    def hourly(self):
+    def hourly(self) -> list[str]:
         return [self.details["hours"].get(str(x), 0) for x in range(23)]

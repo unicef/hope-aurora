@@ -1,4 +1,5 @@
 import os
+from typing import TYPE_CHECKING
 
 from django.contrib.sites.models import Site
 from django.core.management.base import BaseCommand, CommandError
@@ -6,6 +7,10 @@ from django.template.loader import _engine_list
 from django.template.utils import get_app_template_dirs
 
 from dbtemplates.models import Template
+
+if TYPE_CHECKING:
+    from argparse import ArgumentParser
+
 
 ALWAYS_ASK, FILES_TO_DATABASE, DATABASE_TO_FILES = ("0", "1", "2")
 
@@ -18,7 +23,7 @@ app_template_dirs = get_app_template_dirs("templates")
 class Command(BaseCommand):
     help = "Syncs file system templates with the database bidirectionally."
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: "ArgumentParser") -> None:
         parser.add_argument(
             "-e",
             "--ext",
@@ -74,7 +79,7 @@ class Command(BaseCommand):
 
         try:
             site = Site.objects.get_current()
-        except Exception:
+        except Exception:  # noqa: BLE001
             raise CommandError(
                 "Please make sure to have the sites contrib app installed and setup with a site object"
             ) from None

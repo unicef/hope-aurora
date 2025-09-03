@@ -1,0 +1,46 @@
+responses:
+- response:
+    auto_calculate_content_length: false
+    body: '{"token_type":"Bearer","expires_in":"3599","ext_expires_in":"3599","expires_on":"1746605601","not_before":"1746601701","resource":"https://graph.microsoft.com","access_token":"eyJ0eXAiOiJKV1QiLCJub25jZSI6IlJzTGZBeTVwSDd2MTI4TWJzRF9JZGlKa0xBMTJ1NENncThldHZVVmJ1SGMiLCJhbGciOiJSUzI1NiIsIng1dCI6IkNOdjBPSTNSd3FsSEZFVm5hb01Bc2hDSDJYRSIsImtpZCI6IkNOdjBPSTNSd3FsSEZFVm5hb01Bc2hDSDJYRSJ9.eyJhdWQiOiJodHRwczovL2dyYXBoLm1pY3Jvc29mdC5jb20iLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC83NzQxMDE5NS0xNGUxLTRmYjgtOTA0Yi1hYjE4OTIwMjM2NjcvIiwiaWF0IjoxNzQ2NjAxNzAxLCJuYmYiOjE3NDY2MDE3MDEsImV4cCI6MTc0NjYwNTYwMSwiYWlvIjoiazJSZ1lBZ09zaXBwTDM3aEZ2cGNiMWxCODRZNkFBPT0iLCJhcHBfZGlzcGxheW5hbWUiOiJ1bmktaG9wZS1kZXYiLCJhcHBpZCI6IjA2ZTUwYTg0LTI3YmUtNDkxMC1iMmVhLTQzMzgxOTc2Yzc5YSIsImFwcGlkYWNyIjoiMSIsImlkcCI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0Lzc3NDEwMTk1LTE0ZTEtNGZiOC05MDRiLWFiMTg5MjAyMzY2Ny8iLCJpZHR5cCI6ImFwcCIsIm9pZCI6IjdhYzNmMjljLWM3MzItNDE3OS1iNWY0LTQ0NmIxYTZjNzZkMiIsInJoIjoiMS5BUW9BbFFGQmQtRVV1RS1RUzZzWWtnSTJad01BQUFBQUFBQUF3QUFBQUFBQUFBQUtBQUFLQUEuIiwicm9sZXMiOlsiR3JvdXAuUmVhZC5BbGwiLCJVc2VyLlJlYWQuQWxsIl0sInN1YiI6IjdhYzNmMjljLWM3MzItNDE3OS1iNWY0LTQ0NmIxYTZjNzZkMiIsInRlbmFudF9yZWdpb25fc2NvcGUiOiJTQSIsInRpZCI6Ijc3NDEwMTk1LTE0ZTEtNGZiOC05MDRiLWFiMTg5MjAyMzY2NyIsInV0aSI6IjZqbVhXMVJEaTA2UlNjN0NEalFTQVEiLCJ2ZXIiOiIxLjAiLCJ3aWRzIjpbIjA5OTdhMWQwLTBkMWQtNGFjYi1iNDA4LWQ1Y2E3MzEyMWU5MCJdLCJ4bXNfaWRyZWwiOiI3IDIwIiwieG1zX3RjZHQiOjEzNzExMjc5NDksInhtc190ZGJyIjoiRVUifQ.ZhnVTIaqKZmwxuHf_7oxZPJA5lbA9NHRo0A0CrweluWsj-r8hQuko91Owf4dMNcHSrOuKffzeThoUZ2Aqnq67XMLQoestiNTPvHQMNGLm1OWGcUkuYbQa6shcdTEO-pj8ZVZfJi1lBZArPY7nD-ZnCActC6g4JF3vNfTSZh4Ei-ICwlZWGFZ-TsALEyKj1VgrxeHo1-QRWfXPIjNqlJc43uDLgtzcmpJ7hPERHHRiQ7QENOyhwmpEYxI5e1JZY2qYAtl3OJKtRxFJGoZ3I7bewZWgQbdtMJ7PUIOjw144ENqtGdFKofTDTySHRuwJT_gw4ZzVjTfxo2wmEIiCt-ePA"}'
+    content_type: text/plain
+    headers:
+      Cache-Control: no-store, no-cache
+      Content-Security-Policy-Report-Only: object-src 'none'; base-uri 'self'; script-src
+        'self' 'nonce-s61wssImCstsI3bvF126Vw' 'unsafe-inline' 'unsafe-eval' https://*.msauth.net
+        https://*.msftauth.net https://*.msftauthimages.net https://*.msauthimages.net
+        https://*.msidentity.com https://*.microsoftonline-p.com https://*.microsoftazuread-sso.com
+        https://*.azureedge.net https://*.outlook.com https://*.office.com https://*.office365.com
+        https://*.microsoft.com https://*.bing.com 'report-sample'; report-uri https://csp.microsoft.com/report/ESTS-UX-All
+      Expires: '-1'
+      P3P: CP="DSP CUR OTPi IND OTRi ONL FIN"
+      Pragma: no-cache
+      Set-Cookie: fpc=AoXSzuBJND1Eo-c5JfHlbUACKG_nAQAAABD_rN8OAAAA; expires=Fri, 06-Jun-2025
+        07:13:21 GMT; path=/; secure; HttpOnly; SameSite=None, x-ms-gateway-slice=estsfd;
+        path=/; secure; samesite=none; httponly, stsservicecookie=estsfd; path=/;
+        secure; samesite=none; httponly
+      Strict-Transport-Security: max-age=31536000; includeSubDomains
+      X-Content-Type-Options: nosniff
+      X-XSS-Protection: '0'
+      x-ms-ests-server: 2.1.20663.10 - NEULR1 ProdSlices
+      x-ms-request-id: 5b9739ea-4354-4e8b-9149-cec20e341201
+      x-ms-srs: 1.P
+    method: POST
+    status: 200
+    url: https://login.microsoftonline.com/unicef.org/oauth2/token
+- response:
+    auto_calculate_content_length: false
+    body: '{"error":{"code":"Request_ResourceNotFound","message":"Resource ''abc''
+      does not exist or one of its queried reference-property objects are not present.","innerError":{"date":"2025-05-07T07:13:21","request-id":"4fc3497d-d89a-48a3-a947-c7c37fcfa18d","client-request-id":"4fc3497d-d89a-48a3-a947-c7c37fcfa18d"}}}'
+    content_type: text/plain
+    headers:
+      Cache-Control: no-cache
+      Strict-Transport-Security: max-age=31536000
+      Transfer-Encoding: chunked
+      Vary: Accept-Encoding
+      client-request-id: 4fc3497d-d89a-48a3-a947-c7c37fcfa18d
+      request-id: 4fc3497d-d89a-48a3-a947-c7c37fcfa18d
+      x-ms-ags-diagnostic: '{"ServerInfo":{"DataCenter":"Switzerland North","Slice":"E","Ring":"3","ScaleUnit":"000","RoleInstance":"ZR1PEPF0000225B"}}'
+      x-ms-resource-unit: '1'
+    method: GET
+    status: 404
+    url: https://graph.microsoft.com/v1.0/users/abc

@@ -3,13 +3,16 @@ from .admin_sync import *  # noqa
 from .anymail import *  # noqa
 from .azure_graph_api import *  # noqa
 from .capcha import *  # noqa
-from .channels import *  # noqa
+
+# from .channels import *  # noqa
+from .cache import *  # noqa
 from .concurrency import *  # noqa
 from .constance import *  # noqa
 from .cors import *  # noqa
 from .csp import *  # noqa
 from .dbtemplate import *  # noqa
 from .django_toolbar import *  # noqa
+from .dramatiq import *  # noqa
 from .flags import *  # noqa
 from .front_door import *  # noqa
 from .hijack import *  # noqa
@@ -23,4 +26,5 @@ from .smart_admin import *  # noqa
 from .social_auth import *  # noqa
 from .strategy import *  # noqa
 from .sysinfo import *  # noqa
+from .tailwind import *  # noqa
 from .translator import *  # noqa

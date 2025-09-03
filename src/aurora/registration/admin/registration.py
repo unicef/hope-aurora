@@ -2,11 +2,14 @@ import csv
 import io
 import json
 import logging
+from datetime import timedelta
 from hashlib import md5
 from typing import TYPE_CHECKING
 
 from admin_extra_buttons.decorators import button, choice, view
-from admin_sync.mixin import SyncMixin
+from django.utils import timezone
+
+from aurora.core.admin_sync import SyncModelAdmin
 from adminfilters.mixin import AdminAutoCompleteSearchMixin
 from dateutil.utils import today
 from django import forms
@@ -21,7 +24,6 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.template.loader import select_template
 from django.urls import reverse, translate_url
-from django.utils.module_loading import import_string
 from django.utils.text import slugify
 from django_redis import get_redis_connection
 from jsoneditor.forms import JSONEditor
@@ -38,6 +40,7 @@ from aurora.core.utils import (
     is_root,
     namify,
 )
+from aurora.exceptions import ExportError
 from aurora.i18n.forms import TemplateForm, TranslationForm
 from aurora.registration.admin.filters import (
     OrganizationFilter,
@@ -52,9 +55,9 @@ from aurora.registration.forms import (
     RegistrationForm,
 )
 from aurora.registration.models import Record, Registration
+from aurora.tasks import remove_records
 
 logger = logging.getLogger(__name__)
-
 
 if TYPE_CHECKING:
     from django.template import Template
@@ -64,7 +67,7 @@ def can_export_data(request, obj, handler=None):
     return (obj.export_allowed and request.user.has_perm("registration.export_data", obj)) or is_root(request)
 
 
-class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, SyncMixin, SmartModelAdmin):
+class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, SyncModelAdmin, SmartModelAdmin):
     search_fields = ("name_deterministic", "title", "slug")
     date_hierarchy = "start"
     list_filter = (
@@ -152,7 +155,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
     def get_readonly_fields(self, request, obj=None):
         ro = super().get_readonly_fields(request, obj)
         if obj and obj.pk and not is_root(request):
-            ro = list(ro) + ["slug", "export_allowed"]
+            ro = list(ro) + ["slug", "export_allowed", "archived"]
         return ro
 
     def secure(self, obj):
@@ -178,6 +181,26 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
             )
             + base
         )
+
+    @button()
+    def archive(self, request: HttpRequest, pk: str) -> HttpResponse:
+        ctx = self.get_common_context(request, pk, title="Archive", clearable=False)
+        ctx["today"] = timezone.now().date()
+        reg: Registration = ctx["original"]
+        if reg.end:
+            ctx["clear_date"] = reg.end + timedelta(days=7)
+            ctx["clearable"] = ctx["today"] > ctx["clear_date"]
+
+        if request.method == "POST":
+            if "archive" in request.POST:
+                reg.archived = True
+                reg.active = False
+                if not reg.end:
+                    reg.end = timezone.now()
+                reg.save()
+            elif ctx["clearable"] and "clear" in request.POST:
+                remove_records.send(reg.pk)
+        return render(request, "admin/registration/registration/archive.html", ctx)
 
     @view(permission=can_export_data)
     def export_as_csv(self, request: HttpRequest, pk: str) -> HttpResponse:
@@ -206,19 +229,19 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
                         .values("fields", "id", "ignored", "timestamp", "registration_id")
                     )
                     if qs.count() >= 5000:
-                        raise Exception("Too many records please change your filters. (max 5000)")
+                        raise ExportError("Too many records please change your filters. (max 5000)")
                     valid = fmt_form.cleaned_data
                     records = [build_dict(r, **valid) for r in qs]
                     if not records:
-                        raise Exception("No records matching filtering criteria")
-                    skipped = []
-                    all_fields = []
+                        raise ExportError("No records matching filtering criteria")
+                    skipped = set()
+                    all_fields = set()
                     for r in records:
                         for field_name in r:
-                            if field_name not in skipped and field_name in exclude_fields:
-                                skipped.append(field_name)
-                            elif field_name not in all_fields and field_name in include_fields:
-                                all_fields.append(field_name)
+                            if field_name in exclude_fields:
+                                skipped.add(field_name)
+                            elif include_fields and field_name in include_fields:
+                                all_fields.add(field_name)
                     if "export" in request.POST:
                         csv_options = opts_form.cleaned_data
                         add_header = csv_options.pop("header")
@@ -243,9 +266,11 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
                     ctx["all_fields"] = sorted(set(all_fields))
                     ctx["skipped"] = skipped
                     ctx["qs"] = records[:10]
+            except ExportError as e:
+                self.message_user(request, str(e), level=messages.ERROR)
             except Exception as e:
                 logger.exception(e)
-                self.message_error_to_user(request, e)
+                self.message_user(request, "Unhandled Error", level=messages.ERROR)
         else:
             form = RegistrationExportForm(initial={"include": ".*"})
             opts_form = CSVOptionsForm(prefix="csv", initial=CSVOptionsForm.defaults)
@@ -261,7 +286,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
         obj = self.get_object(request, pk)
         obj.save()
 
-    @choice(order=900, visible=lambda c: [], change_list=False)
+    @choice(order=900, visible=lambda c: is_root(c.context["request"]), change_list=False)
     def encryption(self, button):
         original = button.context["original"]
         colors = ["#DC6C6C", "white"]
@@ -270,11 +295,11 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
             button.choices = [self.removekey]
         elif original.encrypt_data:
             colors = ["#dfd", "black"]
-            self.toggle_encryption.func._handler.config["label"] = "Disable Symmetric"
+            self.toggle_encryption.func.extra_buttons_handler.config["label"] = "Disable Symmetric"
             button.choices = [self.toggle_encryption]
         else:
-            self.toggle_encryption.func._handler.config["label"] = "Enable Symmetric"
-            self.generate_keys.func._handler.config["label"] = "Enable RSA"
+            self.toggle_encryption.func.extra_buttons_handler.config["label"] = "Enable Symmetric"
+            self.generate_keys.func.extra_buttons_handler.config["label"] = "Enable RSA"
             button.choices = [self.generate_keys, self.toggle_encryption]
         button.config["html_attrs"] = {"style": f"background-color:{colors[0]};color:{colors[1]}"}
         return button
@@ -285,7 +310,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
         self.object.encrypt_data = not self.object.encrypt_data
         self.object.save()
 
-    @view()
+    @view(label="Remove Key")
     def removekey(self, request, pk):
         ctx = self.get_common_context(request, pk, title="Remove Encryption Key")
         if request.method == "POST":
@@ -330,7 +355,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
 
     @view()
     def debug(self, request, pk):
-        ctx = self.get_common_context(request, pk)
+        ctx = self.get_common_context(request, pk, title="Debug Registration")
         if request.method == "POST":
             form = DebugForm(request.POST)
             if form.is_valid():
@@ -425,6 +450,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
                                     parent=forms[fs.parent.pk],
                                     flex_form=forms[fs.flex_form.pk],
                                 )
+                        self.message_user(request, "Registration Successfully Cloned.", messages.SUCCESS)
                         return HttpResponseRedirect(reverse("admin:registration_registration_inspect", args=[reg.pk]))
                 except Exception as e:
                     logger.exception(e)
@@ -439,12 +465,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
 
     @view()
     def create_custom_template(self, request, pk):
-        ctx = self.get_common_context(
-            request,
-            pk,
-            media=self.media,
-            title="Create Custom Template",
-        )
+        ctx = self.get_common_context(request, pk, media=self.media, title="Create Custom Template")
         if request.method == "POST":
             obj = ctx["original"]
             form = TemplateForm(request.POST)
@@ -477,13 +498,13 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
             ctx["form"] = TemplateForm()
         return render(request, "admin/registration/registration/create_template.html", ctx)
 
-    @view()
+    @view(label="Export translation file")
     def prepare_translation(self, request, pk):
         ctx = self.get_common_context(
             request,
             pk,
             media=self.media,
-            title="Prepare Translation File",
+            title="Export translation file",
         )
         instance: Registration = ctx["original"]
         if request.method == "POST":
@@ -494,7 +515,6 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
                     con = get_redis_connection("default")
                     con.delete(key)
                     locale = form.cleaned_data["locale"]
-                    translate = form.cleaned_data["translate"]
                     if locale not in instance.locales:
                         self.message_user(
                             request,
@@ -509,29 +529,22 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
 
                     entries = list(Message.objects.filter(locale=locale).values_list("msgid", "msgstr"))
                     data = dict(entries)
-                    if translate == "2":
-                        t = import_string(settings.TRANSLATOR_SERVICE)()
-                        func = lambda x: t.translate(locale, x)  # noqa
-                    elif translate == "1":
-                        t = import_string(settings.TRANSLATOR_SERVICE)()
-                        func = (  # noqa
-                            lambda x: x if data.get(x, "") == x else t.translate(locale, x)
-                        )
-                    else:
-                        func = lambda x: data.get(x, "")  # noqa
+
+                    func = lambda x: data.get(x, "")  # noqa
                     ctx["collected"] = {c: func(c) for c in collected}
                     ctx["language_code"] = locale
             elif "export" in request.POST:
                 selection = request.POST.getlist("selection")
                 language_code = request.POST.get("language_code")
                 msgids = [request.POST.get(f"msgid_{i}") for i in selection]
+                filename = slugify(f"{instance.name}_{language_code}")
                 response = HttpResponse(
                     content_type="text/csv",
-                    headers={"Content-Disposition": f'attachment; filename="{instance.name}_{language_code}.csv"'},
+                    headers={"Content-Disposition": f'attachment; filename="{filename}.csv"'},
                 )
                 writer = csv.writer(response, dialect="excel")
                 for i, msg in enumerate(msgids, 1):
-                    writer.writerow([str(i), msg, ""])
+                    writer.writerow([str(i), msg.replace("\n", "\\n"), ""])
                 return response
 
         else:
@@ -632,19 +645,19 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
         obj = self.get_object(request, pk)
         return HttpResponseRedirect(
             reverse(
-                "charts:registration",
+                "charts:monthly",
                 args=[obj.project.organization.slug, obj.project.pk, pk],
             )
         )
 
     @view(permission=is_root, html_attrs={"class": "aeb-warn"})
-    def view_collected_data(self, button, pk):
+    def view_collected_data(self, button, pk: str) -> HttpResponse:
         base = reverse("admin:registration_record_changelist")
         url = f"{base}?registration__exact={pk}"
         return HttpResponseRedirect(url)
 
     @view()
-    def james_fake_data(self, request, pk):
+    def james_fake_data(self, request, pk: str) -> HttpResponse:
         reg = self.get_object(request, pk)
         data = cache.get(f"james_{pk}", version=get_system_cache_version())
         if not data:
@@ -655,7 +668,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
         return HttpResponse(data)
 
     @view()
-    def james_editor(self, request, pk):
+    def james_editor(self, request, pk) -> HttpResponse:
         ctx = self.get_common_context(request, pk, title="JAMESPath Editor")
         if request.method == "POST":
             form = JamesForm(request.POST, instance=ctx["original"])
@@ -674,7 +687,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
         return render(request, "admin/registration/registration/james_editor.html", ctx)
 
     @button(visible=False)
-    def test(self, request, pk):
+    def test(self, request, pk) -> HttpResponse:
         ctx = self.get_common_context(request, pk, title="Test")
         form = self.object.flex_form.get_form_class()
         ctx["registration"] = self.object

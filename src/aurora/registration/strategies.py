@@ -1,6 +1,8 @@
 import base64
+from typing import TYPE_CHECKING, Any
 
 from django.db.transaction import atomic
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
 from strategy_field.registry import Registry
@@ -10,19 +12,22 @@ from aurora.core.utils import jsonfy, safe_json, total_size
 from aurora.registration.storage import router
 from aurora.state import state
 
+if TYPE_CHECKING:
+    from aurora.registration.models import Registration
+
 
 class RegistrationStrategy:
-    def __init__(self, registration):
+    def __init__(self, registration: "Registration") -> None:
         self.registration = registration
 
-    def save(self, fields_data, **kwargs):
+    def save(self, fields_data: dict[str, Any], **kwargs) -> Any:
         raise NotImplementedError
 
 
 class SaveToDB(RegistrationStrategy):
     verbose_name = "Save To DB"
 
-    def save(self, fields_data, **kwargs):
+    def save(self, fields_data: dict[str, Any], **kwargs) -> Any:
         from aurora.registration.models import Record
 
         fields, files = router.decompress(fields_data)
@@ -54,7 +59,7 @@ class SaveToDB(RegistrationStrategy):
                 "registrar": registrar,
                 "size": total_size(fields) + total_size(files),
                 "counters": fields_data.get("counters", {}),
-                "index1": fields_data.get("index1", None),
+                "index1": fields_data.get("index1"),
             }
         )
 
@@ -62,7 +67,7 @@ class SaveToDB(RegistrationStrategy):
 
 
 class TransactionTestStrategy(SaveToDB):
-    def save(self, fields_data, **kwargs):
+    def save(self, fields_data: dict[str, Any], **kwargs) -> HttpResponse:
         ctx = {
             "fields_data": fields_data,
             "record": None,
@@ -73,14 +78,14 @@ class TransactionTestStrategy(SaveToDB):
                 raise ArithmeticError
         except ArithmeticError:
             pass
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             ctx["exception"] = e
 
         return render(state.request, "registration/test_registration.html", ctx)
 
 
 class SaveAndDisplayTestStrategy(SaveToDB):
-    def save(self, fields_data, **kwargs):
+    def save(self, fields_data: dict[str, Any], **kwargs) -> HttpResponse:
         ctx = {
             "fields_data": fields_data,
             "record": None,
@@ -90,7 +95,7 @@ class SaveAndDisplayTestStrategy(SaveToDB):
                 record = super().save(fields_data, **kwargs)
                 ctx["record"] = record
                 ctx["admin_url"] = reverse("admin:registration_record_change", args=[record.pk])
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             ctx["exception"] = e
 
         return render(state.request, "registration/test_registration.html", ctx)
@@ -99,7 +104,7 @@ class SaveAndDisplayTestStrategy(SaveToDB):
 class DisplayTestStrategy(RegistrationStrategy):
     verbose_name = "Test"
 
-    def save(self, fields_data, **kwargs):
+    def save(self, fields_data: dict[str, Any], **kwargs) -> HttpResponse:
         from aurora.registration.models import Record
 
         fields, files = router.decompress(fields_data)
@@ -113,7 +118,7 @@ class DisplayTestStrategy(RegistrationStrategy):
                 "registrar": registrar,
                 "size": total_size(fields) + total_size(files),
                 "counters": fields_data.get("counters", {}),
-                "index1": fields_data.get("index1", None),
+                "index1": fields_data.get("index1"),
                 "fields": fields,
             }
         )

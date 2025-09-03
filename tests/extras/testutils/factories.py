@@ -1,15 +1,26 @@
+from pathlib import Path
+from random import choice, randint
+from unittest import mock
+
 import factory.fuzzy
+import pytz
 from django import forms
 from django.contrib.admin.models import LogEntry
-from django.contrib.auth.models import Group, User
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+from django.contrib.flatpages.models import FlatPage
+from django.core.files.base import ContentFile
 from django.utils import timezone
-from factory import PostGenerationMethodCall
+from factory import LazyAttribute, PostGenerationMethodCall
 from factory.base import FactoryMetaClass
+from factory.declarations import BaseDeclaration
+from faker import Faker
 from rest_framework.authtoken.models import TokenProxy
 from social_django.models import Association, Nonce, UserSocialAuth
 from strategy_field.utils import fqn
 
 import dbtemplates.models as dbtemplates
+
 from aurora.core.models import (
     CustomFieldType,
     FlexForm,
@@ -20,9 +31,14 @@ from aurora.core.models import (
     Project,
     Validator,
 )
+from aurora.core.utils import safe_json, jsonfy
 from aurora.counters.models import Counter
+from aurora.i18n.models import Message
 from aurora.registration.models import Record, Registration
+from aurora.registration.storage import router
 from aurora.security.models import AuroraRole
+
+fake = Faker()
 
 factories_registry = {}
 
@@ -38,13 +54,37 @@ class AutoRegisterModelFactory(factory.django.DjangoModelFactory, metaclass=Auto
     pass
 
 
+class RandomFile:
+    def __init__(self, path: Path | str):
+        self.folder = Path(path)
+        self.images = list(self.folder.glob("*.jpg"))
+
+    def __call__(self, *args, **kwargs):
+        selection = choice(self.images)
+        return ContentFile(selection.read_bytes(), selection.name)
+
+
+def get_random_fields():
+    return {
+        "last_name": fake.last_name(),
+        "first_name": fake.first_name(),
+        "date_of_birth": fake.date_of_birth().strftime("%Y-%m-%d"),
+    }
+
+
+def get_random_files():
+    return {
+        "image1": RandomFile(Path(__file__).parent / "images")(),
+    }
+
+
 def get_factory_for_model(_model):
     class Meta:
         model = _model
 
     if _model in factories_registry:
         return factories_registry[_model]
-    return type(f"{_model._meta.model_name}Factory", (AutoRegisterModelFactory,), {"Meta": Meta})
+    return type(f"{_model._meta.model_name}AutoFactory", (AutoRegisterModelFactory,), {"Meta": Meta})
 
 
 class GroupFactory(AutoRegisterModelFactory):
@@ -81,7 +121,7 @@ class UserFactory(AutoRegisterModelFactory):
     password = PostGenerationMethodCall("set_password", "password")
 
     class Meta:
-        model = User
+        model = get_user_model()
         django_get_or_create = ("username",)
 
 
@@ -94,7 +134,8 @@ class SuperUserFactory(UserFactory):
 
 
 class ValidatorFactory(AutoRegisterModelFactory):
-    name = factory.Sequence(lambda d: "Form-%s" % d)
+    name = factory.Sequence(lambda d: "Validator-%s" % d)
+    label = factory.LazyAttribute(lambda o: o.name.replace("_", " ").title())
 
     class Meta:
         model = Validator
@@ -102,7 +143,7 @@ class ValidatorFactory(AutoRegisterModelFactory):
 
 
 class OptionSetFactory(AutoRegisterModelFactory):
-    name = factory.Sequence(lambda d: "Form-%s" % d)
+    name = factory.Sequence(lambda d: "OptionSet-%s" % d)
     separator = ";"
     data = "aa=1;bb=2"
 
@@ -122,9 +163,13 @@ class FormFactory(AutoRegisterModelFactory):
 
 class FlexFormFieldFactory(AutoRegisterModelFactory):
     flex_form = factory.SubFactory(FormFactory)
-    name = factory.Sequence(lambda d: "FormField-%s" % d)
+    name = factory.Sequence(lambda d: "field-%s" % d)
+    label = factory.LazyAttribute(lambda o: o.name.replace("_", " ").title())
+    advanced = FlexFormField.FLEX_FIELD_DEFAULT_ATTRS
+
     field_type = fqn(forms.CharField)
     validator = None
+    enabled = True
 
     class Meta:
         model = FlexFormField
@@ -157,24 +202,54 @@ class RegistrationFactory(AutoRegisterModelFactory):
     flex_form = factory.SubFactory(FormFactory)
     project = factory.SubFactory(ProjectFactory)
     active = True
+    locale = "en-us"
+    locales = ["en-us", "it-it"]
+    public_key = None
+    encrypt_data = False
 
     class Meta:
         model = Registration
         django_get_or_create = ("name", "project")
 
 
+class JsonFields(BaseDeclaration):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def evaluate(self, instance, step, extra):
+        ds = get_random_fields()
+        return jsonfy(router.decompress(ds)[0])
+
+
+class FilesField(BaseDeclaration):
+    def evaluate(self, instance, step, extra):
+        ds = get_random_files()
+        return safe_json(router.decompress(ds)[1]).encode()
+
+
 class RecordFactory(AutoRegisterModelFactory):
     registration = factory.SubFactory(RegistrationFactory)
-    timestamp = timezone.now()
+    timestamp = factory.Faker(
+        "date_time_between_dates", datetime_start="-1y", datetime_end=timezone.now(), tzinfo=pytz.UTC
+    )
+    fields = JsonFields()
+    files = FilesField()
 
     class Meta:
         model = Record
 
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        with mock.patch("aurora.registration.models.get_client_ip") as mock_get_client_ip:
+            mock_get_client_ip.side_effect = lambda x: fake.ipv4()
+            return super()._create(model_class, *args, **kwargs)
+
 
 class CounterFactory(AutoRegisterModelFactory):
     registration = factory.SubFactory(RegistrationFactory)
-    details = {"hours": {str(x): 10 for x in range(23)}}
-    day = timezone.now()
+    details = {"hours": {str(x): randint(20, 200) for x in range(23)}}
+    day = timezone.now().date()
+    records = LazyAttribute(lambda o: sum(list(o.details["hours"].values())))
 
     class Meta:
         model = Counter
@@ -219,7 +294,7 @@ class AssociationFactory(AutoRegisterModelFactory):
 
 
 class TemplateFactory(AutoRegisterModelFactory):
-    name = factory.Sequence(lambda d: "Template-%s" % d)
+    name = factory.Sequence(lambda d: "Template-%s.html" % d)
     content = ""
 
     class Meta:
@@ -233,3 +308,21 @@ class AuroraRoleFactory(AutoRegisterModelFactory):
 
     class Meta:
         model = AuroraRole
+
+
+class MessageFactory(AutoRegisterModelFactory):
+    timestamp = timezone.now()
+    msgstr = factory.Sequence(lambda d: "message-%s" % d)
+    msgid = factory.LazyAttribute(lambda o: o.msgstr)
+
+    locale = "en-us"
+    draft = False
+    auto = False
+
+    class Meta:
+        model = Message
+
+
+class FlatPageFactory(AutoRegisterModelFactory):
+    class Meta:
+        model = FlatPage

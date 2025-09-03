@@ -39,16 +39,16 @@ class NotRunningInTTYError(Exception):
     envvar="DEFAULT_ORGANIZATION",
     help="Main Organization name",
 )
-def upgrade(
-    admin_email,
-    admin_password,
-    static,
-    migrate,
-    prompt,
-    verbosity,
-    organization,
+def upgrade(  # noqa: PLR0912,  PLR0915, C901, PLR0913
+    admin_email: str,
+    admin_password: str,
+    static: bool,
+    migrate: bool,
+    prompt: bool,
+    verbosity: int,
+    organization: str,
     **kwargs,
-):
+) -> None:
     from aurora.config import env
     from aurora.core.models import FlexForm, Organization, Project
     from aurora.registration.models import Registration
@@ -56,7 +56,7 @@ def upgrade(
     extra = {"no_input": prompt, "verbosity": verbosity - 1, "stdout": None}
     click.echo("Run upgrade.. waiting for lock")
     try:
-        with cache.lock(
+        with cache.lock(  # type: ignore[attr-defined]
             env("MIGRATION_LOCK_KEY"),
             timeout=60 * 10,
             blocking_timeout=2,
@@ -105,19 +105,11 @@ def upgrade(
                 else:
                     username, __ = admin_email.split("@")
                     if User.objects.filter(username=username).exists():
-                        click.echo("User with this name already exists")
+                        click.secho("User with this name already exists", fg="yellow")
                     else:
                         try:
-                            call_command(
-                                "createsuperuser",
-                                interactive=False,
-                                username=username,
-                                email=admin_email,
-                                verbosity=verbosity,
-                            )
-                            u = User.objects.get(username=username)
-                            u.set_password(admin_password)
-                            u.save()
+                            User.objects.create_superuser(username=username, email=admin_email, password=admin_password)
+                            click.secho(f"Superuser {username} created", fg="green")
                         except CommandError:
                             raise
 

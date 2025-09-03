@@ -2,7 +2,7 @@
     var highLight = function (onOff) {
         if (onOff) {
             this.__oldBorder = this.$.css("border");
-            this.$.css("border", "1px solid red");
+            this.$.css("border", "2px solid red");
         } else {
             this.$.css("border", this.__oldBorder);
         }

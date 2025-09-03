@@ -1,4 +1,13 @@
 (function ($) {
+    var get_optionset_url = function (target) {
+        var url_version = target.data("ajax--url-version");
+        var url = target.data("ajax--base-url");
+        var version = -1
+        $.ajax({url: url_version, async:false, success: function (data) {
+            url = data.url
+        }});
+        return url;
+    };
     window._select2 = {
         collect_subscribers: function (e) {
             var $target = $(e);
@@ -18,7 +27,6 @@
                 return;
             }
             var $target = $(e);
-            var url = $target.data("ajax-url");
             var selected = $target.data("selected");
             var parentName = $target.data("parent");
             var placeholder = $target.data("placeholder");
@@ -28,7 +36,7 @@
                 placeholder: placeholder,
                 ajax: {
                     minimumInputLength: 2,
-                    url: url,
+                    url: get_optionset_url($target),
                     dataType: "json",
                     data: function (params) {
                         var query = {
@@ -60,7 +68,7 @@
     $(function () {
         var CACHE = {};
         var $targets = $(".ajaxSelect");
-        console.log("Select2 library loaded", window._select2);
+        // console.log("Select2 library loaded", window._select2);
         $targets.each(function (i, e) {
             _select2.collect_subscribers(e);
             // var $target = $(e);

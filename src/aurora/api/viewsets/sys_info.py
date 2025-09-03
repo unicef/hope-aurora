@@ -2,12 +2,12 @@ import os
 
 from constance import config
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import HttpRequest, JsonResponse
 
 from aurora.core.utils import has_token
 
 
-def system_info(request):
+def system_info(request: HttpRequest) -> JsonResponse:
     data = {
         "build_date": os.environ.get("BUILD_DATE", ""),
         "version": os.environ.get("VERSION", ""),

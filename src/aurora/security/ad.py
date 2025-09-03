@@ -1,33 +1,36 @@
 import logging
 from collections import namedtuple
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from admin_extra_buttons.decorators import button
+from admin_extra_buttons.mixins import ExtraButtonsMixin
 from constance import config
 from django import forms
-from django.contrib import messages
-from django.contrib.auth import get_user_model
+from django.contrib import admin, messages
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.forms.forms import Form
-from django.http import Http404, HttpRequest
+from django.http import Http404, HttpRequest, HttpResponse
 from django.template.response import TemplateResponse
 from requests import HTTPError
 
 from aurora.core.models import Organization, Project
 from aurora.registration.models import Registration
-from aurora.security.microsoft_graph import MicrosoftGraphAPI
-from aurora.security.models import AuroraRole
+from aurora.security.microsoft_graph import MicrosoftGraphAPI, MicrosoftGraphAPIError
+from aurora.security.models import AuroraRole, User
+
+if TYPE_CHECKING:
+    from aurora.types.http import AuthHttpRequest
 
 logger = logging.getLogger(__name__)
 
+# NOTE: add after UserModel migration "ad_uuid": "id",
 DJANGO_USER_MAP = {
     "username": "mail",
     "email": "mail",
     "first_name": "givenName",
     "last_name": "surname",
-    "ad_uuid": "id",
 }
 
 
@@ -53,7 +56,7 @@ class LoadUsersForm(forms.Form):
             raise ValidationError("Invalid emails {}".format(", ".join(errors)))
         return self.cleaned_data["emails"]
 
-    def clean(self):
+    def clean(self) -> None:
         found = [
             self.cleaned_data.get(x) for x in ["organization", "project", "registration"] if self.cleaned_data.get(x)
         ]
@@ -67,7 +70,7 @@ def build_arg_dict_from_dict(data_dict: dict, mapping_dict: dict) -> dict:
     return {key: data_dict.get(value) for key, value in mapping_dict.items()}
 
 
-class ADUSerMixin:
+class ADUSerMixin(ExtraButtonsMixin, admin.ModelAdmin[User]):
     ad_form_class = LoadUsersForm
     Results = namedtuple("Results", "created,missing,updated,errors")
 
@@ -76,9 +79,9 @@ class ADUSerMixin:
             return self.ad_form_class(request.POST, request=request)
         return self.ad_form_class(request=request)
 
-    def _sync_ad_data(self, user) -> None:
+    def _sync_ad_data(self, user: "User") -> None:
         ms_graph = MicrosoftGraphAPI()
-        if user.profile and user.profile.ad_uuid:
+        if user.profile and user.profile.ad_uuid is not None:
             filters = [{"uuid": user.profile.ad_uuid}, {"email": user.email}]
         else:
             filters = [{"email": user.email}]
@@ -96,13 +99,13 @@ class ADUSerMixin:
         else:
             raise Http404
 
-    @button(label="AD Sync", permission="account.can_sync_with_ad")
+    @button(label="AD Sync", permission="account.can_sync_with_ad")  # type: ignore[arg-type]
     def sync_multi(self, request: HttpRequest) -> None:
         not_found = []
         try:
             for user in self.get_queryset(request):
                 try:
-                    self._sync_ad_data(user)
+                    self._sync_ad_data(user)  # type: ignore [arg-type]
                 except Http404:
                     not_found.append(str(user))
             if not_found:
@@ -121,17 +124,17 @@ class ADUSerMixin:
             logger.exception(e)
             self.message_user(request, str(e), messages.ERROR)
 
-    @button(label="Sync", permission="account.can_sync_with_ad")
-    def sync_single(self, request: HttpRequest, pk: int) -> None:
+    @button(label="Sync", permission="account.can_sync_with_ad")  # type: ignore[arg-type]
+    def sync_single(self, request: HttpRequest, pk: str) -> HttpResponse:  # type: ignore[return]
         try:
-            self._sync_ad_data(self.get_object(request, pk))
+            self._sync_ad_data(self.get_object(request, pk))  # type: ignore[arg-type]
             self.message_user(request, "Active Directory data successfully fetched", messages.SUCCESS)
         except Exception as e:
             logger.exception(e)
             self.message_user(request, str(e), messages.ERROR)
 
-    @button(permission="account.can_load_from_ad")
-    def load_ad_users(self, request: HttpRequest) -> TemplateResponse:
+    @button(permission="account.can_load_from_ad")  # type: ignore[arg-type]
+    def load_ad_users(self, request: "AuthHttpRequest") -> TemplateResponse:  # noqa: C901, PLR0912, PLR0915
         ctx = self.get_common_context(
             request,
             None,
@@ -143,7 +146,6 @@ class ADUSerMixin:
             has_change_permission=True,
         )
         form = self._get_ad_form(request)
-        User = get_user_model()  # noqa
         if request.method == "POST" and form.is_valid():
             emails = set(form.cleaned_data["emails"].split())
             role = form.cleaned_data["role"]
@@ -171,9 +173,6 @@ class ADUSerMixin:
                                 user.first_name = ""
                             if user.last_name is None:
                                 user.last_name = ""
-                            job_title = user_data.get("jobTitle")
-                            if job_title is not None:
-                                user.job_title = job_title
                         else:
                             user = User.objects.create(email=email, username=email)
 
@@ -200,8 +199,12 @@ class ADUSerMixin:
                 AuroraRole.objects.bulk_create(users_role_to_bulk_create, ignore_conflicts=True)
                 ctx["results"] = results
                 return TemplateResponse(request, "admin/aurorauser/load_users.html", ctx)
+            except MicrosoftGraphAPIError as e:
+                self.message_user(request, str(e), messages.ERROR)
             except Exception as e:
                 logger.exception(e)
-                self.message_user(request, str(e), messages.ERROR)
+                raise
+                self.message_user(request, "UnHandled Error", messages.ERROR)
+
         ctx["form"] = form
         return TemplateResponse(request, "admin/aurorauser/load_users.html", ctx)

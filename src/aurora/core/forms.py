@@ -1,15 +1,20 @@
 import csv
+from typing import TYPE_CHECKING
 
 from adminactions.api import delimiters, quotes
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.forms import BaseFormSet
+from django.forms.utils import ErrorList
 from django.utils import formats
 from django.utils.translation import gettext as _
 
 from .fields.widgets import JavascriptEditor
 from .version_media import VersionMedia
+
+if TYPE_CHECKING:
+    from .models import CustomFieldType, FormSet
 
 
 class ValidatorForm(forms.ModelForm):
@@ -21,7 +26,7 @@ class Select2Widget(forms.Select):
 
 
 class CustomFieldMixin:
-    custom = None
+    custom: "CustomFieldType"
 
 
 class FlexFormBaseForm(forms.Form):
@@ -79,7 +84,10 @@ class FlexFormBaseForm(forms.Form):
 
 
 class SmartBaseFormSet(BaseFormSet):
-    def non_form_errors(self):
+    fs: "FormSet"
+    required: bool
+
+    def non_form_errors(self) -> "ErrorList":
         return super().non_form_errors()
 
     def clean(self):
@@ -114,7 +122,11 @@ class SmartBaseFormSet(BaseFormSet):
         )
 
 
-class DateFormatsForm(forms.Form):
+class FormWithDefault(forms.Form):
+    defaults: dict[str, str | bool | int]
+
+
+class DateFormatsForm(FormWithDefault, forms.Form):
     defaults = {
         "date_format": formats.get_format("DATE_FORMAT"),
         "datetime_format": formats.get_format("DATETIME_FORMAT"),
@@ -125,7 +137,7 @@ class DateFormatsForm(forms.Form):
     time_format = forms.CharField(label=_("Time format"), required=False)
 
 
-class CSVOptionsForm(forms.Form):
+class CSVOptionsForm(FormWithDefault, forms.Form):
     defaults = {
         "date_format": "d/m/Y",
         "datetime_format": "N j, Y, P",

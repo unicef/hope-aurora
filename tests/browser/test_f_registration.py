@@ -1,5 +1,3 @@
-from unittest.mock import Mock
-
 import pytest
 from django import forms
 from testutils.selenium import AuroraTestBrowser
@@ -8,17 +6,6 @@ from aurora.core.fields import CompilationTimeField
 from aurora.registration.models import Record
 
 pytestmark = pytest.mark.selenium
-
-
-@pytest.fixture
-def mock_state():
-    from django.contrib.auth.models import AnonymousUser
-
-    from aurora.state import state
-
-    state.request = Mock(user=AnonymousUser())
-    yield
-    state.request = None
 
 
 @pytest.fixture

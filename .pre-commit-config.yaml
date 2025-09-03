@@ -1,30 +1,30 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: cef0300fd0fc4d2a87a85fa2093c6b283ea36f4b  # frozen: v5.0.0
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
 
-  -   repo: https://github.com/python-jsonschema/check-jsonschema
-      rev: 0.31.2
-      hooks:
-          -   id: check-github-workflows
-              args: [ "--verbose" ]
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 06e4cc849d03f3a59ca223a4046f4bb5bb2aba6d  # frozen: 0.33.0
+    hooks:
+      - id: check-github-workflows
+        args: [ "--verbose" ]
 
-  -   repo: https://github.com/tox-dev/tox-ini-fmt
-      rev: "1.5.0"
-      hooks:
-          -   id: tox-ini-fmt
-              args: [ "-p", "lint" ]
+  - repo: https://github.com/tox-dev/tox-ini-fmt
+    rev: "e732f664aa3fd7b32cce3de8abbac43f4c3c375d"  # frozen: 1.5.0
+    hooks:
+      - id: tox-ini-fmt
+        args: [ "-p", "lint" ]
 
-  -   repo: https://github.com/tox-dev/pyproject-fmt
-      rev: "v2.5.1"
-      hooks:
-          -   id: pyproject-fmt
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: "57b6ff7bf72affdd12c7f3fd6de761ba18a33b3a"  # frozen: v2.5.1
+    hooks:
+      - id: pyproject-fmt
 
-  -   repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: "v0.9.9"
-      hooks:
-          -   id: ruff-format
-          -   id: ruff
-              args: [ "--fix", "--unsafe-fixes", "--exit-non-zero-on-fix" ]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: "f0fe93c067104b76ffb58852abe79673a8429bd1"  # frozen: v0.11.8
+    hooks:
+      - id: ruff-format
+      - id: ruff
+        args: [ "--fix", "--unsafe-fixes", "--exit-non-zero-on-fix" ]

@@ -1,66 +1,35 @@
 import logging
-import posixpath
 
 from admin_extra_buttons.decorators import button, view
-
-# Check if django-reversion is installed and use reversions' VersionAdmin
-# as the base admin class if yes
-from admin_sync.mixin import PublishMixin, SyncMixin
+from admin_sync.mixins import SyncModelAdmin
 from adminfilters.mixin import AdminFiltersMixin
 from adminfilters.value import ValueFilter
 from django import forms
 from django.contrib import admin
 from django.core.exceptions import ImproperlyConfigured
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
-from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
 
-from dbtemplates.conf import settings
-from dbtemplates.models import Template, add_template_to_cache, remove_cached_template
-from dbtemplates.utils.template import check_template_syntax
+from .conf import settings
+from .models import Template, add_template_to_cache, remove_cached_template
+from .utils.template import check_template_syntax
+from .widgets import HtmlEditor
 
 if settings.DBTEMPLATES_USE_REVERSION:
     from reversion.admin import VersionAdmin as TemplateModelAdmin
 else:
     from django.contrib.admin import ModelAdmin as TemplateModelAdmin  # noqa
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from django.db.models import QuerySet
+
+
 logger = logging.getLogger(__name__)
 
-
-class CodeMirrorTextArea(forms.Textarea):
-    """A custom widget for the CodeMirror browser editor to be used with the content field of the Template model."""
-
-    class Media:
-        css = {"screen": [posixpath.join(settings.DBTEMPLATES_MEDIA_PREFIX, "css/editor.css")]}
-        js = [posixpath.join(settings.DBTEMPLATES_MEDIA_PREFIX, "js/codemirror.js")]
-
-    def render(self, name, value, attrs=None, renderer=None):
-        result = []
-        result.append(super().render(name, value, attrs))
-        result.append(
-            f"""<script type="text/javascript">
-  var editor = CodeMirror.fromTextArea(document.getElementById('id_{name}'), {{
-    path: "{settings.DBTEMPLATES_MEDIA_PREFIX}js/",
-    parserfile: "parsedjango.js",
-    stylesheet: "{settings.DBTEMPLATES_MEDIA_PREFIX}css/django.css",
-    continuousScanning: 500,
-    height: "40.2em",
-    tabMode: "shift",
-    indentUnit: 4,
-    lineNumbers: true
-  }});
-</script>
-"""
-        )
-        return mark_safe("".join(result))  # noqa: S308
-
-
-if settings.DBTEMPLATES_USE_CODEMIRROR:
-    TemplateContentTextArea = CodeMirrorTextArea
-else:
-    TemplateContentTextArea = forms.Textarea
 
 if settings.DBTEMPLATES_AUTO_POPULATE_CONTENT:
     content_help_text = _(
@@ -76,21 +45,12 @@ if settings.DBTEMPLATES_USE_CODEMIRROR and settings.DBTEMPLATES_USE_TINYMCE:
         "You may use either CodeMirror or TinyMCE with dbtemplates, not both. Please disable one of them."
     )
 
-if settings.DBTEMPLATES_USE_TINYMCE:
-    from tinymce.widgets import AdminTinyMCE
-
-    TemplateContentTextArea = AdminTinyMCE
-elif settings.DBTEMPLATES_USE_REDACTOR:
-    from redactor.widgets import RedactorEditor
-
-    TemplateContentTextArea = RedactorEditor
-
 
 class TemplateAdminForm(forms.ModelForm):
     """Custom AdminForm to make the content textarea wider."""
 
     content = forms.CharField(
-        widget=TemplateContentTextArea(attrs={"rows": "24"}),
+        widget=HtmlEditor(attrs={"rows": "24"}),
         help_text=content_help_text,
         required=False,
     )
@@ -100,7 +60,7 @@ class TemplateAdminForm(forms.ModelForm):
         fields = ("name", "content", "sites", "creation_date", "last_changed")
 
 
-class TemplateAdmin(SyncMixin, AdminFiltersMixin, PublishMixin, TemplateModelAdmin):
+class TemplateAdmin(SyncModelAdmin, AdminFiltersMixin, TemplateModelAdmin):
     form = TemplateAdminForm
     fieldsets = (
         (
@@ -142,7 +102,7 @@ class TemplateAdmin(SyncMixin, AdminFiltersMixin, PublishMixin, TemplateModelAdm
     actions = ["invalidate_cache", "repopulate_cache", "check_syntax"]
     change_form_template = "admin/dbtemplates/template/change_form.html"
 
-    def invalidate_cache(self, request, queryset):
+    def invalidate_cache(self, request: "HttpRequest", queryset: "QuerySet") -> None:
         for template in queryset:
             remove_cached_template(template)
         count = queryset.count()
@@ -155,7 +115,7 @@ class TemplateAdmin(SyncMixin, AdminFiltersMixin, PublishMixin, TemplateModelAdm
 
     invalidate_cache.short_description = _("Invalidate cache of selected templates")
 
-    def repopulate_cache(self, request, queryset):
+    def repopulate_cache(self, request: "HttpRequest", queryset: "QuerySet") -> None:
         for template in queryset:
             add_template_to_cache(template)
         count = queryset.count()
@@ -168,7 +128,7 @@ class TemplateAdmin(SyncMixin, AdminFiltersMixin, PublishMixin, TemplateModelAdm
 
     repopulate_cache.short_description = _("Repopulate cache with selected templates")
 
-    def check_syntax(self, request, queryset):
+    def check_syntax(self, request: "HttpRequest", queryset: "QuerySet") -> None:
         errors = []
         for template in queryset:
             valid, error = check_template_syntax(template)
@@ -193,28 +153,29 @@ class TemplateAdmin(SyncMixin, AdminFiltersMixin, PublishMixin, TemplateModelAdm
 
     check_syntax.short_description = _("Check template syntax")
 
-    def site_list(self, template):
+    def site_list(self, template: str) -> str:
         return ", ".join([site.name for site in template.sites.all()])
 
     site_list.short_description = _("sites")
 
-    def check_publish_permission(self, request, obj=None):
+    def check_publish_permission(self, request: "HttpRequest", obj: Template | None = None) -> bool:
         return True
 
-    def check_sync_permission(self, request, obj=None):
+    def check_sync_permission(self, request: "HttpRequest", obj: Template | None = None) -> bool:
         return True
 
     @view()
-    def xrender(self, request, pk):
-        obj = self.get_object(request, pk)
-        from django.template import Context, Template
+    def xrender(self, request: "HttpRequest", pk: str) -> HttpResponse:
+        obj: Template = self.get_object(request, pk)
+        from django.template import Context
+        from django.template import Template as DjangoTemplate
 
-        tpl = Template(obj.content)
+        tpl = DjangoTemplate(obj.content)
         content = tpl.render(Context({}))
         return HttpResponse(content)
 
     @button()
-    def preview(self, request, pk):
+    def preview(self, request: "HttpRequest", pk: str) -> HttpResponse:
         ctx = self.get_common_context(request, pk, title="Preview", preview_template=True)
         return render(request, "admin/dbtemplates/template/preview.html", ctx)
 

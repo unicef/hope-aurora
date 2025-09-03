@@ -4,6 +4,8 @@ import json
 from django import forms
 from django.conf import settings
 
+from .mixins import ConfigurableSmartField
+
 
 class LocationWidget(forms.HiddenInput):
     template_name = "django/forms/widgets/location.html"
@@ -25,7 +27,7 @@ class LocationWidget(forms.HiddenInput):
         )
 
 
-class LocationField(forms.CharField):
+class LocationField(ConfigurableSmartField, forms.CharField):
     widget = LocationWidget
 
     def __init__(self, *, max_length=None, min_length=None, strip=True, empty_value="", **kwargs):

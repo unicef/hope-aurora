@@ -13,11 +13,6 @@ class TranslationForm(LanguageForm):
         ("1", "Only Missing"),
         ("2", "All"),
     ]
-    translate = forms.ChoiceField(
-        widget=forms.RadioSelect,
-        choices=CHOICES,
-        help_text="automatically create initial translations using online services",
-    )
 
 
 class ImportForm(forms.Form):
@@ -25,7 +20,7 @@ class ImportForm(forms.Form):
 
 
 class TemplateForm(forms.Form):
-    locale = forms.ChoiceField(choices=(["-", _("Any Language")],) + settings.LANGUAGES)
+    locale = forms.ChoiceField(choices=(("-", _("Any Language")),) + settings.LANGUAGES)
 
 
 class ImportLanguageForm(forms.Form):

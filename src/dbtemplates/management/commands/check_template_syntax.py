@@ -7,7 +7,7 @@ from dbtemplates.utils.template import check_template_syntax
 class Command(BaseCommand):
     help = "Ensures templates stored in the database don't have syntax errors."
 
-    def handle(self, **options):
+    def handle(self, **options) -> None:
         errors = []
         for template in Template.objects.all():
             valid, error = check_template_syntax(template)

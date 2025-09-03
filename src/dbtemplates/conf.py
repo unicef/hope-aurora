@@ -15,7 +15,7 @@ class DbTemplatesConf(AppConf):
     MEDIA_PREFIX = None
     CACHE_BACKEND = None
 
-    def configure_media_prefix(self, value):
+    def configure_media_prefix(self, value: bool) -> bool:
         if value is None:
             base_url = getattr(settings, "STATIC_URL", None)
             if base_url is None:
@@ -23,7 +23,7 @@ class DbTemplatesConf(AppConf):
             value = posixpath.join(base_url, "dbtemplates/")
         return value
 
-    def configure_cache_backend(self, value):
+    def configure_cache_backend(self, value: bool) -> bool:
         # If we are on Django 1.3 AND using the new CACHES setting..
         if hasattr(settings, "CACHES"):
             if "dbtemplates" in settings.CACHES:
@@ -33,21 +33,21 @@ class DbTemplatesConf(AppConf):
             raise ImproperlyConfigured("Please upgrade to one of the supported backends as defined in the Django docs.")
         return value
 
-    def configure_use_reversion(self, value):
+    def configure_use_reversion(self, value: bool) -> bool:
         if value and "reversion" not in settings.INSTALLED_APPS:
             raise ImproperlyConfigured(
                 "Please add 'reversion' to your INSTALLED_APPS setting to make use of it in dbtemplates."
             )
         return value
 
-    def configure_use_tinymce(self, value):
+    def configure_use_tinymce(self, value: bool) -> bool:
         if value and "tinymce" not in settings.INSTALLED_APPS:
             raise ImproperlyConfigured(
                 "Please add 'tinymce' to your INSTALLED_APPS setting to make use of it in dbtemplates."
             )
         return value
 
-    def configure_use_redactor(self, value):
+    def configure_use_redactor(self, value: bool) -> bool:
         if value and "redactor" not in settings.INSTALLED_APPS:
             raise ImproperlyConfigured(
                 "Please add 'redactor' to your INSTALLED_APPS setting to make use of it in dbtemplates."

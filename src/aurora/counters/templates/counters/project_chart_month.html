@@ -1,0 +1,34 @@
+{% extends "counters/project_index.html" %}{% load static %}
+{% block breadcrumbs %}
+    {{ block.super }}
+    {#    &gt;<a href="{% url "charts:org-index" organization.slug %}">{{ organization }}</a>#}
+    > {{ registration }}
+{% endblock breadcrumbs %}
+
+{% block charts-content %}
+    <div class="min-h-screen flex w-wull bg-gray-100 pb-10 charting">
+        {% block info %}
+            <div class="w-full m-20 lg:w-1/2 mt-5">
+                <div><strong>Started on : </strong>{{ registration.start }}</div>
+                <div><strong>Until: </strong>{{ registration.end|default_if_none:"Running" }}</div>
+                <div><strong>Status: </strong>{% if registration.active %}Active{% else %}Paused{% endif %}</div>
+                {% block chart %}
+                    <div class="my-5">
+                        <button class="button" id="prev"><<</button>
+                        <button class="button" id="next"> >></button>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="myChart" style="width: 100%;height: 100%"></canvas>
+                    </div>
+                {% endblock chart %}
+            </div>
+        {% endblock info %}
+        {% block data %}
+            <script id="counters" data-registration={{ registration.pk }} data-token="{{ token }}"
+                    data-month="{{ month }}" data-year="{{ year }}"
+                    data-url="{% url "charts:monthly_data" registration.project.organization.slug registration.project.pk registration.pk %}?m={{ year }}-{{ month }}-1"
+                    src="{% static "counters/monthly.js" %}"></script>
+        {% endblock data %}
+
+    </div>
+{% endblock charts-content %}

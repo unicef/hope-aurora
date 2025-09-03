@@ -1,9 +1,14 @@
 import sys
+from typing import TYPE_CHECKING
 
 from django.contrib.sites.models import Site
 from django.core.management.base import BaseCommand, CommandError
 
 from dbtemplates.models import Template
+
+if TYPE_CHECKING:
+    from argparse import ArgumentParser
+
 
 TEMPLATES = {
     404: """
@@ -28,7 +33,7 @@ TEMPLATES = {
 class Command(BaseCommand):
     help = "Creates the default error templates as database template objects."
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: "ArgumentParser") -> None:
         parser.add_argument(
             "-f",
             "--force",
@@ -38,7 +43,7 @@ class Command(BaseCommand):
             help="overwrite existing database templates",
         )
 
-    def handle(self, **options):
+    def handle(self, **options) -> None:
         force = options.get("force")
         try:
             site = Site.objects.get_current()

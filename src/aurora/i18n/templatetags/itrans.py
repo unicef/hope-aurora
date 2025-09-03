@@ -1,10 +1,11 @@
 from decimal import Decimal
+from typing import Any
 
-from django.template import Library, Node, TemplateSyntaxError, Variable
-from django.template.base import TokenType, render_value_in_context
-from django.template.defaulttags import token_kwargs
+from django.template import Context, Library, Node, TemplateSyntaxError, Variable
+from django.template.base import FilterExpression, Parser, Token, TokenType, render_value_in_context, token_kwargs
 from django.templatetags.static import static
 from django.utils import translation
+from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
 
 from ..engine import translator
@@ -14,8 +15,18 @@ register = Library()
 
 class TranslateNode(Node):
     child_nodelists = ()
+    noop: bool
+    asvar: str | None
+    message_context: FilterExpression | None
+    filter_expression: FilterExpression
 
-    def __init__(self, filter_expression, noop, asvar=None, message_context=None):
+    def __init__(
+        self,
+        filter_expression: FilterExpression,
+        noop: bool,
+        asvar: str | None = None,
+        message_context: FilterExpression | None = None,
+    ) -> None:
         self.noop = noop
         self.asvar = asvar
         self.message_context = message_context
@@ -23,7 +34,7 @@ class TranslateNode(Node):
         if isinstance(self.filter_expression.var, str):
             self.filter_expression.var = Variable("'%s'" % self.filter_expression.var)
 
-    def render(self, context):
+    def render(self, context: Context) -> str:
         self.filter_expression.var.translate = not self.noop
         if self.message_context:
             self.filter_expression.var.message_context = self.message_context.resolve(context)
@@ -48,18 +59,27 @@ class TranslateNode(Node):
 
 
 class BlockTranslateNode(Node):
-    def __init__(
+    extra_context: dict[str, FilterExpression]
+    singular: list[Token]
+    plural: list[Token]
+    countervar: str | None
+    counter: FilterExpression | None
+    message_context: FilterExpression | None
+    trimmed: bool
+    asvar: str | None
+
+    def __init__(  # noqa: PLR0913
         self,
-        extra_context,
-        singular,
-        plural=None,
-        countervar=None,
-        counter=None,
-        message_context=None,
-        trimmed=False,
-        asvar=None,
-        tag_name="blocktranslate",
-    ):
+        extra_context: dict[str, FilterExpression],
+        singular: list[Token],
+        plural: list[Token] | None = None,
+        countervar: str | None = None,
+        counter: FilterExpression | None = None,
+        message_context: FilterExpression | None = None,
+        trimmed: bool = False,
+        asvar: str | None = None,
+        tag_name: str = "blocktranslate",
+    ) -> None:
         self.extra_context = extra_context
         self.singular = singular
         self.plural = plural
@@ -70,7 +90,7 @@ class BlockTranslateNode(Node):
         self.asvar = asvar
         self.tag_name = tag_name
 
-    def render_token_list(self, tokens):
+    def render_token_list(self, tokens: list[Token]) -> tuple[str, list[str]]:
         result = []
         variables = []
         for token in tokens:
@@ -84,17 +104,19 @@ class BlockTranslateNode(Node):
             msg = translation.trim_whitespace(msg)
         return msg, variables
 
-    def render(self, context, nested=False):
+    def render(self, context: Context, nested: bool = False) -> str:  # noqa: C901
         if self.message_context:
             message_context = self.message_context.resolve(context)
         else:
             message_context = None
         # Update() works like a push(), so corresponding context.pop() is at
         # the end of function
+        current_locale = get_language()
+
         context.update({var: val.resolve(context) for var, val in self.extra_context.items()})
         singular, variables = self.render_token_list(self.singular)
         if self.plural and self.countervar and self.counter:
-            count = self.counter.resolve(context)
+            count = int(self.counter.resolve(context))
             if not isinstance(count, Decimal | float | int):
                 raise TemplateSyntaxError("%r argument to %r tag must be a number." % (self.countervar, self.tag_name))
             context[self.countervar] = count
@@ -102,22 +124,23 @@ class BlockTranslateNode(Node):
             if message_context:
                 result = translation.npgettext(message_context, singular, plural, count)
             else:
-                result = translation.ngettext(singular, plural, count)
+                result = translator[current_locale].ngettext(singular, plural, count)
             variables.extend(plural_vars)
         elif message_context:
-            result = translation.pgettext(message_context, singular)
+            result = translator[current_locale][singular]
         else:
-            result = translation.gettext(singular)
+            result = translator[current_locale][singular]
+
         default_value = context.template.engine.string_if_invalid
 
-        def render_value(key):
+        def render_value(key: str) -> str:
             if key in context:
                 val = context[key]
             else:
                 val = default_value % key if "%s" in default_value else default_value
             return render_value_in_context(val, context)
 
-        data = {v: render_value(v) for v in vars}
+        data = {v: translator[current_locale][render_value(v)] for v in variables}
         context.pop()
         try:
             result = result % data
@@ -137,7 +160,7 @@ class BlockTranslateNode(Node):
 
 @register.tag("translate")
 @register.tag("trans")
-def do_translate(parser, token):
+def do_translate(parser: Parser, token: Token) -> TranslateNode:
     bits = token.split_contents()
     if len(bits) < 2:
         raise TemplateSyntaxError("'%s' takes at least one argument" % bits[0])
@@ -192,7 +215,7 @@ def do_translate(parser, token):
 
 @register.tag("blocktranslate")
 @register.tag("blocktrans")
-def do_block_translate(parser, token):  # noqa
+def do_block_translate(parser: Parser, token: Token) -> BlockTranslateNode:  # noqa
     """
     Translate a block of text with parameters.
 
@@ -237,7 +260,8 @@ def do_block_translate(parser, token):  # noqa
 
     options = {}
     remaining_bits = bits[1:]
-    asvar = None
+    asvar: str | None = None
+    value: str | dict | None | FilterExpression | bool
     while remaining_bits:
         option = remaining_bits.pop(0)
         if option in options:
@@ -253,8 +277,8 @@ def do_block_translate(parser, token):  # noqa
         elif option == "context":
             try:
                 value = remaining_bits.pop(0)
-                value = parser.compile_filter(value)
-            except Exception:
+                value: FilterExpression | None = parser.compile_filter(value)  # type: ignore[no-redef]
+            except Exception:  # noqa: BLE001
                 raise TemplateSyntaxError('"context" in %r tag expected exactly one argument.' % bits[0]) from None
         elif option == "trimmed":
             value = True
@@ -271,13 +295,13 @@ def do_block_translate(parser, token):  # noqa
         options[option] = value
 
     if "count" in options:
-        countervar, counter = next(iter(options["count"].items()))
+        countervar, counter = next(iter(options["count"].items()))  # type: ignore[union-attr]
     else:
         countervar, counter = None, None
-    message_context = options.get("context")
-    extra_context = options.get("with", {})
+    message_context: FilterExpression = options.get("context")  # type: ignore[assignment]
+    extra_context: dict[str, FilterExpression] = options.get("with", {})  # type: ignore[assignment]
 
-    trimmed = options.get("trimmed", False)
+    trimmed: bool = options.get("trimmed", False)  # type: ignore[assignment]
 
     singular = []
     plural = []
@@ -314,28 +338,28 @@ def do_block_translate(parser, token):  # noqa
 
 
 @register.filter()
-def md5(value, lang):
+def md5(value: str, lang: str) -> str:
     from aurora.i18n.models import Message
 
     return Message.get_md5(value, lang)
 
 
 @register.filter()
-def msgcode(value):
+def msgcode(value: str) -> str:
     from aurora.i18n.models import Message
 
     return Message.get_md5(str(value))
 
 
 @register.filter()
-def strip(value):
+def strip(value: str) -> str:
     return str(value).strip()
 
 
 @register.filter()
-def bool_icon(value):
+def bool_icon(value: Any) -> str:
     if bool(value):
         img = static("admin/img/icon-yes.svg")
     else:
         img = static("admin/img/icon-no.svg")
-    return f'<img src="{img}" alt="{str(bool(value))}">'
+    return mark_safe(f'<img src="{img}" alt="{str(bool(value))}">')  # noqa: S308

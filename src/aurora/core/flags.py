@@ -1,6 +1,7 @@
 from adminactions.utils import get_attr
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.http import HttpRequest
 from flags import conditions
 from flags.conditions import validate_parameter
 
@@ -22,12 +23,12 @@ def debug(param, *args, **kwargs):
 
 
 @conditions.register("localhost")
-def localhost(path, request=None, **kwargs):
+def localhost(path, request: HttpRequest, **kwargs):
     return request.get_host() in ["127.0.0.1", "localhost"]  # noqa: E713
 
 
 @conditions.register("user field")
-def user_field(param_name, request=None, **kwargs):
+def user_field(param_name, request=HttpRequest, **kwargs):
     try:
         param, value = param_name.split("=")
         return str(get_attr(request.user, param, None)) == value

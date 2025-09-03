@@ -1,9 +1,11 @@
+from typing import Iterable
+
 from concurrency.fields import AutoIncVersionField
 from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 from django.db.models import JSONField
+from django.db.models.base import ModelBase
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from natural_keys import NaturalKeyModel
@@ -11,7 +13,11 @@ from natural_keys import NaturalKeyModel
 from aurora.core.models import Organization, Project
 from aurora.registration.models import Registration
 
-User = get_user_model()
+
+class User(AbstractUser):
+    class Meta(AbstractUser.Meta):  # type: ignore[name-defined]
+        swappable = "AUTH_USER_MODEL"
+        ordering = ("username",)
 
 
 class UserProfile(models.Model):
@@ -22,15 +28,17 @@ class UserProfile(models.Model):
     custom_fields = JSONField(default=dict, blank=True)
     job_title = models.CharField(max_length=255, blank=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.user}"
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs) -> None:
         super().save(*args, **kwargs)
 
 
-class AuroraRoleManager(models.Manager):
-    def get_by_natural_key(self, org_slug, prj_slug, registration_slug, username, group):
+class AuroraRoleManager(models.Manager["AuroraRole"]):
+    def get_by_natural_key(
+        self, org_slug: str, prj_slug: str, registration_slug: str, username: str, group: str
+    ) -> "AuroraRole":
         if org_slug:
             flt = {"organization__slug": org_slug}
         elif prj_slug:
@@ -45,7 +53,10 @@ class AuroraRoleManager(models.Manager):
 class AuroraRole(NaturalKeyModel, models.Model):
     version = AutoIncVersionField()
     last_update_date = models.DateTimeField(auto_now=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
 
     organization = models.ForeignKey(
         Organization,
@@ -74,18 +85,26 @@ class AuroraRole(NaturalKeyModel, models.Model):
         verbose_name = _("role")
         verbose_name_plural = _("roles")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.user} -> {self.role} in {self.project}/{self.organization}"
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+    def save(
+        self,
+        force_insert: bool | tuple[ModelBase, ...] = False,
+        force_update: bool = False,
+        using: str | None = None,
+        update_fields: Iterable[str] | None = None,
+    ) -> None:
         if self.registration:
             self.project = self.registration.project
             self.organization = self.project.organization
         elif self.project:
             self.organization = self.project.organization
-        return super().save(force_insert, force_update, using, update_fields)
+        return super().save(
+            force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields
+        )
 
-    def natural_key(self):
+    def natural_key(self) -> tuple[str | None, ...]:
         if self.organization:
             return (
                 self.organization.slug,
@@ -105,13 +124,6 @@ class AuroraRole(NaturalKeyModel, models.Model):
                 self.role.name,
             )
         return (None, None, None, self.user.username, self.role.name)
-
-
-class AuroraUser(User):
-    class Meta:
-        proxy = True
-        verbose_name = _("user")
-        verbose_name_plural = _("users")
 
 
 class AuroraGroup(Group):

@@ -1,10 +1,14 @@
+from typing import Any
+
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.forms import Media
 from django.http import Http404
 from django.utils.functional import cached_property
 from django.views.generic import TemplateView
 from sentry_sdk import set_tag
 
+from ...core.version_media import VersionMedia
 from ..models import Registration
 
 
@@ -16,13 +20,33 @@ class RegistrationDataView(PermissionRequiredMixin, TemplateView):
     ]
     raise_exception = False
 
-    def get_context_data(self, **kwargs):
+    @property
+    def media(self) -> Media:
+        extra = "" if settings.DEBUG else ".min"
+        return VersionMedia(
+            css={
+                "all": (
+                    "datatable.css",
+                    "ui.jqgrid.min.css",
+                )
+            },
+            js=[
+                "admin/js/vendor/jquery/jquery%s.js" % extra,
+                "admin/js/jquery.init.js",
+                "jquery.compat%s.js" % extra,
+                "js/jquery.jqgrid.min.js",
+                "js/datatable%s.js" % extra,
+            ],
+        )
+
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
         kwargs["registration"] = self.registration
         kwargs["drf_page_size"] = settings.REST_FRAMEWORK["PAGE_SIZE"]
+        kwargs["media"] = self.media
         return super().get_context_data(**kwargs)
 
     @cached_property
-    def registration(self):
+    def registration(self) -> "Registration":
         if "slug" in self.kwargs:
             filters = {"slug": self.kwargs["slug"]}
         elif "pk" in self.kwargs:

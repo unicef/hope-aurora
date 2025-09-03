@@ -3,7 +3,21 @@ from typing import Generator
 import pytest
 from seleniumbase import config as sb_config
 from seleniumbase.core import session_helper
+from testutils.factories import ValidatorFactory
 from testutils.selenium import AuroraSeleniumTC
+
+from aurora.core.models import Validator
+from aurora.state import State
+
+
+@pytest.fixture
+def mock_state(rf) -> Generator[State, None, None]:
+    from aurora.state import state
+
+    state.request = rf.get("/")
+    # -state.user = AnonymousUser()
+    yield state
+    state.request = None
 
 
 @pytest.fixture
@@ -42,3 +56,20 @@ def browser(live_server, request) -> Generator[AuroraSeleniumTC, None, None]:
         if sb._needs_tearDown:
             sb.tearDown()
             sb._needs_tearDown = False
+
+
+@pytest.fixture
+def birth_after_1900(db):
+    code = """
+var limit1 = Date.parse("1900-01-01");
+var today = new Date();
+var dt = Date.parse(value);
+if (dt < limit1)
+    "the date should be after 1900";
+else
+    if (dt > today)
+        "the date should be before today";
+    else
+        true
+    """
+    return ValidatorFactory(name="birth_after_1900", target=Validator.FIELD, active=True, code=code)

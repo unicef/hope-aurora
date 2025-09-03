@@ -1,16 +1,21 @@
 import logging
+from typing import TYPE_CHECKING
 
 from admin_extra_buttons.decorators import button
 from django import forms
 from django.contrib.admin import register
 from django.core.cache import caches
-from django.db.models import JSONField
+from django.db.models import JSONField, QuerySet
 from django.db.models.functions import Collate
 from jsoneditor.forms import JSONEditor
 from smart_admin.modeladmin import SmartModelAdmin
 
 from ..models import CustomFieldType
 from ..utils import render
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest, HttpResponse
+
 
 logger = logging.getLogger(__name__)
 
@@ -29,11 +34,11 @@ class CustomFieldTypeAdmin(SmartModelAdmin):
         JSONField: {"widget": JSONEditor},
     }
 
-    def get_queryset(self, request):
+    def get_queryset(self, request: "HttpRequest") -> "QuerySet":
         return super().get_queryset(request).annotate(name_deterministic=Collate("name", "und-x-icu"))
 
-    @button()
-    def test(self, request, pk):
+    @button()  # type: ignore[arg-type]
+    def test(self, request: "HttpRequest", pk: str) -> "HttpResponse":
         ctx = self.get_common_context(request, pk)
         fld = ctx["original"]
         field_type = fld.base_type
@@ -42,7 +47,7 @@ class CustomFieldTypeAdmin(SmartModelAdmin):
         form_class_attrs = {
             "sample": field,
         }
-        form_class = type(forms.Form)("TestForm", (forms.Form,), form_class_attrs)
+        form_class = type("TestForm", (forms.Form,), form_class_attrs)
 
         if request.method == "POST":
             form = form_class(request.POST)

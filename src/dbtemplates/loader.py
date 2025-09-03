@@ -1,4 +1,5 @@
 import logging
+from typing import Iterable
 
 from django.contrib.sites.models import Site
 from django.db import router
@@ -28,24 +29,24 @@ class Loader(BaseLoader):
 
     is_usable = True
 
-    def get_template_sources(self, template_name, template_dirs=None):
+    def get_template_sources(self, template_name: str) -> Iterable[Origin]:
         yield Origin(
             name=template_name,
             template_name=template_name,
             loader=self,
         )
 
-    def get_contents(self, origin):
+    def get_contents(self, origin: Origin) -> str:
         content, _ = self._load_template_source(origin.template_name)
         return content
 
-    def _load_and_store_template(self, template_name, cache_key, site, **params):
+    def _load_and_store_template(self, template_name: str, cache_key: str, site: "Site", **params) -> tuple[str, str]:
         template = Template.objects.get(name__exact=template_name, active=True, **params)
         db = router.db_for_read(Template, instance=template)
         display_name = "dbtemplates:%s:%s:%s" % (db, template_name, site.domain)
         return set_and_return(cache_key, template.content, display_name)
 
-    def _load_template_source(self, template_name, template_dirs=None):
+    def _load_template_source(self, template_name: str) -> tuple[str, str]:
         # The logic should work like this:
         # * Try to find the template in the cache. If found, return it.
         # * Now check the cache if a lookup for the given template
@@ -58,6 +59,8 @@ class Loader(BaseLoader):
         # * If all of the above steps have failed we generate a new key
         #   in the cache indicating that queries failed, with the current
         #   timestamp.
+        if template_name.startswith("debug_toolbar/"):
+            raise TemplateDoesNotExist(template_name)
         site = Site.objects.get_current()
         cache_key = get_cache_key(template_name)
         if cache:

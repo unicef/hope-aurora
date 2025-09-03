@@ -116,10 +116,6 @@
   list-style-position: inside;
 }
 
-body {
-  font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
-  font-size: 10pt;
-}
 body header.header {
   background-color: white;
   width: 100%;
@@ -212,7 +208,7 @@ ul.errorlist li {
   border-color: rgba(252, 129, 129, var(--border-opacity));
 }
 #formContainer .formset .formset-add-row .formset-delete-row .formset-delete-button:hover, #formContainer .formset .formset-add-row .formset-delete-row .formset-delete-button:active {
-  box-shadow: 0 1px 3px 0 #fc8181, 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px 0 rgb(252, 129, 129), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   outline: 2px solid transparent;
   outline-offset: 2px;
 }

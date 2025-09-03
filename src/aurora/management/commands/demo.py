@@ -19,7 +19,7 @@ class NotRunningInTTYError(Exception):
 
 
 @click.command()  # noqa: C901
-def demo(**kwargs):
+def demo(**kwargs) -> None:
     from aurora.core.models import FlexForm, Validator
     from aurora.registration.models import Registration
 

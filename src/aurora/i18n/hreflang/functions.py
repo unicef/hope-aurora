@@ -1,13 +1,12 @@
-from functools import lru_cache
-
 from django.conf import settings
-from django.urls.base import resolve
 from django.urls.base import reverse as lang_implied_reverse
 from django.urls.exceptions import NoReverseMatch
-from django.utils.translation import activate, deactivate, get_language, override
+from django.utils.translation import deactivate, get_language, override
+
+from aurora.i18n.engine import translator
 
 
-def reverse(view_name, lang=None, use_lang_prefix=True, *args, **kwargs):
+def reverse(view_name: str, lang: str = None, use_lang_prefix: bool = True, *args, **kwargs) -> str:
     """
     Similar to django.core.urlresolvers.reverse except for the parameters.
 
@@ -24,7 +23,7 @@ def reverse(view_name, lang=None, use_lang_prefix=True, *args, **kwargs):
             return lang_implied_reverse(view_name, args=args, kwargs=kwargs)
     cur_language = get_language()
     if use_lang_prefix:
-        activate(lang)
+        translator.activate(lang)
     else:
         deactivate()
     url = lang_implied_reverse(view_name, args=args, kwargs=kwargs)
@@ -32,51 +31,5 @@ def reverse(view_name, lang=None, use_lang_prefix=True, *args, **kwargs):
         if not url.startswith(f"/{settings.LANGUAGE_CODE}"):
             raise NoReverseMatch(f'could not find reverse match for "{view_name}" with language "{lang}"')
         url = url[1 + len(settings.LANGUAGE_CODE):]  # fmt: skip
-    activate(cur_language)
+    translator.activate(cur_language)
     return url
-
-
-def get_hreflang_info(path, default=True):
-    """
-    Return a list of (code, url) tuples for all language versions.
-
-    :param path: Current path (request.path).
-    :param default: Include the default landing page (x-default without language code).
-    """
-    reverse_match = resolve(path)
-    info = []
-    if default:
-        info.append(
-            (
-                "x-default",
-                reverse(
-                    reverse_match.view_name,
-                    use_lang_prefix=False,
-                    kwargs=reverse_match.kwargs,
-                ),
-            )
-        )
-    return [
-        (
-            lang,
-            reverse(
-                reverse_match.view_name,
-                lang=lang,
-                use_lang_prefix=True,
-                kwargs=reverse_match.kwargs,
-            ),
-        )
-        for lang in language_codes()
-    ]
-
-
-@lru_cache
-def languages():
-    """Get language and regionale codes and names of all languages that are supported as a dictionary."""
-    return dict(settings.LANGUAGES)
-
-
-@lru_cache
-def language_codes():
-    """Get language with regionale codes of all languages that are supported."""
-    return languages().keys()

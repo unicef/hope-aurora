@@ -1,19 +1,15 @@
 import uuid
-from urllib.parse import urlencode, urlparse
 
-from environ import Env
 from smart_env import SmartEnv
 
-from aurora.core.flags import parse_bool
 
-
-def parse_bookmarks(value):
+def parse_bookmarks(value: str) -> str:
     return "".join(value.split(r"\n"))
 
 
-def parse_emails(value):
+def parse_emails(value: str) -> list[tuple[str, str]]:
     admins = value.split(",")
-    return [(a.split("@")[0].strip(), a.strip()) for a in admins]
+    return [(a.split("@")[0].strip(), a.strip()) for a in admins if a.strip()]
 
 
 OPTIONS = {
@@ -23,9 +19,7 @@ OPTIONS = {
     "ADMIN_SYNC_REMOTE_ADMIN_URL": (str, ""),
     "ADMIN_SYNC_REMOTE_SERVER": (str, ""),
     "ALLOWED_HOSTS": (list, ["*"]),
-    "AUTHENTICATION_BACKENDS": (list, []),
     "AZURE_AUTHORITY_HOST": (str, ""),
-    "AZURE_CLIENT_ID": (str, ""),
     "AZURE_CLIENT_KEY": (str, ""),
     "AZURE_CLIENT_SECRET": (str, ""),
     "AZURE_POLICY_NAME": (str, ""),
@@ -33,6 +27,7 @@ OPTIONS = {
     "AZURE_TENANT_KEY": (str, ""),
     "AZURE_TRANSLATOR_KEY": (str, ""),
     "AZURE_TRANSLATOR_LOCATION": (str, ""),
+    "BROKER_URL": (str, "redis://broker-url:6379"),
     "CACHE_DEFAULT": (str, "locmemcache://", "", True),
     "CAPTCHA_TEST_MODE": (bool, "false"),
     "CHANNEL_LAYER": (str, "locmemcache://", True),
@@ -58,6 +53,9 @@ OPTIONS = {
     "EMAIL_USE_LOCALTIME": (bool, False),
     "EMAIL_USE_SSL": (bool, False),
     "EMAIL_USE_TLS": (bool, True),
+    "EXTRA_AUTHENTICATION_BACKENDS": (list, []),
+    "EXTRA_INSTALLED_APPS": (list, []),
+    "EXTRA_MIDDLEWARES": (list, []),
     "FERNET_KEY": (str, "", uuid.uuid4().hex, True),
     "FRONT_DOOR_ALLOWED_PATHS": (str, ".*"),
     "FRONT_DOOR_ENABLED": (bool, False),
@@ -77,10 +75,10 @@ OPTIONS = {
     "MIGRATION_LOCK_KEY": (str, "django-migrations"),
     "PRODUCTION_SERVER": (str, ""),
     "PRODUCTION_TOKEN": (str, ""),
-    "REDIS_CONNSTR": (str, ""),
     "ROOT_KEY": (str, ""),
     "ROOT_TOKEN": (str, ""),
     "SECRET_KEY": (str, "", "", True),
+    "SECURE_HSTS_PRELOAD": (bool, False, "", True),
     "SENTRY_DSN": (str, ""),
     "SENTRY_ENVIRONMENT": (str, ""),
     "SENTRY_PROJECT": (str, ""),
@@ -93,7 +91,8 @@ OPTIONS = {
     "SMART_ADMIN_BOOKMARKS": (parse_bookmarks, ""),
     "STATICFILES_STORAGE": (
         str,
-        "aurora.web.storage.ForgivingManifestStaticFilesStorage",
+        # "aurora.web.storage.ForgivingManifestStaticFilesStorage",
+        "django.contrib.staticfiles.storage.StaticFilesStorage",
     ),
     "STATIC_ROOT": (str, "/tmp/static/"),  # noqa
     "STATIC_URL": (str, "static/"),
@@ -102,25 +101,4 @@ OPTIONS = {
     "USE_X_FORWARDED_HOST": (bool, "false"),
 }
 
-
-class SmartEnv2(SmartEnv):
-    def cache_url(self, var=Env.DEFAULT_CACHE_ENV, default=Env.NOTSET, backend=None):
-        v = self.str(var, default)
-        if v.startswith("redisraw://"):
-            scheme, string = v.split("redisraw://")
-            host, *options = string.split(",")
-            config = dict([v.split("=", 1) for v in options])
-            if parse_bool(config.get("ssl", "false")):
-                scheme = "rediss"
-            else:
-                scheme = "redis"
-            auth = ""
-            credentials = [config.pop("user", ""), config.pop("password", "")]
-            if credentials[0] or credentials[1]:
-                auth = f"{':'.join(credentials)}@"
-            new_url = f"{scheme}://{auth}{host}/?{urlencode(config)}"
-            return self.cache_url_config(urlparse(new_url), backend=backend)
-        return super().cache_url(var, default, backend)
-
-
-env = SmartEnv2(**OPTIONS)
+env = SmartEnv(**OPTIONS)

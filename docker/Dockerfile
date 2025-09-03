@@ -62,7 +62,7 @@ RUN apt-get update && \
     unzip /chromedriver/chromedriver* -d /usr/local/bin/ && \
     rm -rf /chromedriver
 
-RUN pip install --no-cache-dir uv uwsgi
+RUN pip install --no-cache-dir uv uwsgi circus
 
 # ------- tests -------
 FROM builder AS tests
@@ -103,7 +103,7 @@ COPY src /app/src/
 ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONPATH=""\
+    PYTHONPATH="" \
     UV_PROJECT_ENVIRONMENT=/venv \
     VIRTUAL_ENV=/venv
 
@@ -144,12 +144,12 @@ ADD uv.lock README.md MANIFEST.in pyproject.toml /app/
 ADD src /app/src/
 
 COPY --from=production /venv /venv
-COPY --from=builder /usr/local/bin/uwsgi /usr/local/bin/uv /usr/local/bin/
+COPY --from=builder /usr/local/bin/uwsgi /usr/local/bin/uv /usr/local/bin/circus* /usr/local/bin/
 
 RUN --mount=type=cache,target=/root/.uv-cache \
-    uv --cache-dir=/root/.uv-cache pip install --no-deps . \
-    && rm -fr /app/*
-
+    uv build \
+    && uv --cache-dir=/root/.uv-cache pip install --no-deps dist/*.whl \
+    && rm -fr /app/* dist/* \
 
 EXPOSE 8000
 ENTRYPOINT exec entrypoint.sh "$0" "$@"
@@ -161,7 +161,7 @@ LABEL cheksum="$CHECKSUM"
 
 LABEL org.opencontainers.image.authors="hope@unicef.org"
 LABEL org.opencontainers.image.created="$BUILD_DATE"
-LABEL org.opencontainers.image.description="Bitcaster"
+LABEL org.opencontainers.image.description="Aurora"
 LABEL org.opencontainers.image.documentation="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
 LABEL org.opencontainers.image.licenses="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/blob/${GIT_SHA:-master}/LICENSE.md"
 LABEL org.opencontainers.image.revision=$GIT_SHA

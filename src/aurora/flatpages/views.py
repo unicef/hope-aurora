@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from django.conf import settings
 from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.shortcuts import get_current_site
@@ -6,10 +8,13 @@ from django.shortcuts import get_object_or_404
 from django.template import loader
 from django.views.decorators.csrf import csrf_protect
 
+if TYPE_CHECKING:
+    from django.http import HttpRequest
+
 DEFAULT_TEMPLATE = "flatpages/default.html"
 
 
-def flatpage(request, url):
+def flatpage(request: "HttpRequest", url: str) -> HttpResponse:
     """
     Public interface to the flat page view.
 
@@ -35,7 +40,7 @@ def flatpage(request, url):
 
 
 @csrf_protect
-def render_flatpage(request, f):
+def render_flatpage(request: "HttpRequest", f: FlatPage) -> "HttpResponse":
     """Return an internal interface to the flat page view."""
     # If registration is required for accessing this page, and the user isn't
     # logged in, redirect to the login page.

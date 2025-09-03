@@ -62,7 +62,9 @@ class user_grant_permissions(ContextDecorator):  # noqa
 
     def __init__(self, user, permissions=None, target: "Registration|Project|Organization" = None):
         self.user = user
-        if not isinstance(permissions, (list, tuple)):
+        if permissions is None:
+            permissions = []
+        elif not isinstance(permissions, (list, tuple)):
             permissions = [permissions]
         self.permissions = permissions
         self.group = None

@@ -22,7 +22,7 @@ class AuroraRoleForm(forms.ModelForm):
         model = AuroraRole
         fields = "organization", "project", "registration", "user", "role", "valid_from", "valid_until"
 
-    def clean(self):
+    def clean(self) -> None:
         found = [
             self.cleaned_data.get(x) for x in ["organization", "project", "registration"] if self.cleaned_data.get(x)
         ]

@@ -1,20 +1,28 @@
-import os
 from itertools import chain
+from typing import Iterable
 
 from django import forms
+from django.forms import Media
 from django.utils.html import format_html, html_safe
+from django.utils.safestring import SafeString
+
+import aurora
 
 
 @html_safe
 class VersionMedia(forms.Media):
-    def __str__(self):
+    _css_lists: list[str]
+    _js_lists: list[str]
+    _css: dict
+
+    def __str__(self) -> str:
         return self.render()
 
-    def render_css(self):
+    def render_css(self) -> Iterable[SafeString]:
         # To keep rendering order consistent, we can't just iterate over items().
         # We need to sort the keys, and iterate over the sorted list.
         media = sorted(self._css)
-        version = os.environ.get("VERSION", "dev")
+        version = aurora.__version__
         return chain.from_iterable(
             [
                 format_html(
@@ -28,14 +36,14 @@ class VersionMedia(forms.Media):
             for medium in media
         )
 
-    def __add__(self, other):
+    def __add__(self, other: Media) -> Media:
         combined = VersionMedia()
         combined._css_lists = self._css_lists[:]
         combined._js_lists = self._js_lists[:]
-        for item in other._css_lists:
+        for item in other._css_lists:  # type: ignore[attr-defined]
             if item and item not in self._css_lists:
                 combined._css_lists.append(item)
-        for item in other._js_lists:
+        for item in other._js_lists:  # type: ignore[attr-defined]
             if item and item not in self._js_lists:
                 combined._js_lists.append(item)
         return combined

@@ -6,13 +6,13 @@ from ...core.models import Organization
 
 class OrganizationSerializer(serializers.HyperlinkedModelSerializer):
     projects = serializers.SerializerMethodField()
-    parent = serializers.CharField(source="parent.slug", read_only=True, default=None)
+    parent_slug = serializers.CharField(source="parent.slug", read_only=True, default=None)
     id = serializers.IntegerField(read_only=True, default=None)
 
     class Meta:
         model = Organization
         exclude = ("lft", "rght", "tree_id", "level")
 
-    def get_projects(self, obj):
+    def get_projects(self, obj: Organization) -> str:
         req = self.context["request"]
         return req.build_absolute_uri(reverse("api:organization-projects", kwargs={"pk": obj.pk}))

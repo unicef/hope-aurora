@@ -1,27 +1,4 @@
-from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.by import By
 from seleniumbase import BaseCase
-
-
-class MaxParentsReached(NoSuchElementException):
-    pass
-
-
-def find_relative(obj, selector_type, path, max_parents=3):
-    """Tries to find a SINGLE element with a common ancestor"""
-    for c in range(max_parents, 0, -1):
-        try:
-            elems = obj.find_elements(selector_type, f"./{'../' * c}/{path}")
-            if len(elems) == 1:
-                return elems[0]
-        except Exception:
-            if max_parents == c:
-                raise MaxParentsReached() from None
-    raise NoSuchElementException()
-
-
-def parent_element(obj, up=1):
-    return obj.find_elements(By.XPATH, f".{'/..' * up}")
 
 
 class AuroraSeleniumTC(BaseCase):
@@ -53,13 +30,43 @@ class AuroraSeleniumTC(BaseCase):
         self.click(f"li.select2-results__option:contains('{value}')")
         self.wait_for_element_absent("input.select2-search__field")
 
-    def login(self):
+    def login_as_user(self, user=None):
+        if user is not None:
+            self.admin_user = user
+        self.open("/login/")
+        self.type("input[name=username]", f"{self.admin_user.username}")
+        self.type("input[name=password]", f"{self.admin_user._password}")
+        self.submit('input[value="Login"]')
+        self.wait_for_ready_state_complete()
+
+    def login(self, url=None):
         self.open("/admin/")
         if self.get_current_url() == f"{self.live_server_url}/admin/login/?next=/admin/":
             self.type("input[name=username]", f"{self.admin_user.username}")
             self.type("input[name=password]", f"{self.admin_user._password}")
             self.submit('input[value="Log in"]')
             self.wait_for_ready_state_complete()
+
+    def is_required(self, element: str) -> bool:
+        el = self.wait_for_element_visible(element)
+        return el.parent.find_element("label>span").text == "(required)"
+
+    def get_field_error(self, element: str) -> bool:
+        return self.wait_for_element_visible(f"fieldset.{element} ul.errorlist").text
+
+    def get_pixel_colors(self):
+        # Return the RGB colors of the canvas element's top left pixel
+        x = 0
+        y = 0
+        if self.browser == "safari":
+            x = 1
+            y = 1
+        color = self.execute_script(
+            "return document.querySelector('canvas').getContext('2d').getImageData(%s,%s,1,1).data;" % (x, y)
+        )
+        if self.is_chromium():
+            return [color[0], color[1], color[2]]
+        return [color["0"], color["1"], color["2"]]
 
 
 AuroraTestBrowser = AuroraSeleniumTC

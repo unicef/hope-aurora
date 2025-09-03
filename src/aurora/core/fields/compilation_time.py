@@ -4,6 +4,8 @@ from django.forms import widgets
 
 from aurora.core.version_media import VersionMedia
 
+from .mixins import ConfigurableSmartField
+
 
 class CompilationTimeWidget(forms.MultiWidget):
     def __init__(self, attrs=None):
@@ -49,7 +51,7 @@ class CompilationTimeWidget(forms.MultiWidget):
         return [None, 0, 0, 0]
 
 
-class CompilationTimeField(forms.CharField):
+class CompilationTimeField(ConfigurableSmartField, forms.CharField):
     widget = CompilationTimeWidget
 
     def __init__(self, **kwargs):

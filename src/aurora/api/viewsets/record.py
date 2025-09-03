@@ -1,3 +1,4 @@
+from django.http import HttpRequest
 from django_filters import rest_framework as filters
 from rest_framework.decorators import action
 from rest_framework.pagination import CursorPagination
@@ -34,8 +35,8 @@ class RecordViewSet(SmartViewSet):
     filterset_class = RecordFilter
     pagination_class = RecordPaginator
 
-    @action(detail=False)
-    def metadata(self, request, pk=None):
+    @action(detail=True)
+    def metadata(self, request: HttpRequest, pk: str | None = None) -> Response:
         latest = Record.objects.latest("id")
         return Response(
             {

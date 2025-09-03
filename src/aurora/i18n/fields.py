@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 class LanguageField(models.CharField):
     """A language field for Django models."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         kwargs.setdefault("verbose_name", _("Language"))
         kwargs.setdefault("max_length", 10)
         kwargs.setdefault("default", settings.LANGUAGE_CODE)

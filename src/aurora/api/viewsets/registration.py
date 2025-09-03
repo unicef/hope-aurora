@@ -3,8 +3,10 @@ import io
 import logging
 import os
 from collections import OrderedDict
+from typing import TYPE_CHECKING, Any
 from urllib import parse
 
+from django.core.paginator import Page
 from django.http import HttpRequest, HttpResponse
 from django.utils.cache import get_conditional_response
 from django_filters import rest_framework as filters
@@ -15,19 +17,39 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.renderers import JSONRenderer
+from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import Serializer
 
 from ...core.utils import build_dict, get_etag, get_session_id
 from ...registration.models import Record, Registration
-from ..serializers import RegistrationDetailSerializer, RegistrationListSerializer
-from ..serializers.record import DataTableRecordSerializer
+from ..serializers import (
+    RegistrationDetailSerializer,
+    RegistrationListSerializer,
+    RegistrationRecordSerializerFields,
+    RegistrationRecordSerializerFiles,
+    RegistrationRecordSerializerFull,
+    RegistrationRecordSerializerStorage,
+)
 from .base import SmartViewSet
+
+if TYPE_CHECKING:
+    from django_stubs_ext import ValuesQuerySet
+    from rest_framework.permissions import _SupportsHasPermission
 
 logger = logging.getLogger(__name__)
 
 
 class RecordPageNumberPagination(PageNumberPagination):
-    def get_paginated_response(self, data):
+    request: Request
+    page: Page
+    page_size_query_param = "page_size"
+
+    def get_page_size(self, request: Request) -> int:
+        pg = super().get_page_size(request)
+        return min(100, pg)
+
+    def get_paginated_response(self, data: list[dict[str, Any]] | dict[str, Any]) -> Response:
         return Response(
             OrderedDict(
                 [
@@ -46,18 +68,26 @@ class RecordFilter(filters.FilterSet):
 
 
 class RegistrationViewSet(SmartViewSet):
+    RecordSerializerMap = {
+        "fields": RegistrationRecordSerializerFields,
+        "files": RegistrationRecordSerializerFiles,
+        "full": RegistrationRecordSerializerFull,
+        "storage": RegistrationRecordSerializerStorage,
+    }
+    allowed_serializers = RecordSerializerMap.keys()
+
     queryset = Registration.objects.all()
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> type[Serializer]:
         if self.detail:
             return RegistrationDetailSerializer
         return RegistrationListSerializer
 
-    def get_permissions(self):
+    def get_permissions(self) -> "list[_SupportsHasPermission]":
         return [permission() for permission in self.permission_classes]
 
     @action(detail=True, permission_classes=[AllowAny])
-    def metadata(self, request, pk=None):
+    def metadata(self, request: Request, pk: str | None = None) -> Response:
         reg: Registration = self.get_object()
         return Response(reg.metadata)
 
@@ -66,7 +96,7 @@ class RegistrationViewSet(SmartViewSet):
         permission_classes=[AllowAny],
         url_path="((?P<language>[a-z-]*)/)*version",
     )
-    def version1(self, request, pk, language=""):
+    def version1(self, request: Request, pk: str, language: str = "") -> Response:
         reg: Registration = self.get_object()
         return Response(
             {
@@ -86,7 +116,7 @@ class RegistrationViewSet(SmartViewSet):
         pagination_class=RecordPageNumberPagination,
         filter_backends=[DjangoFilterBackend],
     )
-    def records(self, request, pk=None):
+    def records(self, request: HttpRequest, pk: str | None = None) -> HttpResponse:
         obj: Registration = self.get_object()
         if not request.user.has_perm("registration.view_data", obj):
             raise PermissionDenied()
@@ -97,36 +127,35 @@ class RegistrationViewSet(SmartViewSet):
             os.environ.get("BUILD_DATE", ""),
         )
         response = get_conditional_response(request, str(self.res_etag))
+        paginator = RecordPageNumberPagination()
         if response is None:
-            queryset = (
-                Record.objects.defer(
-                    "files",
-                    "storage",
-                )
-                .filter(registration=obj)
-                .values()
-            )
+            selected_serializer = request.GET.get("ser", "fields")
+            if selected_serializer not in self.allowed_serializers:
+                selected_serializer = "fields"
+            serializer_class = self.RecordSerializerMap.get(selected_serializer) or RegistrationRecordSerializerFields
+            qs = Record.objects.filter(registration=obj)
+            queryset = qs.defer("files", "storage")
+
             flt = RecordFilter(request.GET, queryset=queryset)
             if flt.form.is_valid():
                 queryset = flt.filter_queryset(queryset)
-            page = self.paginate_queryset(queryset)
+            page = paginator.paginate_queryset(queryset, request, self)  # type: ignore[arg-type]
 
             if page is None:
-                serializer = DataTableRecordSerializer(
+                serializer = serializer_class(
                     queryset,
                     many=True,
                     context={"request": request},
-                    metadata=obj.metadata,
                 )
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            serializer = DataTableRecordSerializer(page, many=True, context={"request": request}, metadata=obj.metadata)
-            response = self.get_paginated_response(serializer.data)
+            serializer = serializer_class(page, many=True, context={"request": request})
+            response = paginator.get_paginated_response(serializer.data)
         response.headers.setdefault("ETag", self.res_etag)
         response.headers.setdefault("Cache-Control", "private, max-age=120")
         return response
 
     @action(detail=True)
-    def csv(self, request: HttpRequest, pk):
+    def csv(self, request: Request, pk: str) -> HttpResponse:  # noqa: C901, PLR0912
         r"""
         Return a CSV json for registration information.
 
@@ -169,8 +198,8 @@ class RegistrationViewSet(SmartViewSet):
                 filters, exclude = form.cleaned_data["filters"]
                 include_fields = form.cleaned_data["include"]
                 exclude_fields = form.cleaned_data["exclude"]
-                qs = (
-                    Record.objects.filter(registration__pk=pk)
+                qs: "ValuesQuerySet[Record, dict]" = (
+                    Record.objects.filter(registration__pk=pk)  # type: ignore[assignment]
                     .defer(
                         "storage",
                         "counters",

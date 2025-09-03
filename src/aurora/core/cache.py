@@ -1,6 +1,7 @@
 import logging
 from collections import OrderedDict
 from functools import wraps
+from typing import Any
 
 from aurora.state import state
 
@@ -8,21 +9,21 @@ logger = logging.getLogger(__name__)
 
 
 class Cache(OrderedDict):
-    def __init__(self, *args, **kwds):
+    def __init__(self, *args, **kwds) -> None:
         self.size_limit = kwds.pop("size", None)
         OrderedDict.__init__(self, *args, **kwds)
         self._check_size_limit()
 
-    def __setitem__(self, key, value):
-        OrderedDict.__setitem__(self, key, value)
+    def __setitem__(self, key: str, value: "Any") -> None:
+        OrderedDict.__setitem__(self, key, value)  # type: ignore[assignment]
         self._check_size_limit()
 
-    def _check_size_limit(self):
+    def _check_size_limit(self) -> None:
         if self.size_limit is not None:
             while len(self) > self.size_limit:
                 self.popitem(last=False)
 
-    def clear(self):
+    def clear(self) -> None:
         while len(self) > 0:
             self.popitem(last=False)
 
@@ -49,7 +50,7 @@ def cache_form(f):
 def cache_formset(f):
     @wraps(f)
     def _inner(*args, **kwargs):
-        flex_form = args[0].registration.flex_form
+        flex_form = args[0]
         key = f"{flex_form.pk}-{flex_form.version}-formset-{state.request.LANGUAGE_CODE}"
         if key not in cache:
             logger.debug("cache missing")

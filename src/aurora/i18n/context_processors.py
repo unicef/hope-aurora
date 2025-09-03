@@ -1,2 +1,0 @@
-def itrans(request):
-    return {}

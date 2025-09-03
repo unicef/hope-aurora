@@ -1,21 +1,20 @@
 from django.conf import settings
-from django.utils.translation.trans_real import _active, _default, translation  # noqa
+from django.utils.translation.trans_real import _active, _default, translation  # type: ignore[attr-defined]
 
 from .engine import translator
 
 
-def gettext(message):
+def gettext(message: str) -> str:
     """Translate the 'message' string.
 
     It uses the current thread to find the
     translation object to use. If no current translation is activated, the
     message will be run through the default translation object.
     """
-    global _default
+    global _default  # noqa: PLW0603
     if not message:
         return message
     eol_message = message.replace("\r\n", "\n").replace("\r", "\n")
-
     if eol_message:
         _default = _default or translation(settings.LANGUAGE_CODE)
         translation_object = getattr(_active, "value", _default)

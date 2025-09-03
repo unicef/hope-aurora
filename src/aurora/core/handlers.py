@@ -3,7 +3,7 @@ from django.db.models.signals import post_delete, post_save
 from aurora.core.models import FlexForm, FlexFormField, Validator
 
 
-def update_cache(sender, instance, **kwargs):
+def update_cache(sender, instance: FlexForm | FlexFormField | Validator, **kwargs):
     if isinstance(instance, Validator):
         if instance.target == Validator.FIELD:
             for r in instance.flexformfield_set.all():
@@ -12,7 +12,7 @@ def update_cache(sender, instance, **kwargs):
             for r in instance.flexform_set.all():
                 r.save()
         elif instance.target == Validator.MODULE:
-            for r in instance.registration_set.all():
+            for r in instance.validator_for.all():
                 r.save()
 
     elif isinstance(instance, FlexFormField):
@@ -25,6 +25,8 @@ def update_cache(sender, instance, **kwargs):
 def cache_handler():
     post_save.connect(update_cache, sender=FlexForm, dispatch_uid="form_dip")
     post_save.connect(update_cache, sender=FlexFormField, dispatch_uid="field_dip")
+    post_delete.connect(update_cache, sender=Validator, dispatch_uid="validator_dip")
 
     post_delete.connect(update_cache, sender=FlexForm, dispatch_uid="form_del_dip")
     post_delete.connect(update_cache, sender=FlexFormField, dispatch_uid="field_del_dip")
+    post_delete.connect(update_cache, sender=Validator, dispatch_uid="validator_del_dip")

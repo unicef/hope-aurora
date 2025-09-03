@@ -1,3 +1,5 @@
+from django.db.models import Model, QuerySet
+from django.http import HttpRequest
 from django_filters import rest_framework as filters
 from django_filters import utils
 from django_filters.rest_framework import DjangoFilterBackend
@@ -8,6 +10,8 @@ from rest_framework.authentication import (
     TokenAuthentication,
 )
 from rest_framework.permissions import BasePermission, DjangoModelPermissions
+from rest_framework.request import Request
+from rest_framework.views import APIView
 
 from aurora.core.models import (
     CustomFieldType,
@@ -28,15 +32,15 @@ class LastModifiedFilter(filters.FilterSet):
 
 
 class IsRootUser(BasePermission):
-    def has_permission(self, request, view):
+    def has_permission(self, request: Request, view: APIView) -> bool:
         return bool(request.user and is_root(request))
 
 
 class AuroraPermission(BasePermission):
-    def has_permission(self, request, view):
+    def has_permission(self, request: Request, view: APIView) -> bool:
         return bool(request.user and is_root(request))
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Request, view: APIView, obj: Model) -> bool:
         return True
 
 
@@ -54,7 +58,7 @@ class AuroraFilterBackend(DjangoFilterBackend):
         Record: None,
     }
 
-    def filter_queryset(self, request, queryset, view):
+    def filter_queryset(self, request: HttpRequest, queryset: QuerySet[Model], view: APIView) -> QuerySet[Model]:
         filterset = self.get_filterset(request, queryset, view)
         if filterset is None:
             return queryset

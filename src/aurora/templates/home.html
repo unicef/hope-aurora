@@ -1,0 +1,31 @@
+{% extends "base.html" %}{% load static aurora itrans %}
+{% block header %}{% endblock %}
+{% block body %}
+ <section class="text-gray-700 body-font landing">
+     <div class="grid grid-cols-3 gap-4 content-start">
+         <div></div>
+         <div>
+                <img class="mt-10 object-cover self-top object-top rounded"
+                     width="35%"
+                     alt="logo" style='vertical-align:middle; display:inline;'
+                     src="{% static 'logo.png' %}">
+                <img class="mt-10 object-cover self-top object-top rounded"
+                     width="35%"
+                     alt="logo" style='vertical-align:middle; display:inline; margin-left:100px'
+                     src="{% static 'hope.jpg' %}">
+         </div>
+        <div></div>
+     </div>
+        <div class="container mx-auto flex my-20 px-5 py-9 flex-col-reverse lg:flex-row">
+            <div class="lg:flex-grow w-full sm:text-center text-center items-center ">
+                <p class="text-xl">موقع تسجيل المستفيدين</p>
+                  <p class="text-xl">受益人登记平台</p>
+                  <p class="text-xl">Beneficiaries Registration Platform</p class="text-xl">
+                  <p class="text-xl">Plateforme d'enregistrement des bénéficiaires</p>
+                  <p class="text-xl">Платформа для регистрации бенефициаров</p>
+                  <p class="text-xl">Plataforma de registro de beneficiarios</p>
+                  <p class="text-xl">Платформа реєстрації бенефіціарів</p>
+                </div>
+          </div>
+    </section>
+{% endblock body %}

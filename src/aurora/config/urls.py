@@ -5,7 +5,7 @@ from adminactions import actions
 from django.conf import settings
 from django.conf.urls.i18n import i18n_patterns
 from django.contrib import admin
-from django.urls import include, path, re_path
+from django.urls import include, path
 from django.views.static import serve
 
 from aurora.core.views import service_worker
@@ -19,7 +19,6 @@ favicon = Path(__file__).parent / "../web/static/favicon"
 
 urlpatterns = [
     path(settings.DJANGO_ADMIN_URL, admin.site.urls),
-    re_path(r"sax-\d*/", admin.site.urls),
     # favicon just for annoying 404 in tests
     path(
         "favicon.ico",
@@ -39,6 +38,9 @@ urlpatterns = [
     path(r"serviceworker.js", service_worker, name="serviceworker"),
     path(r"sysinfo/", include("django_sysinfo.urls")),
 ]
+
+if "django_browser_reload" in settings.INSTALLED_APPS:
+    urlpatterns += [path("__reload__/", include("django_browser_reload.urls"))]
 
 urlpatterns += i18n_patterns(
     path("", include("aurora.registration.urls")),

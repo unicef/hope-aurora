@@ -24,7 +24,7 @@ class LargeTablePaginator(Paginator):
     """
 
     @cached_property
-    def count(self):
+    def count(self) -> int:
         """Return an estimated number of objects, across all pages."""
         try:
             with transaction.atomic(), connection.cursor() as cursor:

@@ -68,6 +68,10 @@ var DEFAULT = {
         $(row).find(".vPictureField").each(function (i, obj) {
             initWebCamField(obj);
         });
+        $editCheckBox = $("#staff-editor");
+        if (! $editCheckBox.is(':checked')){
+            $(row).find(".staff-editor").addClass("hidden").hide();
+        }
 
         $(row).find(".question-visibility").each(function (i, e) {
             $(e).on("click", function () {

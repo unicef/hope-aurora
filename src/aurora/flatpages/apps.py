@@ -1,10 +1,25 @@
+from typing import TYPE_CHECKING
+
 from django.apps import AppConfig
+from django.db import models
 from django.urls import NoReverseMatch, get_script_prefix, reverse
 from django.utils.encoding import iri_to_uri
 from smart_admin.decorators import smart_register
 
+if TYPE_CHECKING:
+    from django.contrib.flatpages.models import FlatPage
 
-def get_absolute_url(self):
+
+class FlatPageManager(models.Manager):
+    def get_by_natural_key(self, url: str) -> "FlatPage":
+        return self.get(url=url)
+
+
+def natural_key(self: "FlatPage") -> tuple[str | int]:
+    return (self.pk,)
+
+
+def get_absolute_url(self: "FlatPage") -> str | None:
     from .views import flatpage
 
     for url in (self.url.lstrip("/"), self.url):
@@ -20,7 +35,7 @@ class Config(AppConfig):
     default = False
     name = "django.contrib.flatpages"
 
-    def ready(self):
+    def ready(self) -> None:
         super().ready()
         from django.contrib.flatpages.models import FlatPage
 
@@ -29,3 +44,5 @@ class Config(AppConfig):
         smart_register(FlatPage)(FlatPageAdmin)
 
         FlatPage.get_absolute_url = get_absolute_url
+        FlatPage.add_to_class("objects", FlatPageManager())
+        FlatPage.add_to_class("natural_key", natural_key)

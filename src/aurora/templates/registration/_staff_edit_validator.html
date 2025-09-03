@@ -1,0 +1,8 @@
+<span class="staff-editor staff-tooltip">
+    <span class="tooltiptext text-lower">
+        <p><span class="label">Validator</span> {{ validator }}</p>
+    </span>
+    <a target="_edit" class="validator"
+       href="{% url "admin:core_validator_test" validator.pk %}">
+    </a>
+</span>

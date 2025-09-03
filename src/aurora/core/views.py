@@ -1,10 +1,15 @@
 import time
+from typing import Any
 
 from django.conf import settings
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from django.utils.cache import get_conditional_response
+from django.utils.decorators import method_decorator
 from django.utils.translation import get_language
+from django.views import View
+from django.views.decorators.cache import never_cache
 from django.views.generic.list import BaseListView
 
 from aurora.core.models import OptionSet
@@ -12,8 +17,8 @@ from aurora.core.utils import get_etag
 from aurora.state import state
 
 
-def filter_optionset(obj: OptionSet, pk, term, lang, parent=None):
-    def _filter(record):
+def filter_optionset(obj: OptionSet, pk: str, term: str, lang: str, parent: str | None = None) -> dict[str, Any]:
+    def _filter(record: dict[str, Any]) -> bool:
         valid = True
         if pk:
             valid = valid and record["pk"].lower() == pk.lower()
@@ -36,9 +41,18 @@ def filter_optionset(obj: OptionSet, pk, term, lang, parent=None):
     }
 
 
-# @method_decorator(cache_page(60 * 60), name="dispatch")
+@method_decorator(never_cache, name="dispatch")
+class OptionsListVersion(View):
+    def get(self, request: "HttpRequest", *args: Any, **kwargs: Any) -> HttpResponse:
+        name = self.kwargs["name"]
+        obj: OptionSet = get_object_or_404(OptionSet, name=name)
+        return JsonResponse(
+            {"version": obj.version, "url": reverse("optionset-versioned", args=[obj.name, obj.version])}
+        )
+
+
 class OptionsListView(BaseListView):
-    def get(self, request, *args, **kwargs):
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         name = self.kwargs["name"]
 
         lang = get_language()
@@ -69,7 +83,7 @@ class OptionsListView(BaseListView):
         return response
 
 
-def service_worker(request):
+def service_worker(request: "HttpRequest") -> "HttpResponse":
     return HttpResponse(
         open(settings.PWA_SERVICE_WORKER_PATH).read(),
         content_type="application/javascript",

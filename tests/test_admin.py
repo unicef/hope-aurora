@@ -6,6 +6,7 @@ from _pytest.python import Metafunc
 from admin_extra_buttons.handlers import ChoiceHandler
 from django.contrib.admin.sites import site
 from django.contrib.admin.templatetags.admin_urls import admin_urlname
+from django.http import HttpRequest
 from django.urls import reverse
 from django_regex.utils import RegexList as _RegexList
 
@@ -23,6 +24,7 @@ class RegexList(_RegexList):
 GLOBAL_EXCLUDED_MODELS = RegexList(
     [
         r"reversion.",
+        r"django_dramatiq.",
         # r"security.",
         # r"core.FormSet",
         # r"core.FlexFormField",
@@ -150,7 +152,10 @@ def test_group_list(app):
 
 
 @pytest.mark.django_db
-@pytest.mark.skip_models("constance.Config", "registration.Record")
+@pytest.mark.skip_models(
+    "constance.Config",
+    "registration.Record",
+)
 def test_changelist(app, modeladmin, record):
     url = reverse(admin_urlname(modeladmin.model._meta, "changelist"))
     opts: Options = modeladmin.model._meta
@@ -175,7 +180,7 @@ def test_changeform(app, modeladmin, record):
 
     res = app.get(url)
     assert str(opts.app_config.verbose_name) in res.body.decode()
-    if modeladmin.has_change_permission(Mock(user=app._user)):
+    if modeladmin.has_change_permission(Mock(user=app._user, spec=HttpRequest)):
         res = res.forms[1].submit()
         assert res.status_code in [302, 200]
 
@@ -187,7 +192,7 @@ def test_add(
     modeladmin,
 ):
     url = reverse(admin_urlname(modeladmin.model._meta, "add"))
-    if modeladmin.has_add_permission(Mock(user=app._user)):
+    if modeladmin.has_add_permission(Mock(user=app._user, spec=HttpRequest)):
         res = app.get(url)
         res.forms[1].submit()
         assert res.status_code in [200, 302]
@@ -199,7 +204,7 @@ def test_add(
 @pytest.mark.skip_models("constance.Config", "registration.Record")
 def test_delete(app, modeladmin, record, monkeypatch):
     url = reverse(admin_urlname(modeladmin.model._meta, "delete"), args=[record.pk])
-    if modeladmin.has_delete_permission(Mock(user=app._user)):
+    if modeladmin.has_delete_permission(Mock(user=app._user, spec=HttpRequest)):
         res = app.get(url)
         res.forms[1].submit()
         assert res.status_code in [200, 302]
@@ -220,7 +225,7 @@ def test_buttons(app, modeladmin, button_handler, record, monkeypatch):
         btn = button_handler.get_button({"original": record})
         button_handler.func(None, btn)
     else:
-        if len(button_handler.sig.parameters) == 2:
+        if len(button_handler.func_args) == 2:
             url = reverse(f"admin:{button_handler.url_name}")
         else:
             url = reverse(f"admin:{button_handler.url_name}", args=[record.pk])

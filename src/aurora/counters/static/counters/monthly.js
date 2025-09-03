@@ -1,6 +1,10 @@
 (function ($) {
     const baseUrl = $("#counters").data("url");
     const token = $("#counters").data("token");
+    const year = $("#counters").data("year");
+    const month = $("#counters").data("month");
+
+
     const registrationId = $("#counters").data("registration");
 
     const getLineData = (initialData, lengthOfDataChunks) => {
@@ -24,7 +28,8 @@
     };
     const sumArray = (accumulator, currentValue) => accumulator + currentValue;
     var m = moment();
-    var currentDay = m.format("YYYY-MM-DD");
+    // var currentDay = m.format("YYYY-MM-DD");
+    var currentDay = year + "-" + month + "-01";
     var ctx = document.getElementById("myChart");
     var averageDataset = {
         datalabels: {
@@ -78,16 +83,16 @@
     Chart.register(ChartDataLabels);
     var myChart = new Chart(ctx, config);
 
-    // config.options.onClick = function (evt, clickedElements) {
-    //     if (clickedElements) {
-    //         const firstPoint = clickedElements[0];
-    //         const label = myChart.data.labels[firstPoint.index];
-    //         const slabel = myChart.data.datasets[firstPoint.datasetIndex].label;
-    //         const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];
-    //         var m = moment(currentDay);
-    //         location.href = "../daily/" + m.year() + "/" + (m.month() + 1) + "/" + (firstPoint.index+1) + "/";
-    //     }
-    // };
+    config.options.onClick = function (evt, clickedElements) {
+        if (clickedElements) {
+            const firstPoint = clickedElements[0];
+            // const label = myChart.data.labels[firstPoint.index];
+            // const slabel = myChart.data.datasets[firstPoint.datasetIndex].label;
+            // const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];
+            var m = moment(currentDay);
+            location.href = "../daily?day=" + m.year() + "-" + (m.month() + 1) + "-" + (firstPoint.index+1);
+        }
+    };
 
     ajax_chart({});
 
@@ -95,7 +100,7 @@
         params.rnd = token || Math.random();
         const qs = new URLSearchParams(params).toString();
         $.getJSON({
-            url: baseUrl + "?" + qs,
+            url: baseUrl + "&" + qs,
             ifModified: true
         }).done(function (response) {
             var chartData = response.data.map(a => a.total);

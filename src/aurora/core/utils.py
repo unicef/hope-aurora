@@ -11,22 +11,22 @@ import sys
 import time
 import unicodedata
 from collections import deque
-from collections.abc import Mapping
 from functools import wraps
 from hashlib import md5
 from itertools import chain
 from pathlib import Path
 from sys import getsizeof, stderr
+from typing import Any, Mapping
 
 import faker
-import qrcode
+from PIL.Image import Resampling
 from constance import config
 from dateutil.relativedelta import relativedelta
 from django import forms
 from django.conf import settings
 from django.core.files.utils import FileProxyMixin
 from django.core.serializers.json import DjangoJSONEncoder
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 from django.template import loader
 from django.template.defaultfilters import date
 from django.urls import reverse
@@ -36,12 +36,20 @@ from django.utils.functional import keep_lazy_text
 from django.utils.html import format_html
 from django.utils.text import slugify
 from django.utils.timezone import is_aware
+from flags.state import flag_enabled, flag_state
+from qrcode import constants
+from qrcode.main import QRCode
+from qrcode.util import QRData
 
 from aurora import VERSION
 from aurora.state import state
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from aurora.registration.models import Record
+
 
 UNDEFINED = object()
-
 
 logger = logging.getLogger(__name__)
 
@@ -53,8 +61,11 @@ def has_token(request, *args, **kwargs):
     )
 
 
-def is_root(request, *args, **kwargs):
-    return request.user.is_superuser and has_token(request)
+def is_root(request: HttpRequest, *args, **kwargs) -> bool:
+    ret = False
+    if hasattr(request, "user"):
+        ret = request.user.is_superuser and flag_enabled("IS_ROOT", request=request)
+    return ret
 
 
 @keep_lazy_text
@@ -191,19 +202,19 @@ def get_bookmarks(request):
     return quick_links
 
 
-def get_qrcode(content):
+def get_qrcode(content: QRData | bytes | str) -> str:
     logo_link = Path(settings.BASE_DIR) / "web/static/unicef_logo.jpeg"
     from PIL import Image
 
-    logo = Image.open(logo_link)
+    file_logo = Image.open(logo_link)
     basewidth = 100
-    wpercent = basewidth / float(logo.size[0])
-    hsize = int(float(logo.size[1]) * float(wpercent))
-    logo = logo.resize((basewidth, hsize), Image.LANCZOS)
-    qr_code = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H)
+    wpercent = basewidth / float(file_logo.size[0])
+    hsize = int(float(file_logo.size[1]) * float(wpercent))
+    logo = file_logo.resize((basewidth, hsize), Resampling.LANCZOS)
+    qr_code = QRCode(error_correction=constants.ERROR_CORRECT_H)
     qr_code.add_data(content)
     qr_code.make()
-    qr_img = qr_code.make_image(fill_color="black", back_color="white").convert("RGB")
+    qr_img = qr_code.make_image(fill_color="black", back_color="white").convert("RGB")  # type: ignore[union-attr]
 
     # set size of QR code
     pos = ((qr_img.size[0] - logo.size[0]) // 2, (qr_img.size[1] - logo.size[1]) // 2)
@@ -377,7 +388,7 @@ def cache_aware_url(request, url):
 
 def cache_aware_reverse(viewname, urlconf=None, args=None, kwargs=None, current_app=None, **kw):
     url = reverse(viewname, urlconf, args, kwargs, current_app, **kw)
-    if state.request.user.is_authenticated:
+    if hasattr(state, "user") and state.request.user.is_authenticated:
         url += f"?s={get_session_id()}"
     return url
 
@@ -456,15 +467,15 @@ def never_ever_cache(decorated_function):
     return wrapper
 
 
-def get_session_id(request=None):
+def get_session_id(request: "HttpRequest|None" = None) -> str:
     r = request or state.request
     if r and r.user.is_authenticated:
         return r.session.session_key
     return ""
 
 
-def flatten_dict(d, parent_key="", sep="_") -> dict:
-    items = []
+def flatten_dict(d: Mapping[str, Any], parent_key: str = "", sep: str = "_") -> dict[str, Any]:
+    items: list[tuple[str, Any]] = []
     if isinstance(d, dict):
         for k, v in d.items():
             new_key = parent_key + sep + k if parent_key else k
@@ -482,7 +493,7 @@ def flatten_dict(d, parent_key="", sep="_") -> dict:
     return dict(items)
 
 
-def build_dict(r, **options):
+def build_dict(r: dict[str, Any], **options) -> dict[str, Any]:
     d = flatten_dict(r["fields"])
     if "datetime_format" in options:
         d["timestamp"] = date(r["timestamp"], options["datetime_format"])
@@ -496,10 +507,10 @@ def build_dict(r, **options):
     return d
 
 
-def get_registration_id(record):
+def get_registration_id(record: "Record") -> str:
     ts = record.timestamp.strftime("%Y%m%d")
     return f"HOPE-{ts}-{record.registration_id}/{record.id}"
 
 
-def oneline(value):
+def oneline(value: str) -> str:
     return value.replace("\r\n", ";").replace("\n", ";").replace("\r", ";").replace(";;", ";")

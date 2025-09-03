@@ -12,7 +12,7 @@ resources:
 
 variables:
   - name: Docker.filePath
-    value: "**/docker/Dockerfile"
+    value: "**/docker/Dockerfile2"
   - name: Docker.repository
     value: "flex-registration"
   - name: buildDate
@@ -64,6 +64,18 @@ stages:
             env: { sourceVersion: $(Build.SourceVersion) }
             displayName: Git Hash 7-digit
             continueOnError: true # for first build, no cache
+
+          - script: curl -LsSf https://astral.sh/uv/install.sh | sh
+            displayName: "Install uv"
+
+          - script: |
+              VERSION=$(uvx --with hatch-vcs hatchling metadata version)
+              echo "##vso[task.setvariable variable=VERSION;isOutput=true]$VERSION"
+              echo "##[endgroup]"
+              uv build --wheel -o docker/conf
+            displayName: "Build package"
+            name: SetVersion
+
           - task: Docker@2
             displayName: Build
             inputs:
@@ -71,8 +83,10 @@ stages:
               dockerfile: $(Docker.filePath)
               repository: $(Docker.repository)
               buildContext: "**/.."
-#              arguments: '--build-arg VERSION=$(Build.SourceVersion) --build-arg BUILD_DATE="$(buildDate)" --cache-from=$(Docker.registry).azurecr.io/$(Docker.repository):latest'
-              arguments: '--build-arg GIT_HASH="$(commitHash)" --build-arg BUILD_DATE="$(buildDate)" --cache-from=$(Docker.registry).azurecr.io/$(Docker.repository):latest'
+              arguments: >
+                --build-arg VERSION="$(SetVersion.VERSION)"
+                --build-arg GIT_SHA="$(commitHash)"
+                --build-arg BUILD_DATE="$(buildDate)"
               tags: |
                 $(Build.BuildId)
                 $(Build.SourceVersion)
@@ -129,7 +143,10 @@ stages:
                             -AZURE_TENANT_ID $(KEY_VALUT_AZURE_TENANT_KEY)
                             -SENTRY_DSN $(SENTRY_DSN)
                             -SENTRY_ENVIRONMENT $(SENTRY_ENVIRONMENT)
-                            -MATOMO_ID $(MATOMO_ID)"
+                            -MATOMO_ID $(MATOMO_ID)
+                            -CSRF_COOKIE_SECURE $(CSRF_COOKIE_SECURE)
+                            -CSRF_TRUSTED_ORIGINS $(CSRF_TRUSTED_ORIGINS)
+                            -DEFAULT_ORGANIZATION $(DEFAULT_ORGANIZATION)"
           - script: |
               curl -X POST -H 'Content-type: application/json' --data '$SLACK_NOTIFICATION_COMPLETE_PAYLOAD' $SLACK_WEBHOOK_URL
             displayName: "Slack complete notification"

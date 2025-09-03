@@ -1,3 +1,4 @@
+# mypy: disable-error-code="union-attr"
 import base64
 import io
 import logging
@@ -18,8 +19,8 @@ NONCE_SIZE = BLOCK_SIZE
 logger = logging.getLogger(__name__)
 
 
-def crypt(data: str, public_pem: str) -> bytes:
-    data = data.encode("utf-8")
+def crypt(data_: str, public_pem: str) -> bytes:
+    data: bytes = data_.encode("utf-8")
     file_out = io.BytesIO()
     file_in = io.BytesIO(data)
 

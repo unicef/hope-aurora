@@ -4,9 +4,10 @@ from django.forms import HiddenInput
 from aurora.state import state
 
 from ..utils import get_client_ip
+from .mixins import ConfigurableSmartField
 
 
-class RemoteIpField(forms.CharField):
+class RemoteIpField(ConfigurableSmartField, forms.CharField):
     widget = HiddenInput
 
     def __init__(self, **kwargs):

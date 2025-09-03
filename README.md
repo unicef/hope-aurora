@@ -5,6 +5,7 @@
 [![Lint](https://github.com/unicef/hope-aurora/actions/workflows/lint.yml/badge.svg)](https://github.com/unicef/hope-aurora/actions/workflows/lint.yml)
 [![codecov](https://codecov.io/github/unicef/hope-aurora/graph/badge.svg?token=FBUB7HML5S)](https://codecov.io/github/unicef/hope-aurora)
 [![Documentation](https://github.com/unicef/hope-aurora/actions/workflows/docs.yml/badge.svg)](https://unicef.github.io/hope-aurora/)
+[![Pypi](https://badge.fury.io/py/unicef-hope-aurora.svg)](https://badge.fury.io/py/unicef-hope-aurora)
 [![Docker Pulls](https://img.shields.io/docker/pulls/unicef/hope-aurora)](https://hub.docker.com/repository/docker/unicef/hope-aurora/tags)
 
 

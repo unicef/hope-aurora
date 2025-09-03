@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 from django import forms
 from django.conf import settings
@@ -10,7 +11,7 @@ from django.utils.translation import gettext_lazy as _
 from tinymce.widgets import AdminTinyMCE
 
 
-def get_page_css():
+def get_page_css() -> tuple[str, ...]:
     return (
         Path(settings.PACKAGE_DIR / "flatpages" / "static" / "flatpages" / "flatpages.css").read_text(),
         Path(settings.PACKAGE_DIR / "web" / "static" / "base.css").read_text(),
@@ -93,7 +94,7 @@ class FlatPageForm(forms.ModelForm):
         },
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.fields["content"].widget.mce_attrs["content_css"] = [static("bob/mailing.css")]
 
@@ -104,10 +105,10 @@ class FlatPageForm(forms.ModelForm):
         model = FlatPage
         fields = ("title", "url", "content", "sites")
 
-    def save(self, commit=True):
+    def save(self, commit: bool = True) -> FlatPage:
         return super().save(commit)
 
-    def clean_url(self):
+    def clean_url(self) -> str:
         value = self.cleaned_data.get("url", "")
         if not value:
             value = slugify(self.cleaned_data.get("title", ""))
@@ -117,7 +118,7 @@ class FlatPageForm(forms.ModelForm):
             value = value + "/"
         return value
 
-    def clean(self):
+    def clean(self) -> dict[str, Any] | None:
         url = self.cleaned_data.get("url")
         sites = self.cleaned_data.get("sites")
 
