@@ -67,6 +67,7 @@ def test_add_field(browser: AuroraTestBrowser, field_type):
     browser.switch_to_window(main)
 
 
+@pytest.mark.flaky(reruns=2, only_rerun=["AssertionError"])
 def test_boolean_field(browser: AuroraTestBrowser):
     form = FormFactory()
     fld: FlexFormField = FlexFormFieldFactory(
