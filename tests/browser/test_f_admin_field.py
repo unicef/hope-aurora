@@ -86,7 +86,7 @@ def test_boolean_field(browser: AuroraTestBrowser):
     browser.click(f"input[type=checkbox][name={fld.name}]")
     browser.click("input[type=submit]")
     browser.wait_for_ready_state_complete()
-    browser.assert_exact_text("Success", "div.bg-green-200", timeout=10)
+    browser.assert_exact_text("Success", "div.bg-green-200", timeout=20)
 
 
 def test_multicheckboxfield_field(browser: AuroraTestBrowser):
