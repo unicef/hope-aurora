@@ -97,6 +97,7 @@ dev = [
   "pytest-cov",
   "pytest-django",
   "pytest-echo",
+  "pytest-flakefinder>=1.1",
   "responses",
   "seleniumbase==4.38.2",
   "tox>=4.2",
