@@ -2,7 +2,7 @@ worker_processes auto;
 events {
   #worker_connections 512;
 }
-daemon on;
+daemon off;
 error_log /dev/stdout;
 
 http {

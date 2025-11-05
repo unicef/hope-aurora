@@ -25,7 +25,7 @@ def registration():
         required=True,
         advanced={
             **FlexFormField.FLEX_FIELD_DEFAULT_ATTRS,
-            "widget": {
+            "widget_kwargs": {
                 "placeholder": "placeholder_text",
                 "extra_classes": "extra-test-class",
             },

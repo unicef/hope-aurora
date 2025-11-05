@@ -21,13 +21,14 @@ build: ## build docker image
 			--cache-from unicef/hope-aurora:latest \
 			-t unicef/hope-aurora:${VERSION} \
 			-t unicef/hope-aurora:local \
-			-f docker/Dockerfile2 .
+			-f docker/Dockerfile .
 	docker images | grep "${DOCKER_IMAGE}" | grep ${VERSION}
 
 .run:
 	cd .. && docker run \
 	 		--rm \
 			-p 8000:8000 \
+			-p 8888:8888 \
 			-e ADMIN_EMAIL="${ADMIN_EMAIL}" \
 			-e ADMIN_PASSWORD="${ADMIN_PASSWORD}" \
 			-e ALLOWED_HOSTS="*" \
@@ -47,6 +48,10 @@ build: ## build docker image
 			-e SECURE_HSTS_PRELOAD=1 \
 			-e SESSION_COOKIE_DOMAIN= \
 			-e SESSION_COOKIE_SECURE=false \
+			-e START_PROXY=1 \
+			-e START_APP=1 \
+			-e START_WORKER=0 \
+			-e START_CRON=0 \
 			-v ./~data:/init-scripts \
 			${RUN_OPTIONS} \
 			-t ${DOCKER_IMAGE} \

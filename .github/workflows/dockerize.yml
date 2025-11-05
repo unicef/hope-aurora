@@ -84,7 +84,7 @@ jobs:
         id: build
         with:
           context: .
-          file: docker/Dockerfile2
+          file: docker/Dockerfile
           push: true
           labels: |
             "version=${{ steps.config.outputs.version }}"

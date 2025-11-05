@@ -480,7 +480,7 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
     ]
     I18N_ADVANCED = ["smart.hint", "smart.question", "smart.description"]
     FLEX_FIELD_DEFAULT_ATTRS = {
-        "widget": {
+        "widget_kwargs": {
             "pattern": None,
             "onchange": "",
             "title": None,
@@ -489,7 +489,7 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
             "css_class": "",
             "fieldset": "",
         },
-        "kwargs": {
+        "field_kwargs": {
             "default_value": None,
         },
         "smart": {
@@ -550,7 +550,7 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
             return f"[[removed]] {self._strategy_fqn_field_type}"
 
     def get_default_value(self):
-        return self.advanced.get("kwargs", {}).get("default_value", None)
+        return self.advanced.get("field_kwargs", {}).get("default_value", None)
 
     def get_field_kwargs(self) -> dict[str, Any]:
         field_type: "type[ConfigurableSmartField]"
@@ -578,16 +578,17 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
             field_type = self.field_type
             advanced = self.advanced.copy()
             # backward compatibility code
-            if "field_kwargs" in self.advanced:
-                field_kwargs = self.advanced.get("field_kwargs", {}).copy()
-            elif "field" not in self.advanced:
-                field_kwargs = self.advanced.get("field", {}).copy()
-            else:
-                field_kwargs = self.advanced.get("kwargs", {}).copy()
-            if "widget" in self.advanced:
-                widget_kwargs = self.advanced.get("widget", {}).copy()
-            else:
-                widget_kwargs = self.advanced.get("widget_kwargs", {}).copy()
+            # if "field_kwargs" in self.advanced:
+            #     field_kwargs = self.advanced.get("field_kwargs", {}).copy()
+            # elif "field" not in self.advanced:
+            #     field_kwargs = self.advanced.get("field", {}).copy()
+            # else:
+            #     field_kw`args = self.advanced.get("kwargs", {}).copy()
+            # if "widget" in self.advanced:
+            #     widget_kwargs = self.advanced.get("widget", {}).copy()
+            # else:
+            field_kwargs = self.advanced.get("field_kwargs", {}).copy()
+            widget_kwargs = self.advanced.get("widget_kwargs", {}).copy()
             smart_attrs = advanced.pop("smart", {}).copy()
             events = self.advanced.get("events", {}).copy()
 

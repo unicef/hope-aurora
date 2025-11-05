@@ -40,7 +40,7 @@ class SmartFormField(forms.Field):
 
     def __init__(self, *args, **kwargs) -> None:
         self.flex_field: "FlexFormField" = kwargs.pop("flex_field")
-        self.smart_attrs = kwargs.pop("smart_attrs", kwargs.pop("smart", {}))
+        self.smart_attrs = kwargs.pop("smart_attrs", {})
         self.field_attrs = kwargs.pop("field_attrs", {})
         self.data_attrs = kwargs.pop("data", {})
         self.widget_kwargs = kwargs.pop("widget_kwargs", {})
