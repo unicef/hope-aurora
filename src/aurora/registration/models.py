@@ -414,7 +414,7 @@ def merge(a: dict, b: dict, path: list[str] | None = None, update: bool = True) 
                         update=update,
                     )
             elif update:
-                a[key] = b[key]
+                pass  # a[key] = b[key]
             else:
                 raise Exception("Conflict at %s" % ".".join(path + [str(key)]))
         else:

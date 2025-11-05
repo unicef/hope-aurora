@@ -1,15 +1,17 @@
-{% extends "counters/index.html" %}{% load static %}
+{% extends "counters/index.html" %}
+{% load static %}
 {% block breadcrumbs %}
     {{ block.super }}
     &gt; <a class="org" href="{% url "charts:org-index" organization.slug %}">{{ organization }}</a>
 {% endblock breadcrumbs %}
-
 {% block charts-content %}
     <div class="min-h-screen flex pb-10">
         <div class="w-full m-20 lg:w-1/2 mt-5">
             <ul>
                 {% for project in projects %}
-                    <li><a href="{% url "charts:project-index" organization.slug project.pk %}">{{ project }}</a></li>
+                    <li>
+                        <a href="{% url "charts:project-index" organization.slug project.pk %}">{{ project }}</a>
+                    </li>
                 {% endfor %}
             </ul>
         </div>

@@ -5,7 +5,6 @@
     }
 </style>
 {% tailwind_css %}
-
 <link rel="stylesheet" href="{% static "base.css" %}">
 <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
 <script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>
@@ -19,7 +18,8 @@
     {% if valid %}
         <div class="mb-10 w-full text-capitalize m-auto text-center text-xl border rounded">Success</div>
     {% elif error %}
-        <div class="mb-10 w-full text-capitalize m-auto text-center alert-message text-xl border rounded">please fix the
+        <div class="mb-10 w-full text-capitalize m-auto text-center alert-message text-xl border rounded">
+            please fix the
             errors below
         </div>
     {% endif %}

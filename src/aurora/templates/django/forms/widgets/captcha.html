@@ -6,6 +6,8 @@
         <div id="captcha1" class="inline"></div>
         <div class="flex-1 "></div>
     </div>
-    <input type="text" name="{{ widget.name }}"{% if widget.value != None %}
-           value="{{ widget.value|stringformat:'s' }}"{% endif %}{% include "django/forms/widgets/attrs.html" %}>
+    <input type="text"
+           name="{{ widget.name }}"
+           {% if widget.value != None %}value="{{ widget.value|stringformat:'s' }}"{% endif %}
+           {% include "django/forms/widgets/attrs.html" %}>
 </div>

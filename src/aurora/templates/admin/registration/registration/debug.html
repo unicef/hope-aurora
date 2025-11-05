@@ -1,11 +1,9 @@
 {% extends "admin_extra_buttons/action_page.html" %}
-
 {% block extrahead %}
     <script src="/static/admin/js/vendor/jquery/jquery.js"></script>
     <script src="/static/admin/js/jquery.init.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 {% endblock extrahead %}
-
 {% block action-content %}
     <h1>This is a WIP - use carefully</h1>
     <form method="post" id="debug-form">
@@ -20,7 +18,9 @@
             {% for t, result in results.items %}
                 <tr>
                     <td>{{ t }}</td>
-                    <td>{% for i in result %}<a href="{{ i.1 }}">{{ i.0 }}</a>{% endfor %}</td>
+                    <td>
+                        {% for i in result %}<a href="{{ i.1 }}">{{ i.0 }}</a>{% endfor %}
+                    </td>
                 </tr>
             {% endfor %}
         </table>

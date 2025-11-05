@@ -1,12 +1,17 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}
+{% load i18n %}
 {% block body %}
     <div class="flex justify-center mx-10 p-10 bg-gray-100">
         <ul class="errorlist nonfield rounded px-5">
             {% for message in messages %}
-                <li><span class="m-5 p-5">{{ message }}</span></li>
+                <li>
+                    <span class="m-5 p-5">{{ message }}</span>
+                </li>
             {% endfor %}
             {% for message in form.non_field_errors %}
-                <li><span class="m-5 p-5">{{ message }}</span></li>
+                <li>
+                    <span class="m-5 p-5">{{ message }}</span>
+                </li>
             {% endfor %}
         </ul>
     </div>
@@ -14,7 +19,8 @@
         <div class="flex justify-center bg-gray-100">
             <div class="mx-10">
                 {% if user_has_token or config.LOGIN_LOCAL %}
-                    <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
+                    <form action="{{ app_path }}" method="post" id="login-form">
+                        {% csrf_token %}
                         <div class="form-row">
                             {{ form.username.errors }}
                             {{ form.username.label_tag }} {{ form.username }}
@@ -32,9 +38,9 @@
                 <hr>
                 {% if user_has_token or config.LOGIN_SSO %}
                     <div class="submit-row text-center mt-10">
-                        <a href="{% url 'social:begin' 'azuread-tenant-oauth2' %}" style="padding: 10px" class="button">
-                            Sign In With Azure
-                        </a>
+                        <a href="{% url 'social:begin' 'azuread-tenant-oauth2' %}"
+                           style="padding: 10px"
+                           class="button">Sign In With Azure</a>
                     </div>
                 {% endif %}
                 {# </div> #}

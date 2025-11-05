@@ -1,4 +1,5 @@
-{% extends "smart_admin/console.html" %}{% load i18n static %}
+{% extends "smart_admin/console.html" %}
+{% load i18n static %}
 {% block left %}
     {% if form %}
         <form method="post" enctype="multipart/form-data">
@@ -10,8 +11,6 @@
             <input type="submit" value="Import">
         </form>
     {% else %}
-        {% for line in out %}
-            <div>{{ line }}</div>
-        {% endfor %}
+        {% for line in out %}<div>{{ line }}</div>{% endfor %}
     {% endif %}
 {% endblock left %}

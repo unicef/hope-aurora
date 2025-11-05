@@ -47,7 +47,7 @@ class SaveToDB(RegistrationStrategy):
                 "files": safe_json(files).encode(),
                 "fields": jsonfy(fields),
             }
-        if self.registration.unique_field_path and not kwargs.get("unique_field", None):
+        if self.registration.unique_field_path and not kwargs.get("unique_field"):
             unique_value = self.registration.get_unique_value(fields)
             kwargs["unique_field"] = unique_value
         if state.request and state.request.user.is_authenticated:

@@ -1,5 +1,4 @@
 {% extends "admin_extra_buttons/action_page.html" %}
-
 {% block action-content %}
     {% if custom_template %}
         <div>
@@ -10,7 +9,8 @@
             {% endif %}
         </div>
         <div class="submit-row ">
-            <a class="button" href="{% url "admin:dbtemplates_template_change" custom_template.pk %}">Edit</a>
+            <a class="button"
+               href="{% url "admin:dbtemplates_template_change" custom_template.pk %}">Edit</a>
             <input type="button" value="Back" onclick="location.href='..'">
         </div>
     {% elif form %}
@@ -24,17 +24,22 @@
         </form>
     {% else %}
         <ul>
-            <li><a href="{{ uri }}">{{ uri }}</a></li>
+            <li>
+                <a href="{{ uri }}">{{ uri }}</a>
+            </li>
         </ul>
-
         <a href="{% url "admin:i18n_message_changelist" %}?locale__exact={{ locale }}&amp;draft__exact=1&amp;timestamp__day={% now "d" %}&amp;timestamp__month={% now "n" %}&amp;timestamp__year={% now "Y" %}">View
-            All Messages</a>
+        All Messages</a>
         <h2>New messages</h2>
-        <table>{% for msg in added %}
-            <tr>
-                <td><a href="{% url "admin:i18n_message_change" msg.pk %}">{{ msg.msgid }}</a></td>
-                <td></td>
-            </tr>
-        {% endfor %}</table>
+        <table>
+            {% for msg in added %}
+                <tr>
+                    <td>
+                        <a href="{% url "admin:i18n_message_change" msg.pk %}">{{ msg.msgid }}</a>
+                    </td>
+                    <td></td>
+                </tr>
+            {% endfor %}
+        </table>
     {% endif %}
 {% endblock action-content %}

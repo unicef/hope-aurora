@@ -1,19 +1,20 @@
-{% extends "counters/org_index.html" %}{% load static %}
+{% extends "counters/org_index.html" %}
+{% load static %}
 {% block breadcrumbs %}
     {{ block.super }}
-    &gt;<a class="project" href="{% url "charts:project-index" organization.slug project.pk %}">{{ project }}</a>
+    &gt;<a class="project"
+   href="{% url "charts:project-index" organization.slug project.pk %}">{{ project }}</a>
 {% endblock breadcrumbs %}
-
 {% block charts-content %}
-
     <div class="min-h-screen flex  pb-10">
         <div class="w-full m-20 lg:w-1/2 mt-5">
-        <ul>
-            {% for reg in project.registrations.all %}
-                <li><a href="{% url "charts:monthly" project.organization.slug project.pk reg.pk %}">{{ reg }}</a></li>
-            {% endfor %}
-        </ul>
+            <ul>
+                {% for reg in project.registrations.all %}
+                    <li>
+                        <a href="{% url "charts:monthly" project.organization.slug project.pk reg.pk %}">{{ reg }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
         </div>
     </div>
-
 {% endblock charts-content %}

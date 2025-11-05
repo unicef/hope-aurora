@@ -1,14 +1,15 @@
-{% extends "base.html" %}{% load static %}
+{% extends "base.html" %}
+{% load static %}
 {% block head %}
     {{ block.super }}
     <link rel="stylesheet" href="{% static "counters/counters.css" %}">
-{#    <script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>#}
-{#    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>#}
-{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js"></script>#}
-{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>#}
-{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/1.4.0/chartjs-plugin-annotation.min.js"#}
-{#            integrity="sha512-HrwQrg8S/xLPE6Qwe7XOghA/FOxX+tuVF4TxbvS73/zKJSs/b1gVl/P4MsdfTFWYFYg/ISVNYIINcg35Xvr6QQ=="#}
-{#            crossorigin="anonymous" referrerpolicy="no-referrer"></script>#}
+    {#    <script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>#}
+    {#    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>#}
+    {#    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js"></script>#}
+    {#    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>#}
+    {#    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/1.4.0/chartjs-plugin-annotation.min.js"#}
+    {#            integrity="sha512-HrwQrg8S/xLPE6Qwe7XOghA/FOxX+tuVF4TxbvS73/zKJSs/b1gVl/P4MsdfTFWYFYg/ISVNYIINcg35Xvr6QQ=="#}
+    {#            crossorigin="anonymous" referrerpolicy="no-referrer"></script>#}
 {% endblock head %}
 {% block body %}
     <div id="charts" class="">

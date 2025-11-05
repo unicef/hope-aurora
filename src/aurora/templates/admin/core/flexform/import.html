@@ -1,13 +1,14 @@
 {% extends "admin_extra_buttons/action_page.html" %}
-
 {% block action-content %}
     <style>
         table {
             width: 100%
         }
-        table th{
+
+        table th {
             width: 5%;
         }
+
         input[name=host] {
             width: 100%;
         }
@@ -21,7 +22,9 @@
                 <td>{{ res }}</td>
             </tr>
             <tr>
-                <td><pre>{{ data|safe }}</pre></td>
+                <td>
+                    <pre>{{ data|safe }}</pre>
+                </td>
             </tr>
         </table>
     {% else %}

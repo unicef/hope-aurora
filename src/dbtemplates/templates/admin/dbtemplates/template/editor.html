@@ -1,13 +1,16 @@
-<div id="{{ widget.attrs.id }}_container" class="cm-container" data-fieldId="{{ widget.attrs.id }}">
+<div id="{{ widget.attrs.id }}_container"
+     class="cm-container"
+     data-fieldId="{{ widget.attrs.id }}">
     {% if widget.attrs.toolbar %}
-{#        <div class="cm-toolbar">#}
-{#            <a data-action="undo" class="button toolbutton" href="javascript:false">undo </a>#}
-{#            <a data-action="redo" class="button toolbutton" href="javascript:false">redo </a>#}
-{#            <a data-op="expand" class="button toolbutton" href="javascript:false"> fullscreen </a>#}
-{#            <a data-op="run" class="button toolbutton" href="javascript:false"> run </a>#}
-{#        </div>#}
+        {#        <div class="cm-toolbar">#}
+        {#            <a data-action="undo" class="button toolbutton" href="javascript:false">undo </a>#}
+        {#            <a data-action="redo" class="button toolbutton" href="javascript:false">redo </a>#}
+        {#            <a data-op="expand" class="button toolbutton" href="javascript:false"> fullscreen </a>#}
+        {#            <a data-op="run" class="button toolbutton" href="javascript:false"> run </a>#}
+        {#        </div>#}
     {% endif %}
-    <textarea name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %}>{{ widget.value|default_if_none:"" }}</textarea>
+    <textarea name="{{ widget.name }}"
+              {% include "django/forms/widgets/attrs.html" %}>{{ widget.value|default_if_none:"" }}</textarea>
 </div>
 <script>
     (function ($) {

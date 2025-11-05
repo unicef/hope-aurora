@@ -85,7 +85,7 @@ class FlexFormFieldAdmin(SyncMixin, ConcurrencyVersionAdmin, OrderableAdmin, Sma
 
     def get_queryset(self, request: "HttpRequest") -> "QuerySet[FlexFormField]":
         return (
-            super()  # type: ignore[return-value]
+            super()
             .get_queryset(request)
             .annotate(name_deterministic=Collate("name", "und-x-icu"))
             .select_related("flex_form")

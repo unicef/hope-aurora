@@ -4,7 +4,7 @@
         background-color: white;
     }
 </style>
- {% tailwind_css %}
+{% tailwind_css %}
 <link rel="stylesheet" href="{% static "base.css" %}">
 <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
 {# <script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script> #}
@@ -19,7 +19,8 @@
         <div class="w-full text-capitalize m-auto text-center text-xl border rounded bg-green-200">Success</div>
         <pre class="p-2 border m-2 bg-gray-200">{{ data }}</pre>
     {% elif error %}
-        <div class="mb-10 w-full text-capitalize m-auto text-center alert-message text-xl border rounded">please fix the
+        <div class="mb-10 w-full text-capitalize m-auto text-center alert-message text-xl border rounded">
+            please fix the
             errors below
         </div>
     {% endif %}
@@ -28,12 +29,12 @@
     <form method="post" id="registrationForm" action=".">
         {% csrf_token %}
         <div class="form-container">
-        {% for field in form %}
-            {% include "smart/_fieldset.html" %}
-        {% endfor %}
-        <div class="submit-row">
-            <input style="background-color: cornflowerblue" type="submit" value="Submit">
-        </div>
+            {% for field in form %}
+                {% include "smart/_fieldset.html" %}
+            {% endfor %}
+            <div class="submit-row">
+                <input style="background-color: cornflowerblue" type="submit" value="Submit">
+            </div>
         </div>
     </form>
 </div>

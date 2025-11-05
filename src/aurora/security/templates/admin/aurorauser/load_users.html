@@ -3,14 +3,11 @@
 {% block breadcrumbs %}
     <div class="breadcrumbs">
         <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
-        &rsaquo; <a
-            href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
-        &rsaquo; <a
-            href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+        &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+        &rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
         &rsaquo; Import
     </div>
 {% endblock breadcrumbs %}
-
 {% block content %}
     {% if not results %}
         <h1>Import Users</h1>
@@ -18,7 +15,9 @@
         <form method="POST" id="load_users" novalidate>
             {% csrf_token %}
             {{ form.as_p }}
-            <div><input type="submit" value="Add to HOPE"></div>
+            <div>
+                <input type="submit" value="Add to HOPE">
+            </div>
         </form>
     {% else %}
         <h1>Import Users</h1>
@@ -42,5 +41,4 @@
         {% endif %}
     {% endif %}
 {% endblock content %}
-
 {% block submit_buttons_bottom %}{% endblock %}

@@ -1,4 +1,5 @@
-{% load itrans %}<div id="div_{{ widget.name }}">
+{% load itrans %}
+<div id="div_{{ widget.name }}">
     <canvas>
         <div class="bg-white rounded shadow border p-6 w-64">
             <div class="output">
@@ -6,16 +7,14 @@
             </div>
         </div>
     </canvas>
-    <input style="display: none" name="{{ widget.name }}"{% if widget.value != None %}
-           value="{{ widget.value|stringformat:'s' }}"{% endif %}{% include "django/forms/widgets/attrs.html" %}>
+    <input style="display: none"
+           name="{{ widget.name }}"
+           {% if widget.value != None %}value="{{ widget.value|stringformat:'s' }}"{% endif %}
+           {% include "django/forms/widgets/attrs.html" %}>
     <div>
         <button class="show-camera bg-white hover:bg-gray-100 text-gray-800 font-semibold my-2 mx-2 py-2 px-4 border border-gray-400 rounded shadow"
-                type="button">
-            {% translate buttonLabel %}
-        </button>
+                type="button">{% translate buttonLabel %}</button>
         <button class="clear-camera bg-white hover:bg-gray-100 text-gray-800 font-semibold my-2 mx-2 py-2 px-4 border border-gray-400 rounded shadow"
-                type="button">
-            {% translate cancelLabel %}
-        </button>
+                type="button">{% translate cancelLabel %}</button>
     </div>
 </div>

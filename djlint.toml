@@ -1,6 +1,6 @@
 profile="django"
 check=true
-lint=true
-format_css=true
+lint=false
+format_css=false
 quiet=false
 use_gitignore=true

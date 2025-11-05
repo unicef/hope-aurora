@@ -1,5 +1,4 @@
 {% extends "admin_extra_buttons/action_page.html" %}
-
 {% block action-content %}
     {% if form %}
         <form method="post" id="translation_form">
@@ -12,8 +11,15 @@
         </form>
     {% else %}
         <h2>New messages</h2>
-        <table>{% for msg in added %}
-            <tr><td><a href="{% url "admin:i18n_message_change" msg.pk %}">{{ msg.msgid }}</a></td><td></td></tr>
-        {% endfor %}</table>
+        <table>
+            {% for msg in added %}
+                <tr>
+                    <td>
+                        <a href="{% url "admin:i18n_message_change" msg.pk %}">{{ msg.msgid }}</a>
+                    </td>
+                    <td></td>
+                </tr>
+            {% endfor %}
+        </table>
     {% endif %}
 {% endblock action-content %}

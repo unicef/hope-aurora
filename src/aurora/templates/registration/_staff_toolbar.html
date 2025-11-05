@@ -1,15 +1,11 @@
-{% load itrans static %}{% if user.is_staff %}
+{% load itrans static %}
+{% if user.is_staff %}
     <div class="fixed flex staff-toolbar">
         <div class="flex-shrink block hidden lg:inline-flex">
             {% translate "Version" %}: {{ project.commit|slice:':7'|join:'' }}
         </div>
-        <div class="flex-shrink block hidden lg:inline-flex">
-            {% translate "Build date" %}: {{ project.build_date }}
-        </div>
-
-        <span class="flex-grow block inline-flex">
-            {{ project.env }}
-        </span>
+        <div class="flex-shrink block hidden lg:inline-flex">{% translate "Build date" %}: {{ project.build_date }}</div>
+        <span class="flex-grow block inline-flex">{{ project.env }}</span>
         <div class="hidden md:inline-flex ">
             <a href="{% url "admin:index" %}">Admin</a>
         </div>

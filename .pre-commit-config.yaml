@@ -1,30 +1,112 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: cef0300fd0fc4d2a87a85fa2093c6b283ea36f4b  # frozen: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
 
+  - repo: https://github.com/djlint/djLint
+    rev: v1.36.4
+    hooks:
+      - id: djlint
+        args: ["--check", "--configuration", "djlint.toml"]
+
+  - repo: https://github.com/returntocorp/semgrep
+    rev: v1.142.0
+    hooks:
+      - id: semgrep
+        exclude: '(\.semgrep/|docs/)'
+        exclude_types:
+          - yaml
+        args:
+          - scan
+          - src
+          - --config
+          - .semgrep/
+          # Do not try to scan '.semgrep/' directories as they contain test files
+          # thus they will trigger findings.
+          - --exclude=.semgrep/
+          - --exclude=docs/_scripts/
+          # Set the exit code to non-zero if there are findings.
+          - --error
+          # Do not check for version updates, it slows down the execution.
+          - --disable-version-check
+          # Quiet mode in order to not pollute the pre-commit outputs.
+          # Replace --quiet with --verbose to debug issues.
+          - --quiet
+
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 06e4cc849d03f3a59ca223a4046f4bb5bb2aba6d  # frozen: 0.33.0
+    rev: 0.34.1
     hooks:
       - id: check-github-workflows
         args: [ "--verbose" ]
 
   - repo: https://github.com/tox-dev/tox-ini-fmt
-    rev: "e732f664aa3fd7b32cce3de8abbac43f4c3c375d"  # frozen: 1.5.0
+    rev: "1.7.0"
     hooks:
       - id: tox-ini-fmt
         args: [ "-p", "lint" ]
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: "57b6ff7bf72affdd12c7f3fd6de761ba18a33b3a"  # frozen: v2.5.1
+    rev: "v2.11.0"
     hooks:
       - id: pyproject-fmt
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "f0fe93c067104b76ffb58852abe79673a8429bd1"  # frozen: v0.11.8
+    rev: v0.14.2
     hooks:
-      - id: ruff-format
       - id: ruff
-        args: [ "--fix", "--unsafe-fixes", "--exit-non-zero-on-fix" ]
+      - id: ruff-format
+        args:
+          - --check
+          - --config
+          - ruff.toml
+
+  - repo: https://github.com/saxix/pch
+    rev: '0.2'
+    hooks:
+
+      - id: check-missed-migrations
+        args:
+          - src
+        stages: [ pre-commit ]
+        additional_dependencies: [ setuptools ]
+
+      - id: check-untracked
+        args:
+          - src
+          - tests
+        stages: [ pre-push ]
+
+      - id: check-forbidden
+        args:
+          - -i
+          - "pyproject.toml"
+          - -p
+          - "/\\[tool.uv.sources\\]/"
+        stages: [ pre-push ]
+
+      - id: check-tailwind
+        name: check tailwind CSS ready for production
+        files: src/aurora/web/theme/static_src/src/styles.scss
+        args:
+          - -o
+          - src/aurora/web/theme/static/css/styles.css
+
+      - id: check-minimized
+        name: check missing minimized javascript
+        files: (\.js)$
+        exclude: (\.min\.js)$
+        args:
+          - -i
+          - "src/aurora/web/theme/static_src/*.js"
+          - -i
+          - src/dbtemplates/static/dbtemplates/js/*.js
+
+      - id: check-forbidden
+        name: check pyproject to avoid editable sources/deps
+        files: pyproject.toml
+        language: python
+        args:
+          - -p
+          - /\[tool\.uv\.sources\]\s/s

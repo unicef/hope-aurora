@@ -1,4 +1,5 @@
-{% extends "admin_extra_buttons/change_form.html" %}{% load static %}
+{% extends "admin_extra_buttons/change_form.html" %}
+{% load static %}
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet" href="{% static "base.css" %}">
@@ -24,7 +25,6 @@
         }
     </style>
 {% endblock extrahead %}
-
 {% block messages %}
     <ul class="messagelist">
         {% if original.encrypt_data %}
@@ -37,7 +37,6 @@
     </ul>
     {{ block.super }}
 {% endblock messages %}
-
 {# {% block after_field_sets %} #}
 {# <div class="submit-row key"> #}
 {# <div class="label">Public/Private RSA encryption</div> #}

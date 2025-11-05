@@ -1,12 +1,13 @@
 {% extends "base.html" %}
-
 {% block body %}
     {{ form.media }}
     {% block messages %}
         {% if messages %}
-            <ul class="messagelist">{% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message|capfirst }}</li>
-            {% endfor %}</ul>
+            <ul class="messagelist">
+                {% for message in messages %}
+                    <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message|capfirst }}</li>
+                {% endfor %}
+            </ul>
         {% endif %}
         {{ cleaned_data }}
     {% endblock messages %}

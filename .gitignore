@@ -22,6 +22,7 @@ Makefile
 
 !tests/.coveragerc
 !.gitignore
+!.semgrep
 !.dockerignore
 !.github
 !.pre-commit-config.yaml

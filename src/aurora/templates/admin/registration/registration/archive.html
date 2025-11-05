@@ -1,10 +1,8 @@
-{% extends "admin_extra_buttons/action_page.html" %}{% load aurora %}
+{% extends "admin_extra_buttons/action_page.html" %}
+{% load aurora %}
 {% block extrahead %}
-
 {% endblock extrahead %}
-
 {% block breadcrumbs-active %}&rsaquo; <a href=".">{{ title }}</a>{% endblock %}
-
 {% block action-content %}
     <form method="post">
         {% if original.archived %}
@@ -13,9 +11,7 @@
                 <div>End Date: {{ original.end }}</div>
                 <div>Clear Date: {{ aa }}</div>
             </fieldset>
-            {% if aa > today %}
-                <input type="submit" value="Remove Records" name="clear">
-            {% endif %}
+            {% if aa > today %}<input type="submit" value="Remove Records" name="clear">{% endif %}
             <a href=".." type="button">Cancel</a>
         {% else %}
             {% csrf_token %}

@@ -105,7 +105,7 @@ class FlexFormAdmin(SyncMixin, ConcurrencyVersionAdmin, SmartModelAdmin[FlexForm
 
     def get_queryset(self, request: "HttpRequest") -> "QuerySet[FlexForm]":
         return (
-            super()  # type: ignore[return-value]
+            super()
             .get_queryset(request)
             .annotate(name_deterministic=Collate("name", "und-x-icu"))
             .prefetch_related("registration_set")

@@ -1,4 +1,5 @@
-{% extends "admin_extra_buttons/action_page.html" %}{% load aurora %}
+{% extends "admin_extra_buttons/action_page.html" %}
+{% load aurora %}
 {% block extrahead %}
     <script src="/static/admin/js/vendor/jquery/jquery.js"></script>
     <script src="/static/admin/js/jquery.init.js"></script>
@@ -12,7 +13,6 @@
         }
     </style>
 {% endblock extrahead %}
-
 {% block action-content %}
     {{ form.media }}
     <form method="post">
@@ -25,18 +25,17 @@
                     <input type="submit" class="save" value="Save">
                     <input type="button" class="sample" id="get_sample" value="Sample">
                 </td>
-            <tr>
-                <td>
-                    <textarea name="data" id="id_data" style="width: 100%;height: 300px">{{ form.data.value }}</textarea>
-                </td>
-                <td>
-                    <textarea id="id_result" style="width: 100%; height: 300px"></textarea>
-                </td>
-            </tr>
-
-        </table>
-    </form>
-    <script>
+                <tr>
+                    <td>
+                        <textarea name="data" id="id_data" style="width: 100%;height: 300px">{{ form.data.value }}</textarea>
+                    </td>
+                    <td>
+                        <textarea id="id_result" style="width: 100%; height: 300px"></textarea>
+                    </td>
+                </tr>
+            </table>
+        </form>
+        <script>
         (function ($) {
             $(function () {
                 const sampleDataTxt = $("#id_data");
@@ -74,5 +73,5 @@
             });
         })(django.jQuery);
 
-    </script>
-{% endblock action-content %}
+        </script>
+    {% endblock action-content %}

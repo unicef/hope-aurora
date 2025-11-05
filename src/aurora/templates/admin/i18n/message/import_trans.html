@@ -1,8 +1,7 @@
-{% extends "admin_extra_buttons/action_page.html" %}{% load itrans %}
+{% extends "admin_extra_buttons/action_page.html" %}
+{% load itrans %}
 {% block breadcrumbs-active %}&rsaquo; <a href=".">{{ title }}</a>{% endblock %}
-
 {% block content_title %}<h1>Import Translations File for {{ language }} ({{ language_code }})</h1>{% endblock %}
-
 {% block action-content %}
     <style>
         table {
@@ -13,28 +12,37 @@
             width: 200px;
         }
     </style>
-    <form method="post" action="." enctype="multipart/form-data" id="importForm">
+    <form method="post"
+          action="."
+          enctype="multipart/form-data"
+          id="importForm">
         {% csrf_token %}
         {% if rows %}
             <table>
                 <caption>Translations</caption>
                 <tr>
-                    <th><input type="checkbox" id="selectAll" checked value="{{ line.0 }}"> #</th>
+                    <th>
+                        <input type="checkbox" id="selectAll" checked value="{{ line.0 }}">
+                        #
+                    </th>
                     <th>Msg ID</th>
                     <th>{{ language }} ({{ language_code }})</th>
                     <th>Found</th>
                     <th>Match</th>
                 </tr>
-
                 {% for line in rows %}
                     <tr>
-                        <td><input type="checkbox" name="selection" checked value="{{ line.1.msgid }}"> {{ line.0 }}</td>
+                        <td>
+                            <input type="checkbox" name="selection" checked value="{{ line.1.msgid }}">
+                            {{ line.0 }}
+                        </td>
                         <td>{{ line.1.msgid }}</td>
                         <td>{{ line.1.msgstr }}</td>
                         <td>{{ line.1.found|bool_icon }}</td>
                         <td>{{ line.1.match|bool_icon }}</td>
                     </tr>
-                {% endfor %}</table>
+                {% endfor %}
+            </table>
             <input type="submit" name="save" id="save" value="Save">
         {% else %}
             {{ form.errors }}

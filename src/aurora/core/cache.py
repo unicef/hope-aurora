@@ -15,7 +15,7 @@ class Cache(OrderedDict):
         self._check_size_limit()
 
     def __setitem__(self, key: str, value: "Any") -> None:
-        OrderedDict.__setitem__(self, key, value)  # type: ignore[assignment]
+        OrderedDict.__setitem__(self, key, value)
         self._check_size_limit()
 
     def _check_size_limit(self) -> None:
