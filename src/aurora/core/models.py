@@ -19,6 +19,7 @@ from django.forms import formset_factory
 from django.template.defaultfilters import pluralize, slugify
 from django.urls import reverse
 from django.utils.deconstruct import deconstructible
+from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.translation import get_language
 from mptt.fields import TreeForeignKey
@@ -234,6 +235,24 @@ _.is_adult = function(d) { return !_.is_child(d)};
         if not self.name:
             self.name = namify(self.label)
         super().save(force_insert, force_update, using, update_fields)
+        from aurora.registration.models import Registration
+
+        flex_forms_pks = set()
+        flex_forms_pks.update(self.flexform_set.values_list("pk", flat=True))
+        flex_forms_pks.update(FlexForm.objects.filter(fields__validator=self).values_list("pk", flat=True))
+        flex_forms_pks.update(FlexForm.objects.filter(formsets__validator=self).values_list("pk", flat=True))
+
+        if flex_forms_pks:
+            FlexForm.objects.filter(pk__in=flex_forms_pks).update(
+                version=models.F("version") + 1, last_update_date=timezone.now()
+            )
+
+        registrations_to_update = Registration.objects.filter(
+            models.Q(flex_form_id__in=list(flex_forms_pks)) | models.Q(validator=self) | models.Q(scripts=self)
+        ).distinct()
+
+        if registrations_to_update.exists():
+            registrations_to_update.update(version=models.F("version") + 1, last_update_date=timezone.now())
 
     def get_script_url(self):
         return reverse("api:validator-script", args=[self.pk])
@@ -272,6 +291,14 @@ class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        from aurora.registration.models import Registration
+
+        Registration.objects.filter(flex_form=self).update(
+            version=models.F("version") + 1, last_update_date=timezone.now()
+        )
+
     def __init__(self, *args, **kwargs):
         self._initial = {}
         super().__init__(*args, **kwargs)
@@ -285,6 +312,11 @@ class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
         return FormSet.objects.update_or_create(parent=self, flex_form=form, defaults=defaults)[0]
 
     def get_form_class(self) -> "type[FlexFormForm]":
+        key = f"flex-form-class-{self.pk}-{self.version}"
+        form_class = cache.get(key)
+        if form_class:
+            return form_class
+
         from aurora.core.fields import CompilationTimeField
 
         fields = {}
@@ -307,7 +339,9 @@ class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
             "indexes": indexes,
             **fields,
         }
-        return type(FlexFormBaseForm)(f"{self.name}FlexForm", (self.base_type,), form_class_attrs)
+        form_class = type(FlexFormBaseForm)(f"{self.name}FlexForm", (self.base_type,), form_class_attrs)
+        cache.set(key, form_class)
+        return form_class
 
     def get_formsets_classes(self):
         formsets = {}
@@ -427,6 +461,8 @@ class FormSet(AdminReverseMixin, NaturalKeyModel, OrderableModel):
         self.name = slugify(self.name)
         dict_setdefault(self.advanced, self.FORMSET_DEFAULT_ATTRS)
         super().save(*args, **kwargs)
+        if self.parent_id:
+            self.parent.save()
 
     @cached_property
     def widget_attrs(self):
@@ -651,6 +687,11 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
     def get_instance(self) -> SmartFormField | None:
         if self.field_type is None:
             return None
+        key = f"flex-form-field-{self.pk}-{self.version}-{self.flex_form.version}"
+        fld = cache.get(key)
+        if fld:
+            return fld
+
         smart_field_type: type[SmartFormField]
         try:
             if isclass(self.field_type) and issubclass(self.field_type, CustomFieldMixin):
@@ -664,6 +705,7 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
         except Exception as e:
             logger.exception(e)
             raise
+        cache.set(key, fld)
         return fld
 
     def clean(self) -> None:
@@ -685,6 +727,8 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
             self.name = namify(self.label)[:100]
 
         super().save(force_insert, force_update, using, update_fields)
+        if self.flex_form_id:
+            self.flex_form.save()
 
     def get_usage(self) -> list[dict[str, Any]]:
         ret = []
