@@ -30,7 +30,7 @@ dependencies = [
   "django-admin-ordering",
   "django-admin-sync>=0.9",
   "django-adminactions",
-  "django-adminfilters>=2.7",
+  "django-adminfilters==2.6",
   "django-anymail[mailjet]",
   "django-appconf",
   "django-click",

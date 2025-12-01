@@ -3,7 +3,7 @@ import logging
 from typing import TYPE_CHECKING, Any, Iterable
 
 from admin_extra_buttons.decorators import button, link
-from adminfilters.dates import DateInDateRangeFilter
+from adminfilters.dates import DateRangeFilter
 from adminfilters.filters import AutoCompleteFilter, NumberFilter, ValueFilter
 from django.conf import settings
 from django.shortcuts import render
@@ -39,7 +39,7 @@ class RecordAdmin(SmartModelAdmin):
     list_filter = (
         ("registration", AutoCompleteFilter),
         ("id", NumberFilter),
-        ("timestamp", DateInDateRangeFilter),
+        ("timestamp", DateRangeFilter),
         HourFilter,
         ("unique_field", ValueFilter),
         "ignored",

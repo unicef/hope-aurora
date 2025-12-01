@@ -491,15 +491,15 @@ wheels = [
 
 [[package]]
 name = "django-adminfilters"
-version = "2.7"
+version = "2.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django-stubs" },
     { name = "django-stubs-ext" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/51/4e/d3c553833c917f5b0e022da3fb96760d05d8aa9755a70c03cfaa9c641e21/django_adminfilters-2.7.tar.gz", hash = "sha256:0a825bc7cf7e067ecc5e90ff6968be4a14382c57e4d57f59a207928c8498f4f8", size = 27115, upload-time = "2025-11-17T17:51:16.953Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6b/2f/f7a6605117e2adf2a69be8d32dd5d2df94769f39473e433fba35cc354bc5/django_adminfilters-2.6.tar.gz", hash = "sha256:e9d57869a7f696a0b972b2b482d7ac69285f38a28d527270670bc7588653fdfd", size = 27183, upload-time = "2025-04-02T13:31:56.544Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8f/1e/a359d52ab2fcb8cf21ed1fa93cd663d66300b7948fc220c8a718beeb446c/django_adminfilters-2.7-py3-none-any.whl", hash = "sha256:c8323b6a6904ec7cf48faf40b4f61578e22210380953e050731de48211e74601", size = 54813, upload-time = "2025-11-17T17:51:15.461Z" },
+    { url = "https://files.pythonhosted.org/packages/4e/5d/f58005d14f062a448d4bda26f799e84e675576bfe0a669a83d138e0a8dad/django_adminfilters-2.6-py3-none-any.whl", hash = "sha256:b5bd60a73ff8ea154fd109ff7e85e623096653a0bf4c087dee14d044f8a5fa73", size = 53913, upload-time = "2025-04-02T13:31:54.81Z" },
 ]
 
 [[package]]
@@ -3447,7 +3447,7 @@ requires-dist = [
     { name = "django-admin-ordering" },
     { name = "django-admin-sync", specifier = ">=0.9" },
     { name = "django-adminactions" },
-    { name = "django-adminfilters", specifier = ">=2.7" },
+    { name = "django-adminfilters", specifier = "==2.6" },
     { name = "django-anymail", extras = ["mailjet"] },
     { name = "django-appconf" },
     { name = "django-click" },
