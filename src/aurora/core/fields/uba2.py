@@ -21,6 +21,7 @@ from .mixins import ConfigurableSmartField
 if TYPE_CHECKING:
     from aurora.core.models import FlexFormField, OptionSet
 
+
 FALSE = "false"
 
 STERLING_BANK = "000001"
@@ -1293,30 +1294,24 @@ class AccountHolderNameUBATextInput(SmartTextWidget):
 class UBASelect(forms.Select):
     template_name = "django/forms/widgets/uba_select.html"
 
-    def __init__(self, attrs=None):
-        optionset_name = attrs.get("optionset_name") if isinstance(attrs, dict) else "NIGERIA_UBA_OPTIONS1"
-        from aurora.core.models import OptionSet
-
-        try:
-            optionset = OptionSet.objects.get(name=optionset_name)
-            lines = optionset.data.strip().split("\r\n")
-            options = ((line.split(";")[0], line.split(";")[1]) for line in lines)
-
-        except OptionSet.DoesNotExist:
-            options = BANKS_SORTED_CHOICES
-
-        attrs = {
-            "choices": options,
-            **(attrs or {}),
-        }
-        super().__init__(attrs)
-
 
 class UBANameEnquiryMultiWidget(MultiValueWidgetMixin, MultiWidget):
     template_name = "django/forms/widgets/uba.html"
     custom_render = True
 
-    def __init__(self, attrs=None):
+    def __init__(self, attrs=None, choices=()):
+        # breakpoint()
+        # from aurora.core.models import OptionSet
+        # try:
+        #     breakpoint()
+        #     name = self.flex_field.advanced.get('optionset_name', None)
+        #     optionset = OptionSet.objects.get(name=name)
+        #     lines = optionset.data.strip().split("\r\n")
+        #     options = [(line.split(";")[0], line.split(";")[1]) for line in lines]
+        # except OptionSet.DoesNotExist:
+        #     options = BANKS_SORTED_CHOICES
+        attrs = attrs or dict
+        # attrs["choices"] = choices
         widgets = (
             UBASelect(attrs),
             AccountNumberUBATextInput(attrs),
@@ -1354,13 +1349,59 @@ class UBANameEnquiryField(ConfigurableSmartField, forms.MultiValueField):
     flex_field: "FlexFormField"
 
     def __init__(self, *args, **kwargs):
+        breakpoint()
+        if hasattr(self, "smart_attrs"):
+            self.parent = self.smart_attrs.get("parent_datasource", None)
+            self.datasource = self.smart_attrs.get("datasource", None)
+
+        from aurora.core.models import OptionSet
+
+        try:
+            name = ""  # self.flex_field.advanced.get('optionset_name', None)
+            optionset = OptionSet.objects.get(name=name)
+            lines = optionset.data.strip().split("\r\n")
+            self.options = [(line.split(";")[0], line.split(";")[1]) for line in lines]
+        except OptionSet.DoesNotExist:
+            self.options = BANKS_SORTED_CHOICES
+
         fields = [
-            forms.ChoiceField(choices=BANKS_SORTED_CHOICES),
+            forms.ChoiceField(choices=self.options),
             forms.CharField(),
             forms.CharField(),
         ]
         kwargs["template_name"] = "django/forms/uba.html"
         super().__init__(fields, *args, **kwargs)
+
+    def widget_attrs(self, widget):
+        breakpoint()
+        from aurora.core.models import OptionSet
+
+        attrs = super().widget_attrs(widget)
+
+        from aurora.core.models import OptionSet
+        # breakpoint()
+
+        attrs = super().widget_attrs(widget)
+        breakpoint()
+        # try:
+        #     if self.parent:
+        attrs["choices"] = (("a", "a"),)
+        # attrs["data-source"] = self.datasource
+        # attrs["data-ajax--base-url"] = reverse("optionset", args=[self.datasource])
+        # attrs["data-ajax--url-version"] = reverse("optionset-version", args=[self.datasource])
+        # except (OptionSet.DoesNotExist, NoReverseMatch, TypeError) as e:
+        # logger.exception(e)
+
+        return attrs
+
+    def render(self, name, value, attrs=None, renderer=None):
+        """Render the widget as an HTML string."""
+        context = self.get_context(name, value, attrs)
+        label1 = context["widget"]["attrs"].get("smart_attrs", {}).get("label-button", "Take Photo")
+        # label2 = context["widget"]["attrs"].get("smart_attrs", {}).get("label-cancel", "Cancel Photo")
+        # context["buttonLabel"] = label1
+        # context["cancelLabel"] = label2
+        return self._render(self.template_name, context, renderer)
 
     def compress(self, values):
         values.insert(0, dict(BANKS_CHOICE)[values[0]])
