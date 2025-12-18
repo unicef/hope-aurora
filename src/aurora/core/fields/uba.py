@@ -1,4 +1,5 @@
 import binascii
+from contextlib import suppress
 from typing import TYPE_CHECKING
 
 import requests
@@ -1294,16 +1295,16 @@ class UBASelect(forms.Select):
     template_name = "django/forms/widgets/uba_select.html"
 
     def __init__(self, attrs=None):
-        optionset_name = attrs.get("optionset_name", "NIGERIA_UBA_OPTIONS1")
         from aurora.core.models import OptionSet
 
-        try:
-            optionset = OptionSet.objects.get(name=optionset_name)
-            lines = optionset.data.strip().split("\r\n")
-            options = ((line.split(";")[0], line.split(";")[1]) for line in lines)
+        options = BANKS_SORTED_CHOICES
 
-        except OptionSet.DoesNotExist:
-            options = BANKS_SORTED_CHOICES
+        if isinstance(attrs, dict):
+            optionset_name = attrs.get("optionset_name", "NIGERIA_UBA_OPTIONS")
+            with suppress(OptionSet.DoesNotExist):
+                optionset = OptionSet.objects.get(name=optionset_name)
+                lines = optionset.data.strip().split("\r\n")
+                options = ((line.split(";")[0], line.split(";")[1]) for line in lines)
 
         attrs = {
             "choices": options,

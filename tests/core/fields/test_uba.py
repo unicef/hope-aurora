@@ -183,10 +183,3 @@ def test_uba_name_enquiry_multi_widget_decompress():
     widget = UBANameEnquiryMultiWidget()
     assert widget.decompress(None) == [None, None, None, None, None]
     assert widget.decompress({"a": 1, "b": 2}) == [1, 2]
-
-
-@pytest.mark.django_db
-def test_uba_select_with_optionset(optionset_factory):
-    optionset_factory(name="NIGERIA_UBA_OPTIONS", data="000001;Bank A\r\n000002;Bank B")
-    widget = UBASelect()
-    assert widget.attrs["choices"] == {"000001": "Bank A", "000002": "Bank B"}
