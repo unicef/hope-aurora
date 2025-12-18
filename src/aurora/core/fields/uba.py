@@ -1294,7 +1294,7 @@ class UBASelect(forms.Select):
     template_name = "django/forms/widgets/uba_select.html"
 
     def __init__(self, attrs=None):
-        optionset_name = attrs.get("optionset_name") if isinstance(attrs, dict) else "NIGERIA_UBA_OPTIONS1"
+        optionset_name = attrs.get("optionset_name", "NIGERIA_UBA_OPTIONS1")
         from aurora.core.models import OptionSet
 
         try:
@@ -1316,7 +1316,9 @@ class UBANameEnquiryMultiWidget(MultiValueWidgetMixin, MultiWidget):
     template_name = "django/forms/widgets/uba.html"
     custom_render = True
 
-    def __init__(self, attrs=None):
+    def __init__(self, optionset_name=None, attrs=None):
+        attrs = dict() if attrs is None else attrs
+        attrs["optionset_name"] = optionset_name
         widgets = (
             UBASelect(attrs),
             AccountNumberUBATextInput(attrs),
@@ -1360,6 +1362,9 @@ class UBANameEnquiryField(ConfigurableSmartField, forms.MultiValueField):
             forms.CharField(),
         ]
         kwargs["template_name"] = "django/forms/uba.html"
+        if hasattr(self, "flex_field"):
+            optionset_name = self.flex_field.advanced.get("optionset_name", None)
+            kwargs["widget"] = self.widget(optionset_name=optionset_name)
         super().__init__(fields, *args, **kwargs)
 
     def compress(self, values):
