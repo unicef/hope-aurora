@@ -12,7 +12,12 @@ from strategy_field.utils import fqn
 from testutils.factories import FlexFormFieldFactory, FormFactory
 
 from aurora.core.fields import UBANameEnquiryField
-from aurora.core.fields.uba import BANKS_CHOICE
+from aurora.core.fields.uba import (
+    BANKS_CHOICE,
+    BANKS_SORTED_CHOICES,
+    UBANameEnquiryMultiWidget,
+    UBASelect,
+)
 
 if TYPE_CHECKING:
     from aurora.core.models import FlexForm
@@ -165,3 +170,16 @@ def test_uba_save():
             "ignore_error": False,
         }
     }
+
+
+@pytest.mark.django_db
+def test_uba_select_no_optionset():
+    widget = UBASelect()
+    assert widget.attrs["choices"] == BANKS_SORTED_CHOICES
+
+
+@pytest.mark.django_db
+def test_uba_name_enquiry_multi_widget_decompress():
+    widget = UBANameEnquiryMultiWidget()
+    assert widget.decompress(None) == [None, None, None, None, None]
+    assert widget.decompress({"a": 1, "b": 2}) == [1, 2]
