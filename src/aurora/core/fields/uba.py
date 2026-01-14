@@ -1405,7 +1405,7 @@ class UBANameEnquiryField(ConfigurableSmartField, forms.MultiValueField):
             if response.status_code == 200:
                 jresponse = response.json()
                 if jresponse.get("errorFlag") == FALSE and jresponse.get("statusCode") == "0":
-                    if jresponse.get("customerName").lower() != account_full_name.lower():
+                    if jresponse.get("customerName").lower().strip() != account_full_name.lower().strip():
                         valid_name = jresponse.get("customerName")
                         raise ValidationError(
                             f"Account holder name does not match: ({valid_name})",
