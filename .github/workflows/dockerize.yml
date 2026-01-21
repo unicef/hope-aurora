@@ -108,17 +108,12 @@ jobs:
       needs: [build]
       steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Package Source code
         continue-on-error: true
         run: |
             zip -r output.zip src
 
-      #- name: Upload zipped folder
-      #  uses: actions/upload-artifact@v4
-      #  with:
-      #      name: zipped-folder
-      #      path: output.zip
       - name: Veracode Pipeline
         id: pipeline-scan
         uses: veracode/Veracode-pipeline-scan-action@v1.0.18
@@ -126,7 +121,7 @@ jobs:
         with:
             vid: ${{ secrets.VERACODE_API_ID }}
             vkey: ${{ secrets.VERACODE_API_KEY }}
-            file: "output.zip" 
+            file: "output.zip"
             store_baseline_file: false
             json_output_file: "veracode_sast.json"
             json_output: true
@@ -145,18 +140,12 @@ jobs:
           pipeline-results-json: veracode_sast.json
           output-results-sarif: veracode_sast.sarif
           ref: ${{ github.ref }}
-          commitSHA: ${{ github.sha }}     
+          commitSHA: ${{ github.sha }}
       - name: Upload SARIF file to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v3 # Check for the latest version
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'veracode_sast.sarif'
-    #  - name: Veracode Pipeline
-    #    continue-on-error: true
-    #    run: |
-    #      curl -sSO https://downloads.veracode.com/securityscan/pipeline-scan-LATEST.zip
-    #      unzip -o pipeline-scan-LATEST.zip
-    #      java -jar pipeline-scan.jar -vid '${{ secrets.API_ID }}' -vkey '${{ secrets.API_KEY }}' --file "target/dvja-1.0-SNAPSHOT.war" --fail_on_severity "Very High, High"
-    #      rm -rf pipeline-scan-LATEST.zip pipeline-scan.jar
+
       - name: Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.7
         continue-on-error: true
@@ -166,7 +155,7 @@ jobs:
             filepath: 'output.zip'
             vid: '${{ secrets.VERACODE_API_ID }}'
             vkey: '${{ secrets.VERACODE_API_KEY }}'
-  
+
       - name: Veracode SCA
         continue-on-error: true
         env:
@@ -183,15 +172,15 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Veracode Container Scan 
+      - name: Veracode Container Scan
         uses: veracode/container_iac_secrets_scanning@v1.0.4
         continue-on-error: true
         with:
             vid: ${{ secrets.VERACODE_API_ID }}
             vkey: ${{ secrets.VERACODE_API_KEY }}
-            command: "scan" 
+            command: "scan"
             type: "image"
             source: unicef/hope-aurora:${{ needs.build.outputs.tag }}
             format: "json"
             debug: false
-            fail_build: true  
+            fail_build: true
