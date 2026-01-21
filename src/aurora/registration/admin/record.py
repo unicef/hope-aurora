@@ -3,11 +3,11 @@ import logging
 from typing import TYPE_CHECKING, Any, Iterable
 
 from admin_extra_buttons.decorators import button, link
-from adminfilters.dates import DateRangeFilter
 from adminfilters.filters import AutoCompleteFilter, NumberFilter, ValueFilter
 from django.conf import settings
 from django.shortcuts import render
 from django.urls import reverse
+from django_filters.filters import DateRangeFilter
 from smart_admin.modeladmin import SmartModelAdmin
 
 from ...core.utils import is_root
