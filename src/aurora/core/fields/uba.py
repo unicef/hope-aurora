@@ -1,4 +1,5 @@
 import binascii
+from contextlib import suppress
 from typing import TYPE_CHECKING
 
 import requests
@@ -19,7 +20,7 @@ from aurora.core.version_media import VersionMedia
 from .mixins import ConfigurableSmartField
 
 if TYPE_CHECKING:
-    from aurora.core.models import FlexFormField
+    from aurora.core.models import FlexFormField, OptionSet
 
 FALSE = "false"
 
@@ -1294,8 +1295,19 @@ class UBASelect(forms.Select):
     template_name = "django/forms/widgets/uba_select.html"
 
     def __init__(self, attrs=None):
+        from aurora.core.models import OptionSet
+
+        options = BANKS_SORTED_CHOICES
+
+        if isinstance(attrs, dict):
+            optionset_name = attrs.get("optionset_name", "NIGERIA_UBA_OPTIONS")
+            with suppress(OptionSet.DoesNotExist):
+                optionset = OptionSet.objects.get(name=optionset_name)
+                lines = optionset.data.strip().split("\r\n")
+                options = ((line.split(";")[0], line.split(";")[1]) for line in lines)
+
         attrs = {
-            "choices": BANKS_SORTED_CHOICES,
+            "choices": options,
             **(attrs or {}),
         }
         super().__init__(attrs)
@@ -1305,7 +1317,9 @@ class UBANameEnquiryMultiWidget(MultiValueWidgetMixin, MultiWidget):
     template_name = "django/forms/widgets/uba.html"
     custom_render = True
 
-    def __init__(self, attrs=None):
+    def __init__(self, optionset_name=None, attrs=None):
+        attrs = dict() if attrs is None else attrs
+        attrs["optionset_name"] = optionset_name
         widgets = (
             UBASelect(attrs),
             AccountNumberUBATextInput(attrs),
@@ -1349,6 +1363,9 @@ class UBANameEnquiryField(ConfigurableSmartField, forms.MultiValueField):
             forms.CharField(),
         ]
         kwargs["template_name"] = "django/forms/uba.html"
+        if hasattr(self, "flex_field"):
+            optionset_name = self.flex_field.advanced.get("optionset_name", None)
+            kwargs["widget"] = self.widget(optionset_name=optionset_name)
         super().__init__(fields, *args, **kwargs)
 
     def compress(self, values):
@@ -1388,7 +1405,7 @@ class UBANameEnquiryField(ConfigurableSmartField, forms.MultiValueField):
             if response.status_code == 200:
                 jresponse = response.json()
                 if jresponse.get("errorFlag") == FALSE and jresponse.get("statusCode") == "0":
-                    if jresponse.get("customerName").lower() != account_full_name.lower():
+                    if jresponse.get("customerName").lower().strip() != account_full_name.lower().strip():
                         valid_name = jresponse.get("customerName")
                         raise ValidationError(
                             f"Account holder name does not match: ({valid_name})",

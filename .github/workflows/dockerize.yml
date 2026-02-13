@@ -102,3 +102,85 @@ jobs:
             echo "::notice title=Tag:: Successfully built unicef/hope-aurora:${{ steps.config.outputs.tag }}"
             echo "::notice title=ImageId:: ${{ steps.build.outputs.imageid }}"
             echo "::notice title=Version :: ${{ steps.config.outputs.version }}"
+
+  appsec_tests:
+      runs-on: ubuntu-latest
+      needs: [build]
+      steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Package Source code
+        continue-on-error: true
+        run: |
+            zip -r output.zip src
+
+      - name: Veracode Pipeline
+        id: pipeline-scan
+        uses: veracode/Veracode-pipeline-scan-action@v1.0.18
+        continue-on-error: true
+        with:
+            vid: ${{ secrets.VERACODE_API_ID }}
+            vkey: ${{ secrets.VERACODE_API_KEY }}
+            file: "output.zip"
+            store_baseline_file: false
+            json_output_file: "veracode_sast.json"
+            json_output: true
+      - name: save results file
+        uses: actions/upload-artifact@v4
+        with:
+          name: sast-results
+          path: veracode_sast.json
+      - name: Get scan results
+        uses: actions/download-artifact@v4
+        with:
+          name: sast-results
+      - name: Convert pipeline scan output to SARIF format
+        uses: Veracode/veracode-pipeline-scan-results-to-sarif@v2.0.4
+        with:
+          pipeline-results-json: veracode_sast.json
+          output-results-sarif: veracode_sast.sarif
+          ref: ${{ github.ref }}
+          commitSHA: ${{ github.sha }}
+      - name: Upload SARIF file to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'veracode_sast.sarif'
+
+      - name: Veracode Upload And Scan
+        uses: veracode/veracode-uploadandscan-action@0.2.7
+        continue-on-error: true
+        with:
+            appname: 'HOPE-Aurora'
+            createprofile: false
+            filepath: 'output.zip'
+            vid: '${{ secrets.VERACODE_API_ID }}'
+            vkey: '${{ secrets.VERACODE_API_KEY }}'
+
+      - name: Veracode SCA
+        continue-on-error: true
+        env:
+          SRCCLR_API_TOKEN: ${{ secrets.SRCCLR_API_TOKEN }}
+          SRCCLR_SCAN_COLLECTORS: "yarn, pip"
+        run: |
+          echo "Scanning aurora Project"
+          curl -sSL  https://download.sourceclear.com/ci.sh | bash -s scan src/aurora/ --allow-dirty
+          echo "Scanning dbtemplates Project"
+          curl -sSL  https://download.sourceclear.com/ci.sh | bash -s scan src/dbtemplates/ --allow-dirty
+
+      - name: DockerHub login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Veracode Container Scan
+        uses: veracode/container_iac_secrets_scanning@v1.0.4
+        continue-on-error: true
+        with:
+            vid: ${{ secrets.VERACODE_API_ID }}
+            vkey: ${{ secrets.VERACODE_API_KEY }}
+            command: "scan"
+            type: "image"
+            source: unicef/hope-aurora:${{ needs.build.outputs.tag }}
+            format: "json"
+            debug: false
+            fail_build: true
