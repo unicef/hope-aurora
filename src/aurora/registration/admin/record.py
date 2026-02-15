@@ -39,7 +39,7 @@ class RecordAdmin(SmartModelAdmin):
     list_filter = (
         ("registration", AutoCompleteFilter),
         ("id", NumberFilter),
-        ("timestamp", DateRangeFilter),
+        # ("timestamp", DateRangeFilter),
         HourFilter,
         ("unique_field", ValueFilter),
         "ignored",
