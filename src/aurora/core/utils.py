@@ -287,6 +287,7 @@ def get_client_ip(request):
                 value = ip.split(",")[0].strip()
                 if ":" in value:
                     return value.split(":")[0].strip()
+                return value
     return None
 
 
