@@ -126,12 +126,12 @@ jobs:
             json_output_file: "veracode_sast.json"
             json_output: true
       - name: save results file
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sast-results
           path: veracode_sast.json
       - name: Get scan results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: sast-results
       - name: Convert pipeline scan output to SARIF format
