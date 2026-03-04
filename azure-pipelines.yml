@@ -89,6 +89,33 @@ stages:
                 $(Build.BuildId)
                 $(Build.SourceVersion)
                 latest
+  # On master only: mirror latest image to Docker Hub as unicef/hope-aurora:acr-2.0
+  - stage: push_to_dockerhub
+    displayName: Push to Docker Hub (acr-2.0)
+    dependsOn: build_and_push
+    condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+    jobs:
+      - job: mirror_to_dockerhub
+        pool:
+          vmImage: ubuntu-latest
+        displayName: "Pull from ACR, tag and push to Docker Hub"
+        steps:
+          - task: Docker@2
+            displayName: Login to ACR
+            inputs:
+              containerRegistry: '$(Docker.registry)'
+              command: 'login'
+          - script: |
+              docker pull $(Docker.registry).azurecr.io/$(Docker.repository):latest
+              docker tag $(Docker.registry).azurecr.io/$(Docker.repository):latest unicef/hope-aurora:acr-2.0
+            displayName: Pull from ACR and tag for Docker Hub
+          - task: Docker@2
+            displayName: Login to Docker Hub
+            inputs:
+              containerRegistry: 'DockerHub'
+              command: 'login'
+          - script: docker push unicef/hope-aurora:acr-2.0
+            displayName: Push unicef/hope-aurora:acr-2.0 to Docker Hub
   - stage: deploy
     displayName: Deploy
     jobs:
