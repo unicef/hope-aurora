@@ -5,6 +5,7 @@ trigger:
     - develop
     - master
     - staging
+    - feat/image-to-dh
     - ops/*
 pr: none
 resources:
@@ -25,6 +26,9 @@ variables:
       value: "UNI_WEBS rs-uni-hope-ukr-sr"
     - name: appName
       value: "uni-hope-ukr-sr"
+  - ${{ elseif eq(variables['Build.SourceBranchName'], 'feat/image-to-dh') }}:
+    - name: Docker.registry
+      value: "unihopeukrsr"
   - ${{ elseif eq(variables['Build.SourceBranchName'], 'staging') }}:
     - group: flex-registration-stg
     - name: Docker.registry
@@ -45,6 +49,7 @@ variables:
 stages:
   - stage: build_and_push
     displayName: BUILD and PUSH $(Build.SourceBranchName)
+    condition: ne(variables['Build.SourceBranchName'], 'feat/image-to-dh')
     jobs:
       - job: build_push_backend
         pool:
@@ -89,11 +94,10 @@ stages:
                 $(Build.BuildId)
                 $(Build.SourceVersion)
                 latest
-  # On master only: mirror latest image to Docker Hub as unicef/hope-aurora:acr-2.0
+  # Pull existing image from ACR and push to Docker Hub as unicef/hope-aurora:acr-2.0
   - stage: push_to_dockerhub
     displayName: Push to Docker Hub (acr-2.0)
-    dependsOn: build_and_push
-    condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+    condition: or(eq(variables['Build.SourceBranchName'], 'master'), eq(variables['Build.SourceBranchName'], 'feat/image-to-dh'))
     jobs:
       - job: mirror_to_dockerhub
         pool:
@@ -118,6 +122,7 @@ stages:
             displayName: Push unicef/hope-aurora:acr-2.0 to Docker Hub
   - stage: deploy
     displayName: Deploy
+    condition: ne(variables['Build.SourceBranchName'], 'feat/image-to-dh')
     jobs:
       - job: deploy_backend
         pool:
