@@ -113,11 +113,12 @@ stages:
               docker pull $(Docker.registry).azurecr.io/$(Docker.repository):latest
               docker tag $(Docker.registry).azurecr.io/$(Docker.repository):latest unicef/hope-aurora:acr-2.0
             displayName: Pull from ACR and tag for Docker Hub
-          - task: Docker@2
+          - script: |
+              echo "$(DOCKERHUB_TOKEN)" | docker login -u "$(DOCKERHUB_USERNAME)" --password-stdin
             displayName: Login to Docker Hub
-            inputs:
-              containerRegistry: 'DockerHub'
-              command: 'login'
+            env:
+              DOCKERHUB_USERNAME: $(DOCKERHUB_USERNAME)
+              DOCKERHUB_TOKEN: $(DOCKERHUB_TOKEN)
           - script: docker push unicef/hope-aurora:acr-2.0
             displayName: Push unicef/hope-aurora:acr-2.0 to Docker Hub
   - stage: deploy
