@@ -1,103 +1,19 @@
-trigger:
-  batch: true
-  branches:
-    include:
-    - develop
-    - master
-    - staging
-    - feat/image-to-dh
-    - ops/*
+# Manual only: pull latest from ACR (flex master) and push to Docker Hub as unicef/hope-aurora:acr-2.0
+# Use with branch feat/image-to-dh. Set variables: DOCKERHUB_USERNAME, DOCKERHUB_TOKEN (secret)
+trigger: none
 pr: none
 resources:
   - repo: self
 
 variables:
-  - name: Docker.filePath
-    value: "**/docker/Dockerfile"
+  - name: Docker.registry
+    value: "unihopeukrsr"
   - name: Docker.repository
     value: "flex-registration"
-  - name: buildDate
-    value: $[format('{0:yyyy}-{0:MM}-{0:dd} {0:HH}:{0:mm}', pipeline.startTime)]
-  - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
-    - group: flex-registration-prod
-    - name: Docker.registry
-      value: "unihopeukrsr"
-    - name: azureSubscription
-      value: "UNI_WEBS rs-uni-hope-ukr-sr"
-    - name: appName
-      value: "uni-hope-ukr-sr"
-  - ${{ elseif eq(variables['Build.SourceBranchName'], 'feat/image-to-dh') }}:
-    - name: Docker.registry
-      value: "unihopeukrsr"
-  - ${{ elseif eq(variables['Build.SourceBranchName'], 'staging') }}:
-    - group: flex-registration-stg
-    - name: Docker.registry
-      value: "unihopeukrsrdev"
-    - name: azureSubscription
-      value: "UNI_WEBS rs-uni-hope-ukr-sr-dev"
-    - name: appName
-      value: "uni-hope-ukr-sr-stg"
-  - ${{ else }}:
-    - group: flex-registration-dev
-    - name: Docker.registry
-      value: "unihopeukrsrdev"
-    - name: azureSubscription
-      value: "UNI_WEBS rs-uni-hope-ukr-sr-dev"
-    - name: appName
-      value: "uni-hope-ukr-sr-dev"
 
 stages:
-  - stage: build_and_push
-    displayName: BUILD and PUSH $(Build.SourceBranchName)
-    condition: ne(variables['Build.SourceBranchName'], 'feat/image-to-dh')
-    jobs:
-      - job: build_push_backend
-        pool:
-          vmImage: ubuntu-latest
-        displayName: "Build and Push"
-        steps:
-          - task: Docker@2
-            inputs:
-              containerRegistry: '$(Docker.registry)'
-              command: 'login'
-          - script: "docker pull $(Docker.registry).azurecr.io/$(Docker.repository):latest"
-            displayName: Pull latest for layer caching
-            continueOnError: true # for first build, no cache
-          - script: |
-              commitHash=${sourceVersion:0:7}
-              echo "##vso[task.setvariable variable=commitHash]$commitHash" ## Set variable for using in other tasks.
-            env: { sourceVersion: $(Build.SourceVersion) }
-            displayName: Git Hash 7-digit
-            continueOnError: true # for first build, no cache
-          - task: Docker@2
-            displayName: Build
-            inputs:
-              command: build
-              dockerfile: $(Docker.filePath)
-              repository: $(Docker.repository)
-              buildContext: "**/.."
-#              arguments: '--build-arg VERSION=$(Build.SourceVersion) --build-arg BUILD_DATE="$(buildDate)" --cache-from=$(Docker.registry).azurecr.io/$(Docker.repository):latest'
-              arguments: '--build-arg GIT_HASH="$(commitHash)" --build-arg BUILD_DATE="$(buildDate)" --cache-from=$(Docker.registry).azurecr.io/$(Docker.repository):latest'
-              tags: |
-                $(Build.BuildId)
-                $(Build.SourceVersion)
-                latest
-          - task: Docker@2
-            displayName: Push
-            inputs:
-              command: Push
-              buildContext: "**/.."
-              dockerfile: $(Docker.filePath)
-              repository: $(Docker.repository)
-              containerRegistry: $(Docker.registry)
-              tags: |
-                $(Build.BuildId)
-                $(Build.SourceVersion)
-                latest
-  # Pull existing image from ACR and push to Docker Hub as unicef/hope-aurora:acr-2.0
   - stage: push_to_dockerhub
     displayName: Push to Docker Hub (acr-2.0)
-    condition: or(eq(variables['Build.SourceBranchName'], 'master'), eq(variables['Build.SourceBranchName'], 'feat/image-to-dh'))
     jobs:
       - job: mirror_to_dockerhub
         pool:
@@ -121,49 +37,3 @@ stages:
               DOCKERHUB_TOKEN: $(DOCKERHUB_TOKEN)
           - script: docker push unicef/hope-aurora:acr-2.0
             displayName: Push unicef/hope-aurora:acr-2.0 to Docker Hub
-  - stage: deploy
-    displayName: Deploy
-    condition: ne(variables['Build.SourceBranchName'], 'feat/image-to-dh')
-    jobs:
-      - job: deploy_backend
-        pool:
-          vmImage: ubuntu-latest
-        displayName: "Deploy app"
-        steps:
-          - script: |
-              curl -X POST -H 'Content-type: application/json' --data '$SLACK_NOTIFICATION_START_PAYLOAD' $SLACK_WEBHOOK_URL
-            displayName: "Slack start notification"
-            condition: or(eq(variables['Build.SourceBranchName'], 'staging'), eq(variables['Build.SourceBranchName'], 'master'))
-          - task: AzureWebAppContainer@1
-            displayName: Azure Web App on Container Deploy
-            inputs:
-              appName: $(appName)
-              azureSubscription: $(azureSubscription)
-              imageName: $(Docker.registry).azurecr.io/$(Docker.repository):$(Build.SourceVersion)
-              appSettings: "-DJANGO_ADMIN_URL $(DJANGO_ADMIN_URL)
-                            -DJANGO_ADMIN_TITLE $(DJANGO_ADMIN_TITLE)
-                            -CACHE_DEFAULT $(CACHE_DEFAULT)
-                            -CONSTANCE_DATABASE_CACHE_BACKEND $(CONSTANCE_DATABASE_CACHE_BACKEND)
-                            -ALLOWED_HOSTS $(ALLOWED_HOSTS)
-                            -SECRET_KEY $(SECRET_KEY)
-                            -DEBUG $(DEBUG)
-                            -BUILD_VERSION $(Build.SourceVersion)
-                            -LANGUAGE_CODE $(LANGUAGE_CODE)
-                            -USE_X_FORWARDED_HOST $(USE_X_FORWARDED_HOST)
-                            -ROOT_TOKEN $(ROOT_TOKEN)
-                            -ADMIN_EMAIL $(ADMIN_EMAIL)
-                            -ADMIN_PASSWORD $(ADMIN_PASSWORD)
-                            -EMAIL_HOST_USER $(EMAIL_HOST_USER)
-                            -MAILJET_API_KEY $(MAILJET_API_KEY)
-                            -MAILJET_SECRET_KEY $(MAILJET_SECRET_KEY)
-                            -AZURE_CLIENT_ID $(KEY_VALUT_AZURE_CLIENT_ID)
-                            -AZURE_CLIENT_KEY $(KEY_VALUT_AZURE_CLIENT_ID)
-                            -AZURE_CLIENT_SECRET $(KEY_VALUT_AZURE_CLIENT_SECRET)
-                            -AZURE_TENANT_ID $(KEY_VALUT_AZURE_TENANT_KEY)
-                            -SENTRY_DSN $(SENTRY_DSN)
-                            -SENTRY_ENVIRONMENT $(SENTRY_ENVIRONMENT)
-                            -MATOMO_ID $(MATOMO_ID)"
-          - script: |
-              curl -X POST -H 'Content-type: application/json' --data '$SLACK_NOTIFICATION_COMPLETE_PAYLOAD' $SLACK_WEBHOOK_URL
-            displayName: "Slack complete notification"
-            condition: and(succeeded(), or(eq(variables['Build.SourceBranchName'], 'staging'), eq(variables['Build.SourceBranchName'], 'master')))
