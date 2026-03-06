@@ -32,9 +32,9 @@ stages:
               command: 'login'
           - script: |
               docker pull $(Docker.registry).azurecr.io/$(Docker.repository):latest
-              docker tag $(Docker.registry).azurecr.io/$(Docker.repository):latest unicef/hope-aurora:acr-2.0
+              docker tag $(Docker.registry).azurecr.io/$(Docker.repository):latest unicef/hope-aurora:acr-2.1
             displayName: Pull from ACR and tag for Docker Hub
           - script: |
               echo "$(DOCKERHUB_TOKEN)" | docker login -u "$(DOCKERHUB_USERNAME)" --password-stdin
-              docker push unicef/hope-aurora:acr-2.0
+              docker push unicef/hope-aurora:acr-2.1
             displayName: Login to Docker Hub and push
