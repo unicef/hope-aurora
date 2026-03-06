@@ -17,59 +17,24 @@ variables:
     value: "uni-hope-ukr-sr"
 
 stages:
-  - stage: discovery
-    displayName: ACR Discovery (list tags, Web App image)
+  - stage: push_to_dockerhub
+    displayName: Push to Docker Hub (acr-2.0)
     jobs:
       - job: mirror_to_dockerhub
         pool:
           vmImage: ubuntu-latest
-        displayName: "List ACR tags and Web App container"
+        displayName: "Pull from ACR, tag and push to Docker Hub"
         steps:
-          - task: AzureCLI@2
-            displayName: List all images in production ACR
+          - task: Docker@2
+            displayName: Login to ACR
             inputs:
-              azureSubscription: '$(azureSubscription)'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                echo "=== ACR repositories in $(Docker.registry) ==="
-                az acr repository list --name $(Docker.registry) -o table
-                echo ""
-                echo "=== Tags for flex-registration ==="
-                az acr repository show-tags --name $(Docker.registry) --repository flex-registration -o table 2>/dev/null || echo "(repository not found or no tags)"
-                echo ""
-                echo "=== Tags for all repositories ==="
-                for repo in $(az acr repository list --name $(Docker.registry) -o tsv); do
-                  echo "--- $repo ---"
-                  az acr repository show-tags --name $(Docker.registry) --repository $repo -o table 2>/dev/null | head -20
-                done
-          - task: AzureCLI@2
-            displayName: Web App container image (production)
-            inputs:
-              azureSubscription: '$(azureSubscription)'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                echo "=== Finding Web App and its container config ==="
-                # List webapps to find resource group
-                az webapp list --query "[?name=='$(appName)'].{name:name, resourceGroup:resourceGroup}" -o table
-                # Get container config (resource group may vary - try common patterns)
-                for rg in $(az webapp list --query "[?name=='$(appName)'].resourceGroup" -o tsv); do
-                  echo ""
-                  echo "=== Container config for $(appName) (rg: $rg) ==="
-                  az webapp config container show --name $(appName) --resource-group $rg -o table 2>/dev/null || az webapp config show --name $(appName) --resource-group $rg --query "linuxFxVersion" -o tsv 2>/dev/null
-                done
-          # Pull, tag, push - uncomment when ready
-          # - task: Docker@2
-          #   displayName: Login to ACR
-          #   inputs:
-          #     containerRegistry: '$(Docker.registry)'
-          #     command: 'login'
-          # - script: |
-          #     docker pull $(Docker.registry).azurecr.io/$(Docker.repository):latest
-          #     docker tag $(Docker.registry).azurecr.io/$(Docker.repository):latest unicef/hope-aurora:acr-2.0
-          #   displayName: Pull from ACR and tag
-          # - script: |
-          #     echo "$(DOCKERHUB_TOKEN)" | docker login -u "$(DOCKERHUB_USERNAME)" --password-stdin
-          #     docker push unicef/hope-aurora:acr-2.0
-          #   displayName: Login to Docker Hub and push
+              containerRegistry: '$(Docker.registry)'
+              command: 'login'
+          - script: |
+              docker pull $(Docker.registry).azurecr.io/$(Docker.repository):latest
+              docker tag $(Docker.registry).azurecr.io/$(Docker.repository):latest unicef/hope-aurora:acr-2.0
+            displayName: Pull from ACR and tag for Docker Hub
+          - script: |
+              echo "$(DOCKERHUB_TOKEN)" | docker login -u "$(DOCKERHUB_USERNAME)" --password-stdin
+              docker push unicef/hope-aurora:acr-2.0
+            displayName: Login to Docker Hub and push
