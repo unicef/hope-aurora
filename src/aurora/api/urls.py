@@ -1,4 +1,5 @@
 from django.urls import include, path
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 from . import viewsets
 from .router import AuroraRouter
@@ -22,4 +23,7 @@ router.register(r"validator", viewsets.ValidatorViewSet)
 urlpatterns = [
     path("", include(router.urls)),
     path("sys/", viewsets.system_info),
+    path("schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("rest/swagger/", SpectacularSwaggerView.as_view(url_name="api:schema"), name="swagger-ui"),
+    path("rest/redoc/", SpectacularRedocView.as_view(url_name="api:schema"), name="redoc"),
 ]

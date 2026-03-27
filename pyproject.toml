@@ -63,6 +63,7 @@ dependencies = [
   "djangorestframework-stubs[compatible-mypy]",
   "dramatiq[redis]>=1.18",
   "dramatiq-crontab[sentry]>=1.0.10",
+  "drf-spectacular>=0.29",
   "dukpy>=0.5",
   "faker",
   "jmespath",
