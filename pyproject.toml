@@ -55,6 +55,7 @@ dependencies = [
   "django-smart-env",
   "django-strategy-field>=3.2.1",
   "django-stubs[compatible-mypy]",
+  "django-stubs-ext>=5.2.9",
   "django-sysinfo",
   "django-tailwind[reload]>=4.0.1",
   "django-tinymce",
