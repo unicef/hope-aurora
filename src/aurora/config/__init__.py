@@ -20,7 +20,7 @@ OPTIONS = {
     "ADMIN_SYNC_REMOTE_SERVER": (str, ""),
     "ALLOWED_HOSTS": (list, ["*"]),
     "AZURE_AUTHORITY_HOST": (str, ""),
-    "AZURE_CLIENT_KEY": (str, ""),
+    "AZURE_CLIENT_ID": (str, ""),
     "AZURE_CLIENT_SECRET": (str, ""),
     "AZURE_POLICY_NAME": (str, ""),
     "AZURE_TENANT_ID": (str, ""),
