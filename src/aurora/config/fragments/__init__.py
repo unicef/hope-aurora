@@ -1,4 +1,3 @@
-from .ad import *  # noqa
 from .admin_sync import *  # noqa
 from .anymail import *  # noqa
 from .azure_graph_api import *  # noqa
