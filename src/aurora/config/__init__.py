@@ -24,7 +24,6 @@ OPTIONS = {
     "AZURE_CLIENT_SECRET": (str, ""),
     "AZURE_POLICY_NAME": (str, ""),
     "AZURE_TENANT_ID": (str, ""),
-    "AZURE_TENANT_KEY": (str, ""),
     "AZURE_TRANSLATOR_KEY": (str, ""),
     "AZURE_TRANSLATOR_LOCATION": (str, ""),
     "BROKER_URL": (str, "redis://broker-url:6379"),
