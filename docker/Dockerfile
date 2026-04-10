@@ -1,4 +1,4 @@
-FROM python:3.12-slim-bookworm AS base_os
+FROM python:3.14-slim-bookworm AS base_os
 ARG VERSION
 ARG GIT_SHA
 ARG BUILD_DATE
@@ -67,7 +67,7 @@ COPY . /code
 RUN uv venv $VIRTUAL_ENV \
     && uv sync --frozen --no-editable
 
-RUN ls /venv/lib/python3.12/site-packages/aurora/
+RUN ls /venv/lib/python3.14/site-packages/aurora/
 
 # ------- distro -------
 FROM base_os AS dist

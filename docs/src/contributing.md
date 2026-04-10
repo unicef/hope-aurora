@@ -5,7 +5,7 @@ Install [uv](https://docs.astral.sh/uv/)
 
 
     git clone https://github.com/unicef/hope-aurora
-    uv venv .venv --python 3.12
+    uv venv .venv --python 3.14
     source .venv/bin/activate
     uv sync --all-extras
     pre-commit install --hook-type pre-commit --hook-type pre-push
