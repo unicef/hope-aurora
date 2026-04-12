@@ -33,6 +33,11 @@ case "$1" in
         django-admin migrate
         django-admin runserver 0.0.0.0:8000
     ;;
+    "worker")
+        until pg_isready -h db -p 5432;
+          do echo "waiting for database"; sleep 2; done;
+        exec celery -A {{cookiecutter.package_name}} worker --loglevel=info
+    ;;
     "setup")
         until pg_isready -h db -p 5432;
           do echo "waiting for database"; sleep 2; done;
