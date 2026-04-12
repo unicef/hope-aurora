@@ -91,7 +91,8 @@ ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin:/usr/sbin \
     START_PROXY="true" \
     START_APP="true" \
     START_WORKER="false" \
-    START_CRON="false"
+    START_CRON="false" \
+    START_CELERY_WORKER="false"
 
 
 EXPOSE 8000

@@ -27,6 +27,7 @@ OPTIONS = {
     "AZURE_TRANSLATOR_KEY": (str, ""),
     "AZURE_TRANSLATOR_LOCATION": (str, ""),
     "BROKER_URL": (str, "redis://broker-url:6379"),
+    "CELERY_BROKER_URL": (str, ""),
     "CACHE_DEFAULT": (str, "locmemcache://", "", True),
     "CAPTCHA_TEST_MODE": (bool, "false"),
     "CHANNEL_LAYER": (str, "locmemcache://", True),

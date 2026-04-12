@@ -1,4 +1,5 @@
 from .admin_sync import *  # noqa
+from .celery import *  # noqa
 from .anymail import *  # noqa
 from .azure_graph_api import *  # noqa
 from .capcha import *  # noqa
