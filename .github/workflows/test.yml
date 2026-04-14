@@ -161,7 +161,7 @@ jobs:
 
   dockerize:
     needs: [changes, test]
-    if: needs.changes.outputs.dockerize == 'true'
+    if: needs.changes.outputs.dockerize == 'true' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
     - name: Trigger dockerize workflow
