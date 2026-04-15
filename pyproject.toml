@@ -75,7 +75,8 @@ dependencies = [
   "qrcode",
   "sentry-sdk",
   "setuptools",
-  "social-auth-app-django<5.5",                 # breaks tests
+  "social-auth-app-django>=5.6",                # CVE-2025-61783: unsafe account association via email
+  "urllib3>=2.6",                               # CVE: chained encoding decompression DoS
 ]
 urls.Documentation = "https://unicef.github.io/hope-aurora/"
 urls.Homepage = "https://github.com/unicef/hope-aurora"
@@ -101,7 +102,7 @@ dev = [
   "pytest-flakefinder>=1.1",
   "pytest-rerunfailures>=15.1",
   "responses",
-  "seleniumbase==4.38.2",
+  "seleniumbase>=4.46",
   "tox>=4.2",
 ]
 
