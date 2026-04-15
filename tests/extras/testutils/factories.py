@@ -273,6 +273,8 @@ class TokenProxyFactory(AutoRegisterModelFactory):
 
 class UserSocialAuthFactory(AutoRegisterModelFactory):
     user = factory.SubFactory(UserFactory)
+    provider = "test-provider"
+    uid = factory.Sequence(lambda n: f"social-uid-{n}")
 
     class Meta:
         model = UserSocialAuth
