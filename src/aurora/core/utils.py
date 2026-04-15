@@ -284,7 +284,10 @@ def get_client_ip(request):
         ]:
             ip = request.META.get(x)
             if ip:
-                return ip.split(",")[0].strip()
+                value = ip.split(",")[0].strip()
+                if ":" in value:
+                    return value.split(":")[0].strip()
+                return value
     return None
 
 

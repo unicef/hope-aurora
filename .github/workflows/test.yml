@@ -2,11 +2,12 @@
 name: Test
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - develop
+    tags-ignore: [ "**" ]
   pull_request:
-    types: [ synchronize, opened, reopened, ready_for_review ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -24,7 +25,6 @@ permissions:
 
 jobs:
   changes:
-    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name) || github.event_name == 'create'
     runs-on: ubuntu-latest
     timeout-minutes: 1
     defaults:
@@ -32,31 +32,26 @@ jobs:
         shell: bash
     outputs:
       run_tests: ${{ steps.changes.outputs.run_tests }}
-      dockerize: ${{ steps.changes.outputs.dockerize }}
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4.1.7
-
-    - id: changes
-      name: Check for file changes
-      uses: dorny/paths-filter@0bc4621a3135347011ad047f9ecf449bf72ce2bd   # v3.0.0
-      with:
-        base: ${{ github.ref }}
-        token: ${{ github.token }}
-        filters: .github/file-filters.yml
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - id: changes
+        name: Check for file changes
+        uses: dorny/paths-filter@v4
+        with:
+          base: ${{ github.ref }}
+          token: ${{ github.token }}
+          filters: .github/file-filters.yml
 
   test:
-    needs: [changes]
-    if: needs.changes.outputs.run_tests == 'true'
-    outputs:
-      commit: ${{ steps.build.outputs.commit }}
-      version: ${{ steps.build.outputs.version }}
+    needs: [ changes ]
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.run_tests == 'true'
     runs-on: ubuntu-latest
     services:
       redis:
         image: redis
         ports:
-        - 16379:6379
+          - 16379:6379
       db:
         image: postgres:14
         env:
@@ -64,122 +59,64 @@ jobs:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USERNAME: postgres
         ports:
-        - 15432:5432
+          - 15432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
     env:
-      DOCKER_DEFAULT_PLATFORM: linux/amd64
-      DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
       DATABASE_URL: postgres://postgres:postgres@localhost:15432/aurora
       CACHE_DEFAULT: redis://localhost:16379/0
-      DOCKER_BUILDKIT: 1
-      RUNNER_TOOL_CACHE: /tmp/
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
-    - name: Install the latest version of uv
-      uses: astral-sh/setup-uv@v6
-      with:
-        version: latest
-        enable-cache: true
-        prune-cache: false
-        cache-local-path: ./uv-cache
-        cache-dependency-glob: |
-          **/pyproject.toml
-          **/uv.lock
-        python-version: 3.12
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "latest"
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Restore cached vEnv
-      id: cache-venv-restore
-      uses: actions/cache/restore@v4
-      with:
-        path: |
-          ./uv-cache
-          ./tox
-        key: ${{ runner.os }}-venv
+      - name: Install tox
+        run: uv tool install --python-preference only-managed --python 3.13 tox --with tox-uv --with tox-gh-actions
 
-    - name: Install dependencies
-      run: uv sync --cache-dir ./uv-cache --frozen
+      - name: Setup test suite
+        run: tox run -vv --notest --skip-missing-interpreters false -e test
 
-    - name: Save vEnv
-      id: cache-venv-save
-      uses: actions/cache/save@v4
-      with:
-        path: |
-          ./uv-cache
-          ./tox
-        key: ${{ steps.cache-venv-restore.outputs.cache-primary-key }}
+      - name: Run test suite
+        run: tox -e test
 
-    - name: Run Test suite
-      run: |
-        uv run tox -e test
+      - name: Archive selenium results
+        uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: selenium-log-report
+          path: latest_logs
+          retention-days: 5
 
-    - name: Archive selenium results
-      uses: actions/upload-artifact@v4
-      if: failure()
-      with:
-        name: selenium-log-report
-        path: latest_logs
-        retention-days: 5
+      - name: Upload pytest test results
+        uses: actions/upload-artifact@v7
+        with:
+          name: pytest-results-tests
+          path: junit.xml
+        if: ${{ always() }}
 
-    - name: Upload test results to Codecov
-      uses: codecov/test-results-action@v1
-      if: always()
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
-      continue-on-error: true
-      with:
-        env_vars: OS,PYTHON
-        fail_ci_if_error: true
-        files: /app/output/coverage.xml
-        token: ${{ secrets.CODECOV_TOKEN }}
-        verbose: false
-        name: codecov-${{env.GITHUB_REF_NAME}}
-
-    - name: build
-      id: build
-      run: |
-          VERSION=$( uvx --with hatch-vcs hatchling metadata version )
-          COMMIT_SHA=$(git rev-parse "$GITHUB_SHA")
-
-          uv build --wheel
-
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "commit=$COMMIT_SHA" >> $GITHUB_OUTPUT
-
-          echo "::notice title=VERSION:: Build local package $VERSION"
-          echo "::notice title=COMMIT:: Build local package $COMMIT_SHA"
-
-  dockerize:
-    needs: [changes, test]
-    if: needs.changes.outputs.dockerize == 'true'
-    runs-on: ubuntu-latest
-    steps:
-    - name: Trigger dockerize workflow
-      run: |
-        echo "::notice title=Ref::${{github.ref}}"
-        echo "::notice title=Tag::${{ github.ref_name }}"
-        echo "::notice title=Ver::${{needs.test.outputs.version}}"
-        echo "::notice title=Commit::${{needs.test.outputs.commit}}"
-
-        RES=$(curl -X POST \
-          --fail-with-body \
-          -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-          https://api.github.com/repos/${{ github.repository }}/actions/workflows/dockerize.yml/dispatches \
-          -d '{"ref":"${{ github.ref }}", "inputs": {"git_reference": "${{ needs.test.outputs.commit }}", "tag": "${{ github.ref_name }}"}')
-        CURL_EXIT_CODE=$?
-        if [[ $CURL_EXIT_CODE -ne 0 ]]; then
-          printf "::error::cURL failed %d.\nOutput cURL: %s\n" "$CURL_EXIT_CODE" "$RES"
-          exit 1
-        fi
-        echo "::notice:: API call to 'dockerize.yml' succesed"
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v6
+        continue-on-error: true
+        with:
+          env_vars: OS,PYTHON
+          fail_ci_if_error: true
+          flags: unittests
+          files: ./coverage.xml
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          name: codecov-${{ env.GITHUB_REF_NAME }}
+          slug: ${{ github.repository }}

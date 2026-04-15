@@ -188,7 +188,8 @@ class FieldEditor:
         formatter1 = formatter.HTMLFormatter(indent=2)
         soup = BeautifulSoup(code, "lxml")
         pretty_html = soup.prettify(formatter=formatter1)
-
+        if isinstance(pretty_html, bytes):
+            pretty_html = pretty_html.decode("utf-8")
         formatter2 = HtmlFormatter(style="default", full=True)
         ctx["code"] = highlight(pretty_html, HtmlLexer(), formatter2)
         return render(

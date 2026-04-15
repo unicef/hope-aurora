@@ -288,7 +288,7 @@ class Registration(NaturalKeyModel, I18NModel, models.Model):
             return {
                 field.name: _get_field_details(field)
                 for field in frm.fields.all()
-                if field.field_type not in [LabelOnlyField]
+                if field.field_type != LabelOnlyField
             }
 
         metadata = {

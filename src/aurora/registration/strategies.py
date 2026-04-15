@@ -67,6 +67,8 @@ class SaveToDB(RegistrationStrategy):
 
 
 class TransactionTestStrategy(SaveToDB):
+    verbose_name = "TransactionTestStrategy"
+
     def save(self, fields_data: dict[str, Any], **kwargs) -> HttpResponse:
         ctx = {
             "fields_data": fields_data,
@@ -85,6 +87,8 @@ class TransactionTestStrategy(SaveToDB):
 
 
 class SaveAndDisplayTestStrategy(SaveToDB):
+    verbose_name = "SaveAndDisplay"
+
     def save(self, fields_data: dict[str, Any], **kwargs) -> HttpResponse:
         ctx = {
             "fields_data": fields_data,
@@ -102,7 +106,7 @@ class SaveAndDisplayTestStrategy(SaveToDB):
 
 
 class DisplayTestStrategy(RegistrationStrategy):
-    verbose_name = "Test"
+    verbose_name = "DisplayTestStrategy"
 
     def save(self, fields_data: dict[str, Any], **kwargs) -> HttpResponse:
         from aurora.registration.models import Record

@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "hijack",
     "rest_framework",
     "rest_framework.authtoken",
+    "drf_spectacular",
     "aurora.api",
     "admin_ordering",
     "django_sysinfo",
@@ -381,5 +382,12 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SILENCED_SYSTEM_CHECKS = ["debug_toolbar.W006", "urls.W005", "admin_extra_buttons.PERM"]
 
 MIGRATION_LOCK_KEY = env("MIGRATION_LOCK_KEY")
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Aurora API",
+    "DESCRIPTION": "Aurora REST API Swagger Documentation",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": True,
+}
 
 from .fragments import *  # noqa
