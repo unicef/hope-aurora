@@ -22,7 +22,6 @@ classifiers = [
 dynamic = [
   "version",
 ]
-
 dependencies = [
   "django==5.2.*",
   "django-admin-ordering",
@@ -82,7 +81,6 @@ urls.Documentation = "https://unicef.github.io/hope-aurora/"
 urls.Homepage = "https://github.com/unicef/hope-aurora"
 urls.Issues = "https://github.com/unicef/hope-aurora/issues"
 urls.Repository = "https://github.com/unicef/hope-aurora"
-
 scripts.aurora = "aurora.cli:cli"
 
 [dependency-groups]
@@ -105,7 +103,6 @@ dev = [
   "seleniumbase>=4.46",
   "tox>=4.2",
 ]
-
 docs = [
   "cairosvg>=2.7.1",
   "markupsafe>=2.1.5",
@@ -129,7 +126,6 @@ docs = [
   "mkdocstrings-python",
   "pymdown-extensions>=10.7.1",
 ]
-
 mypy = [
   "django-stubs[compatible-mypy]",
   "djangorestframework-stubs[compatible-mypy]",
@@ -150,34 +146,28 @@ mypy = [
 
 [tool.hatch]
 build.hooks.vcs.version-file = "src/aurora/version.py"
-version.source = "vcs"
-raw-options = { root = "../.." }
-
-[tool.hatch.version.raw-options]
-local_scheme = "no-local-version"
-fallback_version = "1.7"
-
-[tool.hatch.build.targets.sdist]
-ignore-vcs = true
-include = [
+build.targets.sdist.ignore-vcs = true
+build.targets.sdist.include = [
   "src/aurora/**/*.*",
   "src/dbtemplates/**/*.*",
 ]
-exclude = [
+build.targets.sdist.exclude = [
   "~*",
   "src/aurora/web*/theme/static_src/node_modules/*.*",
 ]
-
-[tool.hatch.build.targets.wheel]
-ignore-vcs = true
-packages = [
+build.targets.wheel.ignore-vcs = true
+build.targets.wheel.packages = [
   "src/aurora",
   "src/dbtemplates",
 ]
-exclude = [
+build.targets.wheel.exclude = [
   "~*",
   "src/aurora/web*/theme/static_src/*.*",
 ]
+version.source = "vcs"
+version.raw-options.local_scheme = "no-local-version"
+version.raw-options.fallback_version = "1.7"
+raw-options = { root = "../.." }
 
 [tool.uv]
 package = true

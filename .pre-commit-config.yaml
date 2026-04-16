@@ -11,13 +11,14 @@ repos:
       - id: djlint
         args: ["--check", "--configuration", "djlint.toml"]
 
-  - repo: https://github.com/returntocorp/semgrep
-    rev: v1.142.0
+  - repo: https://github.com/semgrep/pre-commit
+    rev: v1.159.0
     hooks:
       - id: semgrep
         exclude: '(\.semgrep/|docs/)'
         exclude_types:
           - yaml
+        additional_dependencies: ['setuptools>=45.0.0', 'importlib-metadata>=1.0']
         args:
           - scan
           - src
@@ -36,24 +37,24 @@ repos:
           - --quiet
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.34.1
+    rev: 0.37.1
     hooks:
       - id: check-github-workflows
         args: [ "--verbose" ]
 
   - repo: https://github.com/tox-dev/tox-ini-fmt
-    rev: "1.7.0"
+    rev: "1.7.1"
     hooks:
       - id: tox-ini-fmt
         args: [ "-p", "lint" ]
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: "v2.11.0"
+    rev: "v2.21.1"
     hooks:
       - id: pyproject-fmt
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.2
+    rev: v0.15.10
     hooks:
       - id: ruff
       - id: ruff-format
@@ -63,7 +64,7 @@ repos:
           - ruff.toml
 
   - repo: https://github.com/saxix/pch
-    rev: '0.2'
+    rev: '0.5'
     hooks:
 
       - id: check-missed-migrations
@@ -89,9 +90,7 @@ repos:
       - id: check-tailwind
         name: check tailwind CSS ready for production
         files: src/aurora/web/theme/static_src/src/styles.scss
-        args:
-          - -o
-          - src/aurora/web/theme/static/css/styles.css
+        args: ['-d', 'src/aurora/web/theme/static/css']
 
       - id: check-minimized
         name: check missing minimized javascript
