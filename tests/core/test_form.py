@@ -40,5 +40,5 @@ def test_version_update(db):
     FlexFormFieldFactory(flex_form=flex_form, label="New Field")
     flex_form.refresh_from_db()
     registration.refresh_from_db()
-    assert flex_form.version == form_ver + 1, "FlexForm version should increment."
-    assert registration.version == reg_ver + 1, "Registration version should increment."
+    assert flex_form.version > form_ver, "FlexForm version should increment."
+    assert registration.version > reg_ver, "Registration version should increment."

@@ -11,7 +11,6 @@ from concurrency.fields import AutoIncVersionField
 from django import forms
 from django.conf import settings
 from django.contrib.admin.templatetags.admin_urls import admin_urlname
-from django.core.cache import caches
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
@@ -32,8 +31,10 @@ from strategy_field.utils import fqn
 from ..i18n.get_text import gettext as _
 from ..i18n.models import I18NModel
 from ..state import state
+from .cache import cache
 from .compat import RegexField, StrategyClassField
 from .fields import WIDGET_FOR_FORMFIELD_DEFAULTS, CharField, DateField, IntegerField, SmartFormField, ImageField
+from ..core.fields import CompilationTimeField
 from .fields.mixins import ConfigurableSmartField, TailWindMixin
 from .forms import CustomFieldMixin, FlexFormBaseForm, SmartBaseFormSet
 from .js import DukPYValidator
@@ -45,8 +46,6 @@ if TYPE_CHECKING:
 
 
 logger = logging.getLogger(__name__)
-
-cache = caches["default"]
 
 
 class AdminReverseMixin:
@@ -212,7 +211,7 @@ _.is_adult = function(d) { return !_.is_child(d)};
         return value
 
     def monitor(self, status, value, exc: Exception = None):
-        cache.set(f"validator-{state.request.user.pk}-{self.pk}-status", status)
+        cache[f"validator-{state.request.user.pk}-{self.pk}-status"] = status
         error = None
         if exc:
             if hasattr(exc, "error_dict"):
@@ -223,8 +222,8 @@ _.is_adult = function(d) { return !_.is_child(d)};
                 error = self.jspickle({"Error": exc.messages})
             else:
                 error = self.jspickle({"Error": str(exc)})
-        cache.set(f"validator-{state.request.user.pk}-{self.pk}-error", error)
-        cache.set(f"validator-{state.request.user.pk}-{self.pk}-payload", self.jspickle(value))
+        cache[f"validator-{state.request.user.pk}-{self.pk}-error"] = error
+        cache[f"validator-{state.request.user.pk}-{self.pk}-payload"] = self.jspickle(value)
 
     def validate(self, value, registration=None):
         if value and (self.active or (self.draft and state.request.user.is_staff)):
@@ -317,8 +316,6 @@ class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
         if form_class:
             return form_class
 
-        from aurora.core.fields import CompilationTimeField
-
         fields = {}
         compilation_time_field = None
         indexes = FlexFormBaseForm.indexes.copy()
@@ -340,7 +337,7 @@ class FlexForm(AdminReverseMixin, I18NModel, NaturalKeyModel):
             **fields,
         }
         form_class = type(FlexFormBaseForm)(f"{self.name}FlexForm", (self.base_type,), form_class_attrs)
-        cache.set(key, form_class)
+        cache[key] = form_class
         return form_class
 
     def get_formsets_classes(self):
@@ -705,7 +702,7 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
         except Exception as e:
             logger.exception(e)
             raise
-        cache.set(key, fld)
+        cache[key] = fld
         return fld
 
     def clean(self) -> None:
@@ -728,7 +725,13 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
 
         super().save(force_insert, force_update, using, update_fields)
         if self.flex_form_id:
-            self.flex_form.save()
+            try:
+                if not hasattr(self, "_flex_form_loaded") or self._flex_form_loaded is False:
+                    self.flex_form = FlexForm.objects.get(pk=self.flex_form_id)
+                    self._flex_form_loaded = True
+                self.flex_form.save()
+            except FlexForm.DoesNotExist:
+                pass
 
     def get_usage(self) -> list[dict[str, Any]]:
         ret = []
@@ -749,7 +752,7 @@ class OptionSetManager(NaturalKeyModelManager):
         value = cache.get(key)
         if value is None:
             value = self.get(name=name)
-            cache.set(key, value)
+            cache[key] = value
         return value
 
 
@@ -818,7 +821,7 @@ class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
             label_col = 0
 
         key = self.get_cache_key(requested_language)
-        value = cache.get(key, version=self.version)
+        value = cache.get(key)
         if not value:
             value = []
             for line in self.data.split("\r\n"):
@@ -827,15 +830,46 @@ class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
                 if line.startswith(self.comment):
                     continue
                 parent = None
+
                 if self.separator:
                     cols = line.split(self.separator)
-                    pk = cols[self.pk_col]
-                    label = cols[label_col]
-                    if self.parent_col > 0:
-                        parent = str(cols[self.parent_col])
+                    if cols:
+                        if len(cols) > self.pk_col:
+                            pk = cols[self.pk_col]
+                        else:
+                            pk = line
+
+                        if len(cols) > label_col:
+                            label = cols[label_col]
+                        else:
+                            label = line
+
+                        if self.parent_col >= 0 and len(cols) > self.parent_col:
+                            parent = str(cols[self.parent_col])
+                    else:
+                        label = line
+                        pk = str(line).lower()
                 else:
-                    label = line
-                    pk = str(line).lower()
+                    cols = line.split()
+                    if cols:
+                        if len(cols) > self.pk_col:
+                            pk = cols[self.pk_col].lower()
+                        else:
+                            pk = cols[0].lower()
+
+                        if len(cols) > label_col:
+                            label = cols[label_col]
+                        else:
+                            if label_col == 0:
+                                label = cols[0]
+                            else:
+                                label = cols[-1]
+
+                        if self.parent_col >= 0 and len(cols) > self.parent_col:
+                            parent = str(cols[self.parent_col])
+                    else:
+                        label = line
+                        pk = str(line).lower()
 
                 values = {
                     "pk": pk,
@@ -843,7 +877,7 @@ class OptionSet(AdminReverseMixin, NaturalKeyModel, models.Model):
                     "label": label,
                 }
                 value.append(values)
-            cache.set(key, value)
+            cache[key] = value
         return value
 
     def as_choices(self, language=None) -> "Generator[tuple[str, str]]":

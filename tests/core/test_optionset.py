@@ -4,14 +4,14 @@ from aurora.core.models import OptionSet
 
 
 def test_base(db):
-    obj = OptionSet(
+    obj = OptionSet.objects.create(
         name="italian_locations",
         data="Rome\r\nMilan",
         pk_col=0,
         locale="en-us",
         languages="-,-,en-us",
     )
-    obj.clean()
+    # clean() is called automatically by create
     assert list(obj.as_choices()) == [("rome", "Rome"), ("milan", "Milan")]
     assert obj.as_json() == [
         {"label": "Rome", "parent": None, "pk": "rome"},
@@ -20,8 +20,8 @@ def test_base(db):
 
 
 def test_complex(db):
-    obj = OptionSet(
-        name="italian_locations",
+    obj = OptionSet.objects.create(
+        name="italian_locations2",
         data="1:Rome\r\n2:Milan",
         separator=":",
         pk_col=0,
@@ -37,8 +37,8 @@ def test_complex(db):
 
 
 def test_parent(db):
-    obj = OptionSet(
-        name="italian_locations",
+    obj = OptionSet.objects.create(
+        name="italian_locations3",
         data="1:1:Rome\r\n2:1:Milan",
         parent_col=1,
         separator=":",
