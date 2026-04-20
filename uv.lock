@@ -196,6 +196,18 @@ redis = [
 ]
 
 [[package]]
+name = "celery-types"
+version = "0.26.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/fc/38/813dd7534e41682684d3a5c2cc4a8710e3acc51b364920b9c4d747c7b18f/celery_types-0.26.0.tar.gz", hash = "sha256:fa318136fdad83f83f1531deecd9fe664b5dfffff29f3c31e9120a46b8e3908f", size = 106210, upload-time = "2026-03-12T23:06:49.941Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d9/e5/c5ec98f7fd7817d077c9a5a5e705d54f74d4ca08ee3f14dee881c93c0511/celery_types-0.26.0-py3-none-any.whl", hash = "sha256:eb9da76f461786091970df466ec647d9a27956399852542cb6cab9309970f950", size = 211260, upload-time = "2026-03-12T23:06:48.588Z" },
+]
+
+[[package]]
 name = "certifi"
 version = "2026.2.25"
 source = { registry = "https://pypi.org/simple" }
@@ -3667,6 +3679,7 @@ name = "unicef-hope-aurora"
 source = { editable = "." }
 dependencies = [
     { name = "celery", extra = ["redis"] },
+    { name = "celery-types" },
     { name = "django" },
     { name = "django-admin-ordering" },
     { name = "django-admin-sync" },
@@ -3765,6 +3778,7 @@ docs = [
     { name = "pymdown-extensions" },
 ]
 mypy = [
+    { name = "celery-types" },
     { name = "django-stubs", extra = ["compatible-mypy"] },
     { name = "djangorestframework-stubs", extra = ["compatible-mypy"] },
     { name = "lxml-stubs" },
@@ -3785,6 +3799,7 @@ mypy = [
 [package.metadata]
 requires-dist = [
     { name = "celery", extras = ["redis"], specifier = ">=5.3" },
+    { name = "celery-types", specifier = ">=0.26.0" },
     { name = "django", specifier = "==5.2.*" },
     { name = "django-admin-ordering" },
     { name = "django-admin-sync", specifier = ">=0.9" },
@@ -3835,8 +3850,8 @@ requires-dist = [
     { name = "qrcode" },
     { name = "sentry-sdk" },
     { name = "setuptools" },
-    { name = "social-auth-app-django", specifier = ">=5.6.0" },
-    { name = "urllib3", specifier = ">=2.6.0" },
+    { name = "social-auth-app-django", specifier = ">=5.6" },
+    { name = "urllib3", specifier = ">=2.6" },
 ]
 
 [package.metadata.requires-dev]
@@ -3856,7 +3871,7 @@ dev = [
     { name = "pytest-flakefinder", specifier = ">=1.1" },
     { name = "pytest-rerunfailures", specifier = ">=15.1" },
     { name = "responses" },
-    { name = "seleniumbase", specifier = ">=4.46.0" },
+    { name = "seleniumbase", specifier = ">=4.46" },
     { name = "tox", specifier = ">=4.2" },
 ]
 docs = [
@@ -3883,6 +3898,7 @@ docs = [
     { name = "pymdown-extensions", specifier = ">=10.7.1" },
 ]
 mypy = [
+    { name = "celery-types" },
     { name = "django-stubs", extras = ["compatible-mypy"] },
     { name = "djangorestframework-stubs", extras = ["compatible-mypy"] },
     { name = "lxml-stubs" },

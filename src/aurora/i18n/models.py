@@ -1,4 +1,5 @@
 import hashlib
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from django.db import models
@@ -21,7 +22,7 @@ class Message(NaturalKeyModel):
     timestamp = models.DateTimeField(auto_now_add=True)
     locale = LanguageField(db_index=True, help_text="The locale of the message.")
     msgid = models.TextField(db_index=True, help_text="Original message value")
-    msgstr = models.TextField(blank=True, null=True, help_text="Localized Message content.")
+    msgstr: str | None = models.TextField(blank=True, null=True, help_text="Localized Message content.")
 
     md5 = models.CharField(
         verbose_name=_("MD5"),
@@ -42,7 +43,7 @@ class Message(NaturalKeyModel):
     auto = models.BooleanField(default=False, help_text="Is this message auto-generated?")
     draft = models.BooleanField(default=True, help_text="If draft the message is not used in translation")
     used = models.BooleanField(default=True, help_text="Is this message used somewhere in Aurora?")
-    last_hit = models.DateTimeField(
+    last_hit: datetime | None = models.DateTimeField(
         blank=True, null=True, help_text="Last time this translation hase been used message"
     )
 
