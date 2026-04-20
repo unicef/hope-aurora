@@ -77,6 +77,7 @@ dependencies = [
   "sentry-sdk",
   "setuptools",
   "social-auth-app-django>=5.6",                # CVE-2025-61783: unsafe account association via email
+  "unicef-security",
   "urllib3>=2.6",                               # CVE: chained encoding decompression DoS
 ]
 urls.Documentation = "https://unicef.github.io/hope-aurora/"

@@ -8,7 +8,6 @@ from sentry_sdk.integrations.logging import LoggingIntegration
 from .. import env
 
 SENTRY_DSN = env("SENTRY_DSN")
-SENTRY_PROJECT = env("SENTRY_PROJECT")
 sentry_logging = LoggingIntegration(
     level=logging.INFO,  # Capture info and above as breadcrumbs
     event_level=logging.ERROR,  # Send errors as events
