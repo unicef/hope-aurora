@@ -1,5 +1,6 @@
 import django_stubs_ext as django_stubs
 
+from .celery import app as celery_app  # noqa
 from .version import __version__  # noqa
 
 django_stubs.monkeypatch()
