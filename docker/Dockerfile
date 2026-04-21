@@ -27,6 +27,7 @@ RUN groupadd --gid 1024 unicef \
 # ------- deps -------
 FROM base_os AS deps
 RUN set -x \
+    && apt-get update \
     && buildDeps="build-essential \
 cmake \
 curl \
