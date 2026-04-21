@@ -9,12 +9,13 @@ from django.db.models.base import ModelBase
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from natural_keys import NaturalKeyModel
+from unicef_security.models import SecurityMixin
 
 from aurora.core.models import Organization, Project
 from aurora.registration.models import Registration
 
 
-class User(AbstractUser):
+class User(SecurityMixin, AbstractUser):
     class Meta(AbstractUser.Meta):
         swappable = "AUTH_USER_MODEL"
         ordering = ("username",)

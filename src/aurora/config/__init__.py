@@ -81,7 +81,6 @@ OPTIONS = {
     "SECURE_HSTS_PRELOAD": (bool, False, "", True),
     "SENTRY_DSN": (str, ""),
     "SENTRY_ENVIRONMENT": (str, ""),
-    "SENTRY_PROJECT": (str, ""),
     "SENTRY_SECURITY_TOKEN": (str, ""),
     "SENTRY_SECURITY_TOKEN_HEADER": (str, "X-Sentry-Token"),
     "SESSION_COOKIE_DOMAIN": (str, "", "", True),
