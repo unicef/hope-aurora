@@ -3,7 +3,7 @@ import io
 import json
 import logging
 from datetime import timedelta
-from hashlib import sha256
+from hashlib import md5
 from typing import TYPE_CHECKING
 
 from admin_extra_buttons.decorators import button, choice, view
@@ -511,7 +511,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
             if "create" in request.POST:
                 form = TranslationForm(request.POST)
                 if form.is_valid():
-                    key = f"i18n_{request.user.pk}_{sha256(request.session.session_key.encode()).hexdigest()}"
+                    key = f"i18n_{request.user.pk}_{md5(request.session.session_key.encode()).hexdigest()}"
                     con = get_redis_connection("default")
                     con.delete(key)
                     locale = form.cleaned_data["locale"]
@@ -574,7 +574,7 @@ class RegistrationAdmin(ConcurrencyVersionAdmin, AdminAutoCompleteSearchMixin, S
                 uri = translate_url(uri, locale)
                 from django.test import Client
 
-                key = f"i18n_{request.user.pk}_{sha256(request.session.session_key.encode()).hexdigest()}"
+                key = f"i18n_{request.user.pk}_{md5(request.session.session_key.encode()).hexdigest()}"
                 settings.ALLOWED_HOSTS.append("testserver")
                 headers = {
                     "HTTP_ACCEPT_LANGUAGE": "locale",
