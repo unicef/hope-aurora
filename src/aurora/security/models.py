@@ -16,6 +16,8 @@ from aurora.registration.models import Registration
 
 
 class User(SecurityMixin, AbstractUser):
+    last_modify_date = models.DateTimeField(editable=False, blank=True, auto_now=True)
+
     class Meta(AbstractUser.Meta):
         swappable = "AUTH_USER_MODEL"
         ordering = ("username",)

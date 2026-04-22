@@ -17,6 +17,8 @@ from aurora.administration.hijack import impersonate
 from aurora.core.admin_sync import SyncMixin
 from aurora.core.utils import is_root
 
+from unicef_security.admin import UserAdminPlus
+
 from .ad import ADUSerMixin
 from .forms import AuroraRoleForm
 from .utils import generate_pwd
@@ -59,7 +61,7 @@ class GroupAdmin(AdminActionPermMixin, SyncMixin, GroupAdmin_):  # type: ignore[
     protocol_class = GroupProtocol
 
 
-class UserAdmin(AdminActionPermMixin, ADUSerMixin, UserAdmin_):  # type: ignore[misc]
+class UserAdmin(UserAdminPlus, AdminActionPermMixin, ADUSerMixin, UserAdmin_):  # type: ignore[misc]
     list_display = (
         "username",
         "email",
