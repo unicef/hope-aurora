@@ -376,3 +376,12 @@ def test_register_protected_registration(django_app, user, protected_registratio
     with user_grant_permissions(user, "registration.register", protected_registration):
         res = django_app.get(url, user=user.username)
     assert res.status_code == 200
+
+
+@pytest.mark.django_db
+@pytest.mark.mini_racer
+def test_register_protected_registration_authenticated_without_permission(django_app, user, protected_registration):
+    url = protected_registration.get_absolute_url()
+    res = django_app.get(url, user=user.username)
+    assert res.status_code == 302
+    assert res.headers["location"].startswith("/login?next=")

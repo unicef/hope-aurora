@@ -52,6 +52,22 @@ def test_registration_records(registration: "TestRegistration", client):
     assert res.json()
 
 
+def test_registration_records_page_size_is_capped(registration: "TestRegistration", client):
+    res = client.get(f"/api/registration/{registration.pk}/records/?page_size=1000", format="json")
+    assert res.status_code == 200
+    data = res.json()
+    assert len(data["results"]) == 100
+    assert data["count"] == 102
+
+
+def test_registration_records_sets_cache_headers(registration: "TestRegistration", client):
+    res = client.get(f"/api/registration/{registration.pk}/records/", format="json")
+    assert res.status_code == 200
+    etag = res.headers.get("ETag")
+    assert etag
+    assert res.headers.get("Cache-Control") == "private, max-age=120"
+
+
 def test_registration_csv(registration: "TestRegistration", client):
     res = client.get(f"/api/registration/{registration.pk}/csv/")
     assert res.status_code == 200
