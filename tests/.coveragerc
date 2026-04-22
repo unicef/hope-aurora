@@ -30,7 +30,7 @@ exclude_lines =
     except NoReverseMatch:
 
 ignore_errors = True
-fail_under = 60
+fail_under = 90
 
 [html]
 directory = ~build/coverage
