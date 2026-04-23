@@ -1,8 +1,14 @@
 from typing import TYPE_CHECKING
+from types import SimpleNamespace
+from unittest.mock import Mock
 
 import pytest
+from django.test import RequestFactory
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.test import APIClient
 from testutils.factories import RecordFactory, TokenProxyFactory
+
+from aurora.api.viewsets.registration import RegistrationViewSet
 
 if TYPE_CHECKING:
     from aurora.registration.models import Registration
@@ -50,6 +56,69 @@ def test_registration_records(registration: "TestRegistration", client):
     res = client.get(f"/api/registration/{registration.pk}/records/", format="json")
     assert res.status_code == 200
     assert res.json()
+
+
+def test_registration_records_permission_denied_direct_call():
+    request = RequestFactory().get("/api/registration/1/records/")
+    request.user = SimpleNamespace(has_perm=lambda *_args, **_kwargs: False)
+    view = RegistrationViewSet()
+    view.get_object = lambda: SimpleNamespace(active=True, version=1)
+
+    with pytest.raises(PermissionDenied):
+        view.records(request, pk="1")
+
+
+def test_registration_records_returns_conditional_response(monkeypatch):
+    request = RequestFactory().get("/api/registration/1/records/")
+    request.user = SimpleNamespace(has_perm=lambda *_args, **_kwargs: True)
+    view = RegistrationViewSet()
+    view.get_object = lambda: SimpleNamespace(active=True, version=1)
+
+    conditional = SimpleNamespace(headers={}, status_code=304)
+    monkeypatch.setattr("aurora.api.viewsets.registration.get_etag", lambda *_a, **_k: "etag")
+    monkeypatch.setattr("aurora.api.viewsets.registration.get_conditional_response", lambda *_a, **_k: conditional)
+
+    response = view.records(request, pk="1")
+    assert response.status_code == 304
+    assert response.headers["ETag"] == "etag"
+    assert response.headers["Cache-Control"] == "private, max-age=120"
+
+
+def test_registration_records_invalid_serializer_falls_back_to_fields(monkeypatch):
+    request = RequestFactory().get("/api/registration/1/records/?ser=invalid")
+    request.user = SimpleNamespace(has_perm=lambda *_args, **_kwargs: True)
+    view = RegistrationViewSet()
+    view.get_object = lambda: SimpleNamespace(active=True, version=1)
+    view.allowed_serializers = {"fields"}
+
+    class DummySerializer:
+        def __init__(self, *_args, **_kwargs):
+            self.data = [{"ok": 1}]
+
+    view.RecordSerializerMap = {"fields": DummySerializer}
+
+    queryset = Mock()
+    queryset.defer.return_value = queryset
+    monkeypatch.setattr("aurora.api.viewsets.registration.Record.objects.filter", lambda **_k: queryset)
+    monkeypatch.setattr("aurora.api.viewsets.registration.get_etag", lambda *_a, **_k: "etag")
+    monkeypatch.setattr("aurora.api.viewsets.registration.get_conditional_response", lambda *_a, **_k: None)
+
+    class FakeFilter:
+        def __init__(self, *_args, **_kwargs):
+            self.form = SimpleNamespace(is_valid=lambda: False)
+
+        def filter_queryset(self, qs):
+            raise AssertionError("filter_queryset should not be called for invalid filter form")
+
+    monkeypatch.setattr("aurora.api.viewsets.registration.RecordFilter", FakeFilter)
+    monkeypatch.setattr(
+        "aurora.api.viewsets.registration.RecordPageNumberPagination.paginate_queryset",
+        lambda *_a, **_k: None,
+    )
+
+    response = view.records(request, pk="1")
+    assert response.status_code == 200
+    assert response.data == [{"ok": 1}]
 
 
 def test_registration_records_page_size_is_capped(registration: "TestRegistration", client):
