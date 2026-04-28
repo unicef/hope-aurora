@@ -458,8 +458,6 @@ class FormSet(AdminReverseMixin, NaturalKeyModel, OrderableModel):
         self.name = slugify(self.name)
         dict_setdefault(self.advanced, self.FORMSET_DEFAULT_ATTRS)
         super().save(*args, **kwargs)
-        if self.parent_id:
-            self.parent.save()
 
     @cached_property
     def widget_attrs(self):
@@ -724,14 +722,6 @@ class FlexFormField(AdminReverseMixin, NaturalKeyModel, I18NModel, OrderableMode
             self.name = namify(self.label)[:100]
 
         super().save(force_insert, force_update, using, update_fields)
-        if self.flex_form_id:
-            try:
-                if not hasattr(self, "_flex_form_loaded") or self._flex_form_loaded is False:
-                    self.flex_form = FlexForm.objects.get(pk=self.flex_form_id)
-                    self._flex_form_loaded = True
-                self.flex_form.save()
-            except FlexForm.DoesNotExist:
-                pass
 
     def get_usage(self) -> list[dict[str, Any]]:
         ret = []

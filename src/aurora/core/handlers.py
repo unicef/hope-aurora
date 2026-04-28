@@ -16,7 +16,10 @@ def update_cache(sender, instance: FlexForm | FlexFormField | Validator, **kwarg
                 r.save()
 
     elif isinstance(instance, FlexFormField):
-        instance.flex_form.save()
+        try:
+            instance.flex_form.save()
+        except FlexForm.DoesNotExist:
+            pass
     elif isinstance(instance, FlexForm):
         for r in instance.registration_set.all():
             r.save()

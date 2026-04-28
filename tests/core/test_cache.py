@@ -104,3 +104,92 @@ def test_cache():
 
     c.clear()
     assert len(c) == 0
+
+
+def test_cache_size_limit():
+    test_cache = Cache(size=2)
+    test_cache["key1"] = "value1"
+    test_cache["key2"] = "value2"
+    test_cache["key3"] = "value3"
+
+    assert len(test_cache) == 2
+    assert "key1" not in test_cache
+    assert "key2" in test_cache
+    assert "key3" in test_cache
+
+
+def test_cache_clear():
+    test_cache = Cache(size=10)
+    test_cache["key1"] = "value1"
+    test_cache["key2"] = "value2"
+    test_cache.clear()
+    assert len(test_cache) == 0
+
+
+def test_cache_form_hit():
+    mock_request = Mock()
+    mock_request.LANGUAGE_CODE = "en-us"
+    state.request = mock_request
+
+    mock_form = Mock()
+    mock_form.pk = 1
+    mock_form.version = 2
+
+    def test_func(form):
+        return "computed_value"
+
+    decorated_func = cache_form(test_func)
+
+    result1 = decorated_func(mock_form)
+    assert result1 == "computed_value"
+
+    result2 = decorated_func(mock_form)
+    assert result2 == "computed_value"
+
+    state.request = None
+
+
+def test_cache_formset_hit():
+    mock_request = Mock()
+    mock_request.LANGUAGE_CODE = "en-us"
+    state.request = mock_request
+
+    mock_flex_form = Mock()
+    mock_flex_form.pk = 1
+    mock_flex_form.version = 2
+
+    def test_func(flex_form):
+        return "computed_value"
+
+    decorated_func = cache_formset(test_func)
+
+    result1 = decorated_func(mock_flex_form)
+    assert result1 == "computed_value"
+
+    result2 = decorated_func(mock_flex_form)
+    assert result2 == "computed_value"
+
+    state.request = None
+
+
+def test_cache_form_different_languages():
+    mock_request = Mock()
+    state.request = mock_request
+
+    mock_form = Mock()
+    mock_form.pk = 1
+    mock_form.version = 2
+
+    def test_func(form):
+        return "computed_value"
+
+    decorated_func = cache_form(test_func)
+    mock_request.LANGUAGE_CODE = "en-us"
+    result_en = decorated_func(mock_form)
+    mock_request.LANGUAGE_CODE = "it-it"
+    result_it = decorated_func(mock_form)
+
+    assert result_en == "computed_value"
+    assert result_it == "computed_value"
+
+    state.request = None
