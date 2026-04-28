@@ -42,7 +42,7 @@ def user_details(
         user.username = details["email"]
         user.save()
 
-    return social_core_user.user_details(strategy, details, backend, user, *args, **kwargs)  # type: ignore[arg-type]
+    return social_core_user.user_details(strategy, details, backend, user, *args, **kwargs)
 
 
 def require_email(

@@ -27,6 +27,7 @@ RUN groupadd --gid 1024 unicef \
 # ------- deps -------
 FROM base_os AS deps
 RUN set -x \
+    && apt-get update \
     && buildDeps="build-essential \
 cmake \
 curl \
@@ -91,7 +92,8 @@ ENV PATH=/venv/bin:/usr/local/bin/:/usr/bin:/bin:/usr/sbin \
     START_PROXY="true" \
     START_APP="true" \
     START_WORKER="false" \
-    START_CRON="false"
+    START_CRON="false" \
+    START_CELERY_WORKER="false"
 
 
 EXPOSE 8000

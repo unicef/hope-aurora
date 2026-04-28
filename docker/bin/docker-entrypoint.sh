@@ -17,10 +17,11 @@ mkdir -p /var/run /var/nginx ${NGINX_CACHE_DIR} ${MEDIA_ROOT} ${STATIC_ROOT}
 echo "created support dirs /var/run '${MEDIA_ROOT}' '${STATIC_ROOT}' "
 echo "Startup command is: '$1'"
 echo "Startup configuration:"
-echo "   START_PROXY:  '$START_PROXY'"
-echo "   START_APP:    '$START_APP'"
-echo "   START_WORKER: '$START_WORKER'"
-echo "   START_CRON:   '$START_CRON'"
+echo "   START_PROXY:         '$START_PROXY'"
+echo "   START_APP:           '$START_APP'"
+echo "   START_WORKER:        '$START_WORKER'"
+echo "   START_CRON:          '$START_CRON'"
+echo "   START_CELERY_WORKER: '$START_CELERY_WORKER'"
 
 /etc/init.d/nginx stop
 
