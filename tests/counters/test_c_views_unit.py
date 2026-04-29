@@ -3,8 +3,6 @@ from types import SimpleNamespace
 
 from django.forms import Media
 from django.http import HttpResponse
-from django.test import RequestFactory
-
 from aurora.counters.views import ChartIndex
 from aurora.counters.views import DayChartView
 from aurora.counters.views import MonthlyChartView
@@ -36,14 +34,13 @@ class FakeCounterQS:
         return iter(self.records)
 
 
-def _request(path="/", query=None):
-    rf = RequestFactory()
+def _request(rf, path="/", query=None):
     req = rf.get(path, data=query or {})
     req.user = SimpleNamespace(is_staff=False, is_superuser=False)
     return req
 
 
-def test_index_contexts_respect_superuser_and_members(monkeypatch):
+def test_index_contexts_respect_superuser_and_members(monkeypatch, rf):
     orgs = SimpleNamespace(order_by=lambda *_a, **_k: ["o1"])
     captured = []
     monkeypatch.setattr(
@@ -52,7 +49,7 @@ def test_index_contexts_respect_superuser_and_members(monkeypatch):
     )
 
     view = ChartIndex()
-    view.request = _request()
+    view.request = _request(rf)
     view.request.user = SimpleNamespace(is_superuser=True, is_staff=True)
     ctx = view.get_context_data()
     assert ctx["organizations"] == ["o1"]
@@ -63,7 +60,7 @@ def test_index_contexts_respect_superuser_and_members(monkeypatch):
     assert captured[-1] == {"members__user": view.request.user}
 
 
-def test_organization_and_project_contexts(monkeypatch):
+def test_organization_and_project_contexts(monkeypatch, rf):
     org = SimpleNamespace(
         projects=SimpleNamespace(filter=lambda **_k: ["p1"]),
     )
@@ -73,7 +70,7 @@ def test_organization_and_project_contexts(monkeypatch):
 
     org_view = OrganizationIndex()
     org_view.kwargs = {"org": "x"}
-    org_view.request = _request()
+    org_view.request = _request(rf)
     org_view.request.user = SimpleNamespace(is_superuser=False, is_staff=False)
     org_ctx = org_view.get_context_data()
     assert org_ctx["organization"] is org
@@ -81,14 +78,14 @@ def test_organization_and_project_contexts(monkeypatch):
 
     project_view = ProjectIndex()
     project_view.kwargs = {"org": "x", "prj": "2"}
-    project_view.request = _request()
+    project_view.request = _request(rf)
     project_view.request.user = SimpleNamespace(is_superuser=False, is_staff=False)
     prj_ctx = project_view.get_context_data()
     assert prj_ctx["project"] is project
     assert prj_ctx["registrations"] == ["r1"]
 
 
-def test_monthly_data_view_returns_aggregated_payload(monkeypatch):
+def test_monthly_data_view_returns_aggregated_payload(monkeypatch, rf):
     reg = SimpleNamespace(__str__=lambda self: "Reg1")
     rec1 = SimpleNamespace(day=date(2026, 4, 1), records=2, pk=11)
     rec2 = SimpleNamespace(day=date(2026, 4, 2), records=3, pk=12)
@@ -104,14 +101,14 @@ def test_monthly_data_view_returns_aggregated_payload(monkeypatch):
 
     view = MonthlyDataView()
     view.kwargs = {"org": "o", "prj": "1", "registration_id": "9"}
-    request = _request(query={"m": "2026-04-01"})
+    request = _request(rf, query={"m": "2026-04-01"})
     response = view.get(request)
     assert response.status_code == 200
     assert b'"total": 5' in response.content
     assert b'"datapoints": 2' in response.content
 
 
-def test_monthly_chart_and_day_chart_paths(monkeypatch):
+def test_monthly_chart_and_day_chart_paths(monkeypatch, rf):
     counter_first = SimpleNamespace(day=date(2026, 1, 1))
     counter_last = SimpleNamespace(day=date(2026, 4, 1))
     reg = SimpleNamespace(
@@ -133,7 +130,7 @@ def test_monthly_chart_and_day_chart_paths(monkeypatch):
     monkeypatch.setattr("aurora.counters.views.render", lambda *_a, **_k: HttpResponse("ok"))
 
     monthly = MonthlyChartView()
-    monthly.request = _request(query={"m": "2026-04"})
+    monthly.request = _request(rf, query={"m": "2026-04"})
     monthly.kwargs = {"org": "o", "prj": "1", "registration": "9"}
     ctx = monthly.get_context_data()
     assert ctx["month"] == 4
@@ -142,7 +139,7 @@ def test_monthly_chart_and_day_chart_paths(monkeypatch):
     assert isinstance(monthly.media, Media)
 
     day = DayChartView()
-    day.request = _request(query={"day": "2026-04-03"})
+    day.request = _request(rf, query={"day": "2026-04-03"})
     day.kwargs = {"org": "o", "prj": "1", "registration": "9"}
     day.__dict__["registration"] = reg
     response = day.get(day.request)

@@ -2,8 +2,6 @@ from types import SimpleNamespace
 
 from django.forms import Media
 from django.http import HttpResponse
-from django.test import RequestFactory
-
 from aurora.core.admin.form_editor import AdvancendAttrsMixin
 from aurora.core.admin.form_editor import FormEditor
 from aurora.core.admin.form_editor import get_initial
@@ -37,8 +35,7 @@ class DummyPatchedForm:
         self.data = data
 
 
-def _make_request(method="GET", data=None):
-    rf = RequestFactory()
+def _make_request(rf, method="GET", data=None):
     if method == "POST":
         req = rf.post("/", data=data or {})
     else:
@@ -47,8 +44,8 @@ def _make_request(method="GET", data=None):
     return req
 
 
-def _make_editor(request=None, flex_form=None):
-    request = request or _make_request()
+def _make_editor(rf, request=None, flex_form=None):
+    request = request or _make_request(rf)
     modeladmin = SimpleNamespace(get_common_context=lambda req, pk: {"ctx": (req, pk)})
     editor = FormEditor(modeladmin, request, "11")
     editor.FORMS = {"frm": DummyForm, "events": DummyForm}
@@ -73,24 +70,24 @@ def test_get_initial_uses_defaults_and_truthy_values(monkeypatch):
     assert get_initial(ff, "frm") == {"a": 1, "b": 2, "c": 3}
 
 
-def test_form_editor_flex_form_and_patched_form(monkeypatch):
+def test_form_editor_flex_form_and_patched_form(monkeypatch, rf):
     from aurora.core.admin import form_editor as module
 
     flex_form = SimpleNamespace(get_form_class=lambda: DummyPatchedForm)
     monkeypatch.setattr(module.FlexForm.objects, "get", lambda **_k: flex_form)
-    editor = _make_editor()
+    editor = _make_editor(rf)
     editor.__dict__.pop("flex_form")
     assert editor.flex_form is flex_form
     assert editor.patched_form is DummyPatchedForm
     assert editor.cache_key == "/editor/form/7/11/"
 
 
-def test_get_forms_branches():
-    editor = _make_editor(request=_make_request("GET"))
+def test_get_forms_branches(rf):
+    editor = _make_editor(rf, request=_make_request(rf, "GET"))
     data_forms = editor.get_forms(data={"frm-name": "A"})
     assert data_forms["frm"].args[0] == {"frm-name": "A"}
 
-    post_editor = _make_editor(request=_make_request("POST", data={"x": "1"}))
+    post_editor = _make_editor(rf, request=_make_request(rf, "POST", data={"x": "1"}))
     post_forms = post_editor.get_forms()
     assert post_forms["frm"].args[0]["x"] == "1"
     assert post_forms["frm"].kwargs["initial"]["name"] == "X"
@@ -100,8 +97,8 @@ def test_get_forms_branches():
     assert get_forms["frm"].kwargs["prefix"] == "frm"
 
 
-def test_is_valid_and_refresh_branches():
-    editor = _make_editor(request=_make_request("POST", data={"csrfmiddlewaretoken": "t", "a": "1"}))
+def test_is_valid_and_refresh_branches(rf):
+    editor = _make_editor(rf, request=_make_request(rf, "POST", data={"csrfmiddlewaretoken": "t", "a": "1"}))
     DummyForm.valid = True
     response = editor.refresh()
     assert response.status_code == 200
@@ -115,8 +112,8 @@ def test_is_valid_and_refresh_branches():
     DummyForm.errors_data = {}
 
 
-def test_get_context_get_post_and_render(monkeypatch):
-    editor = _make_editor(request=_make_request("GET"))
+def test_get_context_get_post_and_render(monkeypatch, rf):
+    editor = _make_editor(rf, request=_make_request(rf, "GET"))
 
     def fake_render(_request, _template, ctx, **_kwargs):
         return HttpResponse(str(sorted(ctx.keys())))
@@ -138,13 +135,13 @@ def test_get_context_get_post_and_render(monkeypatch):
     get_render = editor.render()
     assert get_render.status_code == 200
 
-    editor.request = _make_request("POST", data={"x": "1"})
+    editor.request = _make_request(rf, "POST", data={"x": "1"})
     post_render = editor.render()
     assert post_render.status_code == 200
 
 
-def test_get_configuration():
-    editor = _make_editor()
+def test_get_configuration(rf):
+    editor = _make_editor(rf)
     response = editor.get_configuration()
     assert response.status_code == 200
     assert response.content == b"aaaa"

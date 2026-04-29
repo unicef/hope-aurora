@@ -6,23 +6,22 @@ from unittest.mock import Mock
 from django import forms
 from django.core.files.base import ContentFile
 from django.http import HttpResponse
-from django.test import RequestFactory
 from django.utils import timezone
 
 from aurora.core import utils
 from aurora.core.utils import JSONEncoder
 
 
-def test_has_token_from_headers_and_cookie(settings):
+def test_has_token_from_headers_and_cookie(settings, rf):
     settings.ROOT_TOKEN = "root-token"
-    request = RequestFactory().get("/", HTTP_X_AURORA_TOKEN="root-token")
+    request = rf.get("/", HTTP_X_AURORA_TOKEN="root-token")
     assert utils.has_token(request) is True
 
-    request = RequestFactory().get("/")
+    request = rf.get("/")
     request.COOKIES["x-aurora-token"] = "root-token"
     assert utils.has_token(request) is True
 
-    request = RequestFactory().get("/")
+    request = rf.get("/")
     assert utils.has_token(request) is False
 
 
@@ -60,26 +59,26 @@ def test_json_encoder_file_and_skip_files():
     assert encoder.default(content) == "::file::"
 
 
-def test_render_sets_response_content_and_cookies(monkeypatch):
+def test_render_sets_response_content_and_cookies(monkeypatch, rf):
     monkeypatch.setattr(utils.loader, "render_to_string", lambda *args, **kwargs: "hello")
-    response = utils.render(RequestFactory().get("/"), "template.html", cookies={"a": "b"})
+    response = utils.render(rf.get("/"), "template.html", cookies={"a": "b"})
     assert response.content == b"hello"
     assert response.cookies["a"].value == "b"
 
 
-def test_get_bookmarks_parses_markers_and_links(monkeypatch):
+def test_get_bookmarks_parses_markers_and_links(monkeypatch, rf):
     monkeypatch.setattr(
         utils,
         "config",
         Mock(SMART_ADMIN_BOOKMARKS="--\n#Header\nadmin,\nview,label\na,b,c\na,b,c,d\n"),
     )
-    quick_links = utils.get_bookmarks(RequestFactory().get("/"))
+    quick_links = utils.get_bookmarks(rf.get("/"))
     assert "<hr/>" in quick_links[0]
     assert "Header" in quick_links[1]
     assert "viewlink" in quick_links[2]
 
 
-def test_dict_helpers_and_client_ip():
+def test_dict_helpers_and_client_ip(rf):
     target = {"a": {"x": 1}}
     utils.dict_setdefault(target, {"a": {"y": 2}, "b": 3})
     assert target == {"a": {"x": 1, "y": 2}, "b": 3}
@@ -88,21 +87,21 @@ def test_dict_helpers_and_client_ip():
     nested["value"] = 7
     assert nested == {"value": 7}
 
-    request = RequestFactory().get("/")
+    request = rf.get("/")
     request.META["HTTP_X_FORWARDED_FOR"] = "1.2.3.4:443, 5.6.7.8"
     assert utils.get_client_ip(request) == "1.2.3.4"
     assert utils.get_client_ip(None) is None
 
 
-def test_misc_helpers(monkeypatch):
+def test_misc_helpers(monkeypatch, rf):
     monkeypatch.setattr(utils.state, "collect_messages", True)
     monkeypatch.setattr(utils.time, "time", lambda: 123.0)
-    etag_collect = utils.get_etag(RequestFactory().get("/"))
+    etag_collect = utils.get_etag(rf.get("/"))
     assert isinstance(etag_collect, str)
     assert etag_collect
 
     monkeypatch.setattr(utils.state, "collect_messages", False)
-    etag_normal = utils.get_etag(RequestFactory().get("/"), "a", "b")
+    etag_normal = utils.get_etag(rf.get("/"), "a", "b")
     assert isinstance(etag_normal, str)
     assert etag_normal
     assert etag_collect != etag_normal
@@ -113,8 +112,8 @@ def test_misc_helpers(monkeypatch):
     assert utils.oneline("a\r\nb\nc\rd") == "a;b;c;d"
 
 
-def test_cache_aware_helpers_and_session(monkeypatch):
-    request = RequestFactory().get("/")
+def test_cache_aware_helpers_and_session(monkeypatch, rf):
+    request = rf.get("/")
     request.user = SimpleNamespace(is_authenticated=True)
     request.session = SimpleNamespace(session_key="sess-1")
     monkeypatch.setattr(utils.state, "request", request)

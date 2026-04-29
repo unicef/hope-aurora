@@ -6,7 +6,6 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from django.http import Http404
-from django.test import RequestFactory
 
 from aurora.security.ad import ADUSerMixin, LoadUsersForm, build_arg_dict_from_dict
 from aurora.core.models import Organization
@@ -48,9 +47,9 @@ def test_load_users_form_validates_emails_and_scope():
 
 
 @pytest.mark.django_db
-def test_get_ad_form_respects_request_method(ad_admin):
-    req_get = RequestFactory().get("/admin/")
-    req_post = RequestFactory().post("/admin/", data={})
+def test_get_ad_form_respects_request_method(ad_admin, rf):
+    req_get = rf.get("/admin/")
+    req_post = rf.post("/admin/", data={})
     assert isinstance(ad_admin._get_ad_form(req_get), LoadUsersForm)
     assert isinstance(ad_admin._get_ad_form(req_post), LoadUsersForm)
 
@@ -94,8 +93,8 @@ def test_sync_ad_data_raises_when_not_found(monkeypatch, ad_admin):
 
 
 @pytest.mark.django_db
-def test_sync_multi_success_and_not_found(monkeypatch, ad_admin):
-    req = RequestFactory().get("/admin/")
+def test_sync_multi_success_and_not_found(monkeypatch, ad_admin, rf):
+    req = rf.get("/admin/")
     u1 = User.objects.create(username="u1", email="u1@example.org")
     u2 = User.objects.create(username="u2", email="u2@example.org")
     ad_admin.get_queryset = lambda _r: [u1, u2]
@@ -111,8 +110,8 @@ def test_sync_multi_success_and_not_found(monkeypatch, ad_admin):
 
 
 @pytest.mark.django_db
-def test_sync_multi_all_success(monkeypatch, ad_admin):
-    req = RequestFactory().get("/admin/")
+def test_sync_multi_all_success(monkeypatch, ad_admin, rf):
+    req = rf.get("/admin/")
     u1 = User.objects.create(username="u1ok", email="u1ok@example.org")
     ad_admin.get_queryset = lambda _r: [u1]
     ad_admin.message_user = Mock()
@@ -122,8 +121,8 @@ def test_sync_multi_all_success(monkeypatch, ad_admin):
 
 
 @pytest.mark.django_db
-def test_sync_multi_outer_exception(monkeypatch, ad_admin):
-    req = RequestFactory().get("/admin/")
+def test_sync_multi_outer_exception(monkeypatch, ad_admin, rf):
+    req = rf.get("/admin/")
     ad_admin.get_queryset = lambda _r: (_ for _ in ()).throw(RuntimeError("boom"))
     ad_admin.message_user = Mock()
     ad_admin.sync_multi.func(ad_admin, req)
@@ -131,8 +130,8 @@ def test_sync_multi_outer_exception(monkeypatch, ad_admin):
 
 
 @pytest.mark.django_db
-def test_sync_single_handles_exception(monkeypatch, ad_admin):
-    req = RequestFactory().get("/admin/")
+def test_sync_single_handles_exception(monkeypatch, ad_admin, rf):
+    req = rf.get("/admin/")
     ad_admin.get_object = lambda *_a, **_k: User.objects.create(username="u3", email="u3@example.org")
     ad_admin.message_user = Mock()
     monkeypatch.setattr(ad_admin, "_sync_ad_data", lambda *_a, **_k: (_ for _ in ()).throw(RuntimeError("boom")))
@@ -141,8 +140,8 @@ def test_sync_single_handles_exception(monkeypatch, ad_admin):
 
 
 @pytest.mark.django_db
-def test_load_ad_users_invalid_form_returns_context(monkeypatch, ad_admin):
-    req = RequestFactory().post("/admin/", data={})
+def test_load_ad_users_invalid_form_returns_context(monkeypatch, ad_admin, rf):
+    req = rf.post("/admin/", data={})
     req.user = SimpleNamespace(pk=1)
     req.session = SimpleNamespace(session_key="abc")
     ad_admin.get_common_context = lambda *_a, **_k: {}
@@ -155,8 +154,8 @@ def test_load_ad_users_invalid_form_returns_context(monkeypatch, ad_admin):
 
 
 @pytest.mark.django_db
-def test_load_ad_users_graph_disabled_creates_entries(monkeypatch, ad_admin):
-    request = RequestFactory().post("/admin/", data={})
+def test_load_ad_users_graph_disabled_creates_entries(monkeypatch, ad_admin, rf):
+    request = rf.post("/admin/", data={})
     request.user = SimpleNamespace(pk=1)
     request.session = SimpleNamespace(session_key="abc")
     ad_admin.get_common_context = lambda *_a, **_k: {}

@@ -8,7 +8,6 @@ from django.core import signing
 from django.core.exceptions import ValidationError
 from django.http import Http404
 from django.http import HttpResponse
-from django.test import RequestFactory
 from django.urls import reverse
 from django.utils.translation import override
 from testutils.factories import RegistrationFactory
@@ -205,10 +204,10 @@ def test_register_router_uses_current_language_when_supported(client, monkeypatc
 
 
 @pytest.mark.django_db
-def test_registrations_returns_none_for_non_get_post():
+def test_registrations_returns_none_for_non_get_post(rf):
     from aurora.registration.views.registration import registrations
 
-    request = RequestFactory().put(reverse("registrations"))
+    request = rf.put(reverse("registrations"))
     assert registrations(request) is None
 
 
@@ -254,12 +253,12 @@ def test_register_complete_context_without_qrcode(monkeypatch):
     assert context["url"] is None
 
 
-def test_register_view_get_uses_collect_messages_cache_path(monkeypatch):
+def test_register_view_get_uses_collect_messages_cache_path(monkeypatch, rf):
     from aurora.registration.views import registration as registration_views
     from aurora.state import state
 
     view = RegisterView()
-    request = RequestFactory().get("/register/fake/")
+    request = rf.get("/register/fake/")
     request.user = Mock(is_anonymous=True, is_staff=False)
     view.registration = Mock(protected=False)
 

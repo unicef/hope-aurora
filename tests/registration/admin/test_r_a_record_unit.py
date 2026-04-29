@@ -5,7 +5,6 @@ from unittest.mock import Mock
 import pytest
 from django.contrib import admin
 from django.http import HttpResponse
-from django.test import RequestFactory
 
 from aurora.registration.admin.record import RecordAdmin
 from aurora.registration.models import Record
@@ -16,7 +15,7 @@ def record_admin():
     return RecordAdmin(Record, admin.site)
 
 
-def test_get_queryset_applies_defer_and_select_related(record_admin, monkeypatch):
+def test_get_queryset_applies_defer_and_select_related(record_admin, monkeypatch, rf):
     qs = Mock()
     qs.defer.return_value = qs
     qs.select_related.return_value = "final"
@@ -24,14 +23,14 @@ def test_get_queryset_applies_defer_and_select_related(record_admin, monkeypatch
         "smart_admin.modeladmin.SmartModelAdmin.get_queryset",
         lambda *_a, **_k: qs,
     )
-    request = RequestFactory().get("/admin/")
+    request = rf.get("/admin/")
     assert record_admin.get_queryset(request) == "final"
     qs.defer.assert_called_once_with("fields", "files")
     qs.select_related.assert_called_once_with("registration", "registrar")
 
 
-def test_get_common_context_and_changeform_view(record_admin, monkeypatch):
-    request = RequestFactory().get("/admin/")
+def test_get_common_context_and_changeform_view(record_admin, monkeypatch, rf):
+    request = rf.get("/admin/")
     monkeypatch.setattr(
         "smart_admin.modeladmin.SmartModelAdmin.get_common_context",
         lambda *_a, **kwargs: kwargs,
@@ -81,8 +80,8 @@ def test_receipt_sets_href_and_logs_exception(record_admin, monkeypatch):
         log.assert_called_once()
 
 
-def test_preview_and_inspect(record_admin, monkeypatch):
-    request = RequestFactory().get("/admin/")
+def test_preview_and_inspect(record_admin, monkeypatch, rf):
+    request = rf.get("/admin/")
     files_payload = {"file": "x"}
     record_admin.object = SimpleNamespace(files=SimpleNamespace(tobytes=lambda: json.dumps(files_payload).encode()))
     record_admin.get_common_context = Mock(return_value={"base": 1})
@@ -95,9 +94,9 @@ def test_preview_and_inspect(record_admin, monkeypatch):
     assert inspect.status_code == 200
 
 
-def test_decrypt_get_post_valid_invalid_and_exception(record_admin, monkeypatch):
-    request_get = RequestFactory().get("/admin/")
-    request_post = RequestFactory().post("/admin/", data={"key": "k"})
+def test_decrypt_get_post_valid_invalid_and_exception(record_admin, monkeypatch, rf):
+    request_get = rf.get("/admin/")
+    request_post = rf.post("/admin/", data={"key": "k"})
 
     record_admin.object = SimpleNamespace(decrypt=lambda _k: {"a": 1})
     record_admin.get_common_context = Mock(return_value={"base": 1})
@@ -127,8 +126,8 @@ def test_decrypt_get_post_valid_invalid_and_exception(record_admin, monkeypatch)
     record_admin.message_error_to_user.assert_called_once()
 
 
-def test_permissions_follow_root_and_debug(record_admin, monkeypatch):
-    request = RequestFactory().get("/admin/")
+def test_permissions_follow_root_and_debug(record_admin, monkeypatch, rf):
+    request = rf.get("/admin/")
 
     monkeypatch.setattr("aurora.registration.admin.record.settings.DEBUG", False)
     monkeypatch.setattr("aurora.registration.admin.record.is_root", lambda *_a, **_k: False)

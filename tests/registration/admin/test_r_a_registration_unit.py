@@ -6,7 +6,6 @@ from unittest.mock import Mock
 import pytest
 from django.contrib import admin
 from django.http import HttpResponse, HttpResponseRedirect
-from django.test import RequestFactory
 from django.urls import reverse
 
 from aurora.registration.admin.registration import RegistrationAdmin, can_export_data
@@ -39,29 +38,29 @@ def test_can_export_data_checks_permission_or_root(monkeypatch):
     assert can_export_data(request, obj) is False
 
 
-def test_get_list_display_hides_org_or_project(registration_admin):
-    req = RequestFactory().get("/admin/")
+def test_get_list_display_hides_org_or_project(registration_admin, rf):
+    req = rf.get("/admin/")
     req.GET = {"project__organization__exact": "1"}
     display = registration_admin.get_list_display(req)
     assert "organization" not in display
     assert "project" in display
 
-    req = RequestFactory().get("/admin/")
+    req = rf.get("/admin/")
     req.GET = {}
     display = registration_admin.get_list_display(req)
     assert "project" not in display
     assert "organization" in display
 
 
-def test_formfield_for_dbfield_styles_unique_fields(registration_admin):
-    request = RequestFactory().get("/admin/")
+def test_formfield_for_dbfield_styles_unique_fields(registration_admin, rf):
+    request = rf.get("/admin/")
     db_field = Registration._meta.get_field("unique_field_path")
     formfield = registration_admin.formfield_for_dbfield(db_field, request)
     assert formfield.widget.attrs["style"] == "width:80%"
 
 
-def test_get_readonly_fields_extends_for_non_root(registration_admin, monkeypatch):
-    request = RequestFactory().get("/admin/")
+def test_get_readonly_fields_extends_for_non_root(registration_admin, monkeypatch, rf):
+    request = rf.get("/admin/")
     request.user = SimpleNamespace(is_staff=True)
     obj = SimpleNamespace(pk=1)
 
@@ -86,8 +85,8 @@ def test_secure_and_admin_sync_show_inspect(registration_admin):
     assert registration_admin.admin_sync_show_inspect() is True
 
 
-def test_redirect_helpers(registration_admin):
-    request = RequestFactory().get("/admin/")
+def test_redirect_helpers(registration_admin, rf):
+    request = rf.get("/admin/")
     obj = SimpleNamespace(
         slug="reg-slug",
         pk=11,
@@ -109,7 +108,7 @@ def test_redirect_helpers(registration_admin):
     assert collected_resp.url == f"{reverse('admin:registration_record_changelist')}?registration__exact=11"
 
 
-def test_collect_calls_counter_collect(registration_admin, monkeypatch):
+def test_collect_calls_counter_collect(registration_admin, monkeypatch, rf):
     called = {}
 
     class _CounterObjects:
@@ -121,7 +120,7 @@ def test_collect_calls_counter_collect(registration_admin, monkeypatch):
         objects = _CounterObjects()
 
     monkeypatch.setattr("aurora.counters.models.Counter", _Counter)
-    request = RequestFactory().get("/admin/")
+    request = rf.get("/admin/")
     registration_admin.collect.func(registration_admin, request, "55")
     assert called["kwargs"] == {"registrations": ["55"]}
 
@@ -143,8 +142,8 @@ def test_change_buttons_are_sorted_and_filtered(registration_admin, monkeypatch)
     assert cl_buttons == [h2, h1]
 
 
-def test_archive_sets_archived_state_on_post(registration_admin, monkeypatch):
-    request = RequestFactory().post("/admin/", data={"archive": "1"})
+def test_archive_sets_archived_state_on_post(registration_admin, monkeypatch, rf):
+    request = rf.post("/admin/", data={"archive": "1"})
     reg = SimpleNamespace(end=None, archived=False, active=True, pk=77, save=Mock())
     ctx = {"original": reg, "clearable": False}
     monkeypatch.setattr(registration_admin, "get_common_context", lambda *_args, **_kwargs: ctx)
@@ -164,8 +163,8 @@ def test_archive_sets_archived_state_on_post(registration_admin, monkeypatch):
     reg.save.assert_called_once()
 
 
-def test_archive_clear_sends_remove_records_task(registration_admin, monkeypatch):
-    request = RequestFactory().post("/admin/", data={"clear": "1"})
+def test_archive_clear_sends_remove_records_task(registration_admin, monkeypatch, rf):
+    request = rf.post("/admin/", data={"clear": "1"})
     reg = SimpleNamespace(end=datetime.date(2026, 1, 1), archived=False, active=False, pk=88, save=Mock())
     ctx = {"original": reg, "clearable": True}
     remove_send = Mock()
@@ -213,8 +212,8 @@ def test_encryption_choice_variants(registration_admin):
     ]
 
 
-def test_toggle_encryption_and_removekey(registration_admin, monkeypatch):
-    request = RequestFactory().post("/admin/", data={})
+def test_toggle_encryption_and_removekey(registration_admin, monkeypatch, rf):
+    request = rf.post("/admin/", data={})
     obj = SimpleNamespace(encrypt_data=False, public_key="key", save=Mock())
     registration_admin.get_object = Mock(return_value=obj)
     registration_admin.toggle_encryption.func(registration_admin, request, "1")
@@ -231,8 +230,8 @@ def test_toggle_encryption_and_removekey(registration_admin, monkeypatch):
     registration_admin.log_change.assert_called_once()
 
 
-def test_removekey_get_renders_template(registration_admin, monkeypatch):
-    request = RequestFactory().get("/admin/")
+def test_removekey_get_renders_template(registration_admin, monkeypatch, rf):
+    request = rf.get("/admin/")
     registration_admin.get_common_context = Mock(return_value={"original": SimpleNamespace()})
     monkeypatch.setattr(
         "aurora.registration.admin.registration.render",
@@ -242,9 +241,9 @@ def test_removekey_get_renders_template(registration_admin, monkeypatch):
     assert response.status_code == 200
 
 
-def test_generate_keys_and_james_helpers(registration_admin, monkeypatch):
-    request = RequestFactory().post("/admin/", data={})
-    request_get = RequestFactory().get("/admin/")
+def test_generate_keys_and_james_helpers(registration_admin, monkeypatch, rf):
+    request = rf.post("/admin/", data={})
+    request_get = rf.get("/admin/")
     obj = SimpleNamespace(
         setup_encryption_keys=Mock(return_value=("priv", "pub")),
         flex_form=SimpleNamespace(get_form_class=Mock(return_value=type("X", (), {}))),
@@ -283,7 +282,7 @@ def test_generate_keys_and_james_helpers(registration_admin, monkeypatch):
     cache_set.assert_called_once()
 
 
-def test_james_editor_get_and_post(registration_admin, monkeypatch):
+def test_james_editor_get_and_post(registration_admin, monkeypatch, rf):
     original = SimpleNamespace()
     registration_admin.get_common_context = Mock(return_value={"original": original})
     monkeypatch.setattr("aurora.registration.admin.registration.get_system_cache_version", lambda: "v1")
@@ -304,22 +303,22 @@ def test_james_editor_get_and_post(registration_admin, monkeypatch):
     form.save = Mock()
     monkeypatch.setattr("aurora.registration.admin.registration.JamesForm", lambda *args, **kwargs: form)
 
-    get_resp = registration_admin.james_editor.func(registration_admin, RequestFactory().get("/admin/"), "6")
+    get_resp = registration_admin.james_editor.func(registration_admin, rf.get("/admin/"), "6")
     assert get_resp.status_code == 200
 
     post_resp = registration_admin.james_editor.func(
         registration_admin,
-        RequestFactory().post("/admin/", data={"data": "{}"}),
+        rf.post("/admin/", data={"data": "{}"}),
         "6",
     )
     assert isinstance(post_resp, HttpResponseRedirect)
     cache_set.assert_called_once()
 
 
-def test_choice_sets_for_admin_and_data(registration_admin, monkeypatch):
+def test_choice_sets_for_admin_and_data(registration_admin, monkeypatch, rf):
     button = SimpleNamespace(
         choices=[],
-        context={"request": RequestFactory().get("/"), "original": SimpleNamespace()},
+        context={"request": rf.get("/"), "original": SimpleNamespace()},
         original=SimpleNamespace(),
         config={},
     )
@@ -333,7 +332,7 @@ def test_choice_sets_for_admin_and_data(registration_admin, monkeypatch):
     )
     data_button = SimpleNamespace(
         choices=[],
-        context={"request": RequestFactory().get("/")},
+        context={"request": rf.get("/")},
         original=SimpleNamespace(),
         config={},
     )
@@ -341,16 +340,16 @@ def test_choice_sets_for_admin_and_data(registration_admin, monkeypatch):
     assert registration_admin.export_as_csv in data_button.choices
 
 
-def test_invalidate_cache_saves_object(registration_admin):
-    request = RequestFactory().get("/admin/")
+def test_invalidate_cache_saves_object(registration_admin, rf):
+    request = rf.get("/admin/")
     obj = SimpleNamespace(save=Mock())
     registration_admin.get_object = Mock(return_value=obj)
     registration_admin.invalidate_cache.func(registration_admin, request, "1")
     obj.save.assert_called_once()
 
 
-def test_inspect_renders_template(registration_admin, monkeypatch):
-    request = RequestFactory().get("/admin/")
+def test_inspect_renders_template(registration_admin, monkeypatch, rf):
+    request = rf.get("/admin/")
     registration_admin.get_common_context = Mock(return_value={"original": SimpleNamespace()})
     monkeypatch.setattr(
         "aurora.registration.admin.registration.render",
@@ -360,9 +359,9 @@ def test_inspect_renders_template(registration_admin, monkeypatch):
     assert response.status_code == 200
 
 
-def test_debug_get_and_invalid_post(registration_admin, monkeypatch):
-    request_get = RequestFactory().get("/admin/")
-    request_post = RequestFactory().post("/admin/", data={})
+def test_debug_get_and_invalid_post(registration_admin, monkeypatch, rf):
+    request_get = rf.get("/admin/")
+    request_post = rf.post("/admin/", data={})
     registration_admin.get_common_context = Mock(return_value={"original": SimpleNamespace()})
     monkeypatch.setattr(
         "aurora.registration.admin.registration.render",
@@ -379,8 +378,8 @@ def test_debug_get_and_invalid_post(registration_admin, monkeypatch):
     assert registration_admin.debug.func(registration_admin, request_post, "1").status_code == 200
 
 
-def test_debug_post_valid_populates_results(registration_admin, monkeypatch):
-    request = RequestFactory().post("/admin/", data={"search": "foo"})
+def test_debug_post_valid_populates_results(registration_admin, monkeypatch, rf):
+    request = rf.post("/admin/", data={"search": "foo"})
     registration_admin.get_common_context = Mock(return_value={"original": SimpleNamespace()})
     monkeypatch.setattr(
         "aurora.registration.admin.registration.render",
@@ -415,8 +414,8 @@ def test_debug_post_valid_populates_results(registration_admin, monkeypatch):
     assert registration_admin.debug.func(registration_admin, request, "1").status_code == 200
 
 
-def test_export_as_csv_handles_too_many_records(registration_admin, monkeypatch):
-    request = RequestFactory().post("/admin/", data={})
+def test_export_as_csv_handles_too_many_records(registration_admin, monkeypatch, rf):
+    request = rf.post("/admin/", data={})
     registration_admin.get_common_context = Mock(return_value={"original": SimpleNamespace(slug="slug1")})
     registration_admin.message_user = Mock()
     monkeypatch.setattr(
@@ -464,8 +463,8 @@ def test_export_as_csv_handles_too_many_records(registration_admin, monkeypatch)
     registration_admin.message_user.assert_called()
 
 
-def test_export_as_csv_unhandled_error_branch(registration_admin, monkeypatch):
-    request = RequestFactory().post("/admin/", data={})
+def test_export_as_csv_unhandled_error_branch(registration_admin, monkeypatch, rf):
+    request = rf.post("/admin/", data={})
     registration_admin.get_common_context = Mock(return_value={"original": SimpleNamespace(slug="slug1")})
     registration_admin.message_user = Mock()
     monkeypatch.setattr(
@@ -528,9 +527,9 @@ def test_export_as_csv_unhandled_error_branch(registration_admin, monkeypatch):
     registration_admin.message_user.assert_called()
 
 
-def test_create_custom_template_post_and_get(registration_admin, monkeypatch):
-    req_get = RequestFactory().get("/admin/")
-    req_post = RequestFactory().post("/admin/", data={"locale": "-"})
+def test_create_custom_template_post_and_get(registration_admin, monkeypatch, rf):
+    req_get = rf.get("/admin/")
+    req_post = rf.post("/admin/", data={"locale": "-"})
     original = SimpleNamespace(locale="en-us", slug="reg-1")
     registration_admin.get_common_context = Mock(return_value={"original": original})
     monkeypatch.setattr(
@@ -558,8 +557,8 @@ def test_create_custom_template_post_and_get(registration_admin, monkeypatch):
     assert registration_admin.create_custom_template.func(registration_admin, req_post, "1").status_code == 200
 
 
-def test_create_custom_template_without_source_template(registration_admin, monkeypatch):
-    req_post = RequestFactory().post("/admin/", data={"locale": "it-it"})
+def test_create_custom_template_without_source_template(registration_admin, monkeypatch, rf):
+    req_post = rf.post("/admin/", data={"locale": "it-it"})
     original = SimpleNamespace(locale="en-us", slug="reg-1")
     registration_admin.get_common_context = Mock(return_value={"original": original})
     monkeypatch.setattr(
@@ -583,7 +582,7 @@ def test_create_custom_template_without_source_template(registration_admin, monk
         registration_admin.create_custom_template.func(registration_admin, req_post, "1")
 
 
-def test_prepare_translation_export_and_invalid_locale(registration_admin, monkeypatch):
+def test_prepare_translation_export_and_invalid_locale(registration_admin, monkeypatch, rf):
     original = SimpleNamespace(name="Reg Name", locales=["en-us"])
     registration_admin.get_common_context = Mock(return_value={"original": original})
     registration_admin.message_user = Mock()
@@ -593,7 +592,7 @@ def test_prepare_translation_export_and_invalid_locale(registration_admin, monke
     )
 
     # Invalid locale in "create" branch
-    req_create = RequestFactory().post("/admin/", data={"create": "1"})
+    req_create = rf.post("/admin/", data={"create": "1"})
     req_create.user = SimpleNamespace(pk=1)
     req_create.session = SimpleNamespace(session_key="sess")
     form_create = Mock(is_valid=Mock(return_value=True), cleaned_data={"locale": "it-it"})
@@ -610,7 +609,7 @@ def test_prepare_translation_export_and_invalid_locale(registration_admin, monke
     assert isinstance(response, HttpResponseRedirect)
 
     # Export branch
-    req_export = RequestFactory().post(
+    req_export = rf.post(
         "/admin/",
         data={
             "export": "1",
@@ -626,17 +625,17 @@ def test_prepare_translation_export_and_invalid_locale(registration_admin, monke
     assert response["Content-Type"] == "text/csv"
 
 
-def test_prepare_translation_get_and_create_success(registration_admin, monkeypatch):
+def test_prepare_translation_get_and_create_success(registration_admin, monkeypatch, rf):
     original = SimpleNamespace(name="Reg Name", locales=["en-us"])
     registration_admin.get_common_context = Mock(return_value={"original": original})
     monkeypatch.setattr(
         "aurora.registration.admin.registration.render",
         lambda *_a, **_k: HttpResponse("ok"),
     )
-    req_get = RequestFactory().get("/admin/")
+    req_get = rf.get("/admin/")
     assert registration_admin.prepare_translation.func(registration_admin, req_get, "1").status_code == 200
 
-    req_create = RequestFactory().post("/admin/", data={"create": "1"})
+    req_create = rf.post("/admin/", data={"create": "1"})
     req_create.user = SimpleNamespace(pk=1)
     req_create.session = SimpleNamespace(session_key="sess")
     form = Mock(is_valid=Mock(return_value=True), cleaned_data={"locale": "en-us"})
@@ -657,9 +656,9 @@ def test_prepare_translation_get_and_create_success(registration_admin, monkeypa
     assert registration_admin.prepare_translation.func(registration_admin, req_create, "1").status_code == 200
 
 
-def test_create_translation_get_and_invalid_post(registration_admin, monkeypatch):
-    request_get = RequestFactory().get("/admin/")
-    request_post = RequestFactory().post("/admin/", data={})
+def test_create_translation_get_and_invalid_post(registration_admin, monkeypatch, rf):
+    request_get = rf.get("/admin/")
+    request_post = rf.post("/admin/", data={})
     registration_admin.get_common_context = Mock(return_value={"original": SimpleNamespace(slug="reg1", version=1)})
     monkeypatch.setattr(
         "aurora.registration.admin.registration.render",
@@ -673,8 +672,8 @@ def test_create_translation_get_and_invalid_post(registration_admin, monkeypatch
     assert registration_admin.create_translation.func(registration_admin, request_post, "1").status_code == 200
 
 
-def test_create_translation_success_and_client_error(registration_admin, monkeypatch):
-    request = RequestFactory().post("/admin/", data={"locale": "en-us"})
+def test_create_translation_success_and_client_error(registration_admin, monkeypatch, rf):
+    request = rf.post("/admin/", data={"locale": "en-us"})
     request.user = SimpleNamespace(pk=1)
     request.session = SimpleNamespace(session_key="sess")
     registration_admin.message_user = Mock()
@@ -731,7 +730,7 @@ def test_create_translation_success_and_client_error(registration_admin, monkeyp
     registration_admin.message_error_to_user.assert_called()
 
 
-def test_clone_get_post_invalid_and_success(registration_admin, monkeypatch):
+def test_clone_get_post_invalid_and_success(registration_admin, monkeypatch, rf):
     original = SimpleNamespace(
         pk=1,
         name="Orig",
@@ -745,7 +744,7 @@ def test_clone_get_post_invalid_and_success(registration_admin, monkeypatch):
     assert (
         registration_admin.clone.func(
             registration_admin,
-            RequestFactory().get("/admin/"),
+            rf.get("/admin/"),
             "1",
         ).status_code
         == 200
@@ -759,7 +758,7 @@ def test_clone_get_post_invalid_and_success(registration_admin, monkeypatch):
     assert (
         registration_admin.clone.func(
             registration_admin,
-            RequestFactory().post("/admin/", data={}),
+            rf.post("/admin/", data={}),
             "1",
         ).status_code
         == 200
@@ -789,6 +788,6 @@ def test_clone_get_post_invalid_and_success(registration_admin, monkeypatch):
         lambda *_a, **_k: (new_reg, True),
     )
     registration_admin.message_user = Mock()
-    response = registration_admin.clone.func(registration_admin, RequestFactory().post("/admin/", data={}), "1")
+    response = registration_admin.clone.func(registration_admin, rf.post("/admin/", data={}), "1")
     assert isinstance(response, HttpResponseRedirect)
     registration_admin.message_user.assert_called_once()

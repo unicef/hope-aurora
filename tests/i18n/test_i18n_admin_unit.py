@@ -4,7 +4,6 @@ from unittest.mock import Mock
 import pytest
 from django.contrib import admin
 from django.http import HttpResponseRedirect
-from django.test import RequestFactory
 
 from aurora.i18n.admin import MessageAdmin
 from aurora.i18n.models import Message
@@ -15,8 +14,8 @@ def message_admin():
     return MessageAdmin(Message, admin.site)
 
 
-def test_approve_and_rehash(message_admin):
-    request = RequestFactory().post("/admin/")
+def test_approve_and_rehash(message_admin, rf):
+    request = rf.post("/admin/")
     message_admin.message_user = Mock()
 
     qs = SimpleNamespace(update=lambda **_k: 3)
@@ -32,42 +31,42 @@ def test_approve_and_rehash(message_admin):
     message_admin.message_user.assert_called_once()
 
 
-def test_get_readonly_fields_branch(message_admin):
-    request = RequestFactory().get("/admin/")
+def test_get_readonly_fields_branch(message_admin, rf):
+    request = rf.get("/admin/")
     assert message_admin.get_readonly_fields(request, obj=None) == message_admin.readonly_fields
     assert "msgid" in message_admin.get_readonly_fields(request, obj=SimpleNamespace())
 
 
-def test_get_or_create_get_redirect(message_admin):
-    request = RequestFactory().get("/admin/")
+def test_get_or_create_get_redirect(message_admin, rf):
+    request = rf.get("/admin/")
     response = message_admin.get_or_create.func(message_admin, request)
     assert isinstance(response, HttpResponseRedirect)
 
 
 @pytest.mark.django_db
-def test_get_or_create_post_found_and_create(message_admin):
-    request = RequestFactory().post("/admin/", data={"msgid": "hello", "lang": "en-us"})
+def test_get_or_create_post_found_and_create(message_admin, rf):
+    request = rf.post("/admin/", data={"msgid": "hello", "lang": "en-us"})
     message_admin.message_user = Mock()
     existing = Message.objects.create(msgid="hello", msgstr="hello", locale="en-us")
     response = message_admin.get_or_create.func(message_admin, request)
     assert response.status_code == 302
     assert str(existing.pk) in response.url
 
-    request = RequestFactory().post("/admin/", data={"msgid": "new-msg", "lang": "en-us"})
+    request = rf.post("/admin/", data={"msgid": "new-msg", "lang": "en-us"})
     response = message_admin.get_or_create.func(message_admin, request)
     assert response.status_code == 302
 
 
-def test_siblings_redirect(message_admin):
-    request = RequestFactory().get("/admin/")
+def test_siblings_redirect(message_admin, rf):
+    request = rf.get("/admin/")
     message_admin.get_object = lambda *_a, **_k: SimpleNamespace(msgcode="abc")
     response = message_admin.siblings.func(message_admin, request, "1")
     assert isinstance(response, HttpResponseRedirect)
     assert "msgcode__exact=abc" in response.url
 
 
-def test_create_translation_single_invalid_form(message_admin, monkeypatch):
-    request = RequestFactory().post("/admin/", data={})
+def test_create_translation_single_invalid_form(message_admin, monkeypatch, rf):
+    request = rf.post("/admin/", data={})
     message_admin.get_common_context = lambda *_a, **_k: {"original": SimpleNamespace(msgid="m1")}
     monkeypatch.setattr("aurora.i18n.admin.render", lambda *_a, **_k: SimpleNamespace(status_code=200))
 
@@ -78,8 +77,8 @@ def test_create_translation_single_invalid_form(message_admin, monkeypatch):
     assert response.status_code == 200
 
 
-def test_create_translations_invalid_form(message_admin, monkeypatch):
-    request = RequestFactory().post("/admin/", data={})
+def test_create_translations_invalid_form(message_admin, monkeypatch, rf):
+    request = rf.post("/admin/", data={})
     message_admin.get_common_context = lambda *_a, **_k: {}
     monkeypatch.setattr("aurora.i18n.admin.render", lambda *_a, **_k: SimpleNamespace(status_code=200))
     invalid = Mock()
@@ -89,19 +88,19 @@ def test_create_translations_invalid_form(message_admin, monkeypatch):
     assert response.status_code == 200
 
 
-def test_import_translations_get(message_admin, monkeypatch):
-    request = RequestFactory().get("/admin/")
+def test_import_translations_get(message_admin, monkeypatch, rf):
+    request = rf.get("/admin/")
     message_admin.get_common_context = lambda *_a, **_k: {"pre": {}, "post": {}}
     monkeypatch.setattr("aurora.i18n.admin.render", lambda *_a, **_k: SimpleNamespace(status_code=200))
     response = message_admin.import_translations.func(message_admin, request)
     assert response.status_code == 200
 
 
-def test_import_translations_save_branch(message_admin, monkeypatch):
+def test_import_translations_save_branch(message_admin, monkeypatch, rf):
     from aurora.state import state
     from contextlib import nullcontext
 
-    request = RequestFactory().post("/admin/", data={"save": "1", "selection": ["msg-1"]})
+    request = rf.post("/admin/", data={"save": "1", "selection": ["msg-1"]})
     request.user = SimpleNamespace(pk=1)
     request.session = SimpleNamespace(session_key="sess")
     state.timestamp = "ts"
@@ -129,10 +128,10 @@ def test_import_translations_save_branch(message_admin, monkeypatch):
     assert "locale__exact=en-us" in response.url
 
 
-def test_import_translations_import_branch_large_file(message_admin, monkeypatch):
+def test_import_translations_import_branch_large_file(message_admin, monkeypatch, rf):
     from aurora.state import state
 
-    request = RequestFactory().post("/admin/", data={"import": "1"})
+    request = rf.post("/admin/", data={"import": "1"})
     request.user = SimpleNamespace(pk=1)
     request.session = SimpleNamespace(session_key="sess")
     state.timestamp = "ts"
@@ -157,8 +156,8 @@ def test_import_translations_import_branch_large_file(message_admin, monkeypatch
     message_admin.message_user.assert_called()
 
 
-def test_check_orphans_post_valid(message_admin, monkeypatch):
-    request = RequestFactory().post("/admin/", data={"locale": "it-it"})
+def test_check_orphans_post_valid(message_admin, monkeypatch, rf):
+    request = rf.post("/admin/", data={"locale": "it-it"})
     message_admin.get_common_context = lambda *_a, **_k: {"pre": {}, "post": {}}
     monkeypatch.setattr("aurora.i18n.admin.render", lambda *_a, **_k: SimpleNamespace(status_code=200))
 
@@ -177,8 +176,8 @@ def test_check_orphans_post_valid(message_admin, monkeypatch):
     assert response.status_code == 200
 
 
-def test_create_translation_single_success_and_error(message_admin):
-    request = RequestFactory().post("/admin/", data={"locale": "it-it"})
+def test_create_translation_single_success_and_error(message_admin, rf):
+    request = rf.post("/admin/", data={"locale": "it-it"})
     message_admin.message_user = Mock()
     message_admin.message_error_to_user = Mock()
 

@@ -3,7 +3,6 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
-from django.test import RequestFactory
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.test import APIClient
 from testutils.factories import RecordFactory, TokenProxyFactory
@@ -58,8 +57,8 @@ def test_registration_records(registration: "TestRegistration", client):
     assert res.json()
 
 
-def test_registration_records_permission_denied_direct_call():
-    request = RequestFactory().get("/api/registration/1/records/")
+def test_registration_records_permission_denied_direct_call(rf):
+    request = rf.get("/api/registration/1/records/")
     request.user = SimpleNamespace(has_perm=lambda *_args, **_kwargs: False)
     view = RegistrationViewSet()
     view.get_object = lambda: SimpleNamespace(active=True, version=1)
@@ -68,8 +67,8 @@ def test_registration_records_permission_denied_direct_call():
         view.records(request, pk="1")
 
 
-def test_registration_records_returns_conditional_response(monkeypatch):
-    request = RequestFactory().get("/api/registration/1/records/")
+def test_registration_records_returns_conditional_response(monkeypatch, rf):
+    request = rf.get("/api/registration/1/records/")
     request.user = SimpleNamespace(has_perm=lambda *_args, **_kwargs: True)
     view = RegistrationViewSet()
     view.get_object = lambda: SimpleNamespace(active=True, version=1)
@@ -84,8 +83,8 @@ def test_registration_records_returns_conditional_response(monkeypatch):
     assert response.headers["Cache-Control"] == "private, max-age=120"
 
 
-def test_registration_records_invalid_serializer_falls_back_to_fields(monkeypatch):
-    request = RequestFactory().get("/api/registration/1/records/?ser=invalid")
+def test_registration_records_invalid_serializer_falls_back_to_fields(monkeypatch, rf):
+    request = rf.get("/api/registration/1/records/?ser=invalid")
     request.user = SimpleNamespace(has_perm=lambda *_args, **_kwargs: True)
     view = RegistrationViewSet()
     view.get_object = lambda: SimpleNamespace(active=True, version=1)

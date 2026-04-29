@@ -1,8 +1,6 @@
 from types import SimpleNamespace
 
 from django import forms
-from django.test import RequestFactory
-
 from aurora.core.fields.mixins import MultiValueWidgetMixin
 from aurora.core.fields.mixins import SmartFormField
 from aurora.core.fields.mixins import SmartWidgetMixin
@@ -35,8 +33,8 @@ def test_tailwind_mixin_adds_default_class():
     assert "aurora-field" in widget.attrs["class"]
 
 
-def test_smart_widget_mixin_context_uses_state_request():
-    req = RequestFactory().get("/")
+def test_smart_widget_mixin_context_uses_state_request(rf):
+    req = rf.get("/")
     req.user = SimpleNamespace(username="u1")
     state.request = req
     widget = DummySmartWidget()

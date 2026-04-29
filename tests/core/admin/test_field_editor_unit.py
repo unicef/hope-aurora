@@ -2,8 +2,6 @@ from types import SimpleNamespace
 
 from django import forms
 from django.http import HttpResponse
-from django.test import RequestFactory
-
 from aurora.core.admin.field_editor import AdvancendAttrsMixin
 from aurora.core.admin.field_editor import FieldEditor
 from aurora.core.admin.field_editor import get_datasources
@@ -33,8 +31,7 @@ class DummyConfigForm:
         return self.valid
 
 
-def _request(method="GET", data=None):
-    rf = RequestFactory()
+def _request(rf, method="GET", data=None):
     req = rf.post("/", data=data or {}) if method == "POST" else rf.get("/")
     req.user = SimpleNamespace(pk=3)
     return req
@@ -51,8 +48,8 @@ def _field():
     )
 
 
-def _editor(monkeypatch, request=None):
-    request = request or _request()
+def _editor(monkeypatch, rf, request=None):
+    request = request or _request(rf)
     modeladmin = SimpleNamespace(get_common_context=lambda req, pk: {"base": (req, pk)})
     fld = _field()
     monkeypatch.setattr(
@@ -91,8 +88,8 @@ def test_get_datasources(monkeypatch):
     assert get_datasources() == [("", ""), ("ds1", "ds1"), ("ds2", "ds2")]
 
 
-def test_get_forms_and_refresh(monkeypatch):
-    editor, _ = _editor(monkeypatch, request=_request("POST", {"csrfmiddlewaretoken": "t", "a": "1"}))
+def test_get_forms_and_refresh(monkeypatch, rf):
+    editor, _ = _editor(monkeypatch, rf, request=_request(rf, "POST", {"csrfmiddlewaretoken": "t", "a": "1"}))
     forms_map = editor.get_forms()
     assert forms_map["field"].args[0]["a"] == "1"
 
@@ -107,8 +104,8 @@ def test_get_forms_and_refresh(monkeypatch):
     assert b"field" in response.content
 
 
-def test_patched_field_uses_cached_config(monkeypatch):
-    editor, fld = _editor(monkeypatch)
+def test_patched_field_uses_cached_config(monkeypatch, rf):
+    editor, fld = _editor(monkeypatch, rf)
     editor.__dict__.pop("patched_field", None)
 
     field_form = DummyConfigForm()
@@ -126,8 +123,8 @@ def test_patched_field_uses_cached_config(monkeypatch):
     assert patched.advanced["smart"] == {"visible": False}
 
 
-def test_get_configuration_get_post_and_render(monkeypatch):
-    editor, fld = _editor(monkeypatch)
+def test_get_configuration_get_post_and_render(monkeypatch, rf):
+    editor, fld = _editor(monkeypatch, rf)
 
     monkeypatch.setattr("aurora.core.admin.field_editor.render", lambda *_a, **_k: HttpResponse("ok"))
     monkeypatch.setattr(
@@ -144,7 +141,7 @@ def test_get_configuration_get_post_and_render(monkeypatch):
     get_resp = editor.get(editor.request, "9")
     assert get_resp.status_code == 200
 
-    post_editor, _ = _editor(monkeypatch, request=_request("POST", {"myfield": "X"}))
+    post_editor, _ = _editor(monkeypatch, rf, request=_request(rf, "POST", {"myfield": "X"}))
     monkeypatch.setattr("aurora.core.admin.field_editor.render", lambda *_a, **_k: HttpResponse("ok-post"))
 
     def _always_valid(self):

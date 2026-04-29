@@ -3,7 +3,6 @@ from types import SimpleNamespace
 
 import pytest
 from django.http import HttpResponse
-from django.test import RequestFactory
 from django.urls import reverse
 from django_webtest import DjangoTestApp
 from testutils.factories import TemplateFactory
@@ -84,10 +83,10 @@ def test_get_active_registrations_filters_active_and_homepage():
     assert list(qs) == [visible]
 
 
-def test_page_view_template_and_context(monkeypatch):
+def test_page_view_template_and_context(monkeypatch, rf):
     view = PageView()
     view.kwargs = {"page": "custom-page"}
-    view.request = RequestFactory().get("/")
+    view.request = rf.get("/")
     view.request.user = SimpleNamespace(is_staff=False)
     monkeypatch.setattr(
         "aurora.web.views.sites.get_active_registrations",
@@ -112,10 +111,10 @@ def test_home_view_template_names(monkeypatch):
     assert view.get_template_names() == ["from-constance.html", "home.html"]
 
 
-def test_home_view_get_conditional_and_uncached_paths(monkeypatch):
+def test_home_view_get_conditional_and_uncached_paths(monkeypatch, rf):
     from aurora.web.views import sites
 
-    req = RequestFactory().get("/")
+    req = rf.get("/")
     req.user = SimpleNamespace(is_staff=False)
     monkeypatch.setattr(
         "aurora.web.views.sites.config",
@@ -140,9 +139,9 @@ def test_home_view_get_conditional_and_uncached_paths(monkeypatch):
     assert response.headers["ETag"] == "etag-x"
 
 
-def test_home_get_context_data_includes_registrations(monkeypatch):
+def test_home_get_context_data_includes_registrations(monkeypatch, rf):
     view = HomeView()
-    view.request = RequestFactory().get("/")
+    view.request = rf.get("/")
     view.request.user = SimpleNamespace(is_staff=False)
     monkeypatch.setattr("aurora.web.views.sites.get_active_registrations", lambda: ["r1"])
     ctx = view.get_context_data(extra="ok")
@@ -150,9 +149,9 @@ def test_home_get_context_data_includes_registrations(monkeypatch):
     assert ctx["extra"] == "ok"
 
 
-def test_qrcode_context_uses_absolute_url(monkeypatch):
+def test_qrcode_context_uses_absolute_url(monkeypatch, rf):
     view = QRCodeView()
-    request = RequestFactory().get("/")
+    request = rf.get("/")
     request.build_absolute_uri = lambda _p="/": "http://test/"
     view.request = request
     monkeypatch.setattr("aurora.web.views.sites.get_qrcode", lambda url: f"qr:{url}")
