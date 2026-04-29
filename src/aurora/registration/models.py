@@ -52,7 +52,7 @@ class RegistrationManager(NaturalKeyModelManager):
         return super().get_queryset().select_related("project", "project__organization")
 
 
-class Registration(NaturalKeyModel, I18NModel, models.Model):
+class Registration(NaturalKeyModel, I18NModel, models.Model):  # comment
     _natural_key = ("slug", "project")
 
     ADVANCED_DEFAULT_ATTRS = {
