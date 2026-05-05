@@ -7,7 +7,7 @@ from django.test import override_settings
 from django.urls import reverse
 from social_core.exceptions import InvalidEmail
 
-from aurora.core.authentication import create_user, require_email, social_details, user_details
+from aurora.core.authentication import create_user, redir_to_form, require_email, social_details, user_details
 from aurora.security.models import User
 
 
@@ -67,12 +67,52 @@ def test_social_user_details(user):
         )
 
 
+def test_social_user_details_keeps_existing_names(user):
+    user.first_name = "Existing"
+    user.last_name = "Name"
+    with mock.patch("aurora.core.authentication.social_core_user.user_details", return_value=user):
+        result = user_details(
+            strategy=MagicMock(user_details=lambda *args: None),
+            details={"email": "user@wxample.com", "first_name": "", "last_name": ""},
+            backend=MagicMock(),
+            user=user,
+        )
+
+    user.refresh_from_db()
+    assert result == user
+    assert user.first_name == "Existing"
+    assert user.last_name == "Name"
+    assert user.username == "user@wxample.com"
+
+
 def test_require_email():
     with pytest.raises(InvalidEmail):
         assert require_email(MagicMock(), details={}, is_new=True)
     require_email(MagicMock(), details={"email": "user@wxample.com"})
 
 
+def test_require_email_returns_for_existing_user_with_email(db):
+    existing_user = User.objects.create(email="existing@wxample.com", username="existing@wxample.com")
+    assert require_email(MagicMock(), details={}, user=existing_user, is_new=True) is None
+
+
 def test_create_user(db):
     assert create_user(None, {"email": "user@wxample.com", "first_name": "first_name", "last_name": "last_name"})
     assert User.objects.filter(email="user@wxample.com").exists()
+
+
+def test_create_user_returns_existing_user_as_not_new(db):
+    existing_user = User.objects.create(email="existing@wxample.com", username="existing@wxample.com")
+    assert create_user(None, {"email": "new@wxample.com"}, user=existing_user) == {"is_new": False}
+
+
+def test_redir_to_form_creates_user(db):
+    result = redir_to_form(None, {"email": "user-redir@wxample.com", "first_name": "first", "last_name": "last"})
+    assert result["is_new"] is True
+    assert result["user"].email == "user-redir@wxample.com"
+    assert User.objects.filter(email="user-redir@wxample.com").exists()
+
+
+def test_redir_to_form_returns_existing_user_as_not_new(db):
+    existing_user = User.objects.create(email="existing-redir@wxample.com", username="existing-redir@wxample.com")
+    assert redir_to_form(None, {"email": "new@wxample.com"}, user=existing_user) == {"is_new": False}
