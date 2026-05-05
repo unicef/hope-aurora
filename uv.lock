@@ -2483,6 +2483,7 @@ wheels = [
 name = "psycopg2-binary"
 version = "2.9.12"
 source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/2a/60/a3624f79acea344c16fbef3a94d28b89a8042ddfb8f3e4ca83f538671409/psycopg2_binary-2.9.12.tar.gz", hash = "sha256:5ac9444edc768c02a6b6a591f070b8aae28ff3a99be57560ac996001580f294c", size = 379686, upload-time = "2026-04-21T09:40:34.304Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/13/1b/708c0dca874acfad6d65314271859899a79007686f3a1f74e82a2ed4b645/psycopg2_binary-2.9.12-cp314-cp314-macosx_10_15_x86_64.whl", hash = "sha256:6f3b3de8a74ef8db215f22edffb19e32dc6fa41340456de7ec99efdc8a7b3ec2", size = 3712428, upload-time = "2026-04-20T23:35:23.453Z" },
     { url = "https://files.pythonhosted.org/packages/d6/39/ddbea9d4b4de6aca9431b6ed253f530f8a02d3b8f9bcfd0dbfe2b3de6fe4/psycopg2_binary-2.9.12-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:1006fb62f0f0bc5ce256a832356c6262e91be43f5e4eb15b5eaf38079464caf2", size = 3823184, upload-time = "2026-04-20T23:35:25.92Z" },
@@ -3697,6 +3698,7 @@ dependencies = [
     { name = "celery", extra = ["redis"] },
     { name = "celery-types" },
     { name = "django" },
+    { name = "django-admin-extra-buttons" },
     { name = "django-admin-ordering" },
     { name = "django-admin-sync" },
     { name = "django-adminactions" },
@@ -3818,6 +3820,7 @@ requires-dist = [
     { name = "celery", extras = ["redis"], specifier = ">=5.3" },
     { name = "celery-types", specifier = ">=0.26" },
     { name = "django", specifier = "==5.2.*" },
+    { name = "django-admin-extra-buttons", specifier = "<2.2" },
     { name = "django-admin-ordering" },
     { name = "django-admin-sync", specifier = ">=0.9" },
     { name = "django-adminactions" },
