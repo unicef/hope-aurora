@@ -1,6 +1,6 @@
 import csv
 import logging
-from hashlib import md5
+from hashlib import sha256
 from io import TextIOWrapper
 from typing import TYPE_CHECKING
 from unittest.mock import Mock
@@ -99,7 +99,7 @@ class MessageAdmin(SyncMixin, SmartModelAdmin):
                     "translation",
                     str(request.user.pk),
                     str(state.timestamp),
-                    str(md5(request.session.session_key.encode()).hexdigest()),  # noqa: S324
+                    str(sha256(request.session.session_key.encode()).hexdigest()),
                 ]
             )
             if "save" in request.POST:

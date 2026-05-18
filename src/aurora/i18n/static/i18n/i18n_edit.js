@@ -36,7 +36,7 @@ const i18n = {
                     if (key.startsWith("i18n")) {
                         var label = key.replace("i18n", "");
                         $tooltip.find(".tooltiptext")
-                                .append("<p><span class=\"label\">" + label + "</span>" + value + "</p>");
+                                .append($("<p></p>").append($("<span></span>", {"class": "label"}).text(label)).append(document.createTextNode(value)));
                     }
                 });
             }
@@ -46,11 +46,15 @@ const i18n = {
             var url = $(this).data("url");
             e.preventDefault();
             if ($(this).data("original") !== msgIfMissing) {
-                $("<form target=\"_edit\" action=\"" + url + "\" method=\"post\">" +
-                    "<input type=\"hidden\" name=\"lang\" value=\"" + $(this).data("lang") + "\">" +
-                    "<input type=\"hidden\" name=\"msgid\" value=\"" + $(this).data("encoded") + "\">" +
-                    "<input type=\"hidden\" name=\"csrfmiddlewaretoken\" value=\"" + $("input[name=csrfmiddlewaretoken]").val() + "\">" +
-                    "</form>").appendTo("body").submit().remove();
+                $("<form></form>", {
+                    target: "_edit",
+                    action: url,
+                    method: "post"
+                }).append(
+                    $("<input>", {type: "hidden", name: "lang", value: $(this).data("lang")}),
+                    $("<input>", {type: "hidden", name: "msgid", value: $(this).data("encoded")}),
+                    $("<input>", {type: "hidden", name: "csrfmiddlewaretoken", value: $("input[name=csrfmiddlewaretoken]").val()})
+                ).appendTo("body").submit().remove();
             }
         });
 

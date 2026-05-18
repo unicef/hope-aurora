@@ -3,7 +3,7 @@ import logging
 import os
 import time
 from functools import wraps
-from hashlib import md5
+import hashlib
 from json import JSONDecodeError
 from typing import TYPE_CHECKING, Any, Callable
 
@@ -53,7 +53,7 @@ class QRVerify(TemplateView):
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         record = Record.objects.get(id=self.kwargs["pk"])
-        valid = md5(record.storage).hexdigest() == self.kwargs["hash"]  # noqa: S324
+        valid = hashlib.md5(record.storage, usedforsecurity=False).hexdigest() == self.kwargs["hash"]
         return super().get_context_data(valid=valid, record=record, **kwargs)
 
 
@@ -85,7 +85,7 @@ class RegisterCompleteView(TemplateView):
             raise Http404 from None
 
     def get_qrcode(self, record: "Record") -> tuple[str, str]:
-        h = md5(str(record.fields).encode()).hexdigest()  # noqa: S324
+        h = hashlib.sha256(str(record.fields).encode()).hexdigest()
         url = self.request.build_absolute_uri(reverse("register-done", args=[record.registration.pk, record.pk]))
         hashed_url = f"{url}/{h}"
         return get_qrcode(hashed_url), url

@@ -78,34 +78,38 @@
             insertDeleteLink = function (row) {
                 var delCssSelector = $.trim(options.deleteCssClass).replace(/\s+/g, "."),
                     addCssSelector = $.trim(options.addCssClass).replace(/\s+/g, ".");
-                var delButtonHTML = "<a class=\"" + options.deleteCssClass + "\" href=\"javascript:void(0)\">" + options.deleteText + "</a>";
+                var delButton = $("<a></a>", {
+                    class: options.deleteCssClass,
+                    href: "javascript:void(0)",
+                    text: options.deleteText
+                });
                 if (row.find("." + options.deleteCssClass).length > 0) {
                     return;
                 }
                 if (options.deleteContainerClass) {
                     // If we have a specific container for the remove button,
                     // place it as the last child of that container:
-                    row.find("." + options.deleteContainerClass).append(delButtonHTML);
+                    row.find("." + options.deleteContainerClass).append(delButton);
                 } else if (row.is("TR")) {
                     // If the forms are laid out in table rows, insert
                     // the remove button into the last table cell:
-                    row.children(":last").append(delButtonHTML);
+                    row.children(":last").append(delButton);
                 } else if (row.is("UL") || row.is("OL")) {
                     // If they're laid out as an ordered/unordered list,
                     // insert an <li> after the last list item:
-                    row.append("<li>" + delButtonHTML + "</li>");
+                    row.append($("<li></li>").append(delButton));
                 } else {
                     // Otherwise, just insert the remove button as the
                     // last child element of the form's container:
-                    row.append(delButtonHTML);
+                    row.append(delButton);
                 }
 
                 // Check if we're under the minimum number of forms - not to display delete link at rendering
                 if (!showDeleteLinks()) {
-                    row.find("a." + delCssSelector).hide();
+                    delButton.hide();
                 }
 
-                row.find("a." + delCssSelector).click(function () {
+                delButton.click(function () {
                     var row = $(this).parents("." + options.formCssClass),
                         del = row.find("input:hidden[id $= \"-DELETE\"]"),
                         buttonRow = row.siblings("a." + addCssSelector + ", ." + options.formCssClass + "-add"),
@@ -231,26 +235,29 @@
             // FIXME: Perhaps using $.data would be a better idea?
             options.formTemplate = template;
 
-            var addButtonHTML = "<a rel=\"nofollow\" class=\"" + options.addCssClass + "\" href=\"javascript:void(0)\">" + options.addText + "</a>";
+            var addButton = $("<a></a>", {
+                rel: "nofollow",
+                class: options.addCssClass,
+                href: "javascript:void(0)",
+                text: options.addText
+            });
             if (options.addContainerClass) {
                 // If we have a specific container for the "add" button,
                 // place it as the last child of that container:
                 // var addContainer = $('[class*="' + options.addContainerClass + '"');
                 var addContainer = $("." + options.addContainerClass);
-                addContainer.append(addButtonHTML);
-                addButton = addContainer.find("[class=\"" + options.addCssClass + "\"]");
+                addContainer.append(addButton);
                 // addButton = addContainer.find('.' + options.addCssClass);
             } else if ($$.is("TR")) {
                 // If forms are laid out as table rows, insert the
                 // "add" button in a new table row:
                 var numCols = $$.eq(0).children().length,   // This is a bit of an assumption :|
-                    buttonRow = $("<tr><td colspan=\"" + numCols + "\">" + addButtonHTML + "</tr>").addClass(options.formCssClass + "-add");
+                    buttonRow = $("<tr></tr>").addClass(options.formCssClass + "-add")
+                        .append($("<td></td>", {colspan: numCols}).append(addButton));
                 $$.parent().append(buttonRow);
-                addButton = buttonRow.find("a");
             } else {
                 // Otherwise, insert it immediately after the last form:
-                $$.filter(":last").after(addButtonHTML);
-                addButton = $$.filter(":last").next();
+                $$.filter(":last").after(addButton);
             }
 
             if (hideAddButton) {
