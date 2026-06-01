@@ -44,7 +44,7 @@ def test_get_token_missing_credentials_raises(monkeypatch):
         "",
     )
     api = MicrosoftGraphAPI()
-    with pytest.raises(MicrosoftGraphAPIError, match="Configure AZURE_CLIENT_KEY"):
+    with pytest.raises(MicrosoftGraphAPIError, match="Configure AZURE_CLIENT_ID"):
         api.get_token()
 
 

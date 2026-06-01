@@ -31,7 +31,7 @@ def pytest_configure(config):
     os.environ["LOG_LEVEL"] = "DEBUG"
     os.environ["LOGGING_HANDLERS"] = "null"
     os.environ["AZURE_CLIENT_SECRET"] = "secret"
-    os.environ["AZURE_CLIENT_KEY"] = "key"
+    os.environ["AZURE_CLIENT_ID"] = "key"
     from django.conf import global_settings, settings
 
     settings.STORAGES = global_settings.STORAGES
