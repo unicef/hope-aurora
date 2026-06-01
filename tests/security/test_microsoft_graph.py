@@ -23,7 +23,7 @@ def test_api(file_mocked_responses, api):
 def test_api_no_key(mocked_responses, settings):
     settings.SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_KEY = ""
     api = MicrosoftGraphAPI()
-    with pytest.raises(Exception, match=r"Configure AZURE_CLIENT_KEY and/or AZURE_CLIENT_SECRET"):
+    with pytest.raises(Exception, match=r"Configure AZURE_CLIENT_ID and/or AZURE_CLIENT_SECRET"):
         api.get_token()
 
 
