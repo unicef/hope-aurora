@@ -54,7 +54,7 @@ class Message(NaturalKeyModel):
 
     @staticmethod
     def get_md5(msgid: str, locale: str = "") -> str:
-        return hashlib.md5((msgid + "|" + locale).encode()).hexdigest()  # noqa: S324
+        return hashlib.md5((msgid + "|" + locale).encode(), usedforsecurity=False).hexdigest()
 
     def save(
         self, force_insert: bool = False, force_update: bool = False, using: str = None, update_fields: list[str] = None

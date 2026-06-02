@@ -12,7 +12,7 @@ import time
 import unicodedata
 from collections import deque
 from functools import wraps
-from hashlib import md5
+from hashlib import sha256
 from itertools import chain
 from pathlib import Path
 from sys import getsizeof, stderr
@@ -300,7 +300,7 @@ def get_etag(request, *args, **kwargs):
         params = [time.time()]
     else:
         params = (VERSION,) + args
-    return md5("/".join(map(str, params)).encode()).hexdigest()
+    return sha256("/".join(map(str, params)).encode()).hexdigest()
 
 
 def last_day_of_month(date):

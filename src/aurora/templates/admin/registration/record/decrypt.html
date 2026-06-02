@@ -26,7 +26,10 @@
       if (tdValue.startsWith("data:")) {
           const contentType = tdValue.substring(5, tdValue.indexOf(";"))
           if (contentTypes.includes(contentType)) {
-              td.innerHTML = `<img src="${tdValue}" />`
+              const img = document.createElement('img');
+              img.src = tdValue;
+              td.textContent = '';
+              td.appendChild(img);
           }
       }
   }
