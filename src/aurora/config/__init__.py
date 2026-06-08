@@ -56,6 +56,7 @@ OPTIONS = {
     "EXTRA_AUTHENTICATION_BACKENDS": (list, []),
     "EXTRA_INSTALLED_APPS": (list, []),
     "EXTRA_MIDDLEWARES": (list, []),
+    "AURORA_PAYLOAD_ENCRYPTION_KEY": (str, "", "", False, "Pre-shared Fernet key for encrypting API response"),
     "FERNET_KEY": (str, "", uuid.uuid4().hex, True),
     "FRONT_DOOR_ALLOWED_PATHS": (str, ".*"),
     "FRONT_DOOR_ENABLED": (bool, False),

@@ -18,6 +18,7 @@ DEV_DIR = SRC_DIR.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env("SECRET_KEY")
 FERNET_KEY = env("FERNET_KEY")
+AURORA_PAYLOAD_ENCRYPTION_KEY = env("AURORA_PAYLOAD_ENCRYPTION_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG: bool = env("DEBUG")

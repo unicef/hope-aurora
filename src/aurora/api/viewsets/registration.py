@@ -23,6 +23,7 @@ from rest_framework.serializers import Serializer
 
 from ...core.utils import build_dict, get_etag, get_session_id
 from ...registration.models import Record, Registration
+from ..renderers import EncryptedJSONRenderer
 from ..serializers import (
     RegistrationDetailSerializer,
     RegistrationListSerializer,
@@ -112,7 +113,7 @@ class RegistrationViewSet(SmartViewSet):
     @action(
         detail=True,
         methods=["GET"],
-        renderer_classes=[JSONRenderer],
+        renderer_classes=[JSONRenderer, EncryptedJSONRenderer],
         pagination_class=RecordPageNumberPagination,
         filter_backends=[DjangoFilterBackend],
     )
