@@ -144,7 +144,7 @@ def test_registration_csv(registration: "TestRegistration", client):
     assert res.status_code == 200
 
 
-@pytest.mark.parametrize("serializer", ["", "files", "fields", "full", "storage", "-invalid"])
+@pytest.mark.parametrize("serializer", ["", "files", "fields", "full", "storage", "encrypted", "-invalid"])
 def test_registration_records_serializer(registration: "TestRegistration", client, serializer: str):
     url = f"/api/registration/{registration.pk}/records/?ser={serializer}"
     res = client.get(url, format="json")
@@ -152,7 +152,7 @@ def test_registration_records_serializer(registration: "TestRegistration", clien
     assert res.json()
 
 
-@pytest.mark.parametrize("serializer", ["", "files", "fields", "full", "storage", "-invalid"])
+@pytest.mark.parametrize("serializer", ["", "files", "fields", "full", "storage", "encrypted", "-invalid"])
 def test_registration_records_pages(registration: "TestRegistration", client, serializer: str):
     url = f"/api/registration/{registration.pk}/records/?ser={serializer}&page_size=10&page=2"
     res = client.get(url, format="json")

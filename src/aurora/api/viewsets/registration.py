@@ -26,6 +26,7 @@ from ...registration.models import Record, Registration
 from ..serializers import (
     RegistrationDetailSerializer,
     RegistrationListSerializer,
+    RegistrationRecordSerializerEncrypted,
     RegistrationRecordSerializerFields,
     RegistrationRecordSerializerFiles,
     RegistrationRecordSerializerFull,
@@ -73,6 +74,7 @@ class RegistrationViewSet(SmartViewSet):
         "files": RegistrationRecordSerializerFiles,
         "full": RegistrationRecordSerializerFull,
         "storage": RegistrationRecordSerializerStorage,
+        "encrypted": RegistrationRecordSerializerEncrypted,
     }
     allowed_serializers = RecordSerializerMap.keys()
 

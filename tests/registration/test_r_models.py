@@ -74,6 +74,41 @@ def test_record_data_branches(monkeypatch):
 
 
 @pytest.mark.django_db
+def test_record_payload_branches():
+    import base64
+
+    from testutils.factories import RecordFactory, RegistrationFactory
+
+    reg = RegistrationFactory(public_key="pubkey", encrypt_data=False)
+    record = RecordFactory(registration=reg, fields="ZmllbGRzY2lwaGVy", files=b"filesciphertext")
+    assert record.payload == {
+        "encryption": "rsa",
+        "fields": "ZmllbGRzY2lwaGVy",
+        "files": base64.b64encode(b"filesciphertext").decode(),
+    }
+
+    record.files = memoryview(b"filesciphertext")
+    assert record.payload == {
+        "encryption": "rsa",
+        "fields": "ZmllbGRzY2lwaGVy",
+        "files": base64.b64encode(b"filesciphertext").decode(),
+    }
+
+    record.files = None
+    assert record.payload == {
+        "encryption": "rsa",
+        "fields": "ZmllbGRzY2lwaGVy",
+        "files": "",
+    }
+
+    reg.public_key = ""
+    reg.encrypt_data = False
+    record.fields = {"a": 1}
+    assert record.data == {"a": 1}
+    assert record.payload == {"Forbidden": "Cannot access encrypted data without public key registered"}
+
+
+@pytest.mark.django_db
 def test_record_fields_data_and_merge_conflict():
     from aurora.registration.models import merge
 

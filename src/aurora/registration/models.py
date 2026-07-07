@@ -394,6 +394,19 @@ class Record(models.Model):
             files = json.loads(f.decode())
         return merge(files, self.fields or {})
 
+    @property
+    def payload(self) -> dict[str, typing.Any]:
+        if not self.registration.public_key:
+            return {"Forbidden": "Cannot access encrypted data without public key registered"}
+        files = self.files
+        if files and not isinstance(files, bytes):
+            files = files.tobytes()
+        return {
+            "encryption": "rsa",
+            "fields": self.fields,  # already base64 str, see strategies.SaveToDB
+            "files": base64.b64encode(files).decode() if files else "",
+        }
+
 
 def merge(a: dict, b: dict, path: list[str] | None = None, update: bool = True) -> dict[str, typing.Any]:
     """Merge b into a."""
