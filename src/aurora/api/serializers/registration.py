@@ -71,3 +71,9 @@ class RegistrationRecordSerializerFull(serializers.ModelSerializer):
     class Meta:
         model = Record
         fields = ("pk", "data", "remote_ip", "timestamp")
+
+
+class RegistrationRecordSerializerEncrypted(serializers.ModelSerializer):
+    class Meta:
+        model = Record
+        fields = ("pk", "payload", "remote_ip", "timestamp")
