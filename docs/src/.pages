@@ -1,5 +1,9 @@
 nav:
   - Home: index.md
-  - contributing.md
+  - Quick Start: run/quickstart/
   - run
+  - docker.md
+  - api.md
+  - develop
+  - contributing.md
   - settings.md

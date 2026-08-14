@@ -1,8 +1,8 @@
 # Contributing
 
+## Install the development environment
 
-Install [uv](https://docs.astral.sh/uv/)
-
+Install [uv](https://docs.astral.sh/uv/) and clone the repository:
 
     git clone https://github.com/unicef/hope-aurora
     uv venv .venv --python 3.14
@@ -10,50 +10,42 @@ Install [uv](https://docs.astral.sh/uv/)
     uv sync --all-extras
     pre-commit install --hook-type pre-commit --hook-type pre-push
 
-
 ## Run tests
 
-    pytests tests
+    pytest tests
 
 ## Run Selenium tests (ONLY)
 
-    pytests tests -m selenium
+    pytest tests -m selenium
 
+## Run all tests with Selenium
 
-## Run Selenium any tests
-
-    pytests tests --selenium
-
+    pytest tests --selenium
 
 !!! note
 
-    You can disable selenium headless mode (show the browser activity on the screen) using  `--show-browser` flag
+    You can disable Selenium headless mode (show the browser activity on the screen) using the `--show-browser` flag.
 
-
-
-
-## Run local server
-
+## Run the local server
 
     ./manage.py runserver
 
-
 !!! note
 
-    To facililate developing you can use:
+    To facilitate development you can use:
 
         export AUTHENTICATION_BACKENDS="aurora.security.backends.AnyUserAuthBackend"
 
-    It works only if `DEBUG=True`
-
-
+    It works only if `DEBUG=True`.
 
 ## Docker compose
 
-Alternatively you can use provided docker compose for development
+Alternatively you can use the provided docker compose for development:
 
     docker compose up
 
-Alternatively you can use provided docker compose for development
+See [Docker](docker.md) for details about building the local image first.
 
-    docker compose up
+## Next steps
+
+- [Development Guide](develop/) — codebase structure, models, CLI and REST API conventions.

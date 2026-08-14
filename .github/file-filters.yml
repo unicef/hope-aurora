@@ -51,5 +51,6 @@ lint:
 docs:
   - added|modified: './docs/**/*'
   - modified: './src/aurora/config/__init__.py'
+  - modified: './properdocs.yml'
   - modified: './github/workflows/docs.yml'
   - modified: './github/file-filters.yml'

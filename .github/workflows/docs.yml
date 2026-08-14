@@ -6,7 +6,7 @@ on:
       - develop
     paths:
       - 'docs/**'
-      - 'mkdocs.yaml'
+      - 'properdocs.yml'
       - './github/workflows/docs.yml'
   pull_request:
     branches:
@@ -16,7 +16,7 @@ on:
       - synchronize
     paths:
       - 'docs/**'
-      - 'mkdocs.yaml'
+      - 'properdocs.yml'
       - './github/workflows/docs.yml'
 
   schedule:
