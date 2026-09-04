@@ -37,11 +37,11 @@ class RecordViewSet(SmartViewSet):
 
     @action(detail=True)
     def metadata(self, request: HttpRequest, pk: str | None = None) -> Response:
-        latest = Record.objects.latest("id")
+        obj: Record = self.get_object()
         return Response(
             {
-                "id": latest.id,
-                "timestamp": latest.timestamp,
-                "registration": latest.registration_id,
+                "id": obj.id,
+                "timestamp": obj.timestamp,
+                "registration": obj.registration_id,
             }
         )

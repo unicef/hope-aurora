@@ -1,12 +1,15 @@
+from typing import TYPE_CHECKING, Sequence
+
 from django.http import HttpRequest, HttpResponse
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
 
 from aurora.core.models import Validator
 
 from ..serializers.validator import ValidatorSerializer
-from .base import SmartViewSet
+from .base import SmartViewSet, StaffOnlyPermission
+
+if TYPE_CHECKING:
+    from rest_framework.permissions import _SupportsHasPermission
 
 
 class ValidatorViewSet(SmartViewSet):
@@ -18,11 +21,12 @@ class ValidatorViewSet(SmartViewSet):
 }};
 """
 
-    @action(
-        detail=True,
-        permission_classes=[AllowAny],
-        authentication_classes=[SessionAuthentication],
-    )
+    def get_permissions(self) -> "Sequence[_SupportsHasPermission]":
+        if self.action in ("list", "retrieve", "validator", "script"):
+            return [StaffOnlyPermission()]
+        return super().get_permissions()
+
+    @action(detail=True)
     def validator(self, request: HttpRequest, pk: str) -> HttpResponse:
         obj = self.get_object()
         return HttpResponse(
@@ -30,11 +34,7 @@ class ValidatorViewSet(SmartViewSet):
             content_type="application/javascript",
         )
 
-    @action(
-        detail=True,
-        permission_classes=[AllowAny],
-        authentication_classes=[SessionAuthentication],
-    )
+    @action(detail=True)
     def script(self, request: HttpRequest, pk: str) -> HttpResponse:
         obj = self.get_object()
         return HttpResponse(

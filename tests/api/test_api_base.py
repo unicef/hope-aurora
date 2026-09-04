@@ -121,14 +121,12 @@ def test_api(django_app, registration: "TestRegistration", monkeypatch):
 
 
 @pytest.mark.django_db
-def test_version(django_app, registration, admin_user):
+def test_version_requires_auth(django_app, registration, admin_user):
     # do not use reverse because url is hardcoded in survey.js
     api_url = "/api/registration/%s/version/" % registration.pk
 
-    res = django_app.get(api_url)
-    data = res.json
-    assert data["version"] == registration.version
-    assert not data["auth"]
+    res = django_app.get(api_url, expect_errors=True)
+    assert res.status_code in (401, 403)
 
     res = django_app.get(api_url, user=admin_user)
     data = res.json
@@ -140,14 +138,12 @@ def test_version(django_app, registration, admin_user):
 
 
 @pytest.mark.django_db
-def test_version_lang(django_app, registration, admin_user):
+def test_version_lang_requires_auth(django_app, registration, admin_user):
     # do not use reverse because url is hardcoded in survey.js
     api_url = "/api/registration/%s/en-us/version/" % registration.pk
 
-    res = django_app.get(api_url)
-    data = res.json
-    assert data["version"] == registration.version
-    assert not data["auth"]
+    res = django_app.get(api_url, expect_errors=True)
+    assert res.status_code in (401, 403)
 
     res = django_app.get(api_url, user=admin_user)
     data = res.json

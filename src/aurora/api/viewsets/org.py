@@ -1,8 +1,10 @@
 from django.http import HttpRequest
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from ...core.models import Organization, Project
+from ...core.utils import is_root
 from ..serializers import OrganizationSerializer, ProjectSerializer
 from .base import SmartViewSet
 
@@ -13,6 +15,10 @@ class OrganizationViewSet(SmartViewSet):
 
     @action(detail=True, methods=["GET"])
     def projects(self, request: HttpRequest, pk: str | None = None) -> Response:
+        if not is_root(request):
+            org = self.get_object()
+            if not request.user.has_perm("core.view_project", org):
+                raise PermissionDenied()
         queryset = Project.objects.filter(organization__id=pk)
         page = self.paginate_queryset(queryset)
 

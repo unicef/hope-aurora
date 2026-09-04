@@ -1,9 +1,11 @@
 from django.http import HttpRequest
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from ...core.models import Project
+from ...core.utils import is_root
 from ...registration.models import Registration
 from ..serializers import ProjectSerializer, RegistrationListSerializer
 from .base import SmartViewSet
@@ -15,6 +17,10 @@ class ProjectViewSet(SmartViewSet):
 
     @action(detail=True, methods=["GET"])
     def registrations(self, request: HttpRequest, pk: str | None = None) -> Response:
+        if not is_root(request):
+            obj = self.get_object()
+            if not request.user.has_perm("registration.view_registration", obj):
+                raise PermissionDenied()
         queryset = Registration.objects.filter(project__id=pk)
         serializer = RegistrationListSerializer(queryset, many=True, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)

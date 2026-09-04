@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from django.urls import reverse
 from django.utils.translation import get_language
 from rest_framework import serializers
@@ -8,7 +10,10 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from ...security.models import User
-from .base import SmartViewSet
+from .base import SmartViewSet, StaffOnlyPermission
+
+if TYPE_CHECKING:
+    from rest_framework.permissions import _SupportsHasPermission
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -23,10 +28,19 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserViewSet(SmartViewSet):
-    """Viewset automatically provides `list` and `retrieve` actions."""
+    """Viewset automatically provides `list` and `retrieve` actions.
+
+    Only staff/root users may list or retrieve other users. Regular users can only
+    access the ``me`` endpoint which returns their own information.
+    """
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    def get_permissions(self) -> "list[_SupportsHasPermission]":
+        if self.action in ("list", "retrieve"):
+            return [StaffOnlyPermission()]
+        return [permission() for permission in self.permission_classes]
 
     @action(
         detail=False,

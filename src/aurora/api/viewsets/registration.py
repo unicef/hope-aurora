@@ -15,7 +15,6 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import AllowAny
 from rest_framework.renderers import JSONRenderer
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -88,14 +87,13 @@ class RegistrationViewSet(SmartViewSet):
     def get_permissions(self) -> "list[_SupportsHasPermission]":
         return [permission() for permission in self.permission_classes]
 
-    @action(detail=True, permission_classes=[AllowAny])
+    @action(detail=True)
     def metadata(self, request: Request, pk: str | None = None) -> Response:
         reg: Registration = self.get_object()
         return Response(reg.metadata)
 
     @action(
         detail=True,
-        permission_classes=[AllowAny],
         url_path="((?P<language>[a-z-]*)/)*version",
     )
     def version1(self, request: Request, pk: str, language: str = "") -> Response:
@@ -120,7 +118,7 @@ class RegistrationViewSet(SmartViewSet):
     )
     def records(self, request: HttpRequest, pk: str | None = None) -> HttpResponse:
         obj: Registration = self.get_object()
-        if not request.user.has_perm("registration.view_data", obj):
+        if not request.user.has_perm("registration.can_view_data", obj):
             raise PermissionDenied()
         self.res_etag = get_etag(
             request,
@@ -185,6 +183,8 @@ class RegistrationViewSet(SmartViewSet):
         }
         """
         reg: Registration = self.get_object()
+        if not request.user.has_perm("registration.export_data", reg):
+            raise PermissionDenied()
         from aurora.core.forms import CSVOptionsForm, DateFormatsForm
         from aurora.registration.forms import RegistrationExportForm
 
