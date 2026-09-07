@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import Iterable
+from typing import Any, Iterable
 
 from django import forms
 from django.forms import Media
@@ -18,7 +18,7 @@ class VersionMedia(forms.Media):
     def __str__(self) -> str:
         return self.render()
 
-    def render_css(self) -> Iterable[SafeString]:
+    def render_css(self, *, attrs: Any | None = None) -> Iterable[SafeString]:
         # To keep rendering order consistent, we can't just iterate over items().
         # We need to sort the keys, and iterate over the sorted list.
         media = sorted(self._css)

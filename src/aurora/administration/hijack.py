@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 def can_impersonate(hijacker: "HiJackUser", hijacked: "HiJackUser") -> bool:
-    return (hijacker != hijacked) and not hijacker.is_hijacked
+    return (hijacker != hijacked) and not hijacker.is_hijacked and hijacker.is_staff and hijacker.is_superuser
 
 
 def impersonate(request: "AuthHttpRequest", hijacked: User) -> User | None:
