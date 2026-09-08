@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from django.urls import reverse
 from django.utils.translation import get_language
 from rest_framework import serializers
@@ -27,6 +28,9 @@ class UserViewSet(SmartViewSet):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    def scope_queryset(self, qs: QuerySet[User], user: "User") -> QuerySet[User]:
+        return qs.none()
 
     @action(
         detail=False,

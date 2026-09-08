@@ -7,7 +7,9 @@ from typing import TYPE_CHECKING, Any
 from urllib import parse
 
 from django.core.paginator import Page
+from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
+from django.shortcuts import get_object_or_404
 from django.utils.cache import get_conditional_response
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -37,6 +39,8 @@ from .base import SmartViewSet
 if TYPE_CHECKING:
     from django_stubs_ext import ValuesQuerySet
     from rest_framework.permissions import _SupportsHasPermission
+
+    from aurora.security.models import User
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +84,9 @@ class RegistrationViewSet(SmartViewSet):
 
     queryset = Registration.objects.all()
 
+    def scope_queryset(self, qs: QuerySet[Registration], user: "User") -> QuerySet[Registration]:
+        return qs.filter(pk__in=user.accessible_registration_ids)
+
     def get_serializer_class(self) -> type[Serializer]:
         if self.detail:
             return RegistrationDetailSerializer
@@ -90,7 +97,7 @@ class RegistrationViewSet(SmartViewSet):
 
     @action(detail=True, permission_classes=[AllowAny])
     def metadata(self, request: Request, pk: str | None = None) -> Response:
-        reg: Registration = self.get_object()
+        reg: Registration = get_object_or_404(Registration, pk=pk)
         return Response(reg.metadata)
 
     @action(
@@ -99,7 +106,7 @@ class RegistrationViewSet(SmartViewSet):
         url_path="((?P<language>[a-z-]*)/)*version",
     )
     def version1(self, request: Request, pk: str, language: str = "") -> Response:
-        reg: Registration = self.get_object()
+        reg: Registration = get_object_or_404(Registration, pk=pk)
         return Response(
             {
                 "version": reg.version,
@@ -120,7 +127,7 @@ class RegistrationViewSet(SmartViewSet):
     )
     def records(self, request: HttpRequest, pk: str | None = None) -> HttpResponse:
         obj: Registration = self.get_object()
-        if not request.user.has_perm("registration.view_data", obj):
+        if not request.user.has_perm("registration.can_view_data", obj):
             raise PermissionDenied()
         self.res_etag = get_etag(
             request,
@@ -185,6 +192,8 @@ class RegistrationViewSet(SmartViewSet):
         }
         """
         reg: Registration = self.get_object()
+        if not request.user.has_perm("registration.export_data", reg):
+            raise PermissionDenied()
         from aurora.core.forms import CSVOptionsForm, DateFormatsForm
         from aurora.registration.forms import RegistrationExportForm
 
