@@ -4,7 +4,7 @@ from concurrency.fields import AutoIncVersionField
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
-from django.db.models import JSONField
+from django.db.models import JSONField, Q
 from django.db.models.base import ModelBase
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -15,10 +15,88 @@ from aurora.core.models import Organization, Project
 from aurora.registration.models import Registration
 
 
+def _active_roles(user: "User") -> "models.QuerySet[AuroraRole]":
+    """QuerySet of the user's currently valid AuroraRole assignments."""
+    now = timezone.now()
+    return (
+        AuroraRole.objects.filter(user=user)
+        .filter(valid_from__lte=now)
+        .filter(Q(valid_until__gte=now) | Q(valid_until__isnull=True))
+    )
+
+
 class User(SecurityMixin, AbstractUser):
     class Meta(AbstractUser.Meta):
         swappable = "AUTH_USER_MODEL"
         ordering = ("username",)
+
+    def has_active_role(self) -> bool:
+        """Return True if the user has at least one currently valid role assignment."""
+        return _active_roles(self).exists()
+
+    @property
+    def accessible_organization_ids(self) -> list[int]:
+        """PKs of organizations the user is authorized for via active roles.
+
+        ``AuroraRole.save`` derives the organization for project- and
+        registration-scoped roles, so every active role contributes here.
+        """
+        if self.is_superuser:
+            return list(Organization.objects.values_list("pk", flat=True))
+        return list(
+            _active_roles(self)
+            .exclude(organization_id__isnull=True)
+            .values_list("organization_id", flat=True)
+            .distinct()
+        )
+
+    @property
+    def accessible_project_ids(self) -> list[int]:
+        """PKs of projects the user is authorized for via active roles.
+
+        Covers project- and registration-scoped roles; ``AuroraRole.save``
+        derives the project for registration-scoped roles.
+        """
+        if self.is_superuser:
+            return list(Project.objects.values_list("pk", flat=True))
+        return list(
+            _active_roles(self).exclude(project_id__isnull=True).values_list("project_id", flat=True).distinct()
+        )
+
+    @property
+    def accessible_registration_ids(self) -> list[int]:
+        """PKs of registrations the user is authorized for via active roles.
+
+        Only registration-scoped roles grant access to a registration.
+        """
+        if self.is_superuser:
+            return list(Registration.objects.values_list("pk", flat=True))
+        return list(
+            _active_roles(self)
+            .exclude(registration_id__isnull=True)
+            .values_list("registration_id", flat=True)
+            .distinct()
+        )
+
+    @property
+    def viewable_registration_ids(self) -> list[int]:
+        """PKs of registrations whose records the user may view.
+
+        Viewing records requires an active registration-scoped role that grants
+        the ``registration.can_view_data`` permission, mirroring the web views.
+        """
+        if self.is_superuser:
+            return list(Registration.objects.values_list("pk", flat=True))
+        return list(
+            _active_roles(self)
+            .exclude(registration_id__isnull=True)
+            .filter(
+                role__permissions__codename="can_view_data",
+                role__permissions__content_type__app_label="registration",
+            )
+            .values_list("registration_id", flat=True)
+            .distinct()
+        )
 
 
 class UserProfile(models.Model):
