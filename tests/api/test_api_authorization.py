@@ -237,6 +237,31 @@ def test_scoped_user_without_export_permission_cannot_export(
     assert res.status_code == 403
 
 
+def test_role_without_can_view_data_cannot_read_records(
+    org_a,
+    registration_a,
+    record_a,
+    record_b,
+):
+    """Record list/detail require registration.can_view_data, like the web views.
+
+    A registration-scoped role that grants export_data but not can_view_data
+    must not be able to dump record data through /api/record/.
+    """
+    user = UserFactory(username="exporter", is_staff=False, is_superuser=False)
+    group = GroupFactory(name="Exporter")
+    export_data = Permission.objects.get(codename="export_data", content_type__app_label="registration")
+    group.permissions.add(export_data)
+    AuroraRoleFactory(registration=registration_a, user=user, role=group)
+    client = _token_client(user)
+
+    res = client.get(f"/api/record/?registration={registration_a.pk}", format="json")
+    assert res.status_code == 200
+    assert res.json()["results"] == []
+    assert client.get(f"/api/record/{record_a.pk}/").status_code == 404
+    assert client.get(f"/api/record/{record_b.pk}/").status_code == 404
+
+
 def test_scoped_user_cannot_access_out_of_scope_records_action(
     scoped_client,
     org_a,

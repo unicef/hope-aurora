@@ -78,6 +78,26 @@ class User(SecurityMixin, AbstractUser):
             .distinct()
         )
 
+    @property
+    def viewable_registration_ids(self) -> list[int]:
+        """PKs of registrations whose records the user may view.
+
+        Viewing records requires an active registration-scoped role that grants
+        the ``registration.can_view_data`` permission, mirroring the web views.
+        """
+        if self.is_superuser:
+            return list(Registration.objects.values_list("pk", flat=True))
+        return list(
+            _active_roles(self)
+            .exclude(registration_id__isnull=True)
+            .filter(
+                role__permissions__codename="can_view_data",
+                role__permissions__content_type__app_label="registration",
+            )
+            .values_list("registration_id", flat=True)
+            .distinct()
+        )
+
 
 class UserProfile(models.Model):
     version = AutoIncVersionField()

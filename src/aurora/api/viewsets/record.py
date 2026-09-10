@@ -42,7 +42,7 @@ class RecordViewSet(SmartViewSet):
     pagination_class = RecordPaginator
 
     def scope_queryset(self, qs: QuerySet[Record], user: "User") -> QuerySet[Record]:
-        return qs.filter(registration_id__in=user.accessible_registration_ids)
+        return qs.filter(registration_id__in=user.viewable_registration_ids)
 
     @action(detail=True)
     def metadata(self, request: HttpRequest, pk: str | None = None) -> Response:
