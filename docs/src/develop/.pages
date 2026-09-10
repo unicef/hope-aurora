@@ -1,0 +1,6 @@
+nav:
+  - index.md
+  - Models: models
+  - REST API: api.md
+  - CLI Reference: cli.md
+  - Codebase: structure.md

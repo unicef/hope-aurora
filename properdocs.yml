@@ -1,4 +1,4 @@
-copyright: Copyright &copy; 2020-2024 UNICEF.
+copyright: Copyright &copy; 2020-2026 UNICEF.
 dev_addr: 127.0.0.1:8001
 docs_dir: docs/src
 edit_uri: 'blob/develop/docs/'
@@ -7,8 +7,11 @@ site_author: HOPE Team
 site_description: ""
 site_dir: ./~build/docs
 site_name: Aurora
-site_url: https://unicef.github.io/unicef/hope-aurora/
+site_url: https://unicef.github.io/hope-aurora/
 strict: false
+validation:
+  links:
+    unrecognized_links: ignore
 exclude_docs: |
   _docs/*
   _hooks/*
@@ -47,10 +50,6 @@ theme:
     - navigation.instant
     - navigation.instant.prefetch
     - navigation.instant.progress
-  extra:
-    version:
-      provider: mike
-      alias: true
   palette:
     # Palette toggle for light mode
     - scheme: default

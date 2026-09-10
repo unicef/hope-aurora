@@ -1,3 +1,4 @@
 nav:
+  - Quick Start: quickstart.md
   - Development: dev.md
   - Config: config.md
