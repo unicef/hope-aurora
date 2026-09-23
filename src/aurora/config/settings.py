@@ -229,9 +229,10 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 7  # 7 days
 SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SECURE = env("SESSION_COOKIE_SECURE")
 SESSION_COOKIE_NAME = env("SESSION_COOKIE_NAME")
-SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+# Sessions must live server-side so that logout revokes them; signed cookies stay valid until they expire.
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_COOKIE_HTTPONLY = False  # for offline forms
+SESSION_COOKIE_HTTPONLY = True
 
 TIME_ZONE = "UTC"
 

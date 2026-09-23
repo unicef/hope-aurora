@@ -32,6 +32,7 @@ from django.template.defaultfilters import date
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.cache import patch_cache_control
+from django.utils.crypto import salted_hmac
 from django.utils.functional import keep_lazy_text
 from django.utils.html import format_html
 from django.utils.text import slugify
@@ -471,9 +472,14 @@ def never_ever_cache(decorated_function):
 
 
 def get_session_id(request: "HttpRequest|None" = None) -> str:
+    """Return a per-session cache-busting token.
+
+    It is rendered into pages, JSON and URLs, so it must never be the session key itself:
+    whoever reads the session key can replay it as the session cookie.
+    """
     r = request or state.request
-    if r and r.user.is_authenticated:
-        return r.session.session_key
+    if r and r.user.is_authenticated and r.session.session_key:
+        return salted_hmac("aurora.core.utils.get_session_id", r.session.session_key).hexdigest()
     return ""
 
 
