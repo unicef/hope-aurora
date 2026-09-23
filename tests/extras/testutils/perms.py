@@ -68,8 +68,8 @@ class user_grant_permissions(ContextDecorator):  # noqa
             permissions = [permissions]
         self.permissions = permissions
         self.group = None
+        self.target = target
         if target:
-            self.target = target
             if isinstance(target, Organization):
                 self.kwargs = {"organization": self.target}
             elif isinstance(target, Project):

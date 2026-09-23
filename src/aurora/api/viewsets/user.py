@@ -1,3 +1,4 @@
+from django.db.models import Q, QuerySet
 from django.urls import reverse
 from django.utils.translation import get_language
 from rest_framework import serializers
@@ -8,6 +9,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from ...security.models import User
+from ...security.scope import get_role_scope
 from .base import SmartViewSet
 
 
@@ -27,6 +29,18 @@ class UserViewSet(SmartViewSet):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    def get_queryset(self) -> QuerySet[User]:
+        """Expose colleagues the caller shares part of the hierarchy with, never the whole directory."""
+        scope = get_role_scope(self.request.user)
+        if scope.unlimited:
+            return User.objects.all()
+        return User.objects.filter(
+            Q(pk=self.request.user.pk)
+            | Q(aurorarole__organization__in=scope.organizations)
+            | Q(aurorarole__project__in=scope.projects)
+            | Q(aurorarole__registration__in=scope.registrations)
+        ).distinct()
 
     @action(
         detail=False,
