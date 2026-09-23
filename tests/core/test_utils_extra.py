@@ -119,11 +119,20 @@ def test_cache_aware_helpers_and_session(monkeypatch, rf):
     monkeypatch.setattr(utils.state, "request", request)
     monkeypatch.setattr(utils.state, "user", request.user, raising=False)
 
-    assert utils.get_session_id(request) == "sess-1"
-    assert utils.cache_aware_url(request, "/x") == "/x?s=sess-1"
-    assert utils.cache_aware_reverse("registrations").endswith("?s=sess-1")
+    token = utils.get_session_id(request)
+    assert token
+    assert token != "sess-1"
+    assert utils.cache_aware_url(request, "/x") == f"/x?s={token}"
+    assert utils.cache_aware_reverse("registrations").endswith(f"?s={token}")
+
+    request.session = SimpleNamespace(session_key="sess-2")
+    assert utils.get_session_id(request) != token
+
+    request.session = SimpleNamespace(session_key=None)
+    assert utils.get_session_id(request) == ""
 
     request.user = SimpleNamespace(is_authenticated=False)
+    request.session = SimpleNamespace(session_key="sess-1")
     assert utils.get_session_id(request) == ""
 
 
