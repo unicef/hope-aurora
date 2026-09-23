@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     "jsoneditor",
     "captcha",
     "social_django",
+    "csp",
     "corsheaders",
     "simplemathcaptcha",
     "dbtemplates",
