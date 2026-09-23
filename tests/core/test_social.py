@@ -25,7 +25,7 @@ def test_social_login(db, client):
         mock.patch("social_core.backends.base.BaseAuth.request") as mock_request,
         mock.patch(
             "social_core.backends.azuread_tenant.AzureADTenantOAuth2.user_data",
-            return_value={"email": "user@wxample.com"},
+            return_value={"sub": "0123-4567-89ab", "email": "user@wxample.com"},
         ),
         mock.patch("social_core.backends.oauth.OAuthAuth.validate_state", return_value={}),
     ):
