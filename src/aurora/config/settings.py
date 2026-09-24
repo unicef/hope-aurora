@@ -243,6 +243,10 @@ USE_TZ = True
 
 STATIC_URL = env("STATIC_URL")
 STATIC_ROOT = env("STATIC_ROOT") + STATIC_URL  # simplify nginx config
+STATICFILES_FINDERS = [
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "aurora.web.finders.AppDirectoriesFinder",
+]
 
 STORAGES = {
     "default": {
