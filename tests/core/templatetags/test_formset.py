@@ -13,10 +13,10 @@ def formset(db) -> FormSet:
 
 def test_formset_config(formset: FormSet):
     assert formset_config(formset.get_formset()(prefix="prefix")) == {
-        "addContainerClass": "formset-0-add",
+        "addContainerClass": f"{formset.name}-add",
         "addCssClass": "formset-add-button",
         "addText": "Add Another",
-        "deleteContainerClass": "formset-0-delete",
+        "deleteContainerClass": f"{formset.name}-delete",
         "deleteCssClass": "formset-delete-button",
         "deleteText": "Remove",
         "formCssClass": "form-container-prefix",
