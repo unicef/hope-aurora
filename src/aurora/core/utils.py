@@ -38,6 +38,7 @@ from django.utils.text import slugify
 from django.utils.timezone import is_aware
 from flags.state import flag_enabled, flag_state
 from qrcode import constants
+from qrcode.image.pil import PilImage
 from qrcode.main import QRCode
 from qrcode.util import QRData
 
@@ -214,7 +215,7 @@ def get_qrcode(content: QRData | bytes | str) -> str:
     qr_code = QRCode(error_correction=constants.ERROR_CORRECT_H)
     qr_code.add_data(content)
     qr_code.make()
-    qr_img = qr_code.make_image(fill_color="black", back_color="white").convert("RGB")  # type: ignore[union-attr]
+    qr_img = qr_code.make_image(image_factory=PilImage, fill_color="black", back_color="white").convert("RGB")
 
     # set size of QR code
     pos = ((qr_img.size[0] - logo.size[0]) // 2, (qr_img.size[1] - logo.size[1]) // 2)
