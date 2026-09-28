@@ -12,6 +12,10 @@ def parse_emails(value: str) -> list[tuple[str, str]]:
     return [(a.split("@")[0].strip(), a.strip()) for a in admins if a.strip()]
 
 
+def setting(anchor: str) -> str:
+    return f"@see https://docs.djangoproject.com/en/5.2/ref/settings#{anchor}"
+
+
 OPTIONS = {
     "ADMINS": (parse_emails, ""),
     "ADMIN_SYNC_CONFIG": (str, "admin_sync.conf.DjangoConstance"),
@@ -78,7 +82,13 @@ OPTIONS = {
     "ROOT_KEY": (str, ""),
     "ROOT_TOKEN": (str, ""),
     "SECRET_KEY": (str, "", "", True),
-    "SECURE_HSTS_PRELOAD": (bool, False, "", True),
+    "SECURE_CONTENT_TYPE_NOSNIFF": (bool, True, setting("secure-content-type-nosniff")),
+    "SECURE_HSTS_INCLUDE_SUBDOMAINS": (bool, True, setting("secure-hsts-include-subdomains")),
+    "SECURE_HSTS_PRELOAD": (bool, True, setting("secure-hsts-preload")),
+    "SECURE_HSTS_SECONDS": (int, 31536000, setting("secure-hsts-seconds")),
+    "SECURE_PROXY_SSL_HEADER": (tuple, ("HTTP_X_FORWARDED_PROTO", "https"), setting("secure-proxy-ssl-header")),
+    "SECURE_REFERRER_POLICY": (str, "strict-origin-when-cross-origin", setting("secure-referrer-policy")),
+    "SECURE_SSL_REDIRECT": (bool, False, setting("secure-ssl-redirect")),
     "SENTRY_DSN": (str, ""),
     "SENTRY_ENVIRONMENT": (str, ""),
     "SENTRY_SECURITY_TOKEN": (str, ""),
