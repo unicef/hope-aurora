@@ -54,6 +54,18 @@ def upgrade(  # noqa: PLR0912,  PLR0915, C901, PLR0913
     from aurora.registration.models import Registration
 
     extra = {"no_input": prompt, "verbosity": verbosity - 1, "stdout": None}
+
+    # Static assets live on the container filesystem, so they are collected outside the
+    # cluster-wide migration lock: a contended lock must not leave the node without them.
+    static_root = Path(env("STATIC_ROOT"))
+    if not static_root.exists():
+        static_root.mkdir(parents=True)
+    click.echo(f"STATIC_ROOT set to '{static_root}' ('{static_root.absolute()}')")
+    if static:
+        if verbosity >= 1:
+            click.echo("Run collectstatic")
+        call_command("collectstatic", **extra)
+
     click.echo("Run upgrade.. waiting for lock")
     try:
         with cache.lock(  # type: ignore[attr-defined]
@@ -76,15 +88,6 @@ def upgrade(  # noqa: PLR0912,  PLR0915, C901, PLR0913
             Project.objects.filter(organization__isnull=True).update(organization=unicef)
             Registration.objects.filter(project__isnull=True).update(project=default)
             FlexForm.objects.filter(project__isnull=True).update(project=default)
-
-            static_root = Path(env("STATIC_ROOT"))
-            if not static_root.exists():
-                static_root.mkdir(parents=True)
-            click.echo(f"STATIC_ROOT set to '{static_root}' ('{static_root.absolute()}')")
-            if static:
-                if verbosity >= 1:
-                    click.echo("Run collectstatic")
-                call_command("collectstatic", **extra)
 
             call_command("createinitialrevisions")
 
@@ -123,4 +126,4 @@ def upgrade(  # noqa: PLR0912,  PLR0915, C901, PLR0913
                 translation.activate(settings.LANGUAGE_CODE)
                 click.echo(f"check_for_language {translation.check_for_language('settings.LANGUAGE_CODE')}")
     except LockError as e:
-        click.echo(f"LockError: {e}")
+        raise CommandError(f"Unable to acquire the '{env('MIGRATION_LOCK_KEY')}' lock: {e}") from e
