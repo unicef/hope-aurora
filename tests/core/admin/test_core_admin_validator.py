@@ -1,5 +1,4 @@
 from typing import TYPE_CHECKING
-from unittest import mock
 
 import pytest
 from django.urls import reverse
@@ -99,19 +98,17 @@ def test_validator_test(request, app, validator):
     validator = request.getfixturevalue(validator)
 
     url = reverse("admin:core_validator_test", args=[validator.id])
-    with mock.patch("aurora.security.admin.is_root", return_value=True):
-        res = app.get(url)
-        form = res.forms["test-form"]
-        res = form.submit()
-        assert res.status_code == 200
-        res = form.submit()
-        assert res.status_code == 200
+    res = app.get(url)
+    form = res.forms["test-form"]
+    res = form.submit()
+    assert res.status_code == 200
+    res = form.submit()
+    assert res.status_code == 200
 
 
 def test_validator_invalid(request, app, form_validator):
     url = reverse("admin:core_validator_test", args=[form_validator.id])
-    with mock.patch("aurora.security.admin.is_root", return_value=True):
-        res = app.get(url)
-        form = res.forms["test-form"]
-        form["code"] = "-"
-        assert res.status_code == 200
+    res = app.get(url)
+    form = res.forms["test-form"]
+    form["code"] = "-"
+    assert res.status_code == 200

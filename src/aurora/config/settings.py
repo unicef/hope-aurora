@@ -56,7 +56,6 @@ INSTALLED_APPS = [
     "aurora.administration.apps.AuroraAdminConfig",
     "aurora.web",
     "front_door.contrib",
-    "hijack",
     "rest_framework",
     "rest_framework.authtoken",
     "drf_spectacular",
@@ -113,7 +112,6 @@ MIDDLEWARE = [
     "django.middleware.gzip.GZipMiddleware",
     # "django.middleware.cache.FetchFromCacheMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
-    "hijack.middleware.HijackUserMiddleware",
     "csp.middleware.CSPMiddleware",
 ] + env("EXTRA_MIDDLEWARES")
 X_FRAME_OPTIONS = "SAMEORIGIN"

@@ -1,5 +1,4 @@
 from typing import TYPE_CHECKING
-from unittest import mock
 
 import pytest
 from django.urls import reverse
@@ -42,5 +41,4 @@ def test_flexform_changelist(app, flex_form):
 
 def test_flexform_editor(request, app, flex_form):
     url = reverse("admin:core_flexform_form_editor", args=[flex_form.id])
-    with mock.patch("aurora.security.admin.is_root", return_value=True):
-        app.get(url)
+    app.get(url)
