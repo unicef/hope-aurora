@@ -15,7 +15,6 @@ from .django_toolbar import *  # noqa
 from .dramatiq import *  # noqa
 from .flags import *  # noqa
 from .front_door import *  # noqa
-from .hijack import *  # noqa
 from .json_editor import *  # noqa
 from .matomo import *  # noqa
 from .mdeditor import *  # noqa

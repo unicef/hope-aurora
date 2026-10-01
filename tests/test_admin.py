@@ -40,7 +40,6 @@ GLOBAL_EXCLUDED_BUTTONS = RegexList(
         r"registration.RecordAdmin:preview",
         r"registration.RecordAdmin:inspect",
         r"registration.RecordAdmin:decrypt",
-        "security.UserAdmin:hijack",
     ]
 )
 

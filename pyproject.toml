@@ -42,7 +42,6 @@ dependencies = [
   "django-filter",
   "django-flags",
   "django-front-door",
-  "django-hijack",
   "django-jsoneditor",
   "django-mdeditor",
   "django-mptt",

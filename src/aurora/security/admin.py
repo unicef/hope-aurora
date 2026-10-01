@@ -8,14 +8,11 @@ from adminactions.helpers import AdminActionPermMixin
 from adminfilters.autocomplete import AutoCompleteFilter
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
-from hijack.templatetags.hijack import can_hijack
 from smart_admin.modeladmin import SmartModelAdmin
 from smart_admin.smart_auth.admin import GroupAdmin as GroupAdmin_
 from smart_admin.smart_auth.admin import UserAdmin as UserAdmin_
 
-from aurora.administration.hijack import impersonate
 from aurora.core.admin_sync import SyncMixin
-from aurora.core.utils import is_root
 
 from .ad import ADUSerMixin
 from .forms import AuroraRoleForm
@@ -25,8 +22,6 @@ if TYPE_CHECKING:
     from admin_sync.types import Collectable
     from django.db.models import Model
     from django.http import HttpRequest, HttpResponse
-
-    from ..types.http import AuthHttpRequest
 
 logger = logging.getLogger(__name__)
 
@@ -84,11 +79,6 @@ class UserAdmin(AdminActionPermMixin, ADUSerMixin, UserAdmin_):  # type: ignore[
         ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
-
-    @button(permission=lambda req, obj, **kw: is_root(req) and can_hijack(req.user, obj))  # type: ignore[arg-type]
-    def hijack(self, request: "AuthHttpRequest", pk: str) -> "HttpResponse":  # type: ignore[return]
-        hijacked = self.get_object(request, pk)
-        impersonate(request, hijacked)  # type: ignore[arg-type]
 
     @button()  # type: ignore[arg-type]
     def generate_password(self, request: "HttpRequest", pk: str) -> "HttpResponse":  # type: ignore[return]
