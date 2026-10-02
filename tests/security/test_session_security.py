@@ -38,20 +38,18 @@ class TestSessionCookieFlags:
     def test_cookie_is_samesite_lax(self, login_response):
         assert login_response.cookies["aurora_id"]["samesite"] == "Lax"
 
-    def test_cookie_carries_no_max_age(self, login_response):
-        """A session cookie, so it is not written to disk or replayed after the browser restarts."""
-        morsel = login_response.cookies["aurora_id"]
-        assert morsel["max-age"] == ""
-        assert morsel["expires"] == ""
+    def test_cookie_carries_a_one_day_max_age(self, login_response):
+        """The reported expectation is a one-day session lifetime."""
+        assert login_response.cookies["aurora_id"]["max-age"] == 60 * 60 * 24
 
     def test_cookie_is_secure_when_the_setting_is_on(self, login_response, settings):
         """Secure follows SESSION_COOKIE_SECURE, which is off only for plain-HTTP local runs."""
         assert login_response.cookies["aurora_id"]["secure"] == (settings.SESSION_COOKIE_SECURE or "")
 
     def test_signed_payload_still_expires(self, settings):
-        """Dropping Max-Age must not also drop the server-side lifetime.
+        """The one-day age must bound the signed payload too.
 
-        SessionBase.get_expiry_age falls back to SESSION_COOKIE_AGE when the session is marked to
+        SessionBase.get_expiry_age falls back to SESSION_COOKIE_AGE when the session is not marked to
         expire at browser close, so this is what stops a captured cookie being valid forever.
         """
         from django.contrib.sessions.backends.signed_cookies import SessionStore
