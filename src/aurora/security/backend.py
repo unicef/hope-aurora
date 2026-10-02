@@ -14,9 +14,6 @@ if TYPE_CHECKING:
 class AuroraAuthBackend(ModelBackend):
     def has_perm(self, user_obj: "User|AnonymousUser", perm: str, obj: "Model|None" = None) -> bool:
         if not user_obj.is_authenticated:
-            # Anonymous callers hold nothing. Returning True here made every has_perm() check pass
-            # for an anonymous request, so any view reaching for one without its own permission
-            # class - an AllowAny action, say - became an open door.
             return False
         from aurora.registration.models import Registration
 
