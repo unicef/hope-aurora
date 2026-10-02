@@ -41,14 +41,6 @@ class IsRootUser(BasePermission):
         return bool(request.user and is_root(request))
 
 
-class AuroraPermission(BasePermission):
-    def has_permission(self, request: Request, view: APIView) -> bool:
-        return bool(request.user and is_root(request))
-
-    def has_object_permission(self, request: Request, view: APIView, obj: Model) -> bool:
-        return True
-
-
 class AuroraFilterBackend(DjangoFilterBackend):
     def filter_queryset(self, request: HttpRequest, queryset: QuerySet[Model], view: APIView) -> QuerySet[Model]:
         filterset = self.get_filterset(request, queryset, view)
@@ -105,6 +97,10 @@ class SmartViewSet(viewsets.ReadOnlyModelViewSet):
         TokenAuthentication,
         BasicAuthentication,
     )
-    permission_classes = (IsRootUser | AuroraPermission | DjangoModelPermissions,)
+    # Root bypasses, everyone else is held to the model permissions. Object-level decisions are left
+    # entirely to DjangoModelPermissions, which defers to AuroraAuthBackend for each org/project/
+    # registration; a permission class that returned True unconditionally would quietly outrank it,
+    # because OR.has_object_permission only short-circuits on has_permission first.
+    permission_classes = (IsRootUser | DjangoModelPermissions,)
     filter_backends = [AuroraFilterBackend, AuroraScopeFilterBackend]
     filterset_class = LastModifiedFilter

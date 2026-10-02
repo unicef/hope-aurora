@@ -239,8 +239,12 @@ SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SECURE = env("SESSION_COOKIE_SECURE")
 SESSION_COOKIE_NAME = env("SESSION_COOKIE_NAME")
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+# The cookie carries a Max-Age of one day, as the session-lifetime recommendation expects. That value
+# is also what bounds the signed payload, because SessionBase.get_expiry_age falls back to
+# SESSION_COOKIE_AGE whenever the session is not marked to expire at browser close - and
+# registration.authorize_cookie re-uses it as max_age, where None would skip expiry checking entirely.
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_COOKIE_HTTPONLY = False  # for offline forms
+SESSION_COOKIE_HTTPONLY = True
 
 TIME_ZONE = "UTC"
 
