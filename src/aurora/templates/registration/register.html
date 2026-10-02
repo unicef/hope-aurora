@@ -28,7 +28,11 @@
         {% endif %}
         {% if user.is_authenticated and registration.protected %}
             <div class="flex-shrink">
-                <a href="{% url "logout" %}">logout</a>
+                {# LogoutView is POST-only, so a link here is answered with 405 and never logs out. #}
+                <form method="post" action="{% url "logout" %}">
+                    {% csrf_token %}
+                    <button type="submit">logout</button>
+                </form>
             </div>
         {% endif %}
     </div>
