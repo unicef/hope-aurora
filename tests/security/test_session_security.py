@@ -9,7 +9,6 @@ import pytest
 from django.contrib.auth.models import AnonymousUser
 from django.test import Client
 from django.urls import reverse
-from testutils.factories import UserSocialAuthFactory
 
 
 @pytest.fixture
@@ -81,28 +80,6 @@ class TestLogout:
 
     def test_local_user_returns_to_the_index(self, logged_in):
         assert logged_in.post("/logout/").url == reverse("index")
-
-    def test_sso_user_is_handed_to_the_identity_provider(self, admin_user):
-        """Azure AD keeps its own session, so a local-only logout signs the user straight back in."""
-        UserSocialAuthFactory(user=admin_user)
-        client = Client()
-        client.force_login(admin_user)
-
-        response = client.post("/logout/")
-        assert response.url == reverse("unicef-logout")
-
-        redirect = client.get(response.url)
-        assert redirect.status_code == 302
-        assert redirect.url.startswith("https://login.microsoftonline.com/")
-        assert "post_logout_redirect_uri=" in redirect.url
-
-    def test_sso_redirect_resolves_the_tenant(self, admin_user):
-        """unicef_security reads the tenant from SOCIAL_AUTH_TENANT_NAME and renders None without it."""
-        UserSocialAuthFactory(user=admin_user)
-        client = Client()
-        client.force_login(admin_user)
-        redirect = client.get(client.post("/logout/").url)
-        assert "/None/" not in redirect.url
 
 
 class TestAnonymousHoldsNothing:

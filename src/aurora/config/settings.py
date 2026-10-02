@@ -239,10 +239,6 @@ SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SECURE = env("SESSION_COOKIE_SECURE")
 SESSION_COOKIE_NAME = env("SESSION_COOKIE_NAME")
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
-# The cookie itself carries no Max-Age/Expires, so it dies with the browser. SESSION_COOKIE_AGE is
-# retained on purpose: under the signed_cookies engine it is what bounds the lifetime of the signed
-# payload (see SessionBase.get_expiry_age), and registration.authorize_cookie re-uses it as max_age.
-# Unsetting it would make signing.loads skip expiry validation and accept any valid signature forever.
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_HTTPONLY = True
 
@@ -295,11 +291,6 @@ EMAIL_USE_SSL = env("EMAIL_USE_SSL")
 EMAIL_USE_TLS = env("EMAIL_USE_TLS")
 
 LOGOUT_REDIRECT_URL = "index"
-# Where the identity provider sends the browser back to once it has closed its own session. The
-# local session is already flushed by then, so this is a plain landing page rather than the logout
-# endpoint, which is POST-only. unicef_security.views.UNICEFLogoutView builds an absolute URL from
-# this by concatenation, so it must be a path and not a URL name.
-LOGOUT_URL = "/"
 
 LOGGING_HANDLERS = os.environ.get("LOG_HANDLER")
 

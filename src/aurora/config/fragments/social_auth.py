@@ -6,10 +6,6 @@ AZURE_TENANT_ID = env("AZURE_TENANT_ID")
 SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_KEY = AZURE_CLIENT_ID
 SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_SECRET = AZURE_CLIENT_SECRET
 SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_TENANT_ID = AZURE_TENANT_ID
-# unicef_security reads the tenant as SOCIAL_AUTH_TENANT_NAME when assembling the Azure AD
-# end-session URL; without it that redirect is built with a literal "None" for the tenant.
-SOCIAL_AUTH_TENANT_NAME = AZURE_TENANT_ID
-
 SOCIAL_AUTH_RESOURCE = "https://graph.microsoft.com"
 SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = [
     "username",
