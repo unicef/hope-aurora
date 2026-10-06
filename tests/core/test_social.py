@@ -5,7 +5,7 @@ import pytest
 from django.conf import settings
 from django.test import override_settings
 from django.urls import reverse
-from social_core.exceptions import InvalidEmail
+from social_core.exceptions import AuthException
 
 from aurora.core.authentication import create_user, redir_to_form, require_email, social_details, user_details
 from aurora.security.models import User
@@ -51,7 +51,8 @@ def test_social_details(user_data, details):
     res = social_details(
         backend=MagicMock(user_data=MagicMock(return_value=user_data)), details=details, response={"idp": "IDP"}
     )
-    assert res == {"details": {"email": expected, "idp": "IDP"}}
+    # In social-core 6.0, social_details may include additional keys like 'groups'
+    assert res["details"] == {"email": expected, "idp": "IDP"}
 
 
 def test_social_user_details(user):
@@ -86,7 +87,7 @@ def test_social_user_details_keeps_existing_names(user):
 
 
 def test_require_email():
-    with pytest.raises(InvalidEmail):
+    with pytest.raises(AuthException):
         assert require_email(MagicMock(), details={}, is_new=True)
     require_email(MagicMock(), details={"email": "user@wxample.com"})
 
