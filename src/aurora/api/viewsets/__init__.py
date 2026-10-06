@@ -7,7 +7,7 @@ from .org import OrganizationViewSet  # noqa
 from .project import ProjectViewSet  # noqa
 from .record import RecordViewSet  # noqa
 from .registration import RegistrationViewSet  # noqa
-from .sys_info import system_info  # noqa
+from .sys_info import SystemInfoView  # noqa
 from .template import TemplateViewSet  # noqa
 from .user import UserViewSet  # noqa
 from .validator import ValidatorViewSet  # noqa

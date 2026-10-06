@@ -22,7 +22,7 @@ router.register(r"validator", viewsets.ValidatorViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("sys/", viewsets.system_info),
+    path("sys/", viewsets.SystemInfoView.as_view(), name="sys"),
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
     path("rest/swagger/", SpectacularSwaggerView.as_view(url_name="api:schema"), name="swagger-ui"),
     path("rest/redoc/", SpectacularRedocView.as_view(url_name="api:schema"), name="redoc"),
