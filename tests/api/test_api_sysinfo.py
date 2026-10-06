@@ -19,7 +19,8 @@ def client(admin_user):
     return client
 
 
-def test_system_info(client):
+def test_system_info(client, settings):
+    settings.FLAGS = {"IS_ROOT": [("boolean", True)]}
     res = client.get("/api/sys/", format="json")
     assert res.status_code == 200
     assert res.json()
