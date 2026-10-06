@@ -97,10 +97,6 @@ class SmartViewSet(viewsets.ReadOnlyModelViewSet):
         TokenAuthentication,
         BasicAuthentication,
     )
-    # Root bypasses, everyone else is held to the model permissions. Object-level decisions are left
-    # entirely to DjangoModelPermissions, which defers to AuroraAuthBackend for each org/project/
-    # registration; a permission class that returned True unconditionally would quietly outrank it,
-    # because OR.has_object_permission only short-circuits on has_permission first.
     permission_classes = (IsRootUser | DjangoModelPermissions,)
     filter_backends = [AuroraFilterBackend, AuroraScopeFilterBackend]
     filterset_class = LastModifiedFilter
