@@ -2,7 +2,7 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 from django.contrib.auth import get_user_model
-from social_core.exceptions import InvalidEmail
+from social_core.exceptions import AuthException
 from social_core.pipeline import social_auth
 from social_core.pipeline import user as social_core_user
 
@@ -52,7 +52,7 @@ def require_email(
         return
     if is_new and not details.get("email"):
         logger.error("Email couldn't be validated")
-        raise InvalidEmail(backend)
+        raise AuthException(backend, code="invalid_email")
 
 
 def create_user(backend: "BaseOAuth2", details: dict[str, Any], user: User | None = None, *args, **kwargs):
