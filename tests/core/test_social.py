@@ -11,6 +11,19 @@ from aurora.core.authentication import create_user, redir_to_form, require_email
 from aurora.security.models import User
 
 
+def test_azure_signin_uses_post(db, client):
+    begin = reverse("social:begin", kwargs={"backend": "azuread-tenant-oauth2"})
+    assert client.get(begin).status_code == 405
+
+    for url in (reverse("login"), reverse("admin:login")):
+        response = client.get(url)
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert f'action="{begin}"' in content
+        assert 'method="post"' in content
+        assert f'href="{begin}"' not in content
+
+
 @override_settings(SOCIAL_AUTH_GOOGLE_OAUTH2_KEY="1", SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET="2")
 def test_social_login(db, client):
     """Test login with SSO."""

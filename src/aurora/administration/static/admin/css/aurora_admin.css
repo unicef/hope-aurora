@@ -1,4 +1,5 @@
-.submit-row a.button {
+.submit-row a.button,
+.submit-row input.button {
   padding: 10px 15px;
 }
 
