@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n security %}
 {% block body %}
     <div class="flex justify-center mx-10 p-10 bg-gray-100">
         <ul class="errorlist nonfield rounded px-5">
@@ -37,11 +37,16 @@
                 {% endif %}
                 <hr>
                 {% if user_has_token or config.LOGIN_SSO %}
-                    <div class="submit-row text-center mt-10">
-                        <a href="{% url 'social:begin' 'azuread-tenant-oauth2' %}"
-                           style="padding: 10px"
-                           class="button">Sign In With Azure</a>
-                    </div>
+                    <form action="{% ad_backend %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ next }}">
+                        <div class="submit-row text-center mt-10">
+                            <input type="submit"
+                                   style="padding: 10px"
+                                   class="button"
+                                   value="Sign In With Azure">
+                        </div>
+                    </form>
                 {% endif %}
                 {# </div> #}
             </div>
