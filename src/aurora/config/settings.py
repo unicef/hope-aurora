@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     "smart_admin.apps.SmartLogsConfig",
     "smart_admin.apps.SmartTemplateConfig",
     "smart_admin.apps.SmartAuthConfig",
+    # Before SmartConfig so admin/login.html resolves to unicef-security's Azure form.
+    "unicef_security",
     "smart_admin.apps.SmartConfig",
     "aurora.administration.apps.AuroraAdminConfig",
     "aurora.web",
@@ -379,6 +381,8 @@ AUTH_USER_MODEL = "security.User"
 
 LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/logged-in/"
+# unicef-security's admin login shows the password form only when this is set.
+LOGIN_ENABLED = True
 
 # allow upload big file
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 2  # 2M
