@@ -62,10 +62,8 @@ def create_user(backend: "BaseOAuth2", details: dict[str, Any], user: User | Non
     user = get_user_model().objects.create(
         email=details["email"],
         username=details["email"],
-        first_name=details.get("first_name"),
-        last_name=details.get(
-            "last_name",
-        ),
+        first_name=details.get("first_name") or "",
+        last_name=details.get("last_name") or "",
     )
     user.set_unusable_password()
     user.save()
@@ -80,8 +78,8 @@ def redir_to_form(backend: "BaseOAuth2", details: dict[str, Any], user: User | N
     user = get_user_model().objects.create(
         email=details["email"],
         username=details["email"],
-        first_name=details.get("first_name"),
-        last_name=details.get("last_name"),
+        first_name=details.get("first_name") or "",
+        last_name=details.get("last_name") or "",
     )
     user.set_unusable_password()
     user.save()
