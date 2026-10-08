@@ -115,6 +115,13 @@ def test_create_user(db):
     assert User.objects.filter(email="user@wxample.com").exists()
 
 
+def test_create_user_without_names(db):
+    create_user(None, {"email": "noname@wxample.com", "first_name": None, "last_name": None})
+    user = User.objects.get(email="noname@wxample.com")
+    assert user.first_name == ""
+    assert user.last_name == ""
+
+
 def test_create_user_returns_existing_user_as_not_new(db):
     existing_user = User.objects.create(email="existing@wxample.com", username="existing@wxample.com")
     assert create_user(None, {"email": "new@wxample.com"}, user=existing_user) == {"is_new": False}

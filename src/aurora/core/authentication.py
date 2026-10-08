@@ -55,6 +55,11 @@ def require_email(
         raise AuthException(backend, code="invalid_email")
 
 
+def _name(details: dict[str, Any], key: str) -> str:
+    # CharFields on User are not nullable. Azure omits given_name/family_name for some accounts.
+    return details.get(key) or ""
+
+
 def create_user(backend: "BaseOAuth2", details: dict[str, Any], user: User | None = None, *args, **kwargs):
     if user:
         return {"is_new": False}
@@ -62,10 +67,8 @@ def create_user(backend: "BaseOAuth2", details: dict[str, Any], user: User | Non
     user = get_user_model().objects.create(
         email=details["email"],
         username=details["email"],
-        first_name=details.get("first_name"),
-        last_name=details.get(
-            "last_name",
-        ),
+        first_name=_name(details, "first_name"),
+        last_name=_name(details, "last_name"),
     )
     user.set_unusable_password()
     user.save()
@@ -80,8 +83,8 @@ def redir_to_form(backend: "BaseOAuth2", details: dict[str, Any], user: User | N
     user = get_user_model().objects.create(
         email=details["email"],
         username=details["email"],
-        first_name=details.get("first_name"),
-        last_name=details.get("last_name"),
+        first_name=_name(details, "first_name"),
+        last_name=_name(details, "last_name"),
     )
     user.set_unusable_password()
     user.save()
