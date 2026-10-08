@@ -65,6 +65,8 @@ jobs:
     name: "Trigger deployment"
     if: github.ref == 'refs/heads/develop'
     needs: [build-push]
+    permissions:
+      contents: read
     uses: ./.github/workflows/trigger-azure-pipeline.yml
     with:
       azure-organization: ${{ vars.AZURE_ORGANIZATION }}
