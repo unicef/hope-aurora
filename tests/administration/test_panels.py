@@ -50,6 +50,23 @@ def test_panel_sql_multiple(app, admin_user):
 
 
 @pytest.mark.django_db
+def test_panel_sql_hides_exception_details(app, admin_user):
+    app.set_user(admin_user)
+    url = reverse("admin:console-panel_sql")
+    stmt = "select 1"
+    encoded = base64.b64encode(stmt.encode("utf-8")).decode("ascii")
+    with mock.patch("aurora.administration.panels.is_root", return_value=True):
+        with mock.patch("aurora.administration.panels.connections") as connections:
+            cursor = connections.__getitem__.return_value.cursor.return_value
+            cursor.execute.side_effect = RuntimeError("secret-schema-detail")
+            res = app.get(url)
+            res.forms["sqlForm"]["command"] = encoded
+            response = res.forms["sqlForm"].submit()
+    assert response.json["error"] == "Query failed."
+    assert "secret-schema-detail" not in response.text
+
+
+@pytest.mark.django_db
 def test_panel_sql_exception(app, admin_user):
     app.set_user(admin_user)
     url = reverse("admin:console-panel_sql")

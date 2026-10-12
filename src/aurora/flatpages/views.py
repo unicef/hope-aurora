@@ -6,6 +6,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.http import Http404, HttpResponse, HttpResponsePermanentRedirect
 from django.shortcuts import get_object_or_404
 from django.template import loader
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import csrf_protect
 
 if TYPE_CHECKING:
@@ -34,7 +35,9 @@ def flatpage(request: "HttpRequest", url: str) -> HttpResponse:
         if not url.endswith("/") and settings.APPEND_SLASH:
             url += "/"
             get_object_or_404(FlatPage, url=url, sites=site_id)
-            return HttpResponsePermanentRedirect("%s/" % request.path)
+            redirect_to = f"{request.path}/"
+            if url_has_allowed_host_and_scheme(redirect_to, allowed_hosts={request.get_host()}):
+                return HttpResponsePermanentRedirect(redirect_to)
         raise
     return render_flatpage(request, f)
 

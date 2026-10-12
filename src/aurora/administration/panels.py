@@ -77,8 +77,9 @@ def panel_sql(self: SmartAdminSite, request: "AuthHttpRequest", extra_context: d
                     response["result"] = cursor.fetchall()
                 else:
                     response["result"] = ["Success"]
-            except Exception as e:  # noqa: BLE001
-                response["error"] = str(e)
+            except Exception:  # noqa: BLE001
+                logger.exception("SQL console query failed")
+                response["error"] = "Query failed."
         else:
             response["error"] = str(form.errors)
         return JsonResponse(response)

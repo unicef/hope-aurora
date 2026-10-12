@@ -36,12 +36,16 @@ function cleanText(text) {
 // spans.
 function makePartSpan(value, doc) {
   var text = value;
-  if (value.nodeType == 3) text = value.nodeValue;
-  else value = doc.createTextNode(text);
+  if (value && value.nodeType == 3) {
+    text = value.nodeValue;
+    if (value.parentNode) value.parentNode.removeChild(value);
+  }
+  // Always insert a text node so parser tokens are never treated as HTML.
+  var node = doc.createTextNode(text == null ? "" : String(text));
 
   var span = doc.createElement("SPAN");
   span.isPart = true;
-  span.appendChild(value);
+  span.appendChild(node);
   span.currentText = text;
   return span;
 }
