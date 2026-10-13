@@ -31,6 +31,24 @@ def test_flatpages(rf, page, url):
     assert flatpage(req, url)
 
 
+def test_flatpage_append_slash_stays_on_site(rf, page, settings):
+    settings.APPEND_SLASH = True
+    req = rf.get("/url")
+    response = flatpage(req, "/url")
+    assert response.status_code == 301
+    assert response["Location"] == "/url/"
+
+
+def test_flatpage_rejects_protocol_relative_redirect(rf, db, settings):
+    settings.APPEND_SLASH = True
+    pg = FlatPageFactory(url="//evil.example/")
+    pg.sites.add(Site.objects.get_current())
+    req = rf.get("/")
+    req.path = "//evil.example"
+    with pytest.raises(Http404):
+        flatpage(req, "//evil.example")
+
+
 def test_flatpages_view(django_app, page: "FlatPage"):
     url = page.get_absolute_url()
     res = django_app.get(url)

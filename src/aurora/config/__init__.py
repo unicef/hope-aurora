@@ -1,3 +1,4 @@
+import tempfile
 import uuid
 
 from smart_env import SmartEnv
@@ -75,7 +76,7 @@ OPTIONS = {
     "MAILJET_SECRET_KEY": (str, ""),
     "MATOMO_ID": (str, "", "", False),
     "MATOMO_SITE": (str, "https://unisitetracker.unicef.io/"),
-    "MEDIA_ROOT": (str, "/tmp/media/"),  # noqa
+    "MEDIA_ROOT": (str, f"{tempfile.gettempdir()}/media/"),
     "MIGRATION_LOCK_KEY": (str, "django-migrations"),
     "PRODUCTION_SERVER": (str, ""),
     "PRODUCTION_TOKEN": (str, ""),
@@ -103,7 +104,7 @@ OPTIONS = {
         # "aurora.web.storage.ForgivingManifestStaticFilesStorage",
         "django.contrib.staticfiles.storage.StaticFilesStorage",
     ),
-    "STATIC_ROOT": (str, "/tmp/static/"),  # noqa
+    "STATIC_ROOT": (str, f"{tempfile.gettempdir()}/static/"),
     "STATIC_URL": (str, "static/"),
     "TRANSLATOR_SERVICE": (str, ""),
     "USE_HTTPS": (bool, False),

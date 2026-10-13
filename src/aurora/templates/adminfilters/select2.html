@@ -13,7 +13,8 @@
         var el = document.getElementById('filter-{{ spec.field.name }}');
         el.addEventListener('change', function () {
             var val = this.value;
-            if (val && (val.charAt(0) === '?' || val.charAt(0) === '/')) {
+            var sameSite = val.charAt(0) === '?' || (val.charAt(0) === '/' && val.charAt(1) !== '/' && val.charAt(1) !== '\\');
+            if (val && sameSite) {
                 location.href = val;
             }
         });
