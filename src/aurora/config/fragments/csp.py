@@ -9,6 +9,10 @@
 # strict CSP) must be done incrementally; start with CONTENT_SECURITY_POLICY
 # in "report-only" mode and monitor before enforcing a stricter policy, see
 # https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html
+#
+# `'unsafe-eval'` specifically: the validator test page and registration
+# scripts call eval(), JSHint feature-detects with new Function(), and the
+# CodeMirror toolbar builds undo/redo through eval().
 SOURCES = (
     "'self'",
     "inline",
@@ -16,6 +20,7 @@ SOURCES = (
     "data:",
     "blob:",
     "'unsafe-inline'",
+    "'unsafe-eval'",
     "localhost:8000",
     "unpkg.com",
     "browser.sentry-cdn.com",

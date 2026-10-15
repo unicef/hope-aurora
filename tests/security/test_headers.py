@@ -35,6 +35,7 @@ def test_content_security_policy(anon_client):
     assert res.status_code == 200
     csp = res.headers["Content-Security-Policy"]
     assert "default-src" in csp
+    assert "'unsafe-eval'" in csp
     assert "object-src 'none'" in csp
     assert "base-uri 'self'" in csp
 
