@@ -1,5 +1,6 @@
 from unittest import mock
 from unittest.mock import MagicMock
+from urllib.parse import parse_qs, urlparse
 
 import pytest
 from django.conf import settings
@@ -27,12 +28,9 @@ def test_azure_signin_uses_post(db, client):
 @override_settings(SOCIAL_AUTH_GOOGLE_OAUTH2_KEY="1", SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET="2")
 def test_social_login(db, client):
     """Test login with SSO."""
-    session = client.session
-    session["google-oauth2_state"] = "1"
-    session.save()
-
     res = client.post(reverse("social:begin", kwargs={"backend": "azuread-tenant-oauth2"}))
     assert res.status_code == 302
+    state = parse_qs(urlparse(res.url).query)["state"][0]
 
     with (
         mock.patch("social_core.backends.base.BaseAuth.request") as mock_request,
@@ -40,10 +38,9 @@ def test_social_login(db, client):
             "social_core.backends.azuread_tenant.AzureADTenantOAuth2.user_data",
             return_value={"sub": "0123-4567-89ab", "email": "user@wxample.com"},
         ),
-        mock.patch("social_core.backends.oauth.OAuthAuth.validate_state", return_value={}),
     ):
         url = reverse("social:complete", kwargs={"backend": "azuread-tenant-oauth2"})
-        url += "?code=2&state=1"
+        url += f"?code=2&state={state}"
         mock_request.return_value.json.return_value = {"access_token": "123"}
         with mock.patch(
             "django.contrib.sessions.backends.base.SessionBase.set_expiry",
