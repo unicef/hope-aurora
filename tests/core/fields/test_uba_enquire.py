@@ -4,28 +4,24 @@ from unittest.mock import Mock, patch
 
 import pytest
 import responses
-from constance.test.unittest import override_config
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
+from django.test import override_settings
 from requests import ReadTimeout
 from strategy_field.utils import fqn
 from testutils.factories import FlexFormFieldFactory, FormFactory
 
 from aurora.core.fields import UBANameEnquiryField
-from aurora.core.fields.uba import (
-    BANKS_CHOICE,
-    BANKS_SORTED_CHOICES,
-    UBANameEnquiryMultiWidget,
-    UBASelect,
-)
+from aurora.core.fields.uba_common import BANKS_CHOICE, BANKS_SORTED_CHOICES, UBASelect
+from aurora.core.fields.uba_enquire import UBANameEnquiryMultiWidget
+from aurora.core.services.uba import join_url
 
 if TYPE_CHECKING:
     from aurora.core.models import FlexForm
 
 
 @pytest.mark.django_db
-@override_config(UBA_TOKEN_URL="https://token")
-@override_config(UBA_NAME_ENQUIRY_URL="https://nameenquiry")
+@override_settings(UBA_TOKEN_URL="https://token", UBA_BASE_URL="https://nameenquiry", UBA_NAME_ENQUIRY_URL="/")
 @responses.activate
 def test_uba_name_enquiry_ok():
     responses._add_from_file(file_path=Path(__file__).parent / "uba/enquiry_ok.yaml")
@@ -45,8 +41,7 @@ def test_uba_name_enquiry_ok():
 
 
 @pytest.mark.django_db
-@override_config(UBA_TOKEN_URL="https://token")
-@override_config(UBA_NAME_ENQUIRY_URL="https://nameenquiry")
+@override_settings(UBA_TOKEN_URL="https://token", UBA_BASE_URL="https://nameenquiry", UBA_NAME_ENQUIRY_URL="/")
 @responses.activate
 @pytest.mark.django_db
 def test_uba_name_enquiry_ko_not_matching_name():
@@ -73,8 +68,7 @@ def test_uba_name_enquiry_ko_invalid_input():
 
 
 @pytest.mark.django_db
-@override_config(UBA_TOKEN_URL="https://token")
-@override_config(UBA_NAME_ENQUIRY_URL="https://nameenquiry")
+@override_settings(UBA_TOKEN_URL="https://token", UBA_BASE_URL="https://nameenquiry", UBA_NAME_ENQUIRY_URL="/")
 @responses.activate
 @pytest.mark.django_db
 def test_uba_name_enquiry_ko_invalid_account():
@@ -93,8 +87,7 @@ def test_uba_name_enquiry_ko_invalid_account():
 
 
 @pytest.mark.django_db
-@override_config(UBA_TOKEN_URL="https://token")
-@override_config(UBA_NAME_ENQUIRY_URL="https://nameenquiry")
+@override_settings(UBA_TOKEN_URL="https://token", UBA_BASE_URL="https://nameenquiry", UBA_NAME_ENQUIRY_URL="/")
 @responses.activate
 @pytest.mark.django_db
 def test_uba_name_enquiry_generic_invalid():
@@ -113,7 +106,7 @@ def test_uba_name_enquiry_generic_invalid():
 
 
 @pytest.mark.django_db
-@patch("aurora.core.fields.uba.requests.post")
+@patch("aurora.core.services.uba.requests.post")
 def test_uba_name_enquiry_cannot_reach_server(mock_post):
     mock_post.return_value = Mock(
         status_code=500,
@@ -128,7 +121,7 @@ def test_uba_name_enquiry_cannot_reach_server(mock_post):
 
 
 @pytest.mark.django_db
-@override_config(UBA_TOKEN_URL="---")
+@override_settings(UBA_TOKEN_URL="---")
 def test_uba_name_missing_schema():
     cache.clear()
     fld_c = FlexFormFieldFactory(field_type=fqn(UBANameEnquiryField), advanced={"ignore_error": False})
@@ -140,7 +133,7 @@ def test_uba_name_missing_schema():
 
 
 @pytest.mark.django_db
-@patch("aurora.core.fields.uba.requests.post", side_effect=ReadTimeout)
+@patch("aurora.core.services.uba.requests.post", side_effect=ReadTimeout)
 def test_uba_name_connection_error(mock_post):
     fld_c = FlexFormFieldFactory(field_type=fqn(UBANameEnquiryField), advanced={"ignore_error": False})
     fld = fld_c.get_instance()
@@ -151,8 +144,7 @@ def test_uba_name_connection_error(mock_post):
 
 
 @pytest.mark.django_db
-@override_config(UBA_TOKEN_URL="https://token")
-@override_config(UBA_NAME_ENQUIRY_URL="https://nameenquiry")
+@override_settings(UBA_TOKEN_URL="https://token", UBA_BASE_URL="https://nameenquiry", UBA_NAME_ENQUIRY_URL="/")
 @responses.activate
 def test_uba_save():
     responses._add_from_file(file_path=Path(__file__).parent / "uba/enquiry_ok.yaml")
@@ -183,3 +175,10 @@ def test_uba_name_enquiry_multi_widget_decompress():
     widget = UBANameEnquiryMultiWidget()
     assert widget.decompress(None) == [None, None, None, None, None]
     assert widget.decompress({"a": 1, "b": 2}) == [1, 2]
+
+
+def test_join_url():
+    assert join_url("https://base", "/endpoint") == "https://base/endpoint"
+    assert join_url("https://base/", "endpoint") == "https://base/endpoint"
+    assert join_url("https://base/prefix", "/endpoint") == "https://base/prefix/endpoint"
+    assert join_url("", "/endpoint") == "/endpoint"
