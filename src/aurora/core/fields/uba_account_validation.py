@@ -7,7 +7,7 @@ from django.forms import MultiWidget
 from aurora.core.fields.mixins import ConfigurableSmartField, MultiValueWidgetMixin
 from aurora.core.services.uba import (
     AccountValidationResult,
-    UBAAccountNotFound,
+    UBAAccountNotFoundError,
     UBAAuthError,
     UBAConfigError,
     UBAClient,
@@ -162,7 +162,7 @@ class UBAAccountValidationField(ConfigurableSmartField, forms.MultiValueField):
                 bank_name=bank_name,
                 bank_code=bank_code,
             )
-        except UBAAccountNotFound as e:
+        except UBAAccountNotFoundError as e:
             raise ValidationError("Invalid account number") from e
         except UBAConfigError as e:
             raise ValidationError("Invalid UBA Api url") from e

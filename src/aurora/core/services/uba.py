@@ -13,7 +13,7 @@ from requests.exceptions import MissingSchema, ReadTimeout
 
 logger = logging.getLogger(__name__)
 
-TOKEN_CACHE_KEY = "uba-token"
+TOKEN_CACHE_KEY = "uba-token"  # noqa: S105
 SUCCESS_STATUS = "00"
 TOKEN_EXPIRY_MARGIN = 30
 
@@ -137,7 +137,7 @@ class UBAAPIError(UBAError):
         self.payload = payload or {}
 
 
-class UBAAccountNotFound(UBAAPIError):
+class UBAAccountNotFoundError(UBAAPIError):
     pass
 
 
@@ -328,12 +328,12 @@ class UBAClient:
             code = data.get("statusCode") or data.get("errCode")
             message = data.get("statusMsg") or data.get("errDesc") or status_message(code)
             if str(code) == "4":
-                raise UBAAccountNotFound("Invalid account number", code=code, payload=data)
+                raise UBAAccountNotFoundError("Invalid account number", code=code, payload=data)
             raise UBAAPIError(str(message), code=code, payload=data)
 
         raise UBATransportError("Cannot reach UBA server")
 
-    def validate_account(
+    def validate_account(  # noqa: PLR0913
         self,
         *,
         account_number: str,
