@@ -6,9 +6,19 @@ from strategy_field.utils import fqn
 from testutils.factories import FlexFormFieldFactory, FormFactory
 
 from aurora.core.fields import UBAAccountValidationField
-from aurora.core.fields.uba_account_validation import UBAAccountValidationMultiWidget
+from aurora.core.fields.uba_account_validation import (
+    ACCOUNT_VALIDATION_RULES,
+    UBAAccountValidationMultiWidget,
+)
 from aurora.core.fields.uba_common import BANKS_CHOICE
-from aurora.core.services.uba import AccountValidationResult
+from aurora.core.services.uba import (
+    AccountValidationResult,
+    UBAAccountNotFoundError,
+    UBAAPIError,
+    UBAAuthError,
+    UBAConfigError,
+    UBATransportError,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -143,3 +153,43 @@ def test_uba_account_validation_multi_widget_decompress():
     widget = UBAAccountValidationMultiWidget()
     assert widget.decompress(None) == [None, None, None]
     assert widget.decompress({"a": 1, "b": 2, "c": 3}) == [1, 2, 3]
+
+
+def test_account_validation_rule_allowed_accepts_string():
+    rule = ACCOUNT_VALIDATION_RULES[0]
+
+    assert rule.allowed({"response_code_values": "00"}) == {"00"}
+    assert rule.allowed({"response_code_values": ["00", "01"]}) == {"00", "01"}
+    assert rule.allowed({}) == {"00"}
+
+
+@pytest.mark.parametrize(
+    ("exception", "message"),
+    [
+        (UBAAccountNotFoundError("Invalid account number", code="4"), "Invalid account number"),
+        (UBAConfigError("Invalid UBA Api url"), "Invalid UBA Api url"),
+        (UBAAuthError("Cannot get UBA token"), "Cannot reach UBA server"),
+        (UBATransportError("Cannot reach UBA server"), "Cannot reach UBA server"),
+        (UBAAPIError("SYSTEM MALFUNCTION", code="96"), "SYSTEM MALFUNCTION"),
+    ],
+)
+@patch("aurora.core.services.uba.UBAClient.validate_account")
+def test_uba_account_validation_api_errors(mock_validate, exception, message):
+    mock_validate.side_effect = exception
+
+    with pytest.raises(ValidationError, match=message):
+        UBAAccountValidationField().validate(make_value())
+
+
+@pytest.mark.parametrize(
+    "exception", [UBAAuthError("Cannot get UBA token"), UBATransportError("Cannot reach UBA server")]
+)
+def test_uba_account_validation_can_ignore_connection_errors(exception):
+    field_c = FlexFormFieldFactory(
+        field_type=fqn(UBAAccountValidationField),
+        advanced={"ignore_error": True},
+    )
+    field = field_c.get_instance()
+
+    with patch("aurora.core.services.uba.UBAClient.validate_account", side_effect=exception):
+        assert field.validate(make_value()) is None

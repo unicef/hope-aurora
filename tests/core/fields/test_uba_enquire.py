@@ -9,12 +9,17 @@ from django.core.exceptions import ValidationError
 from django.test import override_settings
 from requests import ReadTimeout
 from strategy_field.utils import fqn
-from testutils.factories import FlexFormFieldFactory, FormFactory
+from testutils.factories import FlexFormFieldFactory, FormFactory, OptionSetFactory
 
 from aurora.core.fields import UBANameEnquiryField
-from aurora.core.fields.uba_common import BANKS_CHOICE, BANKS_SORTED_CHOICES, UBASelect
+from aurora.core.fields.uba_common import (
+    BANKS_CHOICE,
+    BANKS_SORTED_CHOICES,
+    UBASelect,
+    get_x_auth_cred,
+)
 from aurora.core.fields.uba_enquire import UBANameEnquiryMultiWidget
-from aurora.core.services.uba import join_url
+from aurora.core.services.uba import UBAAuthError, join_url
 
 if TYPE_CHECKING:
     from aurora.core.models import FlexForm
@@ -182,3 +187,46 @@ def test_join_url():
     assert join_url("https://base/", "endpoint") == "https://base/endpoint"
     assert join_url("https://base/prefix", "/endpoint") == "https://base/prefix/endpoint"
     assert join_url("", "/endpoint") == "/endpoint"
+
+
+def test_get_x_auth_cred():
+    assert get_x_auth_cred("1234") == b"0000000031323334"
+
+
+@pytest.mark.django_db
+def test_uba_select_with_optionset():
+    OptionSetFactory(name="test-uba-options", data="001;Bank A\r\n002;Bank B")
+
+    choices = list(UBASelect({"optionset_name": "test-uba-options"}).attrs["choices"])
+
+    assert choices == [("001", "Bank A"), ("002", "Bank B")]
+
+
+@pytest.mark.django_db
+def test_uba_multi_widget_media():
+    assert "select2/select2.min.css" in str(UBANameEnquiryMultiWidget().media)
+
+
+@pytest.mark.django_db
+def test_uba_name_enquiry_ignore_error_without_flex_field():
+    assert UBANameEnquiryField()._ignore_error() is False
+
+
+@pytest.mark.django_db
+def test_uba_name_enquiry_can_ignore_connection_errors():
+    fld_c = FlexFormFieldFactory(field_type=fqn(UBANameEnquiryField), advanced={"ignore_error": True})
+    fld = fld_c.get_instance()
+
+    with patch("aurora.core.services.uba.UBAClient.name_enquiry", side_effect=UBAAuthError):
+        assert (
+            fld.validate(
+                {
+                    "name": "bank UBA",
+                    "uba_code": "bank",
+                    "number": "account",
+                    "holder_name": "mimmo",
+                    "ignore_error": True,
+                }
+            )
+            is None
+        )
