@@ -3,7 +3,7 @@
 {% block content %}
     <div class="redis-cli" id="changelist">
         <div class="changelist-form-container">
-            <form method="POST" id="redisForm">
+            <form method="post" id="redisForm">
                 {% csrf_token %}
                 <table>
                     {{ form.command }}

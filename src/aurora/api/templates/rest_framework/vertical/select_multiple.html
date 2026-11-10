@@ -11,7 +11,7 @@
         {% for select in field.iter_options %}
             {% if select.start_option_group %}
                 <optgroup label="{{ select.label }}">
-                {% elif select.end_option_group %}
+            {% elif select.end_option_group %}
                 </optgroup>
             {% else %}
                 <option value="{{ select.value }}"

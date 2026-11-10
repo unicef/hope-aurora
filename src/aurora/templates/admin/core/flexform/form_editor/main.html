@@ -81,7 +81,7 @@
                                             {% endfor %}
                                         </table>
                                     </div>
-                                    <div id="struct" class="cfg-form collapse collapsed ">
+                                    <div id="struct" class="cfg-form collapse collapsed">
                                         <table>
                                             <tr>
                                                 <td>Parents</td>
@@ -111,19 +111,20 @@
                                             {% endfor %}
                                         </table>
                                     </div>
-                                    <div id="usage" class="cfg-form collapse collapsed ">
+                                    <div id="usage" class="cfg-form collapse collapsed">
                                         <table>
                                             {% for usage in original.get_usage %}
                                                 <tr>
                                                     <td>{{ usage.type }}</td>
                                                     <td>
-                                                        <a target="_inspect" href="{{ usage.editor_url }}">{{ usage.obj }}</a>
+                                                        <a target="_inspect"
+                                                           href="{{ usage.editor_url }}">{{ usage.obj }}</a>
                                                     </td>
                                                 </tr>
                                             {% endfor %}
                                         </table>
                                     </div>
-                                    <div id="events" class="cfg-form collapse collapsed ">
+                                    <div id="events" class="cfg-form collapse collapsed">
                                         <table>
                                             <tr>
                                                 <td>

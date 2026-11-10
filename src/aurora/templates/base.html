@@ -9,13 +9,8 @@
               content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         {% block meta %}{% endblock %}
-        <title>
-            {% block title %}Registration{% endblock %}
-        </title>
-        <link href="{% static "staff-toolbar.css" %}"
-              type="text/css"
-              media="all"
-              rel="stylesheet">
+        <title>{% block title %}Registration{% endblock %}</title>
+        <link href="{% static "staff-toolbar.css" %}" media="all" rel="stylesheet">
         <link rel="stylesheet" href="{% static "admin/debug.css" %}">
         {% block cache %}{% endblock %}
         <script src="{% static "_colored_header.js" %}"></script>

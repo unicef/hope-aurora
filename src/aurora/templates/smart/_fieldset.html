@@ -10,9 +10,7 @@
         {% if field.field.flex_field.validator and registration.client_validation %}
             <script src="/api/validator/{{ field.field.flex_field.validator.pk }}/script/"></script>
         {% endif %}
-        <a id="anchor_{{ field.name }}" class="float-left">
-            {% if ADV.smart.marker %}&gt;{% endif %}
-        </a>
+        <a id="anchor_{{ field.name }}" class="float-left">{% if ADV.smart.marker %}&gt;{% endif %}</a>
         {% if ADV.smart.question %}
             <label for="question_{{ field.auto_id }}" class="cursor-pointer">
                 <input id="question_{{ field.auto_id }}"
@@ -22,16 +20,18 @@
                        {% if field.errors %}checked{% endif %}
                        type="checkbox">
                 {# {% if can_translate %}{% include "i18n/_staff_edit_i18n.html" with original=field.field.flex_field.advanced.smart.question %}{% endif %} #}
-                <span data-i18n-Type="Question" data-msgid="{{ field|smart:"question,0" }}">{{ field|smart:"question,1"|md }}</span>
+                <span data-i18n-Type="Question"
+                      data-msgid="{{ field|smart:"question,0" }}">{{ field|smart:"question,1"|md }}</span>
             </label>
         {% endif %}
         <div class="mb-4 field-container field-container-{{ field.name }} mb-5{% if field.field.required or field.field.smart_attrs.required_by_question %} required{% endif %}">
             <label data-msgid="{{ field.label }}"
                    data-i18n-Type="FieldLabel"
-                   class="itrans  {{ ADV.css.label|default:"block uppercase tracking-wide text-gray-700 font-bold mb-2" }}"
+                   class="itrans {{ ADV.css.label|default:"block uppercase tracking-wide text-gray-700 font-bold mb-2" }}"
                    for="{{ field.auto_id }}">
                 {% translate field.label|md %}
-                <span data-msgid="required" class="required-label required hidden itrans">({% translate "required" %})</span>
+                <span data-msgid="required"
+                      class="required-label required hidden itrans">({% translate "required" %})</span>
             </label>
             <div class="itrans text-sm description"
                  data-msgid="{{ ADV.smart.description }}">
@@ -46,7 +46,7 @@
                 <span class="errors">{{ field.errors }}</span>
                 {{ field }}
             {% endif %}
-            <div class="itrans text-xs	italic hint" data-msgid="{{ ADV.smart.hint }}">
+            <div class="itrans text-xs italic hint" data-msgid="{{ ADV.smart.hint }}">
                 {# {% if user.is_staff %}{% include "i18n/_staff_edit_i18n.html" with original=field|smart:"hint,0" %}{% endif %} #}
                 {% translate ADV.smart.hint %}
             </div>

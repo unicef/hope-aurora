@@ -73,7 +73,7 @@ dependencies = [
   "natural-keys",
   "pika>=1.3.2",
   "pillow>=13",                                 # CVE-2026-112398 and related image parser issues
-  "psycopg2-binary",
+  "psycopg[binary]>=3.3.7",
   "pyquery",
   "qrcode",
   "sentry-sdk",
@@ -189,6 +189,7 @@ exclude = [
 ]
 
 [tool.uv]
+exclude-newer = "7 days"
 package = true
 
 [tool.nitpick]

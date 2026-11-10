@@ -11,14 +11,13 @@
             <tr>
                 {% for key, value in row|items %}
                     {% if key in columns %}
-                        <td {{ value|add_nested_class }}>
-                            {{ value|format_value }}
-                        </td>
+                        <td {{ value|add_nested_class }}>{{ value|format_value }}</td>
                     {% endif %}
                 {% endfor %}
                 <td>
                     {% if row.url %}
-                        <a href="{{ row.url }}"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></a>
+                        <a href="{{ row.url }}"><span class="glyphicon glyphicon-chevron-right"
+                                                      aria-hidden="true"></span></a>
                     {% else %}
                         <span class="glyphicon glyphicon-chevron-right text-muted"
                               aria-hidden="true"></span>

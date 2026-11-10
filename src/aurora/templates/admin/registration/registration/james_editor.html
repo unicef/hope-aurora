@@ -27,7 +27,10 @@
                 </td>
                 <tr>
                     <td>
-                        <textarea name="data" id="id_data" style="width: 100%;height: 300px">{{ form.data.value }}</textarea>
+                        <textarea name="data"
+                                  id="id_data"
+                                  style="width: 100%;
+                                         height: 300px">{{ form.data.value }}</textarea>
                     </td>
                     <td>
                         <textarea id="id_result" style="width: 100%; height: 300px"></textarea>
@@ -74,4 +77,4 @@
         })(django.jQuery);
 
         </script>
-    {% endblock action-content %}
+{% endblock action-content %}

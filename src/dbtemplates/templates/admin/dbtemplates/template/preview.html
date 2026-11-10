@@ -2,9 +2,8 @@
 {% load static %}
 {% block extrastyle %}
     {{ block.super }}
-    <script type="text/javascript"
-            src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>
-    <script type="text/javascript" src="{% static "admin/js/jquery.init.js" %}"></script>
+    <script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>
+    <script src="{% static "admin/js/jquery.init.js" %}"></script>
 {% endblock extrastyle %}
 {% block action-content %}
     <style>
