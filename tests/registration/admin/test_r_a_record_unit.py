@@ -83,7 +83,7 @@ def test_receipt_sets_href_and_logs_exception(record_admin, monkeypatch):
 def test_preview_and_inspect(record_admin, monkeypatch, rf):
     request = rf.get("/admin/")
     files_payload = {"file": "x"}
-    record_admin.object = SimpleNamespace(files=SimpleNamespace(tobytes=lambda: json.dumps(files_payload).encode()))
+    record_admin.object = SimpleNamespace(files=json.dumps(files_payload).encode())
     record_admin.get_common_context = Mock(return_value={"base": 1})
 
     monkeypatch.setattr("aurora.registration.admin.record.render", lambda *_a, **_k: HttpResponse("ok"))

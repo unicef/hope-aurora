@@ -135,6 +135,15 @@ def safe_json(data):
     return json.dumps(data, cls=JSONEncoder)
 
 
+def as_bytes(value: bytes | memoryview | None) -> bytes:
+    """Normalize binary values returned by the different database backends."""
+    if value is None:
+        return b""
+    if isinstance(value, memoryview):
+        return value.tobytes()
+    return bytes(value)
+
+
 def jsonfy(data):
     return json.loads(safe_json(data))
 

@@ -1,3 +1,4 @@
+import base64
 from typing import Any
 
 from admin_extra_buttons.utils import handle_basic_auth
@@ -6,7 +7,7 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic.list import ListView
 
-from aurora.core.utils import JSONEncoder
+from aurora.core.utils import JSONEncoder, as_bytes
 from aurora.registration.models import Record, Registration
 
 
@@ -30,6 +31,11 @@ class RegistrationDataApi(ListView):
                 "id", "remote_ip", "timestamp", "files", "fields", "storage"
             )[:1000]
         )
+        for row in data:
+            for key in ("files", "storage"):
+                value = row.get(key)
+                if isinstance(value, (bytes, memoryview)):
+                    row[key] = base64.urlsafe_b64encode(as_bytes(value)).decode()
         return JsonResponse(
             {"reg": reg.pk, "start": start, "end": end, "data": data},
             encoder=JSONEncoder,

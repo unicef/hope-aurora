@@ -27,6 +27,7 @@ from aurora.core.fields import AjaxSelectField, LabelOnlyField
 from aurora.core.forms import VersionMedia
 from aurora.core.models import FlexForm, FlexFormField, Organization, Project, Validator
 from aurora.core.utils import (
+    as_bytes,
     cache_aware_reverse,
     dict_setdefault,
     get_client_ip,
@@ -372,13 +373,8 @@ class Record(models.Model):
 
     @property
     def attachments(self) -> dict[str, typing.Any]:
-        files = {}
-        f = self.files
-        if f:
-            if not isinstance(f, bytes):
-                f = self.files.tobytes()
-            files = json.loads(f.decode())
-        return files
+        files = as_bytes(self.files)
+        return json.loads(files.decode()) if files else {}
 
     @property
     def data(self) -> dict[str, typing.Any]:
@@ -386,21 +382,14 @@ class Record(models.Model):
             return {"Forbidden": "Cannot access encrypted data"}
         if self.registration.encrypt_data:
             return self.decrypt(secret=None)
-        files = {}
-        f = self.files
-        if f:
-            if not isinstance(f, bytes):
-                f = self.files.tobytes()
-            files = json.loads(f.decode())
-        return merge(files, self.fields or {})
+        files = as_bytes(self.files)
+        return merge(json.loads(files.decode()) if files else {}, self.fields or {})
 
     @property
     def payload(self) -> dict[str, typing.Any]:
         if not self.registration.public_key:
             return {"Forbidden": "Cannot access encrypted data without public key registered"}
-        files = self.files
-        if files and not isinstance(files, bytes):
-            files = files.tobytes()
+        files = as_bytes(self.files)
         return {
             "encryption": "rsa",
             "fields": self.fields,  # already base64 str, see strategies.SaveToDB
