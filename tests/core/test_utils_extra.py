@@ -59,6 +59,15 @@ def test_json_encoder_file_and_skip_files():
     assert encoder.default(content) == "::file::"
 
 
+def test_as_bytes_normalizes_binary_values():
+    from aurora.core.utils import as_bytes
+
+    assert as_bytes(None) == b""
+    assert as_bytes(memoryview(b"ab")) == b"ab"
+    assert as_bytes(b"abc") == b"abc"
+    assert as_bytes(bytearray(b"xyz")) == b"xyz"
+
+
 def test_render_sets_response_content_and_cookies(monkeypatch, rf):
     monkeypatch.setattr(utils.loader, "render_to_string", lambda *args, **kwargs: "hello")
     response = utils.render(rf.get("/"), "template.html", cookies={"a": "b"})

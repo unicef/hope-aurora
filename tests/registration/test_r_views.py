@@ -7,6 +7,8 @@ from unittest.mock import Mock
 import pytest
 from webtest import Upload
 
+from aurora.core.utils import as_bytes
+
 if TYPE_CHECKING:
     from aurora.registration.models import Record
 
@@ -317,7 +319,7 @@ def test_upload_image(django_app, complex_registration, mock_storage):
     obj = res.context["record"]
     assert obj.data["family_name"] == "HH #1"
     assert obj.data["form2s"][1]["image"] == base64.b64encode(content).decode()
-    ff = json.loads(obj.files.tobytes().decode())
+    ff = json.loads(as_bytes(obj.files).decode())
     assert ff["form2s"][1]["image"] == base64.b64encode(content).decode()
 
 

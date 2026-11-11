@@ -8,7 +8,7 @@
                 Template <b>{{ custom_template }}</b> already exists
             {% endif %}
         </div>
-        <div class="submit-row ">
+        <div class="submit-row">
             <a class="button"
                href="{% url "admin:dbtemplates_template_change" custom_template.pk %}">Edit</a>
             <input type="button" value="Back" onclick="location.href='..'">

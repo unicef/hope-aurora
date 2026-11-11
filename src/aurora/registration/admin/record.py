@@ -10,7 +10,7 @@ from django.urls import reverse
 from django_filters.filters import DateRangeFilter
 from smart_admin.modeladmin import SmartModelAdmin
 
-from ...core.utils import is_root
+from ...core.utils import as_bytes, is_root
 from ..forms import DecryptForm
 from .filters import HourFilter
 from .paginator import LargeTablePaginator
@@ -96,7 +96,7 @@ class RecordAdmin(SmartModelAdmin):
     def inspect(self, request: "HttpRequest", pk: str) -> "HttpResponse":
         ctx = self.get_common_context(request, pk, title="Inspect")
         if self.object.files:
-            ctx["files_as_dict"] = json.loads(self.object.files.tobytes().decode())
+            ctx["files_as_dict"] = json.loads(as_bytes(self.object.files).decode())
         return render(request, "admin/registration/record/inspect.html", ctx)
 
     @button(permission=is_root)

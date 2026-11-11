@@ -2,20 +2,20 @@
     {% if previous_url %}
         <li>
             <a href="{{ previous_url }}" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
+                <span aria-hidden="true">«</span>
             </a>
         </li>
     {% else %}
         <li class="disabled">
             <a href="#" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
+                <span aria-hidden="true">«</span>
             </a>
         </li>
     {% endif %}
     {% for page_link in page_links %}
         {% if page_link.is_break %}
             <li class="disabled">
-                <a href="#"><span aria-hidden="true">&hellip;</span></a>
+                <a href="#"><span aria-hidden="true">…</span></a>
             </li>
         {% else %}
             {% if page_link.is_active %}
@@ -32,13 +32,13 @@
     {% if next_url %}
         <li>
             <a href="{{ next_url }}" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
+                <span aria-hidden="true">»</span>
             </a>
         </li>
     {% else %}
         <li class="disabled">
             <a href="#" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
+                <span aria-hidden="true">»</span>
             </a>
         </li>
     {% endif %}

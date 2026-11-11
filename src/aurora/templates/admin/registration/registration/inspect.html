@@ -4,7 +4,7 @@
     {{ block.super }}
     {# <script type="text/javascript" src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script> #}
     {# <script type="text/javascript" src="{% static "admin/js/jquery.init.js" %}"></script> #}
-    <script type="text/javascript" src="{% static "admin/filter_table.js" %}"></script>
+    <script src="{% static "admin/filter_table.js" %}"></script>
 {% endblock extrahead %}
 {% block action-content %}
     <input type="text"
@@ -30,7 +30,7 @@
                 </td>
                 <td>
                     Form: <a target="_inspect"
-    href="{% url "admin:core_flexform_change" original.flex_form.pk %}">{{ original.flex_form }}</a>
+                             href="{% url "admin:core_flexform_change" original.flex_form.pk %}">{{ original.flex_form }}</a>
                 </td>
             </tr>
             <tr>
@@ -50,7 +50,7 @@
                     </td>
                     <td>
                         Parent: <a target="_inspect"
-    href="{% url "admin:core_flexform_change" c.parent.pk %}">{{ c.parent }}</a>
+                                   href="{% url "admin:core_flexform_change" c.parent.pk %}">{{ c.parent }}</a>
                         Formset:
                         <a target="_inspect" href="{% url "admin:core_formset_change" c.pk %}">{{ c }}</a>
                     </td>
@@ -64,9 +64,9 @@
                     </td>
                     <td>
                         Form: <a target="_inspect"
-    href="{% url "admin:core_flexform_change" c.flex_form.pk %}">{{ c.flex_form }}</a>
+                                 href="{% url "admin:core_flexform_change" c.flex_form.pk %}">{{ c.flex_form }}</a>
                         Parent: <a target="_inspect"
-    href="{% url "admin:core_flexform_change" c.parent.pk %}">{{ c.parent }}</a>
+                                   href="{% url "admin:core_flexform_change" c.parent.pk %}">{{ c.parent }}</a>
                     </td>
                 </tr>
             {% endfor %}
@@ -86,7 +86,7 @@
                     </td>
                     <td>
                         Form: <a target="_inspect"
-    href="{% url "admin:core_flexform_change" flex_field.flex_form.pk %}">{{ flex_field.flex_form.name }}</a>
+                                 href="{% url "admin:core_flexform_change" flex_field.flex_form.pk %}">{{ flex_field.flex_form.name }}</a>
                     </td>
                 </tr>
             {% endfor %}
@@ -103,10 +103,11 @@
                         </td>
                         <td>
                             Form: <a target="_inspect"
-    href="{% url "admin:core_flexform_change" flex_field.flex_form.pk %}">{{ flex_field.flex_form.name }}</a>
+                                     href="{% url "admin:core_flexform_change" flex_field.flex_form.pk %}">{{ flex_field.flex_form.name }}</a>
                             <div>
                                 Fieldset:
-                                <a target="_inspect" href="{% url "admin:core_formset_change" fs.pk %}">{{ fs.name }}</a>
+                                <a target="_inspect"
+                                   href="{% url "admin:core_formset_change" fs.pk %}">{{ fs.name }}</a>
                             </div>
                         </td>
                     </tr>

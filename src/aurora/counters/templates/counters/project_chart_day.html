@@ -4,7 +4,7 @@
     {{ block.super }}
     > {{ registration }}
     &gt;<a class="month"
-   href="{% url "charts:monthly" organization.slug project.pk registration.pk %}?m={{ date.year }}-{{ date.month }}">{{ date|date:"F" }}</a>
+           href="{% url "charts:monthly" organization.slug project.pk registration.pk %}?m={{ date.year }}-{{ date.month }}">{{ date|date:"F" }}</a>
 {% endblock breadcrumbs %}
 {% block charts-content %}
     <div class="min-h-screen flex w-wull bg-gray-100 pb-10 charting">

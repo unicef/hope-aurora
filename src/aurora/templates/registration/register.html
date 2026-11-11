@@ -24,7 +24,9 @@
     <div id="loading" class="h-screen flex justify-center bg-gray-100 pb-10">Loading...</div>
     <div class="flex flex-row px-5">
         {% if registration.locales|length > 1 %}
-            <div class="flex-grow">{% include "i18n/_select_language.html" with languages=registration.languages %}</div>
+            <div class="flex-grow">
+                {% include "i18n/_select_language.html" with languages=registration.languages %}
+            </div>
         {% endif %}
         {% if user.is_authenticated and registration.protected %}
             <div class="flex-shrink">

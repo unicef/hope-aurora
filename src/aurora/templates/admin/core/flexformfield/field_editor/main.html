@@ -128,10 +128,12 @@
                                                             </div>
                                                         {% endwith %}
                                                     {% endfor %}
-                                                    <div id="event_onchange" class="code selected">{{ form_events.onchange }}</div>
+                                                    <div id="event_onchange"
+                                                         class="code selected">{{ form_events.onchange }}</div>
                                                     <div id="event_onblur" class="code">{{ form_events.onblur }}</div>
                                                     <div id="event_onkeyup" class="code">{{ form_events.onkeyup }}</div>
-                                                    <div id="event_validation" class="code">{{ form_events.validation }}</div>
+                                                    <div id="event_validation"
+                                                         class="code">{{ form_events.validation }}</div>
                                                     <div id="event_init" class="code">{{ form_events.init }}</div>
                                                 </td>
                                             </tr>
@@ -143,7 +145,8 @@
                                                 <tr>
                                                     <td>{{ usage.type }}</td>
                                                     <td>
-                                                        <a target="_inspect" href="{{ usage.editor_url }}">{{ usage.obj }}</a>
+                                                        <a target="_inspect"
+                                                           href="{{ usage.editor_url }}">{{ usage.obj }}</a>
                                                     </td>
                                                 </tr>
                                             {% endfor %}
@@ -151,7 +154,8 @@
                                                 <tr>
                                                     <td>Form / {{ usage.type }}</td>
                                                     <td>
-                                                        <a target="_inspect" href="{{ usage.editor_url }}">{{ usage.obj }}</a>
+                                                        <a target="_inspect"
+                                                           href="{{ usage.editor_url }}">{{ usage.obj }}</a>
                                                     </td>
                                                 </tr>
                                             {% endfor %}

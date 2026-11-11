@@ -5,6 +5,7 @@ from rest_framework.fields import Field
 from rest_framework.reverse import reverse
 from rest_framework.utils.model_meta import FieldInfo
 
+from ...core.utils import as_bytes
 from ...registration.models import Record, Registration
 
 
@@ -64,7 +65,7 @@ class RegistrationRecordSerializerStorage(serializers.ModelSerializer):
         fields = ("pk", "storage")
 
     def get_storage(self, obj: Record) -> str:
-        return obj.files.tobytes().decode()  # type: ignore[union-attr]
+        return as_bytes(obj.files).decode()
 
 
 class RegistrationRecordSerializerFull(serializers.ModelSerializer):

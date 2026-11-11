@@ -32,7 +32,7 @@
             </div>
         {% elif groups %}
             {% for section, apps in groups.items %}
-                {% if section != '_hidden_' %}
+                {% if section != "_hidden_" %}
                     <div class="module">
                         <table style="width: 100%" class="section">
                             <caption>
@@ -62,24 +62,24 @@
     <div id="content-related">
         <div class="module" id="recent-actions-module">
             {% if bookmarks %}
-                <h2>{% translate 'Quick Links' %}</h2>
+                <h2>{% translate "Quick Links" %}</h2>
                 <ul class="actionlist">
                     {% for entry in bookmarks %}{{ entry }}{% endfor %}
                 </ul>
             {% endif %}
-            <h2>{% translate 'Recent actions' %}</h2>
+            <h2>{% translate "Recent actions" %}</h2>
             <h3>
                 {% if smart_settings.ANYUSER_LOG %}
                     {% url "admin:admin_logentry_changelist" as aaaa %}
-                    <a href="{{ aaaa }}">{% translate 'Actions' %}</a>
+                    <a href="{{ aaaa }}">{% translate "Actions" %}</a>
                     {% get_admin_log 10 as admin_log %}
                 {% else %}
-                    <a href="">{% translate 'My actions' %}</a>
+                    <a href="">{% translate "My actions" %}</a>
                     {% get_admin_log 10 as admin_log for_user user %}
                 {% endif %}
             </h3>
             {% if not admin_log %}
-                <p>{% translate 'None available' %}</p>
+                <p>{% translate "None available" %}</p>
             {% else %}
                 <ul class="actionlist">
                     {% for entry in admin_log %}
@@ -97,7 +97,7 @@
                                     {% endfilter %}
                                 </span>
                             {% else %}
-                                <span class="mini quiet">{% translate 'Unknown content' %}</span>
+                                <span class="mini quiet">{% translate "Unknown content" %}</span>
                             {% endif %}
                             {% if smart_settings.ANYUSER_LOG %}
                                 (<a href="{% url "admin:admin_logentry_changelist" %}?user__id__exact={{ entry.user.pk }}">{{ entry.user }}</a>)
@@ -110,9 +110,8 @@
     </div>
 {% endblock sidebar %}
 {% block footer %}
-    <script type="text/javascript"
-            src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>
-    <script type="text/javascript" src="{% static "admin/js/jquery.init.js" %}"></script>
+    <script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>
+    <script src="{% static "admin/js/jquery.init.js" %}"></script>
     <script>
         function delay(callback, ms) {
             var timer = 0;

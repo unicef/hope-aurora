@@ -6,7 +6,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/djlint/djLint
-    rev: v1.36.4
+    rev: v1.49.4
     hooks:
       - id: djlint
         args: ["--check", "--configuration", "djlint.toml"]

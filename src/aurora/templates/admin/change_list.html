@@ -2,16 +2,12 @@
 {% load i18n admin_urls static admin_list smart %}
 {% block extrastyle %}
     {{ block.super }}
-    <link rel="stylesheet"
-          type="text/css"
-          href="{% static "admin/css/changelists.css" %}">
+    <link rel="stylesheet" href="{% static "admin/css/changelists.css" %}">
     {% if cl.formset %}
-        <link rel="stylesheet"
-              type="text/css"
-              href="{% static "admin/css/forms.css" %}">
+        <link rel="stylesheet" href="{% static "admin/css/forms.css" %}">
     {% endif %}
     {% if cl.formset or action_form %}
-        <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+        <script src="{% url 'admin:jsi18n' %}"></script>
     {% endif %}
     {{ media.css }}
     {% if not actions_on_top and not actions_on_bottom %}
@@ -30,14 +26,14 @@
 {% if not is_popup %}
     {% block breadcrumbs %}
         <div class="breadcrumbs">
-            <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+            <a href="{% url 'admin:index' %}">{% trans "Home" %}</a>
             {% url 'admin:app_list' app_label=cl.opts.app_label as app_list_url %}
             {% if smart %}
-                &rsaquo; <a href="{% url 'admin:group_list' model_to_section|section:opts %}">{{ model_to_section|section:opts }}</a>
-                &rsaquo; (<a href="{{ app_list_url }}">{{ cl.opts.app_config.verbose_name }}</a>) {{ cl.opts.verbose_name_plural|capfirst }}
+                › <a href="{% url 'admin:group_list' model_to_section|section:opts %}">{{ model_to_section|section:opts }}</a>
+                › (<a href="{{ app_list_url }}">{{ cl.opts.app_config.verbose_name }}</a>) {{ cl.opts.verbose_name_plural|capfirst }}
             {% else %}
-                &rsaquo; <a href="{% url 'admin:app_list' app_label=cl.opts.app_label %}">{{ cl.opts.app_config.verbose_name }}</a>
-                &rsaquo; {{ cl.opts.verbose_name_plural|capfirst }}
+                › <a href="{% url 'admin:app_list' app_label=cl.opts.app_label %}">{{ cl.opts.app_config.verbose_name }}</a>
+                › {{ cl.opts.verbose_name_plural|capfirst }}
             {% endif %}
         </div>
     {% endblock %}
@@ -96,10 +92,10 @@
             {% block filters %}
                 {% if cl.has_filters %}
                     <div id="changelist-filter">
-                        <h2>{% trans 'Filter' %}</h2>
+                        <h2>{% trans "Filter" %}</h2>
                         {% if cl.has_active_filters %}
                             <h3 id="changelist-filter-clear">
-                                <a href="{{ cl.clear_all_filters_qs }}">&#10006; {% trans "Clear all filters" %}</a>
+                                <a href="{{ cl.clear_all_filters_qs }}">✖ {% trans "Clear all filters" %}</a>
                             </h3>
                         {% endif %}
                         {% for spec in cl.filter_specs %}

@@ -2,7 +2,7 @@
 {% if original|strip %}
     {% csrf_token %}
     {% with code=original|msgcode %}
-        <span class="inline-flex staff-editor staff-i18n staff-tooltip align-left ">
+        <span class="inline-flex staff-editor staff-i18n staff-tooltip align-left">
             <span class="tooltiptext">
                 <p>
                     <span class="label">Lang</span>{{ LANGUAGE_CODE }}

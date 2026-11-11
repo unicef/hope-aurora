@@ -4,7 +4,7 @@
     {{ block.super }}
     {# <script type="text/javascript" src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script> #}
     {# <script type="text/javascript" src="{% static "admin/js/jquery.init.js" %}"></script> #}
-    <script type="text/javascript" src="{% static "admin/filter_table.js" %}"></script>
+    <script src="{% static "admin/filter_table.js" %}"></script>
 {% endblock extrahead %}
 {% block action-content %}
     <input type="text"
@@ -47,9 +47,9 @@
                     </td>
                     <td>
                         Main Form: <a target="_inspect"
-    href="{% url "admin:core_flexform_change" fs.flex_form.pk %}">{{ fs.flex_form }}</a>
+                                      href="{% url "admin:core_flexform_change" fs.flex_form.pk %}">{{ fs.flex_form }}</a>
                         Parent Form: <a target="_inspect"
-    href="{% url "admin:core_flexform_change" fs.parent.pk %}">{{ fs.parent }}</a>
+                                        href="{% url "admin:core_flexform_change" fs.parent.pk %}">{{ fs.parent }}</a>
                     </td>
                 </tr>
             {% endfor %}
