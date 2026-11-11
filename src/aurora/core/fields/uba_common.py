@@ -2,27 +2,15 @@ import binascii
 from contextlib import suppress
 from typing import TYPE_CHECKING
 
-import requests
-from constance import config
 from django import forms
 from django.conf import settings
-from django.core.cache import cache
-from django.core.exceptions import ValidationError
-from django.forms import MultiWidget
 from django.utils.translation import gettext as _
-from requests.auth import HTTPBasicAuth
-from requests.exceptions import MissingSchema, ReadTimeout
 
-from aurora.core.fields.mixins import MultiValueWidgetMixin
 from aurora.core.fields.widgets import SmartTextWidget
 from aurora.core.version_media import VersionMedia
 
-from .mixins import ConfigurableSmartField
-
 if TYPE_CHECKING:
-    from aurora.core.models import FlexFormField, OptionSet
-
-FALSE = "false"
+    from aurora.core.models import OptionSet
 
 STERLING_BANK = "000001"
 KEYSTONE_BANK = "000002"
@@ -1273,19 +1261,19 @@ def get_x_auth_cred(client_no: str) -> bytes:
     return binascii.hexlify(client_no.encode()).zfill(16)
 
 
-class AccountNumberUBATextInput(SmartTextWidget):
+class AccountHolderNameUBATextInput(SmartTextWidget):
     def __init__(self, attrs=None):
         attrs = {
-            "placeholder": _("Account Number"),
+            "placeholder": _("Account Holder Name"),
             **(attrs or {}),
         }
         super().__init__(attrs)
 
 
-class AccountHolderNameUBATextInput(SmartTextWidget):
+class AccountNumberUBATextInput(SmartTextWidget):
     def __init__(self, attrs=None):
         attrs = {
-            "placeholder": _("Account Holder Name"),
+            "placeholder": _("Account Number"),
             **(attrs or {}),
         }
         super().__init__(attrs)
@@ -1313,23 +1301,7 @@ class UBASelect(forms.Select):
         super().__init__(attrs)
 
 
-class UBANameEnquiryMultiWidget(MultiValueWidgetMixin, MultiWidget):
-    template_name = "django/forms/widgets/uba.html"
-    custom_render = True
-
-    def __init__(self, optionset_name=None, attrs=None):
-        attrs = dict() if attrs is None else attrs
-        attrs["optionset_name"] = optionset_name
-        widgets = (
-            UBASelect(attrs),
-            AccountNumberUBATextInput(attrs),
-            AccountHolderNameUBATextInput(attrs),
-        )
-        super().__init__(widgets, attrs)
-
-    def decompress(self, value):
-        return list(value.values()) if value else [None, None, None, None, None]
-
+class UBAMultiWidgetMixin:
     @property
     def media(self):
         extra = "" if settings.DEBUG else ".min"
@@ -1350,102 +1322,3 @@ class UBANameEnquiryMultiWidget(MultiValueWidgetMixin, MultiWidget):
                 ]
             },
         )
-
-
-class UBANameEnquiryField(ConfigurableSmartField, forms.MultiValueField):
-    widget = UBANameEnquiryMultiWidget
-    flex_field: "FlexFormField"
-
-    def __init__(self, *args, **kwargs):
-        fields = [
-            forms.ChoiceField(choices=BANKS_SORTED_CHOICES),
-            forms.CharField(),
-            forms.CharField(),
-        ]
-        kwargs["template_name"] = "django/forms/uba.html"
-        if hasattr(self, "flex_field"):
-            optionset_name = self.flex_field.advanced.get("optionset_name", None)
-            kwargs["widget"] = self.widget(optionset_name=optionset_name)
-        super().__init__(fields, *args, **kwargs)
-
-    def compress(self, values):
-        values.insert(0, dict(BANKS_CHOICE)[values[0]])
-        values.append(self.flex_field.advanced.get("ignore_error", False))
-        return dict(zip(["name", "uba_code", "number", "holder_name", "ignore_error"], values, strict=True))
-
-    def validate(self, value):
-        super().validate(value)
-
-        try:
-            _, bank_code, account_number, account_full_name, _ = value.values()
-        except ValueError:
-            raise ValidationError("ValueError: not enough values to unpack") from None
-
-        generate = False
-
-        for __ in range(1, 3):
-            headers = {
-                "AccessCode": self.get_token(generate),
-                "Applcode": config.UBA_APPL_CODE,
-                "Clientno": config.UBA_CLIENT_NO,
-                "X-Auth-Cred": config.UBA_X_AUTH_CRED,
-            }
-
-            payload = {
-                "receiverBankCode": bank_code,
-                "receiverAccountNumber": account_number,
-                "countryCode": "NG",
-                "tranType": "nameenquiry",
-            }
-            try:
-                response = requests.post(config.UBA_NAME_ENQUIRY_URL, headers=headers, json=payload, timeout=60)
-            except (ReadTimeout, ConnectionError):
-                continue
-
-            if response.status_code == 200:
-                jresponse = response.json()
-                if jresponse.get("errorFlag") == FALSE and jresponse.get("statusCode") == "0":
-                    if jresponse.get("customerName").lower().strip() != account_full_name.lower().strip():
-                        valid_name = jresponse.get("customerName")
-                        raise ValidationError(
-                            f"Account holder name does not match: ({valid_name})",
-                            code="name_mismatch",
-                            params={"name": valid_name},
-                        )
-                    return
-
-                error_message = jresponse.get("statusMsg") or jresponse.get("errDesc")
-                error_code = jresponse.get("statusCode") or jresponse.get("errCode")
-                if error_code == "4":
-                    error_message = "Invalid account number"
-                raise ValidationError(f"{error_message}: (error {error_code})")
-            generate = True
-
-        if not self.flex_field.advanced.get("ignore_error", False):
-            raise ValidationError(
-                "Cannot reach UBA server",
-                code="uba_error",
-            )
-
-    def get_token(self, generate) -> str:
-        token = cache.get("uba-token")
-        if generate or not token:
-            i = 0
-            while i < 2:
-                headers = {"Content-Type": "application/x-www-form-urlencoded"}
-                auth = HTTPBasicAuth(config.UBA_CONSUMER_KEY, config.UBA_CONSUMER_SECRET)
-                form_data = {"grant_type": "client_credentials"}
-                try:
-                    response = requests.post(
-                        config.UBA_TOKEN_URL, data=form_data, headers=headers, auth=auth, timeout=60
-                    )
-                    jresponse = response.json()
-                    token = f"{jresponse['token_type']} {jresponse['access_token']}"
-                except MissingSchema:
-                    raise ValidationError("Invalid UBA Api url") from None
-                except (ReadTimeout, ConnectionError, KeyError):
-                    i += 1
-                    continue
-                cache.set("uba-token", token)
-                return token
-        return token
