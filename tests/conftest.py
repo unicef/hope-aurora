@@ -43,6 +43,8 @@ def pytest_configure(config):
     settings.SOCIAL_AUTH_RESOURCE = "https://graph.microsoft.com"
     settings.SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_KEY = "key"
     settings.SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_SECRET = "secret"
+    # PBKDF2 is deliberately slow; every UserFactory and test login would pay for it.
+    settings.PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
 
 @pytest.fixture
