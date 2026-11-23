@@ -33,7 +33,8 @@ from .multi_checkbox import MultiCheckboxField
 from .radio import RadioField, YesNoChoice, YesNoRadio
 from .remote_ip import RemoteIpField
 from .select import AjaxSelectField, SelectField, SmartSelectWidget
-from .uba import UBANameEnquiryField
+from .uba_account_validation import UBAAccountValidationField
+from .uba_enquire import UBANameEnquiryField
 from .webcam import WebcamField
 
 WIDGET_FOR_FORMFIELD_DEFAULTS: dict[type[ConfigurableSmartField], dict[str, Any]] = {

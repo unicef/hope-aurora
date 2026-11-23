@@ -58,9 +58,11 @@ def test_collect_uses_today_and_history_branches(monkeypatch):
     monkeypatch.setattr(
         module.Counter.objects,
         "filter",
-        lambda **kwargs: FakeCounterFilter(SimpleNamespace(day=date(2026, 4, 20)))
-        if kwargs.get("registration") is reg2
-        else FakeCounterFilter(None),
+        lambda **kwargs: (
+            FakeCounterFilter(SimpleNamespace(day=date(2026, 4, 20)))
+            if kwargs.get("registration") is reg2
+            else FakeCounterFilter(None)
+        ),
     )
 
     historical_matches = [
